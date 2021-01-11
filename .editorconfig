@@ -1,0 +1,51 @@
+root = true
+
+[*]
+end_of_line = lf
+indent_size = 2
+indent_style = tab
+insert_final_newline = false
+trim_trailing_whitespace = false
+charset = utf-8
+
+[*.{yml, yaml}]
+indent_size = 2
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{md, markdown, mkd}]
+indent_size = 4
+indent_style = tab
+trim_trailing_whitespace = false
+insert_final_newline = false
+
+[*.{sh, bash, zsh}]
+indent_size = 2
+indent_style = tab
+trim_trailing_whitespace = false
+insert_final_newline = false
+
+[*.{h,hh,hpp,hxx,c,cc,cpp,cxx,inl}]
+indent_size = 2
+indent_style = space
+
+[*.go]
+indent_size = 4
+indent_style = tab
+
+[*.json]
+indent_size = 4
+indent_style = space
+
+[CMakeLists.txt]
+indent_style = tab
+indent_size = 4
+
+[Makefile]
+indent_style = tab
+indent_size = 4
+
+[*.{Makefile, mak}]
+indent_style = tab
+indent_size = 4

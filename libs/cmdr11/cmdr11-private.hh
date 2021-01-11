@@ -1,0 +1,8 @@
+//
+// Created by Hedzr Yeh on 2021/1/8.
+//
+
+#ifndef CMDR_CXX11_CMDR11_PRIVATE_HH
+#define CMDR_CXX11_CMDR11_PRIVATE_HH
+
+#endif //CMDR_CXX11_CMDR11_PRIVATE_HH

@@ -28,8 +28,7 @@
 
 namespace cmdr {
 
-    class obj {
-    };
+    class obj {};
 
     // old cmdr,
     using support_types = std::variant<std::monostate,

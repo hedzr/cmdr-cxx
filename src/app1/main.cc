@@ -3,7 +3,7 @@
 //
 
 #include "version.h"
-#include <cmdr11/cmdr11.hh>
+#include <cmdr-cxx.hh>
 
 
 int main(int argc, char *argv[]) {

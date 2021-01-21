@@ -45,3 +45,5 @@ add_subdirectory(docs)
 ## TPL ## TAIL ##########
 apply_all_unit_tests(all_tests)     # invoke CTest unittests automatically.
 dump_feature_summary()              # tail print to cmake-debug/features.log
+# env var CTEST_OUTPUT_ON_FAILURE=1 to display ctest error verbosely.
+# ctest cmdline options: --verbose or --extra-verbose or --verbose-on-failure

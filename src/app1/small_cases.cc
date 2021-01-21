@@ -28,9 +28,9 @@
 #include <chrono>
 
 
-#include "cmdr11/cmdr11.hh"
+#define ENABLE_VARIABLE
 #include "version.h"
-
+#include "cmdr11/cmdr11.hh"
 
 #include "custom_iterator.hh"
 

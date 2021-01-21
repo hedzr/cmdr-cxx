@@ -12,7 +12,9 @@ if (POLICY CMP0076)
 endif ()
 
 # option(BUILD_TESTING "Build the testing tree." ON)
-include(CTest)
+#
+# To enable Nightly Target and More, uncomment and include CTest script from CMake bundle.
+# include(CTest)
 
 
 #find_package(ZLIB REQUIRED)

@@ -29,7 +29,8 @@
 
 namespace cmdr::opt::vars {
 
-#if defined(NEVER_USED)
+#if defined(NEVER_USED) || defined(ENABLE_VARIABLE)
+
     template<typename T>
     class variable {
     public:
@@ -164,6 +165,18 @@ namespace cmdr::opt::vars {
             return os;
         }
 
+        [[nodiscard]] std::string as_string() const {
+            std::stringstream os;
+            if (streamer)
+                streamer(os, *this);
+            return os.str();
+        }
+
+        template<class T>
+        const T &get() const {
+            return std::any_cast<T>(*this);
+        }
+
         // template<class T, std::enable_if_t<!is_duration<T>::value, int> = 0>
         // static void _format(std::ostream &os, T const &v) {
         //     os << v;
@@ -250,6 +263,7 @@ namespace cmdr::opt::vars {
         typedef std::unordered_map<std::string, var_t *> child_pointers;
 
         const int NODE_DEFAULT_VALUE{0};
+        const bool LOGGING_ENABLED{true};
 
     public:
         var_t() = default;
@@ -278,12 +292,20 @@ namespace cmdr::opt::vars {
         const var_t &get(const_chars key) const { return _get(key); }
         const var_t &get(const std::string &key) const { return _get(key); }
 
+        [[nodiscard]] bool has(const std::string &key) const { return _full_key_map.find(key) != _full_key_map.end(); }
+
     private:
         var_t &_get(const std::string &key) {
-            auto &it = _full_key_map.find(key);
+            auto it = _full_key_map.find(key);
+            if (it == _full_key_map.end())
+                throw std::invalid_argument("key is not exists");
+            return (*(it->second));
+        }
+        var_t const &_get(const std::string &key) const {
+            auto const it = _full_key_map.find(key);
             if (it == _full_key_map.end())
                 return null_elem();
-            return (*(it.second));
+            return (*(it->second));
         }
 
     public:
@@ -307,7 +329,8 @@ namespace cmdr::opt::vars {
                 // }
                 (void) (prefix);
                 (void) (ptr);
-                // std::cout << "this: " << this << ", key: " << key << ", matching key: " << prefix << std::endl;
+                if (LOGGING_ENABLED)
+                    std::cout << "      > this: '" << (*this) << "', key: " << key << ", matching key: " << prefix << std::endl;
                 (void) (this);
                 (void) (key);
             });
@@ -315,6 +338,7 @@ namespace cmdr::opt::vars {
 
         void _put(const std::string &key, const holderT &val, self_type *parent,
                   std::function<void(const std::string &, self_type *)> const &on_picked) {
+            unused(parent);
             std::string prefix1, part1, remains;
             std::string::size_type pos{0}, old{0}, length = key.length();
             var_t *ptr;
@@ -340,15 +364,20 @@ namespace cmdr::opt::vars {
                         _children.template emplace(part1, NODE_DEFAULT_VALUE == 0 ? holderT() : holderT(NODE_DEFAULT_VALUE));
                     itc = _children.find(part1);
                 }
+
                 ptr = &((*itc).second);
                 ptr->_parent = parent;
+                if (LOGGING_ENABLED)
+                    std::cout << "   -> putting '" << (*ptr) << "' into \"" << key << "\".\n";
 
                 prefix1 = key.substr(0, pos);
                 if (auto it = _full_key_map.find(prefix1); it == _full_key_map.end()) {
                     _full_key_map.template emplace(prefix1, ptr);
+                    if (LOGGING_ENABLED)
+                        std::cout << "      _full_key_map['" << prefix1 << "'] = '" << (*ptr) << "'\n";
                 }
                 if (on_picked)
-                    on_picked(prefix1, this);
+                    on_picked(prefix1, ptr);
 
                 // auto p = this;
                 // while (p._parent != nullptr) {
@@ -362,11 +391,14 @@ namespace cmdr::opt::vars {
                         auto sk = prefix1;
                         sk += '.';
                         sk += prefix;
-                        if (this->_parent == nullptr) {
-                            if (auto it = _full_key_map.find(sk); it == _full_key_map.end()) {
-                                _full_key_map.template emplace(sk, ptr);
-                            }
+                        //if (this->_parent != nullptr) {
+                        if (auto it = _full_key_map.find(sk); it == _full_key_map.end()) {
+                            _full_key_map.template emplace(sk, ptr);
+                            if (LOGGING_ENABLED)
+                                std::cout << "      ^ _full_key_map['" << sk << "'] = '" << (*ptr) << "'\n";
+                            // std::cout << "      putting '" << (*ptr) << "' into \"" << sk << "\".\n";
                         }
+                        // }
 
                         if (on_picked)
                             on_picked(sk, ptr);
@@ -386,7 +418,7 @@ namespace cmdr::opt::vars {
             template<class K, class V>
             void operator()(std::pair<K, V> const &val) {
                 // .first is your key, .second is your value
-                _os << " - " << val.first << " : " << val.second << "\n";
+                _os << " - " << val.first << " : " << (*val.second) << "\n";
             }
         };
 
@@ -502,6 +534,9 @@ namespace cmdr::opt::vars {
             auto &it = _root.get(key);
             return it.value();
         }
+
+        auto &get_var_t(const_chars key) { _root.get(key); }
+        auto const &get_var_t(const_chars key) const { return _root.get(key); }
 
         void set(const_chars key, holderT &&val) { _root.set(key, val, &_root); }
 

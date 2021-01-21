@@ -1,10 +1,15 @@
 find_package(Doxygen)
-option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${DOXYGEN_FOUND})
+
+set(OPT_VAL_FOR_BUILD_DOC ${DOXYGEN_FOUND})
+if (DEBUG)
+    set(OPT_VAL_FOR_BUILD_DOC OFF)
+endif ()
+option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${OPT_VAL_FOR_BUILD_DOC})
 
 if (BUILD_DOCUMENTATION)
     if (NOT DOXYGEN_FOUND)
         message(FATAL_ERROR "Doxygen is needed to build the documentation.")
-    else()
+    else ()
         message("running doxygen...")
     endif ()
 
@@ -15,7 +20,7 @@ if (BUILD_DOCUMENTATION)
     debug_print_value(PROJECT_SOURCE_DIR)
 
     #set(DOXYGEN_INPUT_DIR ${PROJECT_SOURCE_DIR} )
-    set(DOXYGEN_INPUT_DIR ${PROJECT_SOURCE_DIR}/libs/cmdr11 )
+    set(DOXYGEN_INPUT_DIR ${PROJECT_SOURCE_DIR}/libs/cmdr11)
     #set(DOXYGEN_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/docs/doxygen)
     set(DOXYGEN_OUTPUT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/doxygen)
     set(DOXYGEN_INDEX_FILE ${DOXYGEN_OUTPUT_DIR}/html/index.html)

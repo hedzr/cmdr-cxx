@@ -13,6 +13,11 @@
 // #include "cmdr11/cmdr_defs.hh"
 #include "cmdr11/cmdr_var_t.hh"
 
+void fatal_exit(const std::string &msg) {
+    std::cerr << msg << '\n';
+    exit(-1);
+}
+
 void test_store_1() {
     using namespace std::chrono_literals;
 
@@ -33,4 +38,9 @@ void test_store_1() {
     store.root().dump_full_keys(std::cout);
     store.root().dump_tree(std::cout);
 #endif
+
+    auto vv = store.get("app.server.tls.handshake.max-idle-time");
+    std::cout << "max-idle-time: " << vv << '\n';
+    if (vv.as_string() != "45m")
+        fatal_exit("  ^-- ERR: expect '45m'.");
 }

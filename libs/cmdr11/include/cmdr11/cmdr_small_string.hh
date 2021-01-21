@@ -9,9 +9,11 @@
 #include <iosfwd>  // ostream operator <<
 #include <string>
 
+// NOTE: SSO has been paused and the codes in this header is not final.
 
 namespace cmdr::string {
 
+    // not yet
     template<class size_type = std::size_t>
     class sso_string {
     public:

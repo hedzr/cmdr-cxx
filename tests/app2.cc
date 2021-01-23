@@ -119,6 +119,7 @@ int main(int argc, char *argv[]) {
         // auto &c = colorize::instance();
         auto c = colorize::create();
         std::cout << c.fg(c.Purple3).bg(c.Default).underline().bold().s("some text") << '\n';
+        std::cout << c.dim().s("dim text") << '\n';
         std::cout << c.Purple3 << " << want 56\n";
         std::cout << c.MediumTurquoise << " << want 80\n";
         std::cout << c.Grey93 << " << want 255\n";

@@ -9,6 +9,7 @@
 #include "cmdr_cmd.hh"
 #include "cmdr_cmn.hh"
 #include "cmdr_opts.hh"
+#include "cmdr_terminal.hh"
 
 
 namespace cmdr::opt {
@@ -29,6 +30,8 @@ namespace cmdr::opt {
 
         //
         cmdr::opt::vars::store _store;
+
+        // static colorize &colorizer() {...}
 
     private:
         app() = default;
@@ -120,8 +123,9 @@ namespace cmdr::opt {
         [[nodiscard]] cmd *command_hit() const { return _cmd_hit; }
 
     private:
-        void print_usages(cmd* start = nullptr);
-        void print_cmd(std::ostream& ss, cmd* cc, std::string const& app_name, std::string const& exe_name);
+        void print_usages(cmd *start = nullptr);
+        void print_cmd(std::ostream &ss, cmdr::terminal::colors::colorize &c, cmd *cc,
+                       std::string const &app_name, std::string const &exe_name);
 
     private:
         int _help_hit{};

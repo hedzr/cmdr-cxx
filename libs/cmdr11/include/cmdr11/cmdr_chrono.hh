@@ -7,10 +7,10 @@
 
 
 #include <chrono>
+#include <iomanip>
+#include <iostream>
 #include <string>
 #include <tuple>
-#include <iostream>
-#include <iomanip>
 
 
 namespace cmdr::chrono {

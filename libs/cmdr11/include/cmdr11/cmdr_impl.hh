@@ -18,6 +18,7 @@
 #include "cmdr_arg.hh"
 #include "cmdr_cmd.hh"
 #include "cmdr_cmn.hh"
+#include "cmdr_terminal.hh"
 
 
 namespace cmdr {
@@ -195,8 +196,9 @@ namespace cmdr::opt {
         return 0;
     }
 
-    inline void cmd::print_commands(std::ostream &ss, bool grouped) {
+    inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, bool grouped) {
         unused(grouped);
+
         std::set<std::string> keys;
         std::map<std::string, std::string> dotted_key_on_keys;
         for (auto &it : _grouped_commands) {
@@ -209,6 +211,7 @@ namespace cmdr::opt {
                 dotted_key_on_keys.insert({"", it.first});
             }
         }
+
         for (auto &it : dotted_key_on_keys) {
             auto val = _grouped_commands[it.second];
             auto clean_key = it.second.substr(it.first.length());
@@ -219,19 +222,80 @@ namespace cmdr::opt {
                     i++;
                 }
                 if (i > 0)
-                    ss << '[' << clean_key << ']' << std::endl;
+                    ss << ' ' << ' ' << '[' << clean_key << ']' << std::endl;
             }
+
+            int wf = 0, ws = 0, wa = 0, wt = 0, w = 0;
             for (auto &x : val) {
                 if (x->hidden()) continue;
-                ss << "  " << std::setw(43) << std::left << x->title()
-                   << x->descriptions()
+                w = x->title_long().length();
+                if (w > wf) wf = w;
+                w = x->title_short().length();
+                if (w > ws) ws = w;
+                w = 0;
+                for (auto const &t : x->title_aliases()) {
+                    if (w > 0) w += 1;
+                    w += t.length();
+                }
+                if (w > wa) wa = w;
+            }
+
+            wt = wf + 2 + ws + 2 + wa + 2;
+            if (wt < 43) wt = 43;
+
+            for (auto &x : val) {
+                if (x->hidden()) continue;
+                // ss << "  " << std::setw(43) << std::left << x->title();
+                ss << "  " << std::left << std::setfill(' ');
+                if (!x->title_long().empty()) {
+                    w = x->title_long().length();
+                    ss << c.underline().s(x->title_long());
+
+                    if (!x->title_short().empty() || !x->title_aliases().empty()) ss << ", ";
+                    else
+                        ss << "  ";
+
+                    w = wf - w;
+                    if (w > 0) ss << std::setw(w) << ' ';
+                } else
+                    ss << std::setw(wf + 2) << ' ';
+                if (!x->title_short().empty()) {
+                    w = x->title_short().length();
+                    ss << x->title_short();
+                    if (!x->title_aliases().empty()) ss << ", ";
+                    else
+                        ss << "  ";
+                    w = ws - w;
+                    if (w > 0) ss << std::setw(w) << ' ';
+                } else
+                    ss << std::setw(ws + 2) << ' ';
+                if (!x->title_aliases().empty()) {
+                    w = 0;
+                    std::stringstream tmp;
+                    for (auto const &t : x->title_aliases()) {
+                        if (w > 0) {
+                            tmp << ',';
+                        } else
+                            w++;
+                        tmp << t;
+                    }
+                    ss << std::setw(wa) << tmp.str();
+                } else
+                    ss << std::setw(wa) << ' ';
+
+                w = wf + 2 + ws + 2 + wa;
+                ss << std::setw(wt - w) << ' ';
+
+                ss << c.dim().s(x->descriptions())
+                   // << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa
                    << std::endl;
             }
         }
     }
 
-    inline void cmd::print_flags(std::ostream &ss, bool grouped) {
+    inline void cmd::print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, bool grouped) {
         unused(grouped);
+
         std::set<std::string> keys;
         std::map<std::string, std::string> dotted_key_on_keys;
         for (auto &it : _grouped_args) {
@@ -244,6 +308,7 @@ namespace cmdr::opt {
                 dotted_key_on_keys.insert({"", it.first});
             }
         }
+
         for (auto &it : dotted_key_on_keys) {
             auto val = _grouped_args[it.second];
             auto clean_key = it.second.substr(it.first.length());
@@ -254,13 +319,77 @@ namespace cmdr::opt {
                     i++;
                 }
                 if (i > 0)
-                    ss << '[' << clean_key << ']' << std::endl;
+                    ss << ' ' << ' ' << '[' << clean_key << ']' << std::endl;
             }
+
+            int wf = 0, ws = 0, wa = 0, wt = 0, w = 0;
             for (auto &x : val) {
                 if (x->hidden()) continue;
-                ss << "  " << std::setw(43) << std::left << x->title()
-                   << x->descriptions() << x->defaults()
-                   << std::endl;
+                w = x->title_long().length() + 2;
+                if (w > wf) wf = w;
+                w = x->title_short().length() + 1;
+                if (w > ws) ws = w;
+                w = 0;
+                for (auto const &t : x->title_aliases()) {
+                    if (w > 0) w += 1;
+                    w += t.length() + 2;
+                }
+                if (w > wa) wa = w;
+            }
+
+            wt = wf + 2 + ws + 2 + wa + 2;
+            if (wt < 43) wt = 43;
+
+            for (auto &x : val) {
+                if (x->hidden()) continue;
+                ss << "  " << std::left << std::setfill(' ');
+                if (!x->title_long().empty()) {
+                    w = x->title_long().length();
+                    ss << '-' << '-' << c.underline().s(x->title_long());
+
+                    if (!x->title_short().empty() || !x->title_aliases().empty()) ss << ", ";
+                    else
+                        ss << "  ";
+
+                    w = wf - w - 2;
+                    if (w > 0) ss << std::setw(w) << ' ';
+                } else
+                    ss << std::setw(wf + 2) << ' ';
+                if (!x->title_short().empty()) {
+                    w = x->title_short().length();
+                    ss << '-' << x->title_short();
+                    if (!x->title_aliases().empty()) ss << ", ";
+                    else
+                        ss << "  ";
+                    w = ws - w - 1;
+                    if (w > 0) ss << std::setw(w) << ' ';
+                } else
+                    ss << std::setw(ws + 2) << ' ';
+                if (!x->title_aliases().empty()) {
+                    w = 0;
+                    std::stringstream tmp;
+                    for (auto const &t : x->title_aliases()) {
+                        if (w > 0) {
+                            tmp << ',';
+                        } else
+                            w++;
+                        tmp << '-' << '-' << t;
+                    }
+                    ss << std::setw(wa) << tmp.str();
+                } else
+                    ss << std::setw(wa) << ' ';
+
+                w = wf + 2 + ws + 2 + wa;
+                ss << std::setw(wt - w) << ' ';
+
+                ss << c.dim().s(x->descriptions());
+                auto sd = x->defaults();
+                if (!sd.empty())
+                    ss << c.dim().s(sd);
+
+                // ss << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa;
+
+                ss << std::endl;
             }
         }
     }
@@ -336,7 +465,7 @@ namespace cmdr::opt {
         return 0;
     }
 
-    inline void app::print_cmd(std::ostream &ss, cmd *cc, std::string const &app_name, std::string const &exe_name) {
+    inline void app::print_cmd(std::ostream &ss, cmdr::terminal::colors::colorize &c, cmd *cc, std::string const &app_name, std::string const &exe_name) {
         if (!cc->description().empty()) {
             ss << std::endl
                << "DESCRIPTION" << std::endl
@@ -353,11 +482,11 @@ namespace cmdr::opt {
 
         ss << std::endl
            << "COMMANDS" << std::endl;
-        cc->print_commands(ss);
+        cc->print_commands(ss, c);
 
         ss << std::endl
            << "OPTIONS" << std::endl;
-        cc->print_flags(ss);
+        cc->print_flags(ss, c);
 
         unused(app_name);
         unused(exe_name);
@@ -365,6 +494,7 @@ namespace cmdr::opt {
 
     inline void app::print_usages(cmd *start) {
         std::string exe_name = path::executable_name();
+        auto c = cmdr::terminal::colors::colorize::create();
 
         std::stringstream ss;
         ss << _name << ' ' << 'v' << _version;
@@ -373,7 +503,7 @@ namespace cmdr::opt {
         else
             ss << _header << std::endl;
 
-        print_cmd(ss, start ? start : this, _name, exe_name);
+        print_cmd(ss, c, start ? start : this, _name, exe_name);
 
         if (!_tail_line.empty()) {
             ss << std::endl

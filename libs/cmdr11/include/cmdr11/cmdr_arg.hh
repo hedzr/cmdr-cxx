@@ -75,7 +75,8 @@ namespace cmdr::opt {
     bas &title_##mn(const typ &s) { \
         _##mn = s;                  \
         return (*this);             \
-    }
+    }                               \
+    typ const &title_##mn() { return _##mn; }
 #define PROP_SET4(mn, typ)  \
     bas &mn(const typ &s) { \
         _##mn = s;          \

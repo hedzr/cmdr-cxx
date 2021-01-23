@@ -7,6 +7,8 @@
 
 #include "cmdr_arg.hh"
 #include "cmdr_cmn.hh"
+#include "cmdr_terminal.hh"
+
 
 namespace cmdr::opt {
 
@@ -146,8 +148,8 @@ namespace cmdr::opt {
         virtual void post_run() const {}
 
     public:
-        void print_commands(std::ostream &ss, bool grouped = true);
-        void print_flags(std::ostream &ss, bool grouped = true);
+        void print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, bool grouped = true);
+        void print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, bool grouped = true);
 
     }; // class cmd
 

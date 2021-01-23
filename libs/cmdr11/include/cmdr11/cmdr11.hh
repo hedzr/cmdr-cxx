@@ -42,18 +42,18 @@
 #include "cmdr_log.hh"
 #include "cmdr_path.hh"
 #include "cmdr_string.hh"
-#include "cmdr_utils.hh"
 #include "cmdr_terminal.hh"
+#include "cmdr_utils.hh"
 
 #include "cmdr_small_string.hh"
 #include "cmdr_var_t.hh"
 
-#include "cmdr_cmn.hh"
+#include "cmdr_app.hh"
 #include "cmdr_arg.hh"
 #include "cmdr_cmd.hh"
-#include "cmdr_opts.hh"
-#include "cmdr_app.hh"
+#include "cmdr_cmn.hh"
 #include "cmdr_impl.hh"
+#include "cmdr_opts.hh"
 
 
 #endif //CMDR_CXX11_CMDR11_HH

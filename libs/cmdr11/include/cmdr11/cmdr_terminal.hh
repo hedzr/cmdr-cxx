@@ -133,6 +133,7 @@ namespace cmdr::terminal::colors {
         bool _true_color_enabled{true}; // false to fallback to 256-color, or true to enable true-color mode.
         const_chars _cc{};
         std::string _ss{};
+        std::stringstream _stocked_ss{};
 
         static bool _colorful;
         static int _colors;
@@ -141,7 +142,7 @@ namespace cmdr::terminal::colors {
                 _colorful = terminfo::is_colorful();
                 _colors = terminfo::support_colors();
 #if defined(_DEBUG)
-                if(!_colorful) {
+                if (!_colorful) {
                     _colorful = true;
                     _colors = 256;
 #endif
@@ -149,60 +150,10 @@ namespace cmdr::terminal::colors {
             }
         }
 
-    public:
-        static void debug_print() {
-            std::cout << "How many colors: " << _colors << ", " << _colorful << '\n';
-        }
-
-    public:
-        colorize &fg(int c) {
-            assert(c >= 0 && c <= 256);
-            _fg = c;
-            return (*this);
-        }
-        colorize &bg(int c) {
-            assert(c >= 0 && c <= 256);
-            _bg = c;
-            return (*this);
-        }
-
-#define DEF_MODIFIER(what)                  \
-    colorize &what(bool b = true) {         \
-        _st._individual._##what = b;        \
-        return (*this);                     \
-    }                                       \
-    colorize &reset_##what(bool b = true) { \
-        _st._individual._reset_##what = b;  \
-        _st._individual._##what = false;    \
-        return (*this);                     \
-    }
-        DEF_MODIFIER(bold)
-        DEF_MODIFIER(dim)
-        DEF_MODIFIER(italic)
-        DEF_MODIFIER(underline)
-        DEF_MODIFIER(blink)
-        DEF_MODIFIER(rblink)
-        DEF_MODIFIER(reverse)
-        DEF_MODIFIER(hidden)
-        DEF_MODIFIER(crossed)
-#undef DEF_MODIFIER
-
-        colorize &reset_all(bool b = true) {
-            _st._individual._reset_all = b;
-            return (*this);
-        }
-
         [[nodiscard]] std::string modifiers() const {
+#if 0
             std::stringstream ss;
-            if (_st._individual._bold) ss << "1;";
-            if (_st._individual._dim) ss << "2;";
-            if (_st._individual._italic) ss << "3;";
-            if (_st._individual._underline) ss << "4;";
-            if (_st._individual._blink) ss << "5;";
-            if (_st._individual._rblink) ss << "6;";
-            if (_st._individual._reverse) ss << "7;";
-            if (_st._individual._hidden) ss << "8;";
-            if (_st._individual._crossed) ss << "9;";
+            if (_st._individual._reset_all) ss << "0;";
             if (_st._individual._reset_bold) ss << "21;";
             if (_st._individual._reset_dim) ss << "22;";
             if (_st._individual._reset_italic) ss << "23;";
@@ -212,8 +163,57 @@ namespace cmdr::terminal::colors {
             if (_st._individual._reset_reverse) ss << "27;";
             if (_st._individual._reset_hidden) ss << "28;";
             if (_st._individual._reset_crossed) ss << "29;";
-            if (_st._individual._reset_all) ss << "0;";
+            if (_st._individual._bold) ss << "1;";
+            if (_st._individual._dim) ss << "2;";
+            if (_st._individual._italic) ss << "3;";
+            if (_st._individual._underline) ss << "4;";
+            if (_st._individual._blink) ss << "5;";
+            if (_st._individual._rblink) ss << "6;";
+            if (_st._individual._reverse) ss << "7;";
+            if (_st._individual._hidden) ss << "8;";
+            if (_st._individual._crossed) ss << "9;";
             return ss.str();
+#else
+        return _stocked_ss.str();
+#endif
+        }
+
+    public:
+        static void debug_print() {
+            std::cout << "How many colors: " << _colors << ", " << _colorful << '\n';
+        }
+
+    public:
+#define DEF_MODIFIER(what, i)                   \
+    colorize &what(bool b = true) {             \
+        /*_st._individual._##what = b; */       \
+        _stocked_ss << (b ? i : 20 + i) << ';'; \
+        return (*this);                         \
+    }                                           \
+    colorize &reset_##what() {                  \
+        /*_st._individual._reset_##what = b;*/  \
+        /*_st._individual._##what = false;*/    \
+        _stocked_ss << (20 + i) << ';';         \
+        return (*this);                         \
+    }
+        DEF_MODIFIER(bold, 1)
+        DEF_MODIFIER(dim, 2)
+        DEF_MODIFIER(italic, 3)
+        DEF_MODIFIER(underline, 4)
+        DEF_MODIFIER(blink, 5)
+        DEF_MODIFIER(rblink, 6)
+        DEF_MODIFIER(reverse, 7)
+        DEF_MODIFIER(hidden, 8)
+        DEF_MODIFIER(crossed, 9)
+#undef DEF_MODIFIER
+
+        colorize &reset_all(/*bool b = true*/) {
+            // _st._individual._reset_all = b;
+            std::stringstream s;
+            s << "0;";
+            _stocked_ss.swap(s);
+            _fg = _bg = -1;
+            return (*this);
         }
 
         colorize &auto_reset(bool b = true) {
@@ -525,6 +525,27 @@ namespace cmdr::terminal::colors {
             Default = 256,
         };
 
+        colorize &fg(int r, int g, int b) {
+            // assert(c >= 0 && c <= 256);
+            _fg = (r << 16) | (g << 8) | b;
+            return (*this);
+        }
+        colorize &fg(Colors256 color256) {
+            // assert(color256 >= 0 && color256 <= 256);
+            _fg = color256;
+            return (*this);
+        }
+        colorize &bg(int r, int g, int b) {
+            // assert(c >= 0 && c <= 256);
+            _bg = (r << 16) | (g << 8) | b;
+            return (*this);
+        }
+        colorize &bg(Colors256 color256) {
+            // assert(color256 >= 0 && color256 <= 256);
+            _bg = color256;
+            return (*this);
+        }
+
     public:
         // 16-colors
 
@@ -603,27 +624,27 @@ namespace cmdr::terminal::colors {
         };
 
         friend std::ostream &operator<<(std::ostream &os, const enum style o) {
-            os << "\033[" << (int) o << "m";
+            if (_colorful) os << "\033[" << (int) o << "m";
             return os;
         }
         friend std::ostream &operator<<(std::ostream &os, const enum fg o) {
-            os << "\033[" << (int) o << "m";
+            if (_colorful) os << "\033[" << (int) o << "m";
             return os;
         }
         friend std::ostream &operator<<(std::ostream &os, const enum bg o) {
-            os << "\033[" << (int) o << "m";
+            if (_colorful) os << "\033[" << (int) o << "m";
             return os;
         }
         friend std::ostream &operator<<(std::ostream &os, const enum fgB o) {
-            os << "\033[" << (int) o << "m";
+            if (_colorful) os << "\033[" << (int) o << "m";
             return os;
         }
         friend std::ostream &operator<<(std::ostream &os, const enum bgB o) {
-            os << "\033[" << (int) o << "m";
+            if (_colorful) os << "\033[" << (int) o << "m";
             return os;
         }
         friend std::ostream &operator<<(std::ostream &os, const enum reset o) {
-            os << "\033[" << (int) o << ";m";
+            if (_colorful) os << "\033[" << (int) o << ";m";
             return os;
         }
 
@@ -652,24 +673,37 @@ namespace cmdr::terminal::colors {
             return colorize{};
         }
 
+        /**
+         * @brief enable colored text outputting or not.
+         * @param enable_colors
+         */
+        [[maybe_unused]] static void enable(bool enable_colors = true) {
+            _colorful = enable_colors;
+            if (enable_colors && _colors == 0) _colors = 256;
+        }
+
 #define __R(x) (((x) >> 16) & 0xff)
 #define __G(x) (((x) >> 8) & 0xff)
 #define __B(x) (((x)) & 0xff)
         friend std::ostream &operator<<(std::ostream &os, const colorize &o) {
-            os << "\033[" << o.modifiers();
-            if (o._true_color_enabled) {
-                if (o._fg != -1) {
-                    os << "38;2;" << __R(o._fg) << ';' << __G(o._fg) << ';' << __B(o._fg);
-                }
-                if (o._bg != -1) {
-                    os << "48;2;" << __R(o._bg) << ';' << __G(o._bg) << ';' << __B(o._bg);
-                }
-            } else {
-                if (o._fg != 256) {
-                    os << "38;5;" << o._fg;
-                }
-                if (o._bg != 256) {
-                    os << "48;5;" << o._bg;
+            if (_colorful) {
+                os << "\033[" << o.modifiers();
+                if (o._true_color_enabled) {
+                    if (o._fg != -1) {
+                        os << "38;2;" << __R(o._fg) << ';' << __G(o._fg) << ';' << __B(o._fg);
+                        if (o._bg != -1) os << ';';
+                    }
+                    if (o._bg != -1) {
+                        os << "48;2;" << __R(o._bg) << ';' << __G(o._bg) << ';' << __B(o._bg);
+                    }
+                } else {
+                    if (o._fg >= 0 && o._fg < 256) {
+                        os << "38;5;" << o._fg;
+                        if (o._bg >= 0 && o._bg < 256) os << ';';
+                    }
+                    if (o._bg >= 0 && o._bg < 256) {
+                        os << "48;5;" << o._bg;
+                    }
                 }
                 os << 'm';
             }
@@ -680,10 +714,20 @@ namespace cmdr::terminal::colors {
             if (!o._ss.empty())
                 os << o._ss;
 
-            // reset
-            if (o._auto_reset) {
-                os << "\033[0m";
-                // o._st._auto_reset_invoked = true;
+            if (_colorful) {
+                // reset
+                if (o._auto_reset) {
+                    os << "\033[0m";
+
+                    auto xo = const_cast<colorize *>(&o);
+                    xo->_st._i = 0;
+                    xo->_st._individual._auto_reset_invoked = true;
+                    std::stringstream sz;
+                    xo->_stocked_ss.swap(sz);
+                    xo->_cc = nullptr;
+                    xo->_ss.clear();
+                    xo->_fg = xo->_bg = -1;
+                }
             }
             return os;
         }

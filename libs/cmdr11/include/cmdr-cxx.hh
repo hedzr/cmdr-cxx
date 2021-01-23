@@ -7,7 +7,7 @@
 
 #include "cmdr11/cmdr11.hh"
 
-#if defined( __cpp_exceptions )
+#if defined(__cpp_exceptions)
 #include "cmdr11/cmdr_if.hh"
 #endif
 

@@ -5,8 +5,80 @@
 #ifndef CMDR_CXX11_CMDR_TERMINAL_HH
 #define CMDR_CXX11_CMDR_TERMINAL_HH
 
+
+#include <unistd.h>
+
+#include <cstdlib>
+// #include <stdlib.h>
+
+
+namespace cmdr::terminal {
+
+    struct terminfo {
+        //
+        //
+        // see:
+        // https://pubs.opengroup.org/onlinepubs/009695399/functions/isatty.html
+        static bool isatty() { return ::isatty(0); }
+
+        static const char *term() {
+            auto str = std::getenv("TERM");
+            if (!str)
+                return "";
+            return str;
+        }
+
+        static bool is_colorful() {
+#if defined(OS_WIN)
+            return true;
+#else
+            auto str = term();
+            const char *Terms[] = {"ansi", "color", "console", "cygwin", "gnome", "konsole",
+                                   "kterm", "linux", "msys", "putty", "rxvt", "screen",
+                                   "vt100", "xterm", "xterm-256colors", "xterm-color"};
+            return std::any_of(std::begin(Terms), std::end(Terms),
+                               [&](const char *term) {
+                                   return std::strstr(str, term) != nullptr;
+                               });
+#endif
+        }
+
+        static int support_colors() {
+#if defined(OS_WIN)
+            return 256;
+#else
+            auto str = std::getenv("COLORTERM");
+            // const char *str = ::getenv("COLORTERM");
+
+            if (!str) {
+                // in embedded terminal or under clion debugging env, we assume it's a 256-colors terminal/pty
+                return 256;
+            }
+
+            std::string s(str);
+
+            if (s == "truecolor" || s == "24bit") {
+                // std::cout << "COLORTERM = " << s << '\n';
+                return 0x1000000;
+            }
+
+            // int count = std::stoi(str);
+
+            std::istringstream is(s);
+            int count = 8;
+            is >> count;
+            return count;
+#endif
+        }
+    };
+
+} // namespace cmdr::terminal
+
 namespace cmdr::terminal::colors {
 
+    /**
+     * @brief colorize
+     */
     class colorize final {
         // public:
         //     static colorize &instance();
@@ -16,10 +88,15 @@ namespace cmdr::terminal::colors {
         //
         // protected:
     public:
-        colorize()
+        explicit colorize(bool true_color_enabled = true)
             : _fg{}
             , _bg{}
-            , _st{} {}
+            , _st{}
+            , _true_color_enabled(true_color_enabled) {
+            _init();
+            if (_colors <= 256) _true_color_enabled = false;
+            if (_true_color_enabled) _fg = _bg = -1;
+        }
 
     protected:
         int _fg, _bg;
@@ -34,7 +111,7 @@ namespace cmdr::terminal::colors {
                 bool _rblink : 1;    // 6:
                 bool _reverse : 1;   // 7:
                 bool _hidden : 1;    // 8: conceal
-                bool _crossed : 1;   // 9:
+                bool _crossed : 1;   // 9: mac - strikeout
 
                 bool _reset_bold : 1;
                 bool _reset_dim : 1;
@@ -53,8 +130,29 @@ namespace cmdr::terminal::colors {
         } _st;
 
         bool _auto_reset{true};
+        bool _true_color_enabled{true}; // false to fallback to 256-color, or true to enable true-color mode.
         const_chars _cc{};
         std::string _ss{};
+
+        static bool _colorful;
+        static int _colors;
+        static void _init() {
+            if (!_colorful) {
+                _colorful = terminfo::is_colorful();
+                _colors = terminfo::support_colors();
+#if defined(_DEBUG)
+                if(!_colorful) {
+                    _colorful = true;
+                    _colors = 256;
+#endif
+                }
+            }
+        }
+
+    public:
+        static void debug_print() {
+            std::cout << "How many colors: " << _colors << ", " << _colorful << '\n';
+        }
 
     public:
         colorize &fg(int c) {
@@ -132,6 +230,7 @@ namespace cmdr::terminal::colors {
             return (*this);
         }
 
+    public:
         // 256-colors, 88-colors
 
         enum Colors256 {
@@ -426,6 +525,7 @@ namespace cmdr::terminal::colors {
             Default = 256,
         };
 
+    public:
         // 16-colors
 
         enum class style {
@@ -527,6 +627,24 @@ namespace cmdr::terminal::colors {
             return os;
         }
 
+
+    public:
+        // normal mode: 256-colors or true-colors.
+        // In normal mode, the instance of colorize need to be create at first. for example:
+        //
+        //    using namespace cmdr::terminal::colors;
+        //    auto c = colorize::create();
+        //    std::cout << c.fg(c.Purple3).bg(c.Default).underline().bold().s("some text") << '\n';
+        //
+        //  In 16-colors mode, you could print out the colored text directly, but you have to reset fg and bg yourself.
+        //  The sample is:
+        //
+        //    std::cout << colorize::style::underline << colorize::fg::red << "Hello, Colorful World!" << std::endl;
+        //    std::cout << colorize::reset::all << "Here I'm!" << std::endl;
+        //    std::cout << "END.\n\n";
+        //
+        //  The two modes above can be used at the same time.
+        //
         static colorize create() {
             return colorize{};
         }
@@ -534,31 +652,53 @@ namespace cmdr::terminal::colors {
             return colorize{};
         }
 
+#define __R(x) (((x) >> 16) & 0xff)
+#define __G(x) (((x) >> 8) & 0xff)
+#define __B(x) (((x)) & 0xff)
         friend std::ostream &operator<<(std::ostream &os, const colorize &o) {
             os << "\033[" << o.modifiers();
-            if (o._fg != 256) {
-                os << "38;5;" << o._fg;
+            if (o._true_color_enabled) {
+                if (o._fg != -1) {
+                    os << "38;2;" << __R(o._fg) << ';' << __G(o._fg) << ';' << __B(o._fg);
+                }
+                if (o._bg != -1) {
+                    os << "48;2;" << __R(o._bg) << ';' << __G(o._bg) << ';' << __B(o._bg);
+                }
+            } else {
+                if (o._fg != 256) {
+                    os << "38;5;" << o._fg;
+                }
+                if (o._bg != 256) {
+                    os << "48;5;" << o._bg;
+                }
+                os << 'm';
             }
-            if (o._bg != 256) {
-                os << "48;5;" << o._bg;
-            }
-            os << 'm';
+
+            // text
             if (o._cc != nullptr)
                 os << o._cc; // << " // " << o.modifiers();
             if (!o._ss.empty())
                 os << o._ss;
+
+            // reset
             if (o._auto_reset) {
                 os << "\033[0m";
                 // o._st._auto_reset_invoked = true;
             }
             return os;
         }
+#undef __R
+#undef __G
+#undef __B
     };
 
     // inline colorize &colorize::instance() {
     //     static const std::unique_ptr<colorize> instance{new colorize{}};
     //     return *instance;
     // }
+
+    inline bool colorize::_colorful;
+    inline int colorize::_colors;
 
 
 } // namespace cmdr::terminal::colors

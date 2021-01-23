@@ -128,6 +128,8 @@ int main(int argc, char *argv[]) {
         std::cout << colorize::reset::all << "Here I'm!" << std::endl;
         std::cout << "END.\n\n";
 
+        std::cout << "How many colors: " << cmdr::terminal::terminfo::support_colors() << '\n';
+        std::cout << "Terminal: " << cmdr::terminal::terminfo::term() << '\n';
         return cli.run(argc, argv);
 
     } catch (std::exception &e) {

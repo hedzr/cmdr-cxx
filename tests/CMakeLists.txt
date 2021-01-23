@@ -25,7 +25,7 @@ set(PROJECT_ARCHIVE_NAME ${PROJECT_NAME}s-${PROJECT_VERSION})
     FetchContent_Declare(
             Catch2
             GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-            GIT_TAG        v2.13.1)
+            GIT_TAG        v2.13.3)
 
     FetchContent_MakeAvailable(Catch2)
 #endif ()
@@ -88,6 +88,7 @@ define_test_program(chrono chrono_test.cc)
 define_test_program(chrono-literals chrono_literals_test.cc)
 define_test_program(inplace-constructions inplace_constructions.cc)
 define_test_program(store-c2 c2_store.cc)
+define_test_program(app2-c2 app2.cc)
 
 
 #if (BUILD_TESTING)

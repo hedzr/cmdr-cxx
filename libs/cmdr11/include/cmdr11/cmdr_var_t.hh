@@ -521,13 +521,13 @@ namespace cmdr::opt::vars {
 
 
     template<typename holderT = streamable_any>
-    class store {
+    class store_base {
     public:
         typedef var_t<holderT> var_type;
 
     public:
-        store() = default;
-        ~store() = default;
+        store_base() = default;
+        ~store_base() = default;
 
     public:
         holderT &get(const_chars key) {
@@ -560,12 +560,12 @@ namespace cmdr::opt::vars {
             os << v;
         }
 
-        friend std::ostream &operator<<(std::ostream &output, store const &v) {
+        friend std::ostream &operator<<(std::ostream &output, store_base const &v) {
             v.format(output, v._root);
             return output;
         }
 
-        friend std::istream &operator>>(std::istream &input, store &v) {
+        friend std::istream &operator>>(std::istream &input, store_base &v) {
             input >> v._root;
             return input;
         }
@@ -573,6 +573,10 @@ namespace cmdr::opt::vars {
     private:
         var_type _root;
     }; // class store
+
+
+    typedef cmdr::opt::vars::store_base<> store;
+
 
 } // namespace cmdr::opt::vars
 

@@ -5,84 +5,91 @@
 #ifndef CMDR_CXX11_CMDR_OPT_HH
 #define CMDR_CXX11_CMDR_OPT_HH
 
+#include "cmdr_arg.hh"
+#include "cmdr_cmd.hh"
+#include "cmdr_cmn.hh"
 
 namespace cmdr::opt {
 
     namespace opts {
-        class opt : public obj {
-            arg _arg;
+
+        class opt_base : public obj {
+        public:
+            opt_base() = default;
+            virtual ~opt_base() = default;
 
         public:
-            opt() = default;
-
-            virtual ~opt() = default;
-
-        public:
-            virtual option operator()() const {
+            virtual details::option operator()() const {
                 return [this](cmd &a) {
                     a += _arg;
                 };
             }
 
-            [[nodiscard]] virtual option get() const {
+            [[nodiscard]] virtual details::option get() const {
                 return [this](cmd &a) {
                     a += _arg;
                 };
             }
 
+            explicit operator arg() const { return _arg; }
+            [[nodiscard]] const arg &underlying() const { return _arg; }
+
         public:
-            opt &titles(const_chars title_long) {
+            opt_base &titles(const_chars title_long) {
                 _arg.titles(title_long);
                 return (*this);
             }
 
-            opt &titles(const_chars title_long, const_chars title_short) {
+            opt_base &titles(const_chars title_long, const_chars title_short) {
                 _arg.titles(title_long, title_short);
                 return (*this);
             }
 
             template<typename... T>
-            opt &titles(const_chars title_long, const_chars title_short, T... aliases) {
+            opt_base &titles(const_chars title_long, const_chars title_short, T... aliases) {
                 _arg.titles(title_long, title_short, aliases...);
                 return (*this);
             }
 
-            opt &description(const_chars desc, const_chars long_desc = nullptr, const_chars examples = nullptr) {
+            opt_base &description(const_chars desc, const_chars long_desc = nullptr, const_chars examples = nullptr) {
                 _arg.description(desc, long_desc, examples);
                 return (*this);
             }
 
-            opt &placeholder(const_chars s) {
+            opt_base &placeholder(const_chars s) {
                 _arg.placeholder(s);
                 return (*this);
             }
 
-            opt &default_value(const support_types &v) {
+            opt_base &default_value(const support_types &v) {
                 _arg.default_value(v);
                 return (*this);
             }
-        };
+
+        private:
+            arg _arg;
+        }; // class opt
 
         class cmd_base : public obj {
-            cmd _cmd;
-
         public:
             cmd_base() = default;
-
             virtual ~cmd_base() = default;
 
         public:
-            virtual option operator()() const {
-                return [this](cmd &a) {
+            virtual details::option operator()() const {
+                return [this](class cmd &a) {
                     a += _cmd;
                 };
             }
 
-            [[nodiscard]] virtual option get() const {
-                return [this](cmd &a) {
+            [[nodiscard]] virtual details::option get() const {
+                return [this](class cmd &a) {
                     a += _cmd;
                 };
             }
+
+            explicit operator cmd() const { return _cmd; }
+            [[nodiscard]] const cmd &underlying() const { return _cmd; }
 
         public:
             cmd_base &titles(const_chars title_long) {
@@ -106,39 +113,62 @@ namespace cmdr::opt {
                 return (*this);
             }
 
-            //            cmd_base &add_opt(opt &&opt_) {
-            //                opt_(_cmd);
-            //                return (*this);
-            //            }
-
-            cmd_base &option(const option &opt_) {
+            cmd_base &opt(const details::option &opt_) {
                 _cmd.option(opt_);
                 return (*this);
             }
-        };
-    } // namespace opts
+            cmd_base &option(const details::option &opt_) {
+                _cmd.option(opt_);
+                return (*this);
+            }
 
-    class opt_dummy : public opts::opt {
+        private:
+            class cmd _cmd;
+        }; // class cmd_base
+    }      // namespace opts
+
+
+    //
+    //
+    //
+
+
+    class opt_dummy : public opts::opt_base {
     public:
         opt_dummy() = default;
-
         ~opt_dummy() override = default;
     };
 
     class opt_subcmd : public opts::cmd_base {
     public:
         opt_subcmd() = default;
-
         ~opt_subcmd() override = default;
     };
 
-    class opt_int : public opts::opt {
+    /**
+     * @brief opt_new is a generic options definer
+     */
+    template<class T>
+    class opt_new : public opts::opt_base {
     public:
+        opt_new() = default;
+        explicit opt_new(const T &default_value) {
+            this->default_value(default_value);
+        }
+        ~opt_new() override = default;
     };
 
-    class opt_string : public opts::opt {
-    public:
-    };
+#define DEFINE_OPT_BY_TYPE(typ)               \
+    class opt_##typ : public opts::opt_base { \
+    public:                                   \
+        opt_##typ() = default;                \
+        ~opt_##typ() override = default;      \
+    }
+
+    DEFINE_OPT_BY_TYPE(bool);
+    DEFINE_OPT_BY_TYPE(int);
+    DEFINE_OPT_BY_TYPE(string);
+
 
 } // namespace cmdr::opt
 

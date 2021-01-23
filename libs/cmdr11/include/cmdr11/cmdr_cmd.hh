@@ -5,71 +5,47 @@
 #ifndef CMDR_CXX11_CMDR_CMD_HH
 #define CMDR_CXX11_CMDR_CMD_HH
 
-#include <list>
-#include <unordered_map>
-
+#include "cmdr_arg.hh"
+#include "cmdr_cmn.hh"
 
 namespace cmdr::opt {
 
-    class arg;
-
-    typedef std::list<arg> arg_list;
-    typedef std::list<arg *> arg_ptrs;
-    typedef std::unordered_map<std::string, arg_ptrs> grouped_arg_list;
-
-    class cmd;
-
-    typedef std::list<cmd> cmd_list;
-    typedef std::list<cmd *> cmd_ptrs;
-    typedef std::unordered_map<std::string, cmd_ptrs> grouped_cmd_list;
-
-    typedef std::function<void(cmd &)> option; // void (*option)(app &a);
-
-    class cmd : public obj {
+    /**
+     * @brief A command or sub-command
+     */
+    class cmd : public bas {
     protected:
-        std::string _long;
-        std::string _short;
-        string_array _aliases;
-        std::string _desc_long;
-        std::string _description;
-        std::string _examples;
-        std::string _group{};
+        details::arg_list _all_args{};
+        details::grouped_arg_list _grouped_args{{UNSORTED_GROUP, details::arg_pointers{}}};
+        details::indexed_args _indexed_args{};
+        details::cmd_list _all_commands{};
+        details::grouped_cmd_list _grouped_commands{{UNSORTED_GROUP, details::cmd_pointers{}}};
+        details::indexed_commands _indexed_commands{};
 
-        arg_list _all_args{};
-        grouped_arg_list _grouped_args{{UNSORTED_GROUP, arg_ptrs{}}};
-        cmd_list _all_cmds{};
-        grouped_cmd_list _grouped_cmds{{UNSORTED_GROUP, cmd_ptrs{}}};
+        cmd *_last_added_command;
+        arg *_last_added_arg;
 
     public:
         cmd() = default;
-
-        virtual ~cmd() = default;
-
-        cmd(const cmd &o) { _copy(o); }
-
+        ~cmd() override = default;
+        cmd(const cmd &o)
+            : bas(o) { _copy(o); }
         cmd &operator=(const cmd &o) {
             _copy(o);
             return (*this);
         }
 
         void _copy(const cmd &o) {
-            __COPY(_long);
-            __COPY(_short);
-            __COPY(_aliases);
-            __COPY(_desc_long);
-            __COPY(_description);
-            __COPY(_examples);
-            __COPY(_group);
+            bas::_copy(o);
 
             __COPY(_all_args);
             __COPY(_grouped_args);
-            __COPY(_all_cmds);
-            __COPY(_grouped_cmds);
-        }
-
-        [[nodiscard]] bool valid() const {
-            if (_long.empty()) return false;
-            return true;
+            __COPY(_indexed_args);
+            __COPY(_all_commands);
+            __COPY(_grouped_commands);
+            __COPY(_indexed_commands);
+            __COPY(_last_added_command);
+            __COPY(_last_added_arg);
         }
 
     public:
@@ -85,124 +61,96 @@ namespace cmdr::opt {
     cmd &title_##mn(const_chars s) { \
         if (s) _##mn = s;            \
         return (*this);              \
-    }
+    }                                \
+    const std::string &title_##mn() const { return _##mn; }
 #define PROP_SET3(mn, typ)          \
     cmd &title_##mn(const typ &s) { \
         _##mn = s;                  \
         return (*this);             \
     }
 
-        PROP_SET2(long)
-
-        PROP_SET2(short)
-
-        PROP_SET3(aliases, string_array)
-
-        // PROP_SET(description)
-
-        PROP_SET(examples)
-
-        PROP_SET(group)
-
-        PROP_SET(desc_long)
+        //
 
 #undef PROP_SET
 #undef PROP_SET2
 #undef PROP_SET3
 
-    public:
-        [[nodiscard]] std::string titles() const {
-            std::stringstream ss;
-            if (!_long.empty()) {
-                ss << _long;
-            }
-            if (!_short.empty()) {
-                if (!_long.empty())
-                    ss << ',' << ' ';
-                ss << _short;
-            }
-            for (auto &x : _aliases) {
-                ss << x;
-            }
-            return ss.str();
-        }
-
-        [[nodiscard]] std::string descriptions() const {
-            std::stringstream ss;
-            ss << _description;
-            return ss.str();
-        }
-
-        [[nodiscard]] const std::string &group_name() const {
-            return _group;
-        }
+        [[nodiscard]] cmd *last_added_command() const { return _last_added_command; }
+        [[nodiscard]] arg *last_added_arg() const { return _last_added_arg; }
 
     public:
-        virtual cmd &description(const_chars desc, const_chars long_desc = nullptr, const_chars examples = nullptr) {
-            if (desc)
-                _description = desc;
-            if (long_desc)
-                _desc_long = long_desc;
-            if (examples)
-                _examples = examples;
-            return (*this);
-        }
-
-        virtual cmd &titles(const_chars title_long) {
-            if (title_long) this->_long = title_long;
-            return (*this);
-        }
-
-        virtual cmd &titles(const_chars title_long, const_chars title_short) {
-            if (title_long) this->_long = title_long;
-            if (title_short) this->_short = title_short;
-            return (*this);
-        }
-
-        template<typename... T>
-        cmd &titles(const_chars title_long, const_chars title_short, T... title_aliases) {
-            if (title_long) this->_long = title_long;
-            if (title_short) this->_short = title_short;
-            if (sizeof...(title_aliases) > 0) {
-                this->aliases(title_aliases...);
-            }
-            // // must_print("%s\n", aliases...);
-            // for (const_chars x : {aliases...}) {
-            //     this->_aliases.push_back(x);
-            // }
-            return (*this);
-        }
-
-        template<typename... T>
-        cmd &aliases(T... title_aliases) {
-            if (sizeof...(title_aliases) > 0) {
-                _aliases.push_back({title_aliases...});
-            }
-            //for (const_chars x : {title_aliases...}) {
-            //    this->_aliases.push_back(x);
-            //}
-            return (*this);
-        }
+        static bool is_leading_switch_char(const_chars flag) { return (flag[0] == '-' || flag[0] == '/'); }
+        static bool is_leading_switch_char(const std::string &flag) { return (flag[0] == '-' || flag[0] == '/'); }
 
     public:
         virtual cmd &operator+(const arg &a);
-
         virtual cmd &operator+=(const arg &a);
-
         virtual cmd &operator+(const cmd &a);
-
         virtual cmd &operator+=(const cmd &a);
 
+        friend cmd &operator+(cmd &lhs, const opts::cmd_base &rhs);
+        friend cmd &operator+=(cmd &lhs, const opts::cmd_base &rhs);
+        friend cmd &operator+(cmd &lhs, const opts::opt_base &rhs);
+        friend cmd &operator+=(cmd &lhs, const opts::opt_base &rhs);
+
+        /**
+         * @brief return the matched arg/flag object or null_arg if not found.
+         * To ensure the return obj is a valid one, use [#ar.valid()]
+         * @param long_title
+         * @return
+         */
+        arg &operator[](const_chars long_title);
+        /**
+         * @brief return the matched arg/flag object or null_arg if not found.
+         * To ensure the return obj is a valid one, use [#arg.valid()]
+         * @param long_title
+         * @return
+         */
+        const arg &operator[](const_chars long_title) const;
+        /**
+         * @brief return the matched sub-command object or null_command if not found.
+         * To ensure the return obj is a valid one, use [#cmd.valid()]
+         * @param long_title
+         * @return
+         */
+        cmd &operator()(const_chars long_title);
+        /**
+         * @brief return the matched sub-command object or null_command if not found.
+         * To ensure the return obj is a valid one, use [#cmd.valid()]
+         * @param long_title
+         * @return
+         */
+        const cmd &operator()(const_chars long_title) const;
+
+        static cmd &null_command() {
+            static cmd c;
+            return c;
+        }
+        static arg &null_arg() {
+            static arg c;
+            return c;
+        }
+
     public:
-        virtual cmd &option(const option &opt) {
-            opt(*this);
+        virtual cmd &opt(const details::option &opt_) {
+            opt_(*this);
+            return (*this);
+        }
+        virtual cmd &option(const details::option &opt_) {
+            opt_(*this);
             return (*this);
         }
 
         virtual int run(int argc, char *argv[]);
 
         virtual void post_run() const {}
-    };
+
+    public:
+        void print_commands(std::ostream &ss, bool grouped = true);
+        void print_flags(std::ostream &ss, bool grouped = true);
+
+    }; // class cmd
+
 } // namespace cmdr::opt
 
 

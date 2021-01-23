@@ -16,7 +16,10 @@
 
 namespace cmdr::opt {
 
-    class arg : public obj {
+    /**
+     * @brief base class for command/flag.
+     */
+    class bas : public obj {
     protected:
         std::string _long;
         std::string _short;
@@ -24,22 +27,25 @@ namespace cmdr::opt {
         std::string _desc_long;
         std::string _description;
         std::string _examples;
-        std::string _placeholder;
-        std::string _group, _toggle_group;
-        support_types _default;
+        std::string _group;
+        bool _hidden;
 
     public:
-        arg() = default;
-        ~arg() = default;
-
-        arg(const arg &o) { _copy(o); }
-
-        arg &operator=(const arg &o) {
+        bas() = default;
+        ~bas() override = default;
+        bas(const bas &o) { _copy(o); }
+        bas &operator=(const bas &o) {
             _copy(o);
             return (*this);
         }
 
-        void _copy(const arg &o) {
+        [[nodiscard]] bool valid() const {
+            if (_long.empty()) return false;
+            return true;
+        }
+
+    protected:
+        void _copy(const bas &o) {
             __COPY(_long);
             __COPY(_short);
             __COPY(_aliases);
@@ -47,14 +53,169 @@ namespace cmdr::opt {
             __COPY(_description);
             __COPY(_examples);
             __COPY(_group);
+            __COPY(_hidden);
+        }
+
+    public:
+#undef PROP_SET
+#undef PROP_SET2
+#undef PROP_SET3
+#define PROP_SET(mn)         \
+    bas &mn(const_chars s) { \
+        if (s) _##mn = s;    \
+        return (*this);      \
+    }
+#define PROP_SET2(mn)                \
+    bas &title_##mn(const_chars s) { \
+        if (s) _##mn = s;            \
+        return (*this);              \
+    }                                \
+    const std::string &title_##mn() const { return _##mn; }
+#define PROP_SET3(mn, typ)          \
+    bas &title_##mn(const typ &s) { \
+        _##mn = s;                  \
+        return (*this);             \
+    }
+#define PROP_SET4(mn, typ)  \
+    bas &mn(const typ &s) { \
+        _##mn = s;          \
+        return (*this);     \
+    }                       \
+    typ const &mn() { return _##mn; }
+
+        PROP_SET2(long)
+        PROP_SET2(short)
+        PROP_SET3(aliases, string_array)
+        PROP_SET(examples)
+        PROP_SET(group)
+        // PROP_SET(description)
+        PROP_SET(desc_long)
+        PROP_SET4(hidden, bool)
+
+#undef PROP_SET
+#undef PROP_SET2
+#undef PROP_SET3
+#undef PROP_SET4
+
+    public:
+        [[nodiscard]] virtual std::string title() const {
+            std::stringstream ss;
+            if (!_long.empty()) {
+                ss << _long;
+            }
+            if (!_short.empty()) {
+                if (ss.tellp() > 0)
+                    ss << ',' << ' ';
+                ss << _short;
+            }
+            auto sp = " ";
+            for (auto &x : _aliases) {
+                if (ss.tellp() > 0)
+                    ss << ',' << sp, sp = "";
+                ss << x;
+            }
+            return ss.str();
+        }
+
+        [[nodiscard]] virtual std::string descriptions() const {
+            std::stringstream ss;
+            ss << _description;
+            return ss.str();
+        }
+
+        [[nodiscard]] virtual std::string group_name() const {
+            std::stringstream ss;
+            ss << _group;
+            return ss.str();
+        }
+
+    public:
+        [[nodiscard]] std::string const &description() const {
+            if (_description.empty())
+                return _desc_long;
+            return _description;
+        }
+        [[nodiscard]] std::string const &examples() const {
+            return _examples;
+        }
+        bas &description(const_chars desc, const_chars long_desc = nullptr, const_chars examples = nullptr) {
+            if (desc)
+                _description = desc;
+            if (long_desc)
+                _desc_long = long_desc;
+            if (examples)
+                _examples = examples;
+            return (*this);
+        }
+
+        bas &titles(const_chars title_long) {
+            if (title_long) this->_long = title_long;
+            return (*this);
+        }
+
+        // bas &titles(const_chars title_long, const_chars title_short) {
+        //     if (title_long) this->_long = title_long;
+        //     if (title_short) this->_short = title_short;
+        //     return (*this);
+        // }
+
+        template<typename... T>
+        bas &titles(const_chars title_long, const_chars title_short, T... title_aliases) {
+            if (title_long) this->_long = title_long;
+            if (title_short) this->_short = title_short;
+            if (sizeof...(title_aliases) > 0) {
+                this->aliases(title_aliases...);
+            }
+
+            // // must_print("%s\n", aliases...);
+            // for (const_chars x : {aliases...}) {
+            //     this->_aliases.push_back(x);
+            // }
+            return (*this);
+        }
+
+        template<typename... T>
+        bas &aliases(T... title_aliases) {
+            (this->_aliases.push_back(title_aliases), ...);
+            // if (sizeof...(title_aliases) > 0) {
+            //     // append_to_vector(_aliases, title_aliases...);
+            //     for (auto &&x : {title_aliases...}) {
+            //         this->_aliases.push_back(x);
+            //     }
+            // }
+            return (*this);
+        }
+    }; // class bas
+
+
+    /**
+     * @brief A flag, such as: '--help', ....
+     */
+    class arg : public bas {
+    protected:
+        std::string _placeholder;
+        std::string _toggle_group;
+        support_types _default;
+
+        // friend class app;
+
+    public:
+        arg() = default;
+        ~arg() override = default;
+        arg(const arg &o)
+            : bas(o) { _copy(o); }
+        arg &operator=(const arg &o) {
+            _copy(o);
+            return (*this);
+        }
+
+    protected:
+        void _copy(const arg &o) {
+            bas::_copy(o);
+
             __COPY(_toggle_group);
             __COPY(_placeholder);
             __COPY(_default);
-        }
-
-        [[nodiscard]] bool valid() const {
-            if (_long.empty()) return false;
-            return true;
         }
 
     public:
@@ -70,33 +231,22 @@ namespace cmdr::opt {
     arg &title_##mn(const_chars s) { \
         if (s) _##mn = s;            \
         return (*this);              \
-    }
+    }                                \
+    const std::string &title_##mn() const { return _##mn; }
 #define PROP_SET3(mn, typ)          \
     arg &title_##mn(const typ &s) { \
         _##mn = s;                  \
         return (*this);             \
     }
 
-        PROP_SET2(long)
-
-        PROP_SET2(short)
-
-        PROP_SET3(aliases, string_array)
-        // PROP_SET(description)
-        PROP_SET(examples)
-
-        PROP_SET(group)
-
         PROP_SET(toggle_group)
-
-        PROP_SET(desc_long)
 
 #undef PROP_SET
 #undef PROP_SET2
 #undef PROP_SET3
 
     public:
-        [[nodiscard]] std::string titles() const {
+        [[nodiscard]] std::string title() const override {
             std::stringstream ss;
             if (!_long.empty()) {
                 ss << '-' << '-' << _long;
@@ -105,31 +255,26 @@ namespace cmdr::opt {
                 }
             }
             if (!_short.empty()) {
-                if (!_long.empty())
+                if (ss.tellp() > 0)
                     ss << ',' << ' ';
                 ss << '-' << _short;
             }
+            auto sp = " ";
             for (auto &x : _aliases) {
-                ss << ',' << '-' << '-' << x;
+                if (ss.tellp() > 0)
+                    ss << ',' << sp, sp = "";
+                ss << '-' << '-' << x;
             }
             return ss.str();
         }
 
-        [[nodiscard]] std::string descriptions() const {
+        [[nodiscard]] std::string descriptions() const override {
             std::stringstream ss;
             ss << _description;
             return ss.str();
         }
 
-        [[nodiscard]] std::string defaults() const {
-            std::stringstream ss;
-            if (!std::holds_alternative<std::monostate>(_default)) {
-                ss << ' ' << '[' << "DEFAULT=" << variant_to_string(_default) << ']';
-            }
-            return ss.str();
-        }
-
-        [[nodiscard]] std::string group_name() const {
+        [[nodiscard]] std::string group_name() const override {
             std::stringstream ss;
             if (_group.empty())
                 ss << _toggle_group;
@@ -138,11 +283,20 @@ namespace cmdr::opt {
             return ss.str();
         }
 
-        [[nodiscard]] const std::string &toggle_group_name() const {
+    public:
+        [[nodiscard]] virtual std::string defaults() const {
+            std::stringstream ss;
+            if (!std::holds_alternative<std::monostate>(_default)) {
+                ss << ' ' << '[' << "DEFAULT=" << variant_to_string(_default) << ']';
+            }
+            return ss.str();
+        }
+
+        [[nodiscard]] virtual const std::string &toggle_group_name() const {
             return _toggle_group;
         }
 
-        [[nodiscard]] bool is_toggleable() const { return !_toggle_group.empty(); }
+        [[nodiscard]] virtual bool is_toggleable() const { return !_toggle_group.empty(); }
 
     public:
         arg &default_value(const support_types &v) {
@@ -150,57 +304,11 @@ namespace cmdr::opt {
             return (*this);
         }
 
-        arg &description(const_chars desc, const_chars long_desc = nullptr, const_chars examples = nullptr) {
-            if (desc)
-                _description = desc;
-            if (long_desc)
-                _desc_long = long_desc;
-            if (examples)
-                _examples = examples;
-            return (*this);
-        }
-
         arg &placeholder(const_chars s) {
             if (s) _placeholder = s;
             return (*this);
         }
-
-        arg &titles(const_chars title_long) {
-            if (title_long) this->_long = title_long;
-            return (*this);
-        }
-
-        arg &titles(const_chars title_long, const_chars title_short) {
-            if (title_long) this->_long = title_long;
-            if (title_short) this->_short = title_short;
-            return (*this);
-        }
-
-        template<typename... T>
-        arg &titles(const_chars title_long, const_chars title_short, T... title_aliases) {
-            if (title_long) this->_long = title_long;
-            if (title_short) this->_short = title_short;
-            if (sizeof...(title_aliases) > 0) {
-                this->aliases(title_aliases...);
-            }
-            // // must_print("%s\n", aliases...);
-            // for (const_chars x : {aliases...}) {
-            //     this->_aliases.push_back(x);
-            // }
-            return (*this);
-        }
-
-        template<typename... T>
-        arg &aliases(T... title_aliases) {
-            if (sizeof...(title_aliases) > 0) {
-                _aliases.push_back({title_aliases...});
-            }
-            //for (const_chars x : {title_aliases...}) {
-            //    this->_aliases.push_back(x);
-            //}
-            return (*this);
-        }
-    };
+    }; // class arg
 
 } // namespace cmdr::opt
 

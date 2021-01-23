@@ -34,7 +34,7 @@ int main() {
 
     using namespace std::chrono_literals;
 
-    cmdr::opt::vars::store<> store;
+    cmdr::opt::vars::store_base<> store;
     store.set("app.server.tls.enabled", true);
     store.set("app.server.tls.ca.cert", "ca.cer");
     store.set("app.server.tls.server.cert", "server.cer");

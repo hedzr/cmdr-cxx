@@ -5,8 +5,10 @@
 #ifndef CMDR_CXX11_CMDR_APP_HH
 #define CMDR_CXX11_CMDR_APP_HH
 
+#include "cmdr_arg.hh"
 #include "cmdr_cmd.hh"
-#include <list>
+#include "cmdr_cmn.hh"
+#include "cmdr_opts.hh"
 
 
 namespace cmdr::opt {
@@ -25,6 +27,9 @@ namespace cmdr::opt {
         std::string _tail_line;
         // std::string _examples;
 
+        //
+        cmdr::opt::vars::store _store;
+
     private:
         app() = default;
 
@@ -38,17 +43,6 @@ namespace cmdr::opt {
     public:
         ~app() override = default;
 
-        app &titles(const_chars title_long) override {
-            throw std::runtime_error("app::titles(...) is meaningless");
-            unused(title_long);
-        }
-
-        cmd &titles(const_chars title_long, const_chars title_short) override {
-            throw std::runtime_error("app::titles(...) is meaningless");
-            unused(title_long);
-            unused(title_short);
-        }
-
     public:
 #undef PROP_SET
 #define PROP_SET(mn)         \
@@ -59,18 +53,17 @@ namespace cmdr::opt {
     }
 
         PROP_SET(name)
-
         PROP_SET(version)
-
         PROP_SET(author)
-
         PROP_SET(copyright)
-
         PROP_SET(header)
         // PROP_SET(description)
         // PROP_SET(examples)
 
 #undef PROP_SET
+
+        [[nodiscard]] cmdr::opt::vars::store const &store() const { return _store; }
+        cmdr::opt::vars::store &store() { return _store; }
 
     public:
         /**
@@ -114,7 +107,7 @@ namespace cmdr::opt {
         }
 
     public:
-        void dummy() {}
+        [[maybe_unused]] void dummy() {}
 
     public:
         app &operator+(const arg &a) override;
@@ -127,7 +120,8 @@ namespace cmdr::opt {
         [[nodiscard]] cmd *command_hit() const { return _cmd_hit; }
 
     private:
-        void print_usages();
+        void print_usages(cmd* start = nullptr);
+        void print_cmd(std::ostream& ss, cmd* cc, std::string const& app_name, std::string const& exe_name);
 
     private:
         int _help_hit{};

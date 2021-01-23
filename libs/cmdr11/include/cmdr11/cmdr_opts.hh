@@ -16,7 +16,16 @@ namespace cmdr::opt {
         class opt_base : public obj {
         public:
             opt_base() = default;
-            virtual ~opt_base() = default;
+            ~opt_base() override = default;
+            template<typename A, typename... Args,
+                     std::enable_if_t<
+                             std::is_constructible<arg, A, Args...>::value &&
+                                     !std::is_same<std::decay_t<A>, opt_base>::value,
+                             int> = 0>
+            explicit opt_base(A &&a0, Args &&...args)
+                : _arg(std::forward<A>(a0), std::forward<Args>(args)...) {}
+            explicit opt_base(arg &&v)
+                : _arg(std::move(v)) {}
 
         public:
             virtual details::option operator()() const {
@@ -56,6 +65,16 @@ namespace cmdr::opt {
                 return (*this);
             }
 
+            opt_base &group(const_chars s) {
+                _arg.group(s);
+                return (*this);
+            }
+
+            opt_base &toggle_group(const_chars s) {
+                _arg.toggle_group(s);
+                return (*this);
+            }
+
             opt_base &placeholder(const_chars s) {
                 _arg.placeholder(s);
                 return (*this);
@@ -66,14 +85,21 @@ namespace cmdr::opt {
                 return (*this);
             }
 
+            template<typename... T>
+            opt_base &env_vars(T... args) {
+                // (this->_env_vars.push_back(title_aliases), ...);
+                _arg.env_vars(args...);
+                return (*this);
+            }
+
         private:
             arg _arg;
-        }; // class opt
+        }; // class opt_base
 
         class cmd_base : public obj {
         public:
             cmd_base() = default;
-            virtual ~cmd_base() = default;
+            ~cmd_base() override = default;
 
         public:
             virtual details::option operator()() const {
@@ -110,6 +136,11 @@ namespace cmdr::opt {
 
             cmd_base &description(const_chars desc, const_chars long_desc = nullptr, const_chars examples = nullptr) {
                 _cmd.description(desc, long_desc, examples);
+                return (*this);
+            }
+
+            cmd_base &group(const_chars s) {
+                _cmd.group(s);
                 return (*this);
             }
 
@@ -156,6 +187,21 @@ namespace cmdr::opt {
             this->default_value(default_value);
         }
         ~opt_new() override = default;
+    };
+
+    class opt : public opts::opt_base {
+    public:
+        opt() = default;
+        ~opt() override = default;
+        template<typename A, typename... Args,
+                std::enable_if_t<
+                        std::is_constructible<arg, A, Args...>::value &&
+                        !std::is_same<std::decay_t<A>, opt>::value,
+                        int> = 0>
+        explicit opt(A &&a0, Args &&...args)
+        : opts::opt_base(std::forward<A>(a0), std::forward<Args>(args)...) {}
+        explicit opt(arg &&v)
+        : opts::opt_base(std::move(v)) {}
     };
 
 #define DEFINE_OPT_BY_TYPE(typ)               \

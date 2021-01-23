@@ -64,13 +64,14 @@ namespace cmdr::opt {
     bas &mn(const_chars s) { \
         if (s) _##mn = s;    \
         return (*this);      \
-    }
+    }                        \
+    std::string const &mn() const { return _##mn; }
 #define PROP_SET2(mn)                \
     bas &title_##mn(const_chars s) { \
         if (s) _##mn = s;            \
         return (*this);              \
     }                                \
-    const std::string &title_##mn() const { return _##mn; }
+    std::string const &title_##mn() const { return _##mn; }
 #define PROP_SET3(mn, typ)          \
     bas &title_##mn(const typ &s) { \
         _##mn = s;                  \
@@ -88,7 +89,7 @@ namespace cmdr::opt {
         PROP_SET2(short)
         PROP_SET3(aliases, string_array)
         PROP_SET(examples)
-        PROP_SET(group)
+        // PROP_SET(group)
         // PROP_SET(description)
         PROP_SET(desc_long)
         PROP_SET4(hidden, bool)
@@ -124,6 +125,10 @@ namespace cmdr::opt {
             return ss.str();
         }
 
+        bas &group(const_chars s) {
+            if (s) _group = s;
+            return (*this);
+        }
         [[nodiscard]] virtual std::string group_name() const {
             std::stringstream ss;
             ss << _group;
@@ -136,9 +141,9 @@ namespace cmdr::opt {
                 return _desc_long;
             return _description;
         }
-        [[nodiscard]] std::string const &examples() const {
-            return _examples;
-        }
+        // [[nodiscard]] std::string const &examples() const {
+        //     return _examples;
+        // }
         bas &description(const_chars desc, const_chars long_desc = nullptr, const_chars examples = nullptr) {
             if (desc)
                 _description = desc;
@@ -194,26 +199,38 @@ namespace cmdr::opt {
      */
     class arg : public bas {
     protected:
+        support_types _default;
+        string_array _env_vars;
         std::string _placeholder;
         std::string _toggle_group;
-        support_types _default;
 
         // friend class app;
 
     public:
         arg() = default;
         ~arg() override = default;
+        // arg(arg &&o) noexcept = default;
         arg(const arg &o)
             : bas(o) { _copy(o); }
         arg &operator=(const arg &o) {
             _copy(o);
             return (*this);
         }
+        template<typename A, typename... Args,
+                 std::enable_if_t<
+                         std::is_constructible<support_types, A, Args...>::value &&
+                                 !std::is_same<std::decay_t<A>, arg>::value,
+                         int> = 0>
+        explicit arg(A &&a0, Args &&...args)
+            : _default(std::forward<A>(a0), std::forward<Args>(args)...) {}
+        explicit arg(support_types &&v)
+            : _default(std::move(v)) {}
 
     protected:
         void _copy(const arg &o) {
             bas::_copy(o);
 
+            __COPY(_env_vars);
             __COPY(_toggle_group);
             __COPY(_placeholder);
             __COPY(_default);
@@ -227,20 +244,25 @@ namespace cmdr::opt {
     arg &mn(const_chars s) { \
         if (s) _##mn = s;    \
         return (*this);      \
-    }
+    }                        \
+    std::string const &mn() const { return _##mn; }
 #define PROP_SET2(mn)                \
     arg &title_##mn(const_chars s) { \
         if (s) _##mn = s;            \
         return (*this);              \
     }                                \
-    const std::string &title_##mn() const { return _##mn; }
-#define PROP_SET3(mn, typ)          \
-    arg &title_##mn(const typ &s) { \
-        _##mn = s;                  \
-        return (*this);             \
-    }
+    std::string const &title_##mn() const { return _##mn; }
+#define PROP_SET3(mn, typ)     \
+    arg &_##mn(const typ &s) { \
+        _##mn = s;             \
+        return (*this);        \
+    }                          \
+    typ const &mn() const { return _##mn; }
 
-        PROP_SET(toggle_group)
+        // PROP_SET3(env_vars, string_array)
+        // PROP_SET(toggle_group)
+        PROP_SET(placeholder)
+        // PROP_SET(default)
 
 #undef PROP_SET
 #undef PROP_SET2
@@ -304,11 +326,19 @@ namespace cmdr::opt {
             _default = v;
             return (*this);
         }
-
-        arg &placeholder(const_chars s) {
-            if (s) _placeholder = s;
+        arg &toggle_group(const_chars s) {
+            if (s) _toggle_group = s;
+            if (!_group.empty()) _group = _toggle_group;
             return (*this);
         }
+
+        template<typename... T>
+        arg &env_vars(T... args) {
+            (this->_env_vars.push_back(args), ...);
+            return (*this);
+        }
+        [[nodiscard]] const string_array &env_vars_get() const { return _env_vars; }
+
     }; // class arg
 
 } // namespace cmdr::opt

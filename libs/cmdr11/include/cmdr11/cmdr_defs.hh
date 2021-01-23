@@ -96,6 +96,7 @@ typedef std::vector<std::string> string_array;
 
 const char *const UNSORTED_GROUP = "1230.Unsorted";
 const char *const SYS_MGMT_GROUP = "9000.System Management";
+const char *const NOBODY_GROUP_SORTER = "3333";
 
 //template<class T=std::string>
 //constexpr T UNSORTED_GROUP = T("1230.Unsorted");

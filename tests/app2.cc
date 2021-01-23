@@ -27,6 +27,7 @@ void add_generator_menu(cmdr::opt::app &cli) {
     cli += opt_subcmd{}
                    .titles("generator", "g", "gen")
                    .description("generators of this app (such as manual, markdown, ...)")
+                   .group(SYS_MGMT_GROUP)
                    .opt(opt_dummy{}())
                    .opt(opt_dummy{}());
     {
@@ -70,6 +71,7 @@ int main(int argc, char *argv[]) {
         cli += opt_subcmd{}
                        .titles("server", "s", "svr")
                        .description("server operations for listening")
+                       .group("TCP/UDP/Unix")
                        .opt(opt_dummy{}())
                        .opt(opt_dummy{}());
 
@@ -78,9 +80,24 @@ int main(int argc, char *argv[]) {
                        .description("set counter value")
                        .default_value(cmdr::support_types((int16_t)(3)));
 
-        cli += opt_string{}
+        cli += opt{(int16_t)(8)}
+                       .titles("retry", "r")
+                       .description("set the retry times")
+                // .default_value(cmdr::support_types((int16_t)(7)))
+                ;
+
+        cli += opt{"localhost"}
                        .titles("host", "h", "hostname", "server-name")
-                       .description("hostname or ip address");
+                       .description("hostname or ip address")
+                       .group("TCP")
+                       .placeholder("HOST[:IP]");
+
+        cli += opt{(int16_t)4567}
+                       .titles("port", "p")
+                       .description("listening port number")
+                       .group("TCP")
+                       .placeholder("PORT")
+                       .env_vars("PORT", "SERVER_PORT");
 
         add_global_options(cli);
         add_generator_menu(cli);

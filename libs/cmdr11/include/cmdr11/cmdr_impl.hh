@@ -204,30 +204,22 @@ namespace cmdr::opt {
         for (auto &it : _grouped_commands) {
             keys.insert(it.first);
             auto ptr = it.first.find('.');
-            if (ptr > 0) {
+            if (ptr != std::string::npos) {
                 auto dotted = it.first.substr(0, ptr);
                 dotted_key_on_keys.insert({dotted, it.first});
             } else {
-                dotted_key_on_keys.insert({"", it.first});
+                dotted_key_on_keys.insert({NOBODY_GROUP_SORTER, it.first});
             }
         }
 
         for (auto &it : dotted_key_on_keys) {
             auto val = _grouped_commands[it.second];
-            auto clean_key = it.second.substr(it.first.length());
-            if (it.second != UNSORTED_GROUP) {
-                int i = 0;
-                for (auto &x : val) {
-                    if (x->hidden()) continue;
-                    i++;
-                }
-                if (i > 0)
-                    ss << ' ' << ' ' << '[' << clean_key << ']' << std::endl;
-            }
+            auto clean_key = it.first == NOBODY_GROUP_SORTER ? it.second : it.second.substr(it.first.length() + 1);
 
-            int wf = 0, ws = 0, wa = 0, wt = 0, w = 0;
+            int wf = 0, ws = 0, wa = 0, wt = 0, w = 0, valid_count = 0;
             for (auto &x : val) {
                 if (x->hidden()) continue;
+                valid_count++;
                 w = x->title_long().length();
                 if (w > wf) wf = w;
                 w = x->title_short().length();
@@ -242,6 +234,18 @@ namespace cmdr::opt {
 
             wt = wf + 2 + ws + 2 + wa + 2;
             if (wt < 43) wt = 43;
+
+            if (valid_count == 0) continue;
+
+            if (it.second != UNSORTED_GROUP) {
+                int i = 0;
+                for (auto &x : val) {
+                    if (x->hidden()) continue;
+                    i++;
+                }
+                if (i > 0)
+                    ss << ' ' << ' ' << '[' << clean_key << ']' << std::endl;
+            }
 
             for (auto &x : val) {
                 if (x->hidden()) continue;
@@ -301,30 +305,22 @@ namespace cmdr::opt {
         for (auto &it : _grouped_args) {
             keys.insert(it.first);
             auto ptr = it.first.find('.');
-            if (ptr > 0) {
+            if (ptr != std::string::npos) {
                 auto dotted = it.first.substr(0, ptr);
                 dotted_key_on_keys.insert({dotted, it.first});
             } else {
-                dotted_key_on_keys.insert({"", it.first});
+                dotted_key_on_keys.insert({NOBODY_GROUP_SORTER, it.first});
             }
         }
 
         for (auto &it : dotted_key_on_keys) {
             auto val = _grouped_args[it.second];
-            auto clean_key = it.second.substr(it.first.length());
-            if (it.second != UNSORTED_GROUP) {
-                int i = 0;
-                for (auto &x : val) {
-                    if (x->hidden()) continue;
-                    i++;
-                }
-                if (i > 0)
-                    ss << ' ' << ' ' << '[' << clean_key << ']' << std::endl;
-            }
+            auto clean_key = it.first == NOBODY_GROUP_SORTER ? it.second : it.second.substr(it.first.length() + 1);
 
-            int wf = 0, ws = 0, wa = 0, wt = 0, w = 0;
+            int wf = 0, ws = 0, wa = 0, wt = 0, w = 0, valid_count = 0;
             for (auto &x : val) {
                 if (x->hidden()) continue;
+                valid_count++;
                 w = x->title_long().length() + 2;
                 if (w > wf) wf = w;
                 w = x->title_short().length() + 1;
@@ -339,6 +335,18 @@ namespace cmdr::opt {
 
             wt = wf + 2 + ws + 2 + wa + 2;
             if (wt < 43) wt = 43;
+
+            if (valid_count == 0) continue;
+
+            if (it.second != UNSORTED_GROUP) {
+                int i = 0;
+                for (auto &x : val) {
+                    if (x->hidden()) continue;
+                    i++;
+                }
+                if (i > 0)
+                    ss << ' ' << ' ' << '[' << clean_key << ']' << std::endl;
+            }
 
             for (auto &x : val) {
                 if (x->hidden()) continue;
@@ -383,6 +391,24 @@ namespace cmdr::opt {
                 ss << std::setw(wt - w) << ' ';
 
                 ss << c.dim().s(x->descriptions());
+
+                auto se = x->env_vars_get();
+                if (!se.empty()) {
+                    w = 0;
+                    std::stringstream tmp;
+                    tmp << " (ENV: ";
+                    for (auto const &t : se) {
+                        if (w > 0) {
+                            tmp << ',';
+                        } else
+                            w++;
+                        tmp << t;
+                    }
+                    tmp << ")";
+                    if (w > 0)
+                        ss << c.dim().s(tmp.str());
+                }
+
                 auto sd = x->defaults();
                 if (!sd.empty())
                     ss << c.dim().s(sd);

@@ -178,25 +178,36 @@ namespace cmdr::opt {
         ~opt_dummy() override = default;
     };
 
-    class opt_subcmd : public opts::cmd_base {
+    class subcmd : public opts::cmd_base {
     public:
-        opt_subcmd() = default;
-        ~opt_subcmd() override = default;
+        subcmd() = default;
+        ~subcmd() override = default;
     };
 
     /**
      * @brief opt_new is a generic options definer
      */
     template<class T>
-    class opt_new : public opts::opt_base {
+    class opt : public opts::opt_base {
     public:
-        opt_new() = default;
-        explicit opt_new(T const &default_value) {
+        opt() = default;
+        explicit opt(T const &default_value) {
             this->default_value(default_value);
         }
-        ~opt_new() override = default;
+        ~opt() override = default;
+
+        template<typename A, typename... Args,
+                std::enable_if_t<
+                        std::is_constructible<arg, A, Args...>::value &&
+                        !std::is_same<std::decay_t<A>, opt>::value,
+                        int> = 0>
+        explicit opt(A &&a0, Args &&...args)
+                : opts::opt_base(std::forward<A>(a0), std::forward<Args>(args)...) {}
+        explicit opt(arg &&v)
+                : opts::opt_base(std::move(v)) {}
     };
 
+#if 0
     class opt : public opts::opt_base {
     public:
         opt() = default;
@@ -211,7 +222,8 @@ namespace cmdr::opt {
         explicit opt(arg &&v)
             : opts::opt_base(std::move(v)) {}
     };
-
+#endif
+#if 0
 #define DEFINE_OPT_BY_TYPE(typ)               \
     class opt_##typ : public opts::opt_base { \
     public:                                   \
@@ -222,6 +234,7 @@ namespace cmdr::opt {
     DEFINE_OPT_BY_TYPE(bool);
     DEFINE_OPT_BY_TYPE(int);
     DEFINE_OPT_BY_TYPE(string);
+#endif
 
 
 } // namespace cmdr::opt

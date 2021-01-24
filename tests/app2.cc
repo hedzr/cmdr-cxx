@@ -12,10 +12,10 @@ void fatal_exit(const std::string &msg) {
 
 void add_global_options(cmdr::opt::app &cli) {
     using namespace cmdr::opt;
-    cli += opt_new<bool>{}
+    cli += opt<bool>{}
                    .titles("debug", "D", "debug-mode")
                    .description("enable debugging mode for more verbose outputting");
-    cli += opt_new<bool>{}
+    cli += opt<bool>{}
                    .titles("trace", "tr", "trace-mode")
                    .description("enable tracing mode for developer perspective");
 }
@@ -23,7 +23,7 @@ void add_global_options(cmdr::opt::app &cli) {
 void add_server_menu(cmdr::opt::app &cli) {
     using namespace cmdr::opt;
 
-    cli += opt_subcmd{}
+    cli += subcmd{}
                    .titles("server", "s", "svr")
                    .description("server operations for listening")
                    .group("TCP/UDP/Unix")
@@ -55,31 +55,31 @@ void add_server_menu(cmdr::opt::app &cli) {
                       .placeholder("PORT")
                       .env_vars("PORT", "SERVER_PORT");
 
-        t1 += opt_subcmd{}
+        t1 += subcmd{}
                       .titles("start", "s", "startup", "run")
                       .description("start the server as a daemon service, or run it at foreground")
                       // .group("")
                       .opt(opt_dummy{}())
                       .opt(opt_dummy{}());
 
-        t1 += opt_subcmd{}
+        t1 += subcmd{}
                       .titles("stop", "st", "shutdown")
                       .description("stop the daemon service, or stop the server");
 
-        t1 += opt_subcmd{}
+        t1 += subcmd{}
                       .titles("pause", "p")
                       .description("pause the daemon service");
 
-        t1 += opt_subcmd{}
+        t1 += subcmd{}
                       .titles("resume", "re")
                       .description("resume the paused daemon service");
-        t1 += opt_subcmd{}
+        t1 += subcmd{}
                       .titles("reload", "r")
                       .description("reload the daemon service");
-        t1 += opt_subcmd{}
+        t1 += subcmd{}
                       .titles("hot-reload", "hr")
                       .description("hot-reload the daemon service without stopping the process");
-        t1 += opt_subcmd{}
+        t1 += subcmd{}
                       .titles("status", "st", "info", "details")
                       .description("display the running status of the daemon service");
     }
@@ -89,7 +89,7 @@ void add_generator_menu(cmdr::opt::app &cli) {
     using namespace cmdr::opt;
 
     // generators
-    cli += opt_subcmd{}
+    cli += subcmd{}
                    .titles("generator", "g", "gen")
                    .description("generators of this app (such as manual, markdown, ...)")
                    .group(SYS_MGMT_GROUP)
@@ -97,24 +97,24 @@ void add_generator_menu(cmdr::opt::app &cli) {
                    .opt(opt_dummy{}());
     {
         auto &t1 = *cli.last_added_command();
-        t1 += opt_subcmd{}
+        t1 += subcmd{}
                       .titles("doc", "d", "markdown", "docx", "pdf", "tex")
                       .description("generate a markdown document, or: pdf/TeX/...")
                       .opt(opt_dummy{}())
                       .opt(opt_dummy{}());
 
-        t1 += opt_int{}
+        t1 += opt<int>{}
                       .titles("count", "c")
                       .description("set counter value")
                       .default_value(cmdr::support_types((int16_t)(3)));
 
-        t1 += opt_subcmd{}
+        t1 += subcmd{}
                       .titles("manual", "m", "man")
                       .description("generate linux man page.")
                       .opt(opt_dummy{}())
                       .opt(opt_dummy{}());
 
-        t1 += opt_subcmd{}
+        t1 += subcmd{}
                       .titles("shell", "s", "sh")
                       .description("generate the bash/zsh auto-completion script or install it.")
                       .opt(opt_dummy{}())

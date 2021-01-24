@@ -21,18 +21,18 @@ int main(int argc, char *argv[]) {
 
         cli.opt(opt_dummy{}());
 
-        cli += opt_subcmd{}
+        cli += subcmd{}
                        .titles("server", "s", "svr")
                        .description("server operations for listening")
                        .opt(opt_dummy{}())
                        .opt(opt_dummy{}());
 
-        cli += opt_int{}
+        cli += opt<int>{1}
                        .titles("count", "c")
                        .description("set counter value")
                        .default_value(cmdr::support_types((int16_t)(3)));
 
-        cli += opt_string{}
+        cli += opt<std::string>{}
                        .titles("host", "h", "hostname", "server-name")
                        .description("hostname or ip address");
 

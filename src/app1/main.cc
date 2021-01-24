@@ -21,17 +21,17 @@ int main(int argc, char *argv[]) {
                          "A demo app for cmdr-c11 library.",
                          "$ ~ --help")
                 .opt(opt_dummy{}())
-                .opt(opt_subcmd{}
+                .opt(subcmd{}
                              .titles("server", "s", "svr")
                              .description("server operations for listening")
                              .opt(opt_dummy{}())
                              .opt(opt_dummy{}())
                              .get())
-                .opt(opt_int{}
+                .opt(opt<int>{}
                              .titles("count", "c")
                              .description("set counter value")
                              .default_value(cmdr::support_types((int16_t)(3)))())
-                .opt(opt_string{}
+                .opt(subcmd{}
                              .titles("host", "h", "hostname", "server-name")
                              .description("hostname or ip address")())
                 .run(argc, argv);

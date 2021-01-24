@@ -13,6 +13,8 @@
 #include <utility>
 #include <variant>
 
+#include "cmdr_var_t.hh"
+
 
 namespace cmdr::opt {
 
@@ -199,7 +201,8 @@ namespace cmdr::opt {
      */
     class arg : public bas {
     protected:
-        support_types _default;
+        // support_types _default;
+        vars::streamable_any _default;
         string_array _env_vars;
         std::string _placeholder;
         std::string _toggle_group;
@@ -209,22 +212,30 @@ namespace cmdr::opt {
     public:
         arg() = default;
         ~arg() override = default;
-        // arg(arg &&o) noexcept = default;
         arg(const arg &o)
             : bas(o) { _copy(o); }
         arg &operator=(const arg &o) {
             _copy(o);
             return (*this);
         }
+        //arg(const arg &o) = delete;
+        //arg &operator=(const arg &o) = delete;
+        arg(arg &&o) noexcept = default;
         template<typename A, typename... Args,
                  std::enable_if_t<
-                         std::is_constructible<support_types, A, Args...>::value &&
+                         std::is_constructible<vars::streamable_any, A, Args...>::value &&
                                  !std::is_same<std::decay_t<A>, arg>::value,
                          int> = 0>
         explicit arg(A &&a0, Args &&...args)
             : _default(std::forward<A>(a0), std::forward<Args>(args)...) {}
-        explicit arg(support_types &&v)
-            : _default(std::move(v)) {}
+        template<typename A,
+                 std::enable_if_t<!std::is_same<std::decay_t<A>, vars::streamable_any>::value &&
+                                          !std::is_same<std::decay_t<A>, arg>::value,
+                                  int> = 0>
+        explicit arg(A &&v)
+            : _default(std::forward<A>(v)) {}
+        // explicit arg(vars::streamable_any &&v)
+        //     : _default(std::move(v)) {}
 
     protected:
         void _copy(const arg &o) {
@@ -309,9 +320,10 @@ namespace cmdr::opt {
     public:
         [[nodiscard]] virtual std::string defaults() const {
             std::stringstream ss;
-            if (!std::holds_alternative<std::monostate>(_default)) {
-                ss << ' ' << '[' << "DEFAULT=" << variant_to_string(_default) << ']';
-            }
+            ss << ' ' << '[' << "DEFAULT=" << _default << ']';
+            // if (!std::holds_alternative<std::monostate>(_default)) {
+            //     ss << ' ' << '[' << "DEFAULT=" << variant_to_string(_default) << ']';
+            // }
             return ss.str();
         }
 

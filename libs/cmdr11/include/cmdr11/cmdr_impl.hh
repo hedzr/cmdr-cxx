@@ -159,36 +159,48 @@ namespace cmdr::opt {
         return lhs;
     }
 
-    inline arg &cmd::operator[](const_chars long_title) {
+    inline arg &cmd::find_flag(const_chars long_title, bool extensive) {
         auto s = long_title;
         if (is_leading_switch_char(s)) s++;
         if (is_leading_switch_char(s)) s++;
         auto it = _indexed_args.find(s);
         if (it != _indexed_args.end())
             return *((*it).second);
+        if (extensive) {
+            for (auto itz : _indexed_args) {
+                if (itz.second->title_short() == long_title)
+                    return *((itz).second);
+                for (auto &k : itz.second->title_aliases()) {
+                    if (k == long_title)
+                        return *((itz).second);
+                }
+            }
+        }
         return null_arg();
     }
-    inline const arg &cmd::operator[](const_chars long_title) const {
-        auto s = long_title;
-        if (is_leading_switch_char(s)) s++;
-        if (is_leading_switch_char(s)) s++;
-        auto it = _indexed_args.find(s);
-        if (it != _indexed_args.end())
-            return *((*it).second);
-        return null_arg();
-    }
-    inline cmd &cmd::operator()(const_chars long_title) {
+
+    inline arg &cmd::operator[](const_chars long_title) { return find_flag(long_title); }
+    inline const arg &cmd::operator[](const_chars long_title) const { return const_cast<cmd&>(*this).find_flag(long_title); }
+
+    inline cmd &cmd::find_command(const_chars long_title, bool extensive) {
         auto it = _indexed_commands.find(long_title);
         if (it != _indexed_commands.end())
             return *((*it).second);
+        if (extensive) {
+            for (auto itz : _indexed_commands) {
+                if (itz.second->title_short() == long_title)
+                    return *((itz).second);
+                for (auto &k : itz.second->title_aliases()) {
+                    if (k == long_title)
+                        return *((itz).second);
+                }
+            }
+        }
         return null_command();
     }
-    inline cmd const &cmd::operator()(const_chars long_title) const {
-        auto it = _indexed_commands.find(long_title);
-        if (it != _indexed_commands.end())
-            return *((*it).second);
-        return null_command();
-    }
+
+    inline cmd &cmd::operator()(const_chars long_title, bool extensive) { return find_command(long_title, extensive); }
+    inline cmd const &cmd::operator()(const_chars long_title, bool extensive) const { return const_cast<cmd&>(*this).find_command(long_title, extensive); }
 
     inline int cmd::run(int argc, char *argv[]) {
         unused(argc);

@@ -109,20 +109,21 @@ namespace cmdr::opt {
          * @return
          */
         const arg &operator[](const_chars long_title) const;
+
         /**
          * @brief return the matched sub-command object or null_command if not found.
          * To ensure the return obj is a valid one, use [#cmd.valid()]
          * @param long_title
          * @return
          */
-        cmd &operator()(const_chars long_title);
+        cmd &operator()(const_chars long_title, bool extensive = false);
         /**
          * @brief return the matched sub-command object or null_command if not found.
          * To ensure the return obj is a valid one, use [#cmd.valid()]
          * @param long_title
          * @return
          */
-        const cmd &operator()(const_chars long_title) const;
+        const cmd &operator()(const_chars long_title, bool extensive = false) const;
 
         static cmd &null_command() {
             static cmd c;
@@ -132,6 +133,10 @@ namespace cmdr::opt {
             static arg c;
             return c;
         }
+
+    private:
+        arg &find_flag(const_chars long_title, bool extensive = false);
+        cmd &find_command(const_chars long_title, bool extensive = false);
 
     public:
         virtual cmd &opt(const details::option &opt_) {

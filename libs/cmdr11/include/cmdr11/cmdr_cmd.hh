@@ -17,15 +17,26 @@ namespace cmdr::opt {
      */
     class cmd : public bas {
     protected:
+        friend class app;
         details::arg_list _all_args{};
         details::grouped_arg_list _grouped_args{{UNSORTED_GROUP, details::arg_pointers{}}};
-        details::indexed_args _indexed_args{};
+        details::indexed_args _indexed_args{}; // just long-titles
+        details::indexed_args _short_args{};
+        details::indexed_args _long_args{};
         details::cmd_list _all_commands{};
         details::grouped_cmd_list _grouped_commands{{UNSORTED_GROUP, details::cmd_pointers{}}};
-        details::indexed_commands _indexed_commands{};
+        details::indexed_commands _indexed_commands{}; // just long-titles
+        details::indexed_commands _short_commands{};
+        details::indexed_commands _long_commands{};
 
-        cmd *_last_added_command;
-        arg *_last_added_arg;
+        cmd *_last_added_command{};
+        arg *_last_added_arg{};
+
+        details::on_command_hit _on_command_hit;
+        details::on_pre_invoke _on_pre_invoke;
+        details::on_invoke _on_invoke;
+        details::on_post_invoke _on_post_invoke;
+        // std::string _hit_title;
 
     public:
         cmd() = default;
@@ -43,11 +54,24 @@ namespace cmdr::opt {
             __COPY(_all_args);
             __COPY(_grouped_args);
             __COPY(_indexed_args);
+            __COPY(_short_args);
+            __COPY(_long_args);
+
             __COPY(_all_commands);
             __COPY(_grouped_commands);
             __COPY(_indexed_commands);
+            __COPY(_short_commands);
+            __COPY(_long_commands);
+
             __COPY(_last_added_command);
             __COPY(_last_added_arg);
+
+            __COPY(_on_command_hit);
+            __COPY(_on_pre_invoke);
+            __COPY(_on_invoke);
+            __COPY(_on_post_invoke);
+
+            // __COPY(_hit_title);
         }
 
     public:
@@ -58,20 +82,26 @@ namespace cmdr::opt {
     cmd &mn(const_chars s) { \
         if (s) _##mn = s;    \
         return (*this);      \
-    }
+    }                        \
+    std::string const &mn() const { return _##mn; }
 #define PROP_SET2(mn)                \
     cmd &title_##mn(const_chars s) { \
         if (s) _##mn = s;            \
         return (*this);              \
     }                                \
     const std::string &title_##mn() const { return _##mn; }
-#define PROP_SET3(mn, typ)          \
-    cmd &title_##mn(const typ &s) { \
-        _##mn = s;                  \
-        return (*this);             \
-    }
+#define PROP_SET3(mn, typ)  \
+    cmd &mn(const typ &s) { \
+        _##mn = s;          \
+        return (*this);     \
+    }                       \
+    typ const &mn() const { return _##mn; }
 
-        //
+        PROP_SET3(on_command_hit, details::on_command_hit)
+        PROP_SET3(on_pre_invoke, details::on_pre_invoke)
+        PROP_SET3(on_invoke, details::on_invoke)
+        PROP_SET3(on_post_invoke, details::on_post_invoke)
+        // PROP_SET(hit_title)
 
 #undef PROP_SET
 #undef PROP_SET2
@@ -83,6 +113,8 @@ namespace cmdr::opt {
     public:
         static bool is_leading_switch_char(const_chars flag) { return (flag[0] == '-' || flag[0] == '/'); }
         static bool is_leading_switch_char(const std::string &flag) { return (flag[0] == '-' || flag[0] == '/'); }
+
+        [[nodiscard]] bool no_sub_commands() const { return _all_commands.empty(); }
 
     public:
         virtual cmd &operator+(const arg &a);

@@ -269,7 +269,7 @@ namespace cmdr::opt::vars {
         typedef std::unordered_map<std::string, var_t *> child_pointers;
 
         const int NODE_DEFAULT_VALUE{0};
-        const bool LOGGING_ENABLED{true};
+        const bool LOGGING_ENABLED{};
 
     public:
         var_t() = default;

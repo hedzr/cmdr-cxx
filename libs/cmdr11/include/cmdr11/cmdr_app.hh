@@ -98,7 +98,81 @@ namespace cmdr::opt {
             }
         }
 
+        const bool treat_unknown_input_command_as_error = true;
+        const bool treat_unknown_input_flag_as_error = true;
+
     private:
+        struct parsing_pkg {
+            cmd *_root;
+            std::string title{};
+            int index{};
+            bool is_flag{false};
+            bool help_requesting{false};
+            bool passthru_flag{false};
+            details::arg_pointers matched_flags{};
+            details::cmd_pointers matched_commands{};
+            string_array unknown_flags{};
+            string_array unknown_commands{};
+            string_array non_commands{};
+
+            [[nodiscard]] cmd &curr_command() {
+                if (matched_commands.empty())
+                    return *_root;
+                return *matched_commands.back();
+            }
+            [[nodiscard]] cmd &last_matched_cmd() {
+                if (matched_commands.empty())
+                    return null_command();
+                return *matched_commands.back();
+            }
+            [[nodiscard]] arg &last_matched_flg() {
+                if (matched_flags.empty())
+                    return null_arg();
+                return *matched_flags.back();
+            }
+        };
+        struct cmd_matching_result {
+            bool matched{};
+            bool should_abort{};
+            cmd *obj;
+            std::exception e;
+        };
+        struct arg_matching_result {
+            bool matched{};
+            bool should_abort{};
+            arg *obj;
+            std::exception e;
+        };
+
+        static string_array remain_args(parsing_pkg &pp, char *argv[], int i, int argc) {
+            string_array a;
+            for (auto &it : pp.non_commands) {
+                a.push_back(it);
+            }
+            for (; i < argc; i++) {
+                a.push_back(argv[i]);
+            }
+            return a;
+        }
+
+        static string_array remain_args(char *argv[], int i, int argc) {
+            string_array a;
+            for (; i < argc; i++) {
+                a.push_back(argv[i]);
+            }
+            return a;
+        }
+
+        cmd_matching_result matching_command(parsing_pkg &pp);
+        arg_matching_result matching_long_flag(parsing_pkg &pp);
+        arg_matching_result matching_short_flag(parsing_pkg &pp);
+
+        int on_unknown_command_found(parsing_pkg &pp, cmd_matching_result &cmr);
+        int on_unknown_long_flag_found(parsing_pkg &pp, arg_matching_result &fmr);
+        int on_unknown_short_flag_found(parsing_pkg &pp, arg_matching_result &fmr);
+
+        int invoke_command(cmd& cc, string_array remain_args, parsing_pkg& pp);
+
         void handle_eptr(std::exception_ptr eptr) const {
             try {
                 if (eptr) {
@@ -122,10 +196,16 @@ namespace cmdr::opt {
         [[nodiscard]] bool help_hit() const { return _help_hit > 0; }
         [[nodiscard]] cmd *command_hit() const { return _cmd_hit; }
 
-    private:
+    public:
         void print_usages(cmd *start = nullptr);
-        void print_cmd(std::ostream &ss, cmdr::terminal::colors::colorize &c, cmd *cc,
+
+    private:
+        static void print_cmd(std::ostream &ss, cmdr::terminal::colors::colorize &c, cmd *cc,
                        std::string const &app_name, std::string const &exe_name);
+
+        void initialize_internal_commands();
+        void add_global_options(cmdr::opt::app &cli);
+        void add_generator_menu(cmdr::opt::app &cli);
 
     private:
         int _help_hit{};

@@ -14,6 +14,7 @@
 #include <variant>
 
 #include "cmdr_var_t.hh"
+#include "cmdr_cmn.hh"
 
 
 namespace cmdr::opt {
@@ -30,7 +31,8 @@ namespace cmdr::opt {
         std::string _description;
         std::string _examples;
         std::string _group;
-        bool _hidden;
+        bool _hidden{false};
+        std::string _hit_title;
 
     public:
         bas() = default;
@@ -56,6 +58,7 @@ namespace cmdr::opt {
             __COPY(_examples);
             __COPY(_group);
             __COPY(_hidden);
+            __COPY(_hit_title);
         }
 
     public:
@@ -79,13 +82,13 @@ namespace cmdr::opt {
         _##mn = s;                  \
         return (*this);             \
     }                               \
-    typ const &title_##mn() { return _##mn; }
+    typ const &title_##mn() const { return _##mn; }
 #define PROP_SET4(mn, typ)  \
     bas &mn(const typ &s) { \
         _##mn = s;          \
         return (*this);     \
     }                       \
-    typ const &mn() { return _##mn; }
+    typ const &mn() const { return _##mn; }
 
         PROP_SET2(long)
         PROP_SET2(short)
@@ -95,6 +98,7 @@ namespace cmdr::opt {
         // PROP_SET(description)
         PROP_SET(desc_long)
         PROP_SET4(hidden, bool)
+        PROP_SET(hit_title)
 
 #undef PROP_SET
 #undef PROP_SET2
@@ -183,8 +187,8 @@ namespace cmdr::opt {
         }
 
         template<typename... T>
-        bas &aliases(T... title_aliases) {
-            (this->_aliases.push_back(title_aliases), ...);
+        bas &aliases(T... titles) {
+            (this->_aliases.push_back(titles), ...);
             // if (sizeof...(title_aliases) > 0) {
             //     // append_to_vector(_aliases, title_aliases...);
             //     for (auto &&x : {title_aliases...}) {
@@ -207,7 +211,7 @@ namespace cmdr::opt {
         std::string _placeholder;
         std::string _toggle_group;
 
-        // friend class app;
+        details::on_flag_hit _on_flag_hit;
 
     public:
         arg() = default;
@@ -245,6 +249,7 @@ namespace cmdr::opt {
             __COPY(_toggle_group);
             __COPY(_placeholder);
             __COPY(_default);
+            __COPY(_on_flag_hit);
         }
 
     public:
@@ -264,7 +269,7 @@ namespace cmdr::opt {
     }                                \
     std::string const &title_##mn() const { return _##mn; }
 #define PROP_SET3(mn, typ)     \
-    arg &_##mn(const typ &s) { \
+    arg &mn(typ const &s) { \
         _##mn = s;             \
         return (*this);        \
     }                          \
@@ -274,6 +279,8 @@ namespace cmdr::opt {
         // PROP_SET(toggle_group)
         PROP_SET(placeholder)
         // PROP_SET(default)
+
+        PROP_SET3(on_flag_hit, details::on_flag_hit)
 
 #undef PROP_SET
 #undef PROP_SET2

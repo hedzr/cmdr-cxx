@@ -83,6 +83,11 @@ namespace cmdr::opt {
                 return (*this);
             }
 
+            opt_base &hidden(bool b = true) {
+                _arg.hidden(b);
+                return (*this);
+            }
+
             opt_base &placeholder(const_chars s) {
                 _arg.placeholder(s);
                 return (*this);
@@ -97,6 +102,11 @@ namespace cmdr::opt {
             opt_base &env_vars(T... args) {
                 // (this->_env_vars.push_back(title_aliases), ...);
                 _arg.env_vars(args...);
+                return (*this);
+            }
+
+            opt_base &on_hit(details::on_flag_hit const &cb) {
+                _arg.on_flag_hit(cb);
                 return (*this);
             }
 
@@ -152,6 +162,28 @@ namespace cmdr::opt {
                 return (*this);
             }
 
+            cmd_base &hidden(bool b = true) {
+                _cmd.hidden(b);
+                return (*this);
+            }
+
+            cmd_base &on_hit(details::on_command_hit const &cb) {
+                _cmd.on_command_hit(cb);
+                return (*this);
+            }
+            cmd_base &on_pre_invoke(details::on_pre_invoke const &cb) {
+                _cmd.on_pre_invoke(cb);
+                return (*this);
+            }
+            cmd_base &on_invoke(details::on_invoke const &cb) {
+                _cmd.on_invoke(cb);
+                return (*this);
+            }
+            cmd_base &on_post_invoke(details::on_post_invoke const &cb) {
+                _cmd.on_post_invoke(cb);
+                return (*this);
+            }
+
             cmd_base &opt(const details::option &opt_) {
                 _cmd.option(opt_);
                 return (*this);
@@ -197,14 +229,14 @@ namespace cmdr::opt {
         ~opt() override = default;
 
         template<typename A, typename... Args,
-                std::enable_if_t<
-                        std::is_constructible<arg, A, Args...>::value &&
-                        !std::is_same<std::decay_t<A>, opt>::value,
-                        int> = 0>
+                 std::enable_if_t<
+                         std::is_constructible<arg, A, Args...>::value &&
+                                 !std::is_same<std::decay_t<A>, opt>::value,
+                         int> = 0>
         explicit opt(A &&a0, Args &&...args)
-                : opts::opt_base(std::forward<A>(a0), std::forward<Args>(args)...) {}
+            : opts::opt_base(std::forward<A>(a0), std::forward<Args>(args)...) {}
         explicit opt(arg &&v)
-                : opts::opt_base(std::move(v)) {}
+            : opts::opt_base(std::move(v)) {}
     };
 
 #if 0

@@ -95,6 +95,19 @@ namespace cmdr::opt {
             _grouped_args[gn].push_back(ptr);
 
             _indexed_args.insert({a.title_long(), ptr});
+            if (!a.title_short().empty()) {
+                if (auto const &it = _short_args.find(a.title_short()); it != _short_args.end())
+                    throw std::logic_error(std::string("duplicated short flag found: -") + a.title_short());
+                _short_args.insert({a.title_short(), ptr});
+            }
+            if (auto const &it = _long_args.find(a.title_long()); it != _long_args.end())
+                throw std::logic_error(std::string("duplicated long flag found: --") + a.title_long());
+            _long_args.insert({a.title_long(), ptr});
+            for (auto const &itz : a.title_aliases()) {
+                if (auto const &it = _long_args.find(itz); it != _long_args.end())
+                    throw std::logic_error(std::string("duplicated alias flag found: -") + itz);
+                _long_args.insert({itz, ptr});
+            }
 
             _last_added_arg = ptr;
             // std::cout << gn << ',' << _grouped_args[gn].size() << std::endl;
@@ -128,6 +141,19 @@ namespace cmdr::opt {
             _grouped_commands[gn].push_back(ptr);
 
             _indexed_commands.insert({a.title_long(), ptr});
+            if (!a.title_short().empty()) {
+                if (auto const &it = _short_commands.find(a.title_short()); it != _short_commands.end())
+                    throw std::logic_error(std::string("duplicated short command found: -") + a.title_short());
+                _short_commands.insert({a.title_short(), ptr});
+            }
+            if (auto const &it = _long_commands.find(a.title_long()); it != _long_commands.end())
+                throw std::logic_error(std::string("duplicated long command found: --") + a.title_long());
+            _long_commands.insert({a.title_long(), ptr});
+            for (auto const &itz : a.title_aliases()) {
+                if (auto const &it = _long_commands.find(itz); it != _long_commands.end())
+                    throw std::logic_error(std::string("duplicated alias command found: -") + itz);
+                _long_commands.insert({itz, ptr});
+            }
 
             _last_added_command = ptr;
         }
@@ -180,7 +206,7 @@ namespace cmdr::opt {
     }
 
     inline arg &cmd::operator[](const_chars long_title) { return find_flag(long_title); }
-    inline const arg &cmd::operator[](const_chars long_title) const { return const_cast<cmd&>(*this).find_flag(long_title); }
+    inline const arg &cmd::operator[](const_chars long_title) const { return const_cast<cmd &>(*this).find_flag(long_title); }
 
     inline cmd &cmd::find_command(const_chars long_title, bool extensive) {
         auto it = _indexed_commands.find(long_title);
@@ -200,7 +226,7 @@ namespace cmdr::opt {
     }
 
     inline cmd &cmd::operator()(const_chars long_title, bool extensive) { return find_command(long_title, extensive); }
-    inline cmd const &cmd::operator()(const_chars long_title, bool extensive) const { return const_cast<cmd&>(*this).find_command(long_title, extensive); }
+    inline cmd const &cmd::operator()(const_chars long_title, bool extensive) const { return const_cast<cmd &>(*this).find_command(long_title, extensive); }
 
     inline int cmd::run(int argc, char *argv[]) {
         unused(argc);
@@ -224,6 +250,7 @@ namespace cmdr::opt {
             }
         }
 
+        int count_all{};
         for (auto &it : dotted_key_on_keys) {
             auto val = _grouped_commands[it.second];
             auto clean_key = it.first == NOBODY_GROUP_SORTER ? it.second : it.second.substr(it.first.length() + 1);
@@ -247,7 +274,8 @@ namespace cmdr::opt {
             wt = wf + 2 + ws + 2 + wa + 2;
             if (wt < 43) wt = 43;
 
-            if (valid_count == 0) continue;
+            if (valid_count == 0)
+                continue;
 
             if (it.second != UNSORTED_GROUP) {
                 int i = 0;
@@ -255,8 +283,12 @@ namespace cmdr::opt {
                     if (x->hidden()) continue;
                     i++;
                 }
-                if (i > 0)
-                    ss << ' ' << ' ' << '[' << clean_key << ']' << std::endl;
+                if (i > 0) {
+                    ss << ' ' << ' ';
+                    std::stringstream tmp;
+                    tmp << '[' << clean_key << ']';
+                    ss << c.dim().s(tmp.str()) << std::endl;
+                }
             }
 
             for (auto &x : val) {
@@ -305,7 +337,13 @@ namespace cmdr::opt {
                 ss << c.dim().s(x->descriptions())
                    // << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa
                    << std::endl;
+
+                count_all++;
             }
+        }
+
+        if (count_all == 0) {
+            ss << c.dim().s("  (no sub-commands)") << '\n';
         }
     }
 
@@ -325,6 +363,7 @@ namespace cmdr::opt {
             }
         }
 
+        int count_all{};
         for (auto &it : dotted_key_on_keys) {
             auto val = _grouped_args[it.second];
             auto clean_key = it.first == NOBODY_GROUP_SORTER ? it.second : it.second.substr(it.first.length() + 1);
@@ -348,7 +387,8 @@ namespace cmdr::opt {
             wt = wf + 2 + ws + 2 + wa + 2;
             if (wt < 43) wt = 43;
 
-            if (valid_count == 0) continue;
+            if (valid_count == 0)
+                continue;
 
             if (it.second != UNSORTED_GROUP) {
                 int i = 0;
@@ -356,8 +396,12 @@ namespace cmdr::opt {
                     if (x->hidden()) continue;
                     i++;
                 }
-                if (i > 0)
-                    ss << ' ' << ' ' << '[' << clean_key << ']' << std::endl;
+                if (i > 0) {
+                    ss << ' ' << ' ';
+                    std::stringstream tmp;
+                    tmp << '[' << clean_key << ']';
+                    ss << c.dim().s(tmp.str()) << std::endl;
+                }
             }
 
             for (auto &x : val) {
@@ -428,7 +472,13 @@ namespace cmdr::opt {
                 // ss << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa;
 
                 ss << std::endl;
+
+                count_all++;
             }
+        }
+
+        if (count_all == 0) {
+            ss << c.dim().s("  (no options)") << '\n';
         }
     }
 
@@ -458,7 +508,128 @@ namespace cmdr::opt {
                            const_chars copyright,
                            const_chars description,
                            const_chars examples) {
-        return app{name, version, author, copyright, description, examples};
+        auto x = app{name, version, author, copyright, description, examples};
+        x.initialize_internal_commands();
+        return x;
+    }
+
+    inline void app::initialize_internal_commands() {
+        add_global_options(*this);
+        add_generator_menu(*this);
+    }
+
+    inline void app::add_global_options(cmdr::opt::app &cli) {
+        // using namespace cmdr::opt;
+
+        const bool hide_sys_tools = false;
+
+        // help
+
+        cli += cmdr::opt::subcmd{}
+                       .titles("help", "h", "info", "usages")
+                       .description("display this help screen")
+                       .group(SYS_MGMT_GROUP)
+                       .hidden(hide_sys_tools | true)
+                       .on_invoke([](cmd const &hit, string_array const &remain_args) -> int {
+                           unused(hit);
+                           unused(remain_args);
+                           std::cout << "help, !!!\n";
+                           cmdr::get_app().print_usages(nullptr);
+                           return 0;
+                       });
+
+        cli += cmdr::opt::opt<bool>{}
+                       .titles("help", "h", "?", "info", "usages")
+                       .description("display this help screen")
+                       .group(SYS_MGMT_GROUP)
+                       .hidden(hide_sys_tools | true)
+                       .on_hit([](cmd const &hit, arg const &hit_flag, string_array const &remain_args) -> details::Action {
+                           unused(hit);
+                           unused(hit_flag);
+                           unused(remain_args);
+                           // std::cout << "help, !!!\n";
+                           // cmdr::get_app().print_usages(const_cast<cmd *>(&hit));
+                           return details::RequestHelpScreen;
+                       });
+
+        // version
+
+        cli += cmdr::opt::subcmd{}
+                       .titles("version", "V", "versions", "ver")
+                       .description("display the version information")
+                       .group(SYS_MGMT_GROUP)
+                       .hidden(hide_sys_tools | true);
+
+        cli += cmdr::opt::opt<bool>{}
+                       .titles("version", "V", "versions", "ver")
+                       .description("display the version information")
+                       .group(SYS_MGMT_GROUP)
+                       .hidden(hide_sys_tools | true);
+
+        // build-info
+
+        cli += cmdr::opt::opt<bool>{}
+                       .titles("build-info", "#", "bdinf")
+                       .description("display the building information")
+                       .group(SYS_MGMT_GROUP)
+                       .hidden(hide_sys_tools | true);
+
+        // more...
+
+        cli += cmdr::opt::opt<bool>{}
+                       .titles("verbose", "v")
+                       .description("verbose mode")
+                       .group(SYS_MGMT_GROUP);
+        cli += cmdr::opt::opt<bool>{}
+                       .titles("quiet", "q")
+                       .description("quiet mode")
+                       .group(SYS_MGMT_GROUP);
+
+        cli += cmdr::opt::opt<bool>{}
+                       .titles("debug", "D", "debug-mode")
+                       .description("enable debugging mode for more verbose outputting")
+                       .group(SYS_MGMT_GROUP);
+        cli += cmdr::opt::opt<bool>{}
+                       .titles("trace", "tr", "trace-mode")
+                       .description("enable tracing mode for developer perspective")
+                       .group(SYS_MGMT_GROUP);
+    }
+
+    inline void app::add_generator_menu(cmdr::opt::app &cli) {
+        // using namespace cmdr::opt;
+
+        // generators
+        cli += cmdr::opt::subcmd{}
+                       .titles("generator", "g", "gen")
+                       .description("generators of this app (such as manual, markdown, ...)")
+                       .group(SYS_MGMT_GROUP)
+                       .opt(opt_dummy{}())
+                       .opt(opt_dummy{}());
+        {
+            auto &t1 = *cli.last_added_command();
+            t1 += cmdr::opt::subcmd{}
+                          .titles("doc", "d", "markdown", "docx", "pdf", "tex")
+                          .description("generate a markdown document, or: pdf/TeX/...")
+                          .opt(opt_dummy{}())
+                          .opt(opt_dummy{}());
+
+            t1 += cmdr::opt::opt<int>{}
+                          .titles("count", "c")
+                          .description("set counter value")
+                          .default_value(cmdr::support_types((int16_t)(3)));
+
+            t1 += cmdr::opt::subcmd{}
+                          .titles("manual", "m", "man")
+                          .description("generate linux man page.")
+                          .opt(opt_dummy{}())
+                          .opt(opt_dummy{}());
+
+            t1 += cmdr::opt::subcmd{}
+                          .titles("shell", "s", "sh")
+                          .description("generate the bash/zsh auto-completion script or install it.")
+                          .opt(opt_dummy{}())
+                          .opt(opt_dummy{}());
+        }
     }
 
     inline app &app::operator+(const arg &a) {
@@ -481,10 +652,197 @@ namespace cmdr::opt {
         return *this;
     }
 
+    inline app::arg_matching_result app::matching_long_flag(app::parsing_pkg &pp) {
+        arg_matching_result amr;
+        for (auto it = pp.matched_commands.rbegin(); it != pp.matched_commands.rend(); it++) {
+            auto c = (*it);
+            details::indexed_args &li = c->_long_args;
+            if (auto const &itz = li.find(pp.title); itz != li.end()) {
+                amr.matched = true;
+                amr.obj = itz->second;
+                break;
+            }
+        }
+        return amr;
+    }
+
+    inline app::arg_matching_result app::matching_short_flag(app::parsing_pkg &pp) {
+        arg_matching_result amr;
+        for (auto it = pp.matched_commands.rbegin(); it != pp.matched_commands.rend(); it++) {
+            auto c = (*it);
+            details::indexed_args &li = c->_short_args;
+            if (auto const &itz = li.find(pp.title); itz != li.end()) {
+                amr.matched = true;
+                amr.obj = itz->second;
+                break;
+            }
+        }
+        return amr;
+    }
+
+    inline int app::on_unknown_long_flag_found(app::parsing_pkg &pp, arg_matching_result &fmr) {
+        unused(pp);
+        unused(fmr);
+        std::cerr << "Unknown long flag: " << std::quoted(pp.title);
+        auto &c = pp.last_matched_cmd();
+        if (c.valid())
+            std::cerr << " under matched command: " << std::quoted(c.title());
+        std::cerr << '\n';
+        return 0;
+    }
+
+    inline int app::on_unknown_short_flag_found(app::parsing_pkg &pp, arg_matching_result &fmr) {
+        unused(pp);
+        unused(fmr);
+        std::cerr << "Unknown short flag: " << std::quoted(pp.title);
+        auto &c = pp.last_matched_cmd();
+        if (c.valid())
+            std::cerr << " under matched command: " << std::quoted(c.title());
+        std::cerr << '\n';
+        return 0;
+    }
+
+    inline app::cmd_matching_result app::matching_command(app::parsing_pkg &pp) {
+        cmd_matching_result cmr;
+        cmd &c = pp.curr_command();
+        details::indexed_commands &li = c._long_commands;
+        if (auto const &it = li.find(pp.title); it != li.end()) {
+            cmr.matched = true;
+            cmr.obj = it->second;
+        } else {
+            li = c._short_commands;
+            auto const &it1 = li.find(pp.title);
+            if (it1 != li.end()) {
+                cmr.matched = true;
+                cmr.obj = it1->second;
+            }
+        }
+        return cmr;
+    }
+
+    inline int app::on_unknown_command_found(parsing_pkg &pp, cmd_matching_result &cmr) {
+        unused(pp);
+        unused(cmr);
+        std::cerr << "Unknown command: " << std::quoted(pp.title);
+        auto &c = pp.last_matched_cmd();
+        if (c.valid())
+            std::cerr << " under matched command: " << std::quoted(c.title());
+        std::cerr << '\n';
+        return 0;
+    }
+
+    inline int app::invoke_command(cmd &c, string_array remain_args, parsing_pkg &pp) {
+        unused(pp);
+        unused(c);
+        unused(remain_args);
+        int rc{0};
+        if (c.on_pre_invoke())
+            rc = c.on_pre_invoke()(c, remain_args);
+        if (rc == 0) {
+            if (c.on_invoke())
+                rc = c.on_invoke()(c, remain_args);
+            else
+                std::cout << "INVOKE: " << std::quoted(c.title()) << ".\n";
+        }
+        if (c.on_post_invoke())
+            c.on_post_invoke()(c, remain_args);
+        return rc;
+    }
+
     inline int app::run(int argc, char *argv[]) {
         // std::cout << "Hello, World!" << std::endl;
 
+        parsing_pkg pp{this};
+        pp.matched_commands.push_back(this);
+
         for (int i = 1; i < argc; i++) {
+            pp.title = argv[i];
+            pp.index = i;
+
+            if (pp.title[0] == '-') {
+                // flag?
+                if (pp.title[1] == '-') {
+                    if (pp.title[2] == 0) {
+                        pp.passthru_flag = true;
+                        continue;
+                    }
+
+                    // long
+                    pp.title = pp.title.substr(2);
+                    auto fmr = matching_long_flag(pp);
+                    if (fmr.matched) {
+                        fmr.obj->hit_title(pp.title.c_str());
+                        pp.matched_flags.push_back(fmr.obj);
+                        if (fmr.obj->on_flag_hit()) {
+                            auto rc = fmr.obj->on_flag_hit()(
+                                    pp.last_matched_cmd(),
+                                    pp.last_matched_flg(),
+                                    remain_args(argv, i + 1, argc));
+                            if (rc < 0)
+                                return 0;
+                            if (rc == details::RequestHelpScreen)
+                                pp.help_requesting = true;
+                        }
+                        continue;
+                    }
+                    if (fmr.should_abort)
+                        return 0;
+                    pp.title = argv[i];
+                    if (treat_unknown_input_flag_as_error)
+                        return on_unknown_long_flag_found(pp, fmr);
+                    pp.unknown_flags.push_back(pp.title);
+                    continue;
+                }
+
+                // short flag
+                pp.title = pp.title.substr(1);
+                auto fmr = matching_short_flag(pp);
+                if (fmr.matched) {
+                    fmr.obj->hit_title(pp.title.c_str());
+                    pp.matched_flags.push_back(fmr.obj);
+                    if (fmr.obj->on_flag_hit()) {
+                        auto rc = fmr.obj->on_flag_hit()(
+                                pp.last_matched_cmd(),
+                                pp.last_matched_flg(),
+                                remain_args(argv, i + 1, argc));
+                        if (rc < 0)
+                            return 0;
+                        if (rc == details::RequestHelpScreen)
+                            pp.help_requesting = true;
+                    }
+                    continue;
+                }
+                if (fmr.should_abort)
+                    return 0;
+                pp.title = argv[i];
+                if (treat_unknown_input_flag_as_error)
+                    return on_unknown_short_flag_found(pp, fmr);
+                pp.unknown_flags.push_back(pp.title);
+                continue;
+            }
+
+            auto cmr = matching_command(pp);
+            if (cmr.matched) {
+                cmr.obj->hit_title(pp.title.c_str());
+                pp.matched_commands.push_back(cmr.obj);
+                if (cmr.obj->on_command_hit()) {
+                    auto rc = cmr.obj->on_command_hit()(
+                            pp.last_matched_cmd(),
+                            remain_args(argv, i + 1, argc));
+                    if (rc < 0)
+                        return 0;
+                    if (rc == details::RequestHelpScreen)
+                        pp.help_requesting = true;
+                }
+                continue;
+            }
+            if (cmr.should_abort)
+                return 0;
+            if (treat_unknown_input_command_as_error)
+                return on_unknown_command_found(pp, cmr);
+            pp.unknown_commands.push_back(argv[i]);
+
+#if 0
             if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
                 printf("Usage: App <options>\nOptions are:\n");
                 printf("Option list goes here");
@@ -496,10 +854,24 @@ namespace cmdr::opt {
                     break;
                 }
             }
+#endif
         }
 
-        print_usages();
+        if (pp.help_requesting) {
+            print_usages(&pp.curr_command());
+            return 0;
+        }
 
+        if (auto cc = pp.last_matched_cmd(); cc.valid()) {
+            if (cc.no_sub_commands()) {
+                // invoking cc
+                return invoke_command(cc, remain_args(pp, argv, pp.index, argc), pp);
+            }
+
+            pp.help_requesting = true;
+            print_usages(&pp.curr_command());
+            return 0;
+        }
         return 0;
     }
 

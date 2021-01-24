@@ -10,16 +10,6 @@ void fatal_exit(const std::string &msg) {
     exit(-1);
 }
 
-void add_global_options(cmdr::opt::app &cli) {
-    using namespace cmdr::opt;
-    cli += opt<bool>{}
-                   .titles("debug", "D", "debug-mode")
-                   .description("enable debugging mode for more verbose outputting");
-    cli += opt<bool>{}
-                   .titles("trace", "tr", "trace-mode")
-                   .description("enable tracing mode for developer perspective");
-}
-
 void add_server_menu(cmdr::opt::app &cli) {
     using namespace cmdr::opt;
 
@@ -43,7 +33,7 @@ void add_server_menu(cmdr::opt::app &cli) {
                       .description("set counter value");
 
         t1 += opt{"localhost"}
-                      .titles("host", "h", "hostname", "server-name")
+                      .titles("host", "H", "hostname", "server-name")
                       .description("hostname or ip address")
                       .group("TCP")
                       .placeholder("HOST[:IP]");
@@ -60,10 +50,16 @@ void add_server_menu(cmdr::opt::app &cli) {
                       .description("start the server as a daemon service, or run it at foreground")
                       // .group("")
                       .opt(opt_dummy{}())
-                      .opt(opt_dummy{}());
+                      .opt(opt_dummy{}())
+                      .on_invoke([](cmd const &c, string_array const &remain_args) -> int {
+                        unused(c);
+                        unused(remain_args);
+                        std::cout << c.title() << " invoked.\n";
+                        return 0;
+                      });
 
         t1 += subcmd{}
-                      .titles("stop", "st", "shutdown")
+                      .titles("stop", "t", "shutdown")
                       .description("stop the daemon service, or stop the server");
 
         t1 += subcmd{}
@@ -85,43 +81,6 @@ void add_server_menu(cmdr::opt::app &cli) {
     }
 }
 
-void add_generator_menu(cmdr::opt::app &cli) {
-    using namespace cmdr::opt;
-
-    // generators
-    cli += subcmd{}
-                   .titles("generator", "g", "gen")
-                   .description("generators of this app (such as manual, markdown, ...)")
-                   .group(SYS_MGMT_GROUP)
-                   .opt(opt_dummy{}())
-                   .opt(opt_dummy{}());
-    {
-        auto &t1 = *cli.last_added_command();
-        t1 += subcmd{}
-                      .titles("doc", "d", "markdown", "docx", "pdf", "tex")
-                      .description("generate a markdown document, or: pdf/TeX/...")
-                      .opt(opt_dummy{}())
-                      .opt(opt_dummy{}());
-
-        t1 += opt<int>{}
-                      .titles("count", "c")
-                      .description("set counter value")
-                      .default_value(cmdr::support_types((int16_t)(3)));
-
-        t1 += subcmd{}
-                      .titles("manual", "m", "man")
-                      .description("generate linux man page.")
-                      .opt(opt_dummy{}())
-                      .opt(opt_dummy{}());
-
-        t1 += subcmd{}
-                      .titles("shell", "s", "sh")
-                      .description("generate the bash/zsh auto-completion script or install it.")
-                      .opt(opt_dummy{}())
-                      .opt(opt_dummy{}());
-    }
-}
-
 int main(int argc, char *argv[]) {
     try {
         using namespace cmdr::opt;
@@ -133,8 +92,8 @@ int main(int argc, char *argv[]) {
 
         cli.opt(opt_dummy{}());
 
-        add_global_options(cli);
-        add_generator_menu(cli);
+        // add_global_options(cli);
+        // add_generator_menu(cli);
         add_server_menu(cli);
 
 #if defined(_DEBUG)

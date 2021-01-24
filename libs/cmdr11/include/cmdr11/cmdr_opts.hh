@@ -17,6 +17,8 @@ namespace cmdr::opt {
         public:
             opt_base() = default;
             ~opt_base() override = default;
+            opt_base(opt_base &&o) noexcept = delete;
+            opt_base &operator=(const opt_base &o) = delete;
             template<typename A, typename... Args,
                      std::enable_if_t<
                              std::is_constructible<arg, A, Args...>::value &&
@@ -24,8 +26,14 @@ namespace cmdr::opt {
                              int> = 0>
             explicit opt_base(A &&a0, Args &&...args)
                 : _arg(std::forward<A>(a0), std::forward<Args>(args)...) {}
-            explicit opt_base(arg &&v)
-                : _arg(std::move(v)) {}
+            template<typename A,
+                     std::enable_if_t<!std::is_same<std::decay_t<A>, arg>::value &&
+                                              !std::is_same<std::decay_t<A>, opt_base>::value,
+                                      int> = 0>
+            explicit opt_base(A &&v)
+                : _arg(std::forward<A>(v)) {}
+            //explicit opt_base(arg &&v)
+            //    : _arg(std::move(v)) {}
 
         public:
             virtual details::option operator()() const {
@@ -80,7 +88,7 @@ namespace cmdr::opt {
                 return (*this);
             }
 
-            opt_base &default_value(const support_types &v) {
+            opt_base &default_value(support_types const &v) {
                 _arg.default_value(v);
                 return (*this);
             }
@@ -183,7 +191,7 @@ namespace cmdr::opt {
     class opt_new : public opts::opt_base {
     public:
         opt_new() = default;
-        explicit opt_new(const T &default_value) {
+        explicit opt_new(T const &default_value) {
             this->default_value(default_value);
         }
         ~opt_new() override = default;
@@ -194,14 +202,14 @@ namespace cmdr::opt {
         opt() = default;
         ~opt() override = default;
         template<typename A, typename... Args,
-                std::enable_if_t<
-                        std::is_constructible<arg, A, Args...>::value &&
-                        !std::is_same<std::decay_t<A>, opt>::value,
-                        int> = 0>
+                 std::enable_if_t<
+                         std::is_constructible<arg, A, Args...>::value &&
+                                 !std::is_same<std::decay_t<A>, opt>::value,
+                         int> = 0>
         explicit opt(A &&a0, Args &&...args)
-        : opts::opt_base(std::forward<A>(a0), std::forward<Args>(args)...) {}
+            : opts::opt_base(std::forward<A>(a0), std::forward<Args>(args)...) {}
         explicit opt(arg &&v)
-        : opts::opt_base(std::move(v)) {}
+            : opts::opt_base(std::move(v)) {}
     };
 
 #define DEFINE_OPT_BY_TYPE(typ)               \

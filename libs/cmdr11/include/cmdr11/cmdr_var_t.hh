@@ -177,36 +177,6 @@ namespace cmdr::opt::vars {
             return std::any_cast<T>(*this);
         }
 
-        // template<class T, std::enable_if_t<!is_duration<T>::value, int> = 0>
-        // static void _format(std::ostream &os, T const &v) {
-        //     os << v;
-        // }
-        // template<class T>
-        // static void _format<T,
-        //                     std::enable_if_t<is_duration<T>::value, int>>(std::ostream &os, T const &v) {
-        //     format_duration(os, v);
-        // }
-
-        template<class U>
-        explicit streamable_any(U &&t, typename std::enable_if<is_duration<std::decay_t<U>>::value>::type * = nullptr)
-            : std::any(std::forward<U>(t))
-            , streamer([](std::ostream &os, streamable_any const &self) {
-                static_assert(is_duration<std::decay_t<U>>::value);
-                // os << "[**duration**] ";
-                chrono::format_duration(os, std::any_cast<std::decay_t<U>>(self));
-            }) {}
-
-        template<class V>
-        explicit streamable_any(V &&t, typename std::enable_if<is_stl_container<std::decay_t<V>>::value>::type * = nullptr)
-            : std::any(std::forward<V>(t))
-            , streamer([](std::ostream &os, streamable_any const &self) {
-                os << '[';
-                for (auto const v : std::any_cast<std::decay_t<V>>(self)) {
-                    os << v << ',';
-                }
-                os << ']';
-            }) {}
-
         template<class T,
                  typename std::enable_if<
                          !is_duration<std::decay_t<T>>::value &&
@@ -234,6 +204,36 @@ namespace cmdr::opt::vars {
                 }
             }) {}
 
+        // template<class T, std::enable_if_t<!is_duration<T>::value, int> = 0>
+        // static void _format(std::ostream &os, T const &v) {
+        //     os << v;
+        // }
+        // template<class T>
+        // static void _format<T,
+        //                     std::enable_if_t<is_duration<T>::value, int>>(std::ostream &os, T const &v) {
+        //     format_duration(os, v);
+        // }
+
+        template<class U>
+        explicit streamable_any(U &&t, typename std::enable_if<is_duration<std::decay_t<U>>::value>::type * = nullptr)
+                : std::any(std::forward<U>(t))
+                  , streamer([](std::ostream &os, streamable_any const &self) {
+                  static_assert(is_duration<std::decay_t<U>>::value);
+                  // os << "[**duration**] ";
+                  chrono::format_duration(os, std::any_cast<std::decay_t<U>>(self));
+                }) {}
+
+        template<class V>
+        explicit streamable_any(V &&t, typename std::enable_if<is_stl_container<std::decay_t<V>>::value>::type * = nullptr)
+                : std::any(std::forward<V>(t))
+                  , streamer([](std::ostream &os, streamable_any const &self) {
+                  os << '[';
+                  for (auto const v : std::any_cast<std::decay_t<V>>(self)) {
+                      os << v << ',';
+                  }
+                  os << ']';
+                }) {}
+
         // specialize for bool streaming output
         explicit streamable_any(bool t)
             : std::any(std::forward<bool>(t))
@@ -244,6 +244,12 @@ namespace cmdr::opt::vars {
         streamable_any()
             : streamer([](std::ostream &, streamable_any const &) {}) {}
         ~streamable_any() {}
+
+        template<class T>
+        streamable_any &operator=(T const &v) {
+            std::any::operator=(v);
+            return (*this);
+        }
     };
 
     /**
@@ -284,6 +290,12 @@ namespace cmdr::opt::vars {
 
         bool operator==(const var_t &r) {
             return _value == r._value;
+        }
+
+        template<class T>
+        var_t &operator=(T const &v) {
+            _value.operator=(v);
+            return (*this);
         }
 
     public:

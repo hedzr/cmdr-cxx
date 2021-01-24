@@ -20,6 +20,71 @@ void add_global_options(cmdr::opt::app &cli) {
                    .description("enable tracing mode for developer perspective");
 }
 
+void add_server_menu(cmdr::opt::app &cli) {
+    using namespace cmdr::opt;
+
+    cli += opt_subcmd{}
+                   .titles("server", "s", "svr")
+                   .description("server operations for listening")
+                   .group("TCP/UDP/Unix")
+                   .opt(opt_dummy{}())
+                   .opt(opt_dummy{}());
+    {
+        auto &t1 = *cli.last_added_command();
+
+        t1 += opt{(int16_t)(8)}
+                      .titles("retry", "r")
+                      .description("set the retry times")
+                // .default_value(cmdr::support_types((int16_t)(7)))
+                ;
+
+        t1 += opt{(uint64_t) 2}
+                      .titles("count", "c")
+                      .description("set counter value");
+
+        t1 += opt{"localhost"}
+                      .titles("host", "h", "hostname", "server-name")
+                      .description("hostname or ip address")
+                      .group("TCP")
+                      .placeholder("HOST[:IP]");
+
+        t1 += opt{(int16_t) 4567}
+                      .titles("port", "p")
+                      .description("listening port number")
+                      .group("TCP")
+                      .placeholder("PORT")
+                      .env_vars("PORT", "SERVER_PORT");
+
+        t1 += opt_subcmd{}
+                      .titles("start", "s", "startup", "run")
+                      .description("start the server as a daemon service, or run it at foreground")
+                      // .group("")
+                      .opt(opt_dummy{}())
+                      .opt(opt_dummy{}());
+
+        t1 += opt_subcmd{}
+                      .titles("stop", "st", "shutdown")
+                      .description("stop the daemon service, or stop the server");
+
+        t1 += opt_subcmd{}
+                      .titles("pause", "p")
+                      .description("pause the daemon service");
+
+        t1 += opt_subcmd{}
+                      .titles("resume", "re")
+                      .description("resume the paused daemon service");
+        t1 += opt_subcmd{}
+                      .titles("reload", "r")
+                      .description("reload the daemon service");
+        t1 += opt_subcmd{}
+                      .titles("hot-reload", "hr")
+                      .description("hot-reload the daemon service without stopping the process");
+        t1 += opt_subcmd{}
+                      .titles("status", "st", "info", "details")
+                      .description("display the running status of the daemon service");
+    }
+}
+
 void add_generator_menu(cmdr::opt::app &cli) {
     using namespace cmdr::opt;
 
@@ -68,39 +133,9 @@ int main(int argc, char *argv[]) {
 
         cli.opt(opt_dummy{}());
 
-        cli += opt_subcmd{}
-                       .titles("server", "s", "svr")
-                       .description("server operations for listening")
-                       .group("TCP/UDP/Unix")
-                       .opt(opt_dummy{}())
-                       .opt(opt_dummy{}());
-
-        cli += opt_int{}
-                       .titles("count", "c")
-                       .description("set counter value")
-                       .default_value(cmdr::support_types((int16_t)(3)));
-
-        cli += opt{(int16_t)(8)}
-                       .titles("retry", "r")
-                       .description("set the retry times")
-                // .default_value(cmdr::support_types((int16_t)(7)))
-                ;
-
-        cli += opt{"localhost"}
-                       .titles("host", "h", "hostname", "server-name")
-                       .description("hostname or ip address")
-                       .group("TCP")
-                       .placeholder("HOST[:IP]");
-
-        cli += opt{(int16_t)4567}
-                       .titles("port", "p")
-                       .description("listening port number")
-                       .group("TCP")
-                       .placeholder("PORT")
-                       .env_vars("PORT", "SERVER_PORT");
-
         add_global_options(cli);
         add_generator_menu(cli);
+        add_server_menu(cli);
 
 #if defined(_DEBUG)
         // auto &store = cli.store();
@@ -129,8 +164,12 @@ int main(int argc, char *argv[]) {
             fatal_exit("  ^-- ERR: expect '45m'.");
 #endif
 
-        assert(cli["count"].valid());
-        assert(cli["host"].valid());
+        cmd &cc = cli("server");
+        assert(cc["count"].valid());
+        assert(cc["host"].valid());
+        assert(cc("status").valid());
+        assert(cc("start").valid());
+        assert(cc("run", true).valid());
 
         using namespace cmdr::terminal::colors;
         // auto &c = colorize::instance();

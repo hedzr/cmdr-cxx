@@ -56,23 +56,24 @@ namespace study {
     public:
         // OS &os;
         typedef std::unordered_map<std::type_index, std::function<void(std::ostream &os, std::any const &)>> R;
-        R any_visitors;
-        streamer_any()
-            : any_visitors{
-                      to_any_visitor<void>([](std::ostream &os) { os << "{}"; }),
-                      to_any_visitor<int>([](std::ostream &os, int x) { os << x; }),
-                      to_any_visitor<unsigned>([](std::ostream &os, unsigned x) { os << x; }),
-                      to_any_visitor<float>([](std::ostream &os, float x) { os << x; }),
-                      to_any_visitor<double>([](std::ostream &os, double x) { os << x; }),
-                      to_any_visitor<char const *>([](std::ostream &os, char const *s) { os << std::quoted(s); }),
-                      // ... add more handlers for your types ...
-                      to_any_visitor<std::chrono::nanoseconds>([](std::ostream &os, const std::chrono::nanoseconds &x) { cmdr::chrono::format_duration(os, x); }),
-                      to_any_visitor<std::chrono::seconds>([](std::ostream &os, const std::chrono::seconds &x) { cmdr::chrono::format_duration(os, x); }),
-              } {}
-
+        static R &any_visitors() {
+            static R _visitors = {
+                to_any_visitor<void>([](std::ostream &os) { os << "{}"; }),
+                to_any_visitor<int>([](std::ostream &os, int x) { os << x; }),
+                to_any_visitor<unsigned>([](std::ostream &os, unsigned x) { os << x; }),
+                to_any_visitor<float>([](std::ostream &os, float x) { os << x; }),
+                to_any_visitor<double>([](std::ostream &os, double x) { os << x; }),
+                to_any_visitor<char const *>([](std::ostream &os, char const *s) { os << std::quoted(s); }),
+                // ... add more handlers for your types ...
+                to_any_visitor<std::chrono::nanoseconds>([](std::ostream &os, const std::chrono::nanoseconds &x) { cmdr::chrono::format_duration(os, x); }),
+                to_any_visitor<std::chrono::seconds>([](std::ostream &os, const std::chrono::seconds &x) { cmdr::chrono::format_duration(os, x); }),
+            };
+            return _visitors;
+        }
+        streamer_any() = default;
 
         template<class T, class F>
-        inline std::pair<const std::type_index, std::function<void(std::ostream &os, std::any const &)>>
+        static inline std::pair<const std::type_index, std::function<void(std::ostream &os, std::any const &)>>
         to_any_visitor(F const &f) {
             return {
                     std::type_index(typeid(T)),
@@ -85,8 +86,8 @@ namespace study {
         }
 
         inline void process(std::ostream &os, const std::any &a) {
-            if (const auto it = any_visitors.find(std::type_index(a.type()));
-                it != any_visitors.cend()) {
+            if (const auto it = any_visitors().find(std::type_index(a.type()));
+                it != any_visitors().cend()) {
                 it->second(os, a);
             } else {
                 std::cout << "Unregistered type " << std::quoted(a.type().name());
@@ -97,9 +98,12 @@ namespace study {
         inline void register_any_visitor(F const &f) {
             std::cout << "Register visitor for type "
                       << std::quoted(typeid(T).name()) << '\n';
-            any_visitors.insert(to_any_visitor<T>(f));
+            any_visitors().insert(to_any_visitor<T>(f));
         }
     };
+
+    //template<class OS>
+    //inline template streamer_any::R streamer_any::any_visitors;
 
 } // namespace study
 

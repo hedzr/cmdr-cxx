@@ -10,6 +10,7 @@
 #include <string>
 #include <variant>
 
+#include "cmdr11/cmdr_var_t.hh"
 
 void test_inplace_and_emplace() {
     // emplace in map
@@ -39,6 +40,27 @@ void test_inplace_and_emplace() {
     std::cout << o3.value() << std::endl;
 }
 
+void test_variant() {
+    std::variant<float, long, double> z = 0;
+    z = 0.0;
+}
+
+void test_any() {
+    std::any z = 0;
+    z = 0.0;
+    z = "str";
+}
+
+void test_streamable_any(){
+    cmdr::opt::vars::var_t<cmdr::opt::vars::streamable_any> v("yes");
+    std::cout << v << '\n';
+    v = 123;
+    std::cout << v << '\n';
+}
+
 int main() {
+    test_variant();
+    test_any();
     test_inplace_and_emplace();
+    test_streamable_any();
 }

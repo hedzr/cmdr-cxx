@@ -139,7 +139,7 @@ namespace cmdr::opt {
             bool is_flag{false};
             bool passthru_flag{false};
             int matching_flag_type{}; // short: 0, long: 1, special: 2, ...
-            std::size_t pos{}; // start position of title
+            std::size_t pos{};        // start position of title
 
             explicit parsing_context(app *a)
                 : _root(a) {}
@@ -174,6 +174,7 @@ namespace cmdr::opt {
             void add_unknown_arg(std::string const &obj) { unknown_flags.push_back(obj); }
             void add_remain_arg(std::string const &arg) { non_commands.push_back(arg); }
             [[nodiscard]] string_array const &remain_args() const { return non_commands; }
+            auto &mc() { return matched_commands; }
             void reverse_foreach_matched_commands(std::function<void(details::cmd_pointers::value_type &it)> f) {
                 std::for_each(matched_commands.rbegin(), matched_commands.rend(), f);
             }
@@ -255,7 +256,10 @@ namespace cmdr::opt {
                            std::function<int(parsing_context &pc, int argc, char *argv[])>>
                 _internal_actions{};
         int _minimal_tab_width{43};
+        static bool _longest_first;
     };
+
+    inline bool app::_longest_first = true;
 
 } // namespace cmdr::opt
 

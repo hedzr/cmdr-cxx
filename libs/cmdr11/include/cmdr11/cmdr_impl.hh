@@ -125,6 +125,7 @@ namespace cmdr::opt {
     next_combined:
         auto amr = matching_short_flag(pc);
         if (amr.matched) {
+            std::cout << "! " << amr.matched_str << std::endl;
             amr.obj->hit_title(amr.matched_str.c_str());
             pc.add_matched_arg(amr.obj);
             if (amr.obj->on_flag_hit()) {
@@ -153,7 +154,7 @@ namespace cmdr::opt {
             return details::Abortion;
 
         pc.title = argv[pc.index];
-        pc.add_unknown_arg(pc.title);
+        pc.add_unknown_arg(pc.title.substr(pc.pos));
         if (_treat_unknown_input_flag_as_error) {
             return unknown_short_flag_found(pc, amr);
         }
@@ -183,26 +184,45 @@ namespace cmdr::opt {
                           bool is_long, bool is_special,
                           std::function<details::indexed_args const &(cmd *)> li) {
         arg_matching_result amr;
-        pc.reverse_foreach_matched_commands([=, &amr](auto &it) {
+        auto &mc = pc.mc();
+
+        for (auto it = mc.rbegin(); it != mc.rend(); it++) {
+            // pc.reverse_foreach_matched_commands([=, &amr](auto &it) {
             // auto d = li(it);
             // if (auto const &itz = d.find(pc.title); itz != d.end()) {
             //     amr.matched = true;
             //     amr.obj = (arg *) &(itz->second->update_hit_count(pc.title, 1, is_long, is_special));
             //     return;
             // }
-
-            auto z = li(it);
+            auto ptr = (*it);
+            auto title = pc.title.substr(pc.pos);
+        lookup_parents:
+            auto z = li(ptr);
             // std::unordered_map<std::string, arg *> z{};
-            for (auto itz = z.begin(); itz != z.end(); itz++) {
-                if (string::has_prefix(pc.title, itz->first)) {
-                    amr.matched = true;
-                    amr.matched_length = itz->first.length();
-                    amr.matched_str = itz->first;
-                    amr.obj = (arg *) &(itz->second->update_hit_count(pc.title.substr(0, itz->first.length()), 1, is_long, is_special));
-                    return;
+            for (auto &itz : z) {
+                if (string::has_prefix(title, itz.first)) {
+                    if (_longest_first) {
+                        if (itz.first.length() > (std::size_t) amr.matched_length) {
+                            amr.matched = true;
+                            amr.matched_length = itz.first.length();
+                            amr.matched_str = itz.first;
+                            amr.obj = (arg *) &(itz.second->update_hit_count(title.substr(0, itz.first.length()), 1, is_long, is_special));
+                        }
+                    } else {
+                        amr.matched = true;
+                        amr.matched_length = itz.first.length();
+                        amr.matched_str = itz.first;
+                        amr.obj = (arg *) &(itz.second->update_hit_count(title.substr(0, itz.first.length()), 1, is_long, is_special));
+                        break;
+                    }
                 }
             }
-        });
+
+            if (ptr->owner()) {
+                ptr = ptr->owner();
+                goto lookup_parents;
+            }
+        }
         return amr;
     }
 
@@ -230,7 +250,7 @@ namespace cmdr::opt {
         if (_on_unknown_argument_found)
             if (auto rc = _on_unknown_argument_found(pc.title, pc.last_matched_cmd(), true, false); rc != details::RunDefaultAction)
                 return rc;
-        std::cerr << "Unknown long flag: " << std::quoted(pc.title);
+        std::cerr << "Unknown long flag: " << std::quoted(pc.title.substr(pc.pos));
         auto &c = pc.last_matched_cmd();
         if (c.valid())
             std::cerr << " under matched command: " << std::quoted(c.title());
@@ -244,7 +264,7 @@ namespace cmdr::opt {
         if (_on_unknown_argument_found)
             if (auto rc = _on_unknown_argument_found(pc.title, pc.last_matched_cmd(), false, false); rc != details::RunDefaultAction)
                 return rc;
-        std::cerr << "Unknown short flag: " << std::quoted(pc.title);
+        std::cerr << "Unknown short flag: " << std::quoted(pc.title.substr(pc.pos));
         auto &c = pc.last_matched_cmd();
         if (c.valid())
             std::cerr << " under matched command: " << std::quoted(c.title());

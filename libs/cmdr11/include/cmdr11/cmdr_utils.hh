@@ -176,20 +176,20 @@ namespace cmdr::util {
 
 
     template<typename T>
-    class Singleton {
+    class singleton {
     public:
         static T &instance();
 
-        Singleton(const Singleton &) = delete;
-        Singleton &operator=(const Singleton) = delete;
+        singleton(const singleton &) = delete;
+        singleton &operator=(const singleton) = delete;
 
     protected:
         struct token {};
-        Singleton() = default;
+        singleton() = default;
     };
 
     template<typename T>
-    inline T &Singleton<T>::instance() {
+    inline T &singleton<T>::instance() {
         static const std::unique_ptr<T> instance{new T{token{}}};
         return *instance;
     }

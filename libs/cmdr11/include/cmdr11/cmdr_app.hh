@@ -5,6 +5,8 @@
 #ifndef CMDR_CXX11_CMDR_APP_HH
 #define CMDR_CXX11_CMDR_APP_HH
 
+#include <utility>
+
 #include "cmdr_arg.hh"
 #include "cmdr_cmd.hh"
 #include "cmdr_cmn.hh"
@@ -32,6 +34,11 @@ namespace cmdr::opt {
         cmdr::opt::vars::store _store;
 
         // static colorize &colorizer() {...}
+
+        details::on_pre_invoke _global_on_pre_invoke;
+        details::on_post_invoke _global_on_post_invoke;
+        bool _treat_unknown_input_command_as_error = true;
+        bool _treat_unknown_input_flag_as_error = true;
 
     private:
         app() = default;
@@ -79,10 +86,10 @@ namespace cmdr::opt {
                           const_chars description = nullptr,
                           const_chars examples = nullptr);
 
-        //        app &option(const option &opt) {
-        //            opt(*this);
-        //            return (*this);
-        //        }
+        /**
+         * @brief reset all internal parsing states and preparing for new command-line parsing.
+         */
+        void reset();
 
         int run(int argc, char *argv[]) override;
 
@@ -98,11 +105,33 @@ namespace cmdr::opt {
             }
         }
 
-        const bool treat_unknown_input_command_as_error = true;
-        const bool treat_unknown_input_flag_as_error = true;
+        void print_usages(cmd *start = nullptr);
+
+    public:
+        [[maybe_unused]] void dummy() {}
+        [[nodiscard]] bool help_hit() const { return _help_hit > 0; }
+        [[nodiscard]] cmd *command_hit() const { return _cmd_hit; }
+
+    public:
+        app &set_global_pre_invoke_handler(details::on_pre_invoke cb) {
+            _global_on_pre_invoke = std::move(cb);
+            return (*this);
+        }
+        app &set_global_post_invoke_handler(details::on_post_invoke cb) {
+            _global_on_post_invoke = std::move(cb);
+            return (*this);
+        }
+        app &treat_unknown_input_command_as_error(bool b) {
+            _treat_unknown_input_command_as_error = b;
+            return (*this);
+        }
+        app &treat_unknown_input_flag_as_error(bool b) {
+            _treat_unknown_input_flag_as_error = b;
+            return (*this);
+        }
 
     private:
-        struct parsing_pkg {
+        struct parsing_context {
             cmd *_root;
             std::string title{};
             int index{};
@@ -144,24 +173,26 @@ namespace cmdr::opt {
             std::exception e;
         };
 
-        static string_array remain_args(parsing_pkg &pp, char *argv[], int i, int argc);
+        static string_array remain_args(parsing_context &pc, char *argv[], int i, int argc);
         static string_array remain_args(char *argv[], int i, int argc);
 
-        details::Action process_command(parsing_pkg &pp, int argc, char *argv[]);
-        details::Action process_long_flag(parsing_pkg &pp, int argc, char *argv[]);
-        details::Action process_short_flag(parsing_pkg &pp, int argc, char *argv[]);
+        details::Action process_command(parsing_context &pc, int argc, char *argv[]);
+        details::Action process_special_flag(parsing_context &pc, int argc, char *argv[]);
+        details::Action process_long_flag(parsing_context &pc, int argc, char *argv[]);
+        details::Action process_short_flag(parsing_context &pc, int argc, char *argv[]);
 
-        cmd_matching_result matching_command(parsing_pkg &pp);
-        static arg_matching_result matching_long_flag(parsing_pkg &pp);
-        static arg_matching_result matching_short_flag(parsing_pkg &pp);
+        static cmd_matching_result matching_command(parsing_context &pc);
+        static arg_matching_result matching_long_flag(parsing_context &pc);
+        static arg_matching_result matching_short_flag(parsing_context &pc);
+        static arg_matching_result matching_flag_on(parsing_context &pc, std::function<details::indexed_args const &(cmd *)> li);
 
-        details::Action on_unknown_command_found(parsing_pkg &pp, cmd_matching_result &cmr);
-        details::Action on_unknown_long_flag_found(parsing_pkg &pp, arg_matching_result &fmr);
-        details::Action on_unknown_short_flag_found(parsing_pkg &pp, arg_matching_result &fmr);
+        details::Action unknown_command_found(parsing_context &pc, cmd_matching_result &cmr);
+        details::Action unknown_long_flag_found(parsing_context &pc, arg_matching_result &amr);
+        details::Action unknown_short_flag_found(parsing_context &pc, arg_matching_result &amr);
 
-        int invoke_command(cmd& cc, string_array remain_args, parsing_pkg& pp);
+        int invoke_command(cmd &cc, string_array remain_args, parsing_context &pc);
 
-        void handle_eptr(std::exception_ptr eptr) const {
+        static void handle_eptr(std::exception_ptr eptr) {
             try {
                 if (eptr) {
                     std::rethrow_exception(eptr);
@@ -171,29 +202,19 @@ namespace cmdr::opt {
             }
         }
 
-    public:
-        [[maybe_unused]] void dummy() {}
+        static void print_cmd(std::ostream &ss,
+                              cmdr::terminal::colors::colorize &c, cmd *cc,
+                              std::string const &app_name, std::string const &exe_name);
+
+        void initialize_internal_commands();
+        void add_global_options(cmdr::opt::app &cli);
+        void add_generator_menu(cmdr::opt::app &cli);
 
     public:
         app &operator+(const arg &a) override;
         app &operator+=(const arg &a) override;
         app &operator+(const cmd &a) override;
         app &operator+=(const cmd &a) override;
-
-    public:
-        [[nodiscard]] bool help_hit() const { return _help_hit > 0; }
-        [[nodiscard]] cmd *command_hit() const { return _cmd_hit; }
-
-    public:
-        void print_usages(cmd *start = nullptr);
-
-    private:
-        static void print_cmd(std::ostream &ss, cmdr::terminal::colors::colorize &c, cmd *cc,
-                       std::string const &app_name, std::string const &exe_name);
-
-        void initialize_internal_commands();
-        void add_global_options(cmdr::opt::app &cli);
-        void add_generator_menu(cmdr::opt::app &cli);
 
     private:
         int _help_hit{};

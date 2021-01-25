@@ -49,7 +49,7 @@ namespace cmdr::opt {
          * using [exit(n)] in C-API.
          */
         typedef std::function<Action(cmd const &c,
-                                  string_array const &remain_args)>
+                                     string_array const &remain_args)>
                 on_command_hit; // callback handler
 
         /**
@@ -60,8 +60,8 @@ namespace cmdr::opt {
          * using [exit(n)] in C-API.
          */
         typedef std::function<Action(cmd const &c,
-                                  arg const &f,
-                                  string_array const &remain_args)>
+                                     arg const &f,
+                                     string_array const &remain_args)>
                 on_flag_hit; // callback handler
 
         //

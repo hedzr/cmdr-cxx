@@ -88,6 +88,28 @@ namespace cmdr::opt {
                 return (*this);
             }
 
+            /**
+             * @brief a special flag is a 2-tilde-leading options, such as '~~tree'.
+             *
+             * NOTE that any special flags will be hidden in help screen.
+             *
+             * @param b
+             * @return
+             */
+            opt_base &special(bool b = true) {
+                _arg.special(b);
+                return (*this);
+            }
+            /**
+             * @brief the 2-hyphen-leading option shouldn't be matched.
+             * @param b
+             * @return
+             */
+            opt_base &no_non_special(bool b = true) {
+                _arg.no_non_special(b);
+                return (*this);
+            }
+
             opt_base &placeholder(const_chars s) {
                 _arg.placeholder(s);
                 return (*this);

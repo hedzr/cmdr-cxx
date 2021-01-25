@@ -52,7 +52,12 @@
 #include "cmdr_arg.hh"
 #include "cmdr_cmd.hh"
 #include "cmdr_cmn.hh"
+
+#include "cmdr_app_inl.h"
+#include "cmdr_cmd_inl.h"
 #include "cmdr_impl.hh"
+#include "cmdr_internals.hh"
+
 #include "cmdr_opts.hh"
 
 

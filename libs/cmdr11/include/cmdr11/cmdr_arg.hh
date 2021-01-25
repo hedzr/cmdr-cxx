@@ -13,8 +13,8 @@
 #include <utility>
 #include <variant>
 
-#include "cmdr_var_t.hh"
 #include "cmdr_cmn.hh"
+#include "cmdr_var_t.hh"
 
 
 namespace cmdr::opt {
@@ -31,8 +31,12 @@ namespace cmdr::opt {
         std::string _description;
         std::string _examples;
         std::string _group;
-        bool _hidden{false};
+        bool _hidden : 1;
+        bool _special : 1;
+        bool _no_non_special : 1;
+
         std::string _hit_title;
+        int _hit_count;
 
     public:
         bas() = default;
@@ -58,7 +62,11 @@ namespace cmdr::opt {
             __COPY(_examples);
             __COPY(_group);
             __COPY(_hidden);
+            __COPY(_special);
+            __COPY(_no_non_special);
+
             __COPY(_hit_title);
+            __COPY(_hit_count);
         }
 
     public:
@@ -88,7 +96,7 @@ namespace cmdr::opt {
         _##mn = s;          \
         return (*this);     \
     }                       \
-    typ const &mn() const { return _##mn; }
+    typ mn() const { return _##mn; }
 
         PROP_SET2(long)
         PROP_SET2(short)
@@ -98,12 +106,23 @@ namespace cmdr::opt {
         // PROP_SET(description)
         PROP_SET(desc_long)
         PROP_SET4(hidden, bool)
+        PROP_SET4(special, bool)
+        PROP_SET4(no_non_special, bool)
+
         PROP_SET(hit_title)
+        PROP_SET4(hit_count, int)
 
 #undef PROP_SET
 #undef PROP_SET2
 #undef PROP_SET3
 #undef PROP_SET4
+
+    public:
+        bas &update_hit_count(std::string const &hit_title, int inc_hit_count = 1) {
+            _hit_title = hit_title;
+            _hit_count += inc_hit_count;
+            return (*this);
+        }
 
     public:
         [[nodiscard]] virtual std::string title() const {
@@ -268,11 +287,11 @@ namespace cmdr::opt {
         return (*this);              \
     }                                \
     std::string const &title_##mn() const { return _##mn; }
-#define PROP_SET3(mn, typ)     \
+#define PROP_SET3(mn, typ)  \
     arg &mn(typ const &s) { \
-        _##mn = s;             \
-        return (*this);        \
-    }                          \
+        _##mn = s;          \
+        return (*this);     \
+    }                       \
     typ const &mn() const { return _##mn; }
 
         // PROP_SET3(env_vars, string_array)

@@ -284,9 +284,13 @@ namespace cmdr::opt {
 
         ss << std::endl
            << "Commands" << std::endl;
-        cc->print_commands(ss, c, _minimal_tab_width, true, 0);
 
+        std::ostringstream os1;
+        cc->print_commands(os, c, _minimal_tab_width, true, 0);
+
+        std::ostringstream os2;
         auto trivial = cc;
+        auto saved_minimal_tab_width = _minimal_tab_width;
         do {
             std::ostringstream tt;
             if (trivial == cc)
@@ -297,10 +301,18 @@ namespace cmdr::opt {
                 tt << "Global Options";
             }
 
-            ss << std::endl
-               << tt.str() << std::endl;
-            trivial->print_flags(ss, c, _minimal_tab_width, true, 0);
+            os2 << std::endl
+                << tt.str() << std::endl;
+            trivial->print_flags(os2, c, _minimal_tab_width, true, 0);
         } while ((trivial = trivial->owner()) != nullptr);
+
+        if (saved_minimal_tab_width < _minimal_tab_width) {
+            std::ostringstream os3;
+            cc->print_commands(os, c, _minimal_tab_width, true, 0);
+            ss << os3.str() << os2.str();
+        } else {
+            ss << os1.str() << os2.str();
+        }
 
         unused(app_name);
         unused(exe_name);

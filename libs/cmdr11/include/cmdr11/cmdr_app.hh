@@ -144,32 +144,20 @@ namespace cmdr::opt {
             std::exception e;
         };
 
-        static string_array remain_args(parsing_pkg &pp, char *argv[], int i, int argc) {
-            string_array a;
-            for (auto &it : pp.non_commands) {
-                a.push_back(it);
-            }
-            for (; i < argc; i++) {
-                a.push_back(argv[i]);
-            }
-            return a;
-        }
+        static string_array remain_args(parsing_pkg &pp, char *argv[], int i, int argc);
+        static string_array remain_args(char *argv[], int i, int argc);
 
-        static string_array remain_args(char *argv[], int i, int argc) {
-            string_array a;
-            for (; i < argc; i++) {
-                a.push_back(argv[i]);
-            }
-            return a;
-        }
+        details::Action process_command(parsing_pkg &pp, int argc, char *argv[]);
+        details::Action process_long_flag(parsing_pkg &pp, int argc, char *argv[]);
+        details::Action process_short_flag(parsing_pkg &pp, int argc, char *argv[]);
 
         cmd_matching_result matching_command(parsing_pkg &pp);
-        arg_matching_result matching_long_flag(parsing_pkg &pp);
-        arg_matching_result matching_short_flag(parsing_pkg &pp);
+        static arg_matching_result matching_long_flag(parsing_pkg &pp);
+        static arg_matching_result matching_short_flag(parsing_pkg &pp);
 
-        int on_unknown_command_found(parsing_pkg &pp, cmd_matching_result &cmr);
-        int on_unknown_long_flag_found(parsing_pkg &pp, arg_matching_result &fmr);
-        int on_unknown_short_flag_found(parsing_pkg &pp, arg_matching_result &fmr);
+        details::Action on_unknown_command_found(parsing_pkg &pp, cmd_matching_result &cmr);
+        details::Action on_unknown_long_flag_found(parsing_pkg &pp, arg_matching_result &fmr);
+        details::Action on_unknown_short_flag_found(parsing_pkg &pp, arg_matching_result &fmr);
 
         int invoke_command(cmd& cc, string_array remain_args, parsing_pkg& pp);
 

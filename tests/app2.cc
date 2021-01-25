@@ -10,6 +10,100 @@ void fatal_exit(const std::string &msg) {
     exit(-1);
 }
 
+void add_test_menu(cmdr::opt::app &cli) {
+    using namespace cmdr::opt;
+
+    cli += subcmd{}
+                   .titles("main", "m", "main-command")
+                   .description("main command for testing")
+                   .group("Test")
+                   .opt(opt_dummy{}())
+                   .opt(opt_dummy{}());
+    {
+        auto &t1 = *cli.last_added_command();
+
+        t1 += opt{10}
+                      .titles("retry", "r")
+                      .description("set the retry times");
+        t1 += opt{9}
+                .titles("retry1", "r1")
+                .description("set the retry times");
+        t1 += opt<bool>{}
+                .titles("arch", "a")
+                .description("flag a");
+        t1 += opt<bool>{}
+                .titles("bech", "b")
+                .description("flag b");
+        t1 += opt<bool>{}
+                .titles("coach", "c")
+                .description("flag c");
+        t1 += opt<bool>{}
+                .titles("dent", "d")
+                .description("flag d");
+        t1 += opt<bool>{}
+                .titles("etch", "e")
+                .description("flag e");
+
+        t1 += subcmd{}
+                .titles("sub1", "s1", "svr1")
+                .description("server operations for listening")
+                ;
+        t1 += subcmd{}
+                .titles("sub2", "s2", "svr2")
+                .description("server operations for listening")
+                ;
+
+        auto ct1 = t1("sub1");
+        {
+            ct1 += opt{10}
+                          .titles("retry", "r")
+                          .description("set the retry times");
+            ct1 += opt{9}
+                          .titles("retry1", "r1")
+                          .description("set the retry times");
+            ct1 += opt<bool>{}
+                          .titles("arch", "a")
+                          .description("flag a");
+            ct1 += opt<bool>{}
+                          .titles("bech", "b")
+                          .description("flag b");
+            ct1 += opt<bool>{}
+                          .titles("coach", "c")
+                          .description("flag c");
+            ct1 += opt<bool>{}
+                          .titles("dent", "d")
+                          .description("flag d");
+            ct1 += opt<bool>{}
+                          .titles("etch", "e")
+                          .description("flag e");
+        }
+        auto ct2 = t1("sub2");
+        {
+            ct2 += opt{-1}
+                    .titles("retry", "r")
+                    .description("set the retry times");
+            ct2 += opt{9}
+                    .titles("retry1", "r1")
+                    .description("set the retry times");
+            ct2 += opt<bool>{}
+                    .titles("arch", "a")
+                    .description("flag a");
+            ct2 += opt<bool>{}
+                    .titles("bech", "b")
+                    .description("flag b");
+            ct2 += opt<bool>{}
+                    .titles("coach", "c")
+                    .description("flag c");
+            ct2 += opt<bool>{}
+                    .titles("dent", "d")
+                    .description("flag d");
+            ct2 += opt<bool>{}
+                    .titles("etch", "e")
+                    .description("flag e");
+        }
+    }
+}
+
 void add_server_menu(cmdr::opt::app &cli) {
     using namespace cmdr::opt;
 
@@ -52,10 +146,10 @@ void add_server_menu(cmdr::opt::app &cli) {
                       .opt(opt_dummy{}())
                       .opt(opt_dummy{}())
                       .on_invoke([](cmd const &c, string_array const &remain_args) -> int {
-                        unused(c);
-                        unused(remain_args);
-                        std::cout << c.title() << " invoked.\n";
-                        return 0;
+                          unused(c);
+                          unused(remain_args);
+                          std::cout << c.title() << " invoked.\n";
+                          return 0;
                       });
 
         t1 += subcmd{}
@@ -95,6 +189,7 @@ int main(int argc, char *argv[]) {
         // add_global_options(cli);
         // add_generator_menu(cli);
         add_server_menu(cli);
+        add_test_menu(cli);
 
 #if defined(_DEBUG)
         // auto &store = cli.store();

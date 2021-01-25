@@ -652,6 +652,103 @@ namespace cmdr::opt {
         return *this;
     }
 
+    inline string_array app::remain_args(parsing_pkg &pp, char *argv[], int i, int argc) {
+        string_array a;
+        for (auto &it : pp.non_commands) {
+            a.push_back(it);
+        }
+        for (; i < argc; i++) {
+            a.push_back(argv[i]);
+        }
+        return a;
+    }
+
+    inline string_array app::remain_args(char *argv[], int i, int argc) {
+        string_array a;
+        for (; i < argc; i++) {
+            a.push_back(argv[i]);
+        }
+        return a;
+    }
+
+    inline details::Action app::process_command(app::parsing_pkg &pp, int argc, char *argv[]) {
+        auto cmr = matching_command(pp);
+        if (cmr.matched) {
+            cmr.obj->hit_title(pp.title.c_str());
+            pp.matched_commands.push_back(cmr.obj);
+            if (cmr.obj->on_command_hit()) {
+                auto rc = cmr.obj->on_command_hit()(
+                        pp.last_matched_cmd(),
+                        remain_args(argv, pp.index + 1, argc));
+                if (rc < details::OK || rc >= details::Abortion)
+                    return rc;
+                if (rc == details::RequestHelpScreen)
+                    pp.help_requesting = true;
+            }
+            return details::Continue;
+        }
+        if (cmr.should_abort)
+            return details::Abortion;
+        if (treat_unknown_input_command_as_error)
+            return on_unknown_command_found(pp, cmr);
+        pp.unknown_commands.push_back(argv[pp.index]);
+        return details::Continue;
+    }
+
+    inline details::Action app::process_long_flag(app::parsing_pkg &pp, int argc, char *argv[]) {
+        pp.title = pp.title.substr(2);
+        auto fmr = matching_long_flag(pp);
+        if (fmr.matched) {
+            fmr.obj->hit_title(pp.title.c_str());
+            pp.matched_flags.push_back(fmr.obj);
+            if (fmr.obj->on_flag_hit()) {
+                auto rc = fmr.obj->on_flag_hit()(
+                        pp.last_matched_cmd(),
+                        pp.last_matched_flg(),
+                        remain_args(argv, pp.index + 1, argc));
+                if (rc < details::OK || rc >= details::Abortion)
+                    return rc;
+                if (rc == details::RequestHelpScreen)
+                    pp.help_requesting = true;
+            }
+            return details::Continue;
+        }
+        if (fmr.should_abort)
+            return details::Abortion;
+        pp.title = argv[pp.index];
+        if (treat_unknown_input_flag_as_error)
+            return on_unknown_long_flag_found(pp, fmr);
+        pp.unknown_flags.push_back(pp.title);
+        return details::Continue;
+    }
+
+    inline details::Action app::process_short_flag(app::parsing_pkg &pp, int argc, char *argv[]) {
+        pp.title = pp.title.substr(1);
+        auto fmr = matching_short_flag(pp);
+        if (fmr.matched) {
+            fmr.obj->hit_title(pp.title.c_str());
+            pp.matched_flags.push_back(fmr.obj);
+            if (fmr.obj->on_flag_hit()) {
+                auto rc = fmr.obj->on_flag_hit()(
+                        pp.last_matched_cmd(),
+                        pp.last_matched_flg(),
+                        remain_args(argv, pp.index + 1, argc));
+                if (rc < details::OK || rc >= details::Abortion)
+                    return rc;
+                if (rc == details::RequestHelpScreen)
+                    pp.help_requesting = true;
+            }
+            return details::Continue;
+        }
+        if (fmr.should_abort)
+            return details::Abortion;
+        pp.title = argv[pp.index];
+        if (treat_unknown_input_flag_as_error)
+            return on_unknown_short_flag_found(pp, fmr);
+        pp.unknown_flags.push_back(pp.title);
+        return details::Continue;
+    }
+
     inline app::arg_matching_result app::matching_long_flag(app::parsing_pkg &pp) {
         arg_matching_result amr;
         for (auto it = pp.matched_commands.rbegin(); it != pp.matched_commands.rend(); it++) {
@@ -680,7 +777,7 @@ namespace cmdr::opt {
         return amr;
     }
 
-    inline int app::on_unknown_long_flag_found(app::parsing_pkg &pp, arg_matching_result &fmr) {
+    inline details::Action app::on_unknown_long_flag_found(app::parsing_pkg &pp, arg_matching_result &fmr) {
         unused(pp);
         unused(fmr);
         std::cerr << "Unknown long flag: " << std::quoted(pp.title);
@@ -688,10 +785,10 @@ namespace cmdr::opt {
         if (c.valid())
             std::cerr << " under matched command: " << std::quoted(c.title());
         std::cerr << '\n';
-        return 0;
+        return details::Abortion;
     }
 
-    inline int app::on_unknown_short_flag_found(app::parsing_pkg &pp, arg_matching_result &fmr) {
+    inline details::Action app::on_unknown_short_flag_found(app::parsing_pkg &pp, arg_matching_result &fmr) {
         unused(pp);
         unused(fmr);
         std::cerr << "Unknown short flag: " << std::quoted(pp.title);
@@ -699,7 +796,7 @@ namespace cmdr::opt {
         if (c.valid())
             std::cerr << " under matched command: " << std::quoted(c.title());
         std::cerr << '\n';
-        return 0;
+        return details::Abortion;
     }
 
     inline app::cmd_matching_result app::matching_command(app::parsing_pkg &pp) {
@@ -720,7 +817,7 @@ namespace cmdr::opt {
         return cmr;
     }
 
-    inline int app::on_unknown_command_found(parsing_pkg &pp, cmd_matching_result &cmr) {
+    inline details::Action app::on_unknown_command_found(parsing_pkg &pp, cmd_matching_result &cmr) {
         unused(pp);
         unused(cmr);
         std::cerr << "Unknown command: " << std::quoted(pp.title);
@@ -728,7 +825,7 @@ namespace cmdr::opt {
         if (c.valid())
             std::cerr << " under matched command: " << std::quoted(c.title());
         std::cerr << '\n';
-        return 0;
+        return details::Abortion;
     }
 
     inline int app::invoke_command(cmd &c, string_array remain_args, parsing_pkg &pp) {
@@ -747,132 +844,6 @@ namespace cmdr::opt {
         if (c.on_post_invoke())
             c.on_post_invoke()(c, remain_args);
         return rc;
-    }
-
-    inline int app::run(int argc, char *argv[]) {
-        // std::cout << "Hello, World!" << std::endl;
-
-        parsing_pkg pp{this};
-        pp.matched_commands.push_back(this);
-
-        for (int i = 1; i < argc; i++) {
-            pp.title = argv[i];
-            pp.index = i;
-
-            if (pp.title[0] == '-') {
-                // flag?
-                if (pp.title[1] == '-') {
-                    if (pp.title[2] == 0) {
-                        pp.passthru_flag = true;
-                        continue;
-                    }
-
-                    // long
-                    pp.title = pp.title.substr(2);
-                    auto fmr = matching_long_flag(pp);
-                    if (fmr.matched) {
-                        fmr.obj->hit_title(pp.title.c_str());
-                        pp.matched_flags.push_back(fmr.obj);
-                        if (fmr.obj->on_flag_hit()) {
-                            auto rc = fmr.obj->on_flag_hit()(
-                                    pp.last_matched_cmd(),
-                                    pp.last_matched_flg(),
-                                    remain_args(argv, i + 1, argc));
-                            if (rc < 0)
-                                return 0;
-                            if (rc == details::RequestHelpScreen)
-                                pp.help_requesting = true;
-                        }
-                        continue;
-                    }
-                    if (fmr.should_abort)
-                        return 0;
-                    pp.title = argv[i];
-                    if (treat_unknown_input_flag_as_error)
-                        return on_unknown_long_flag_found(pp, fmr);
-                    pp.unknown_flags.push_back(pp.title);
-                    continue;
-                }
-
-                // short flag
-                pp.title = pp.title.substr(1);
-                auto fmr = matching_short_flag(pp);
-                if (fmr.matched) {
-                    fmr.obj->hit_title(pp.title.c_str());
-                    pp.matched_flags.push_back(fmr.obj);
-                    if (fmr.obj->on_flag_hit()) {
-                        auto rc = fmr.obj->on_flag_hit()(
-                                pp.last_matched_cmd(),
-                                pp.last_matched_flg(),
-                                remain_args(argv, i + 1, argc));
-                        if (rc < 0)
-                            return 0;
-                        if (rc == details::RequestHelpScreen)
-                            pp.help_requesting = true;
-                    }
-                    continue;
-                }
-                if (fmr.should_abort)
-                    return 0;
-                pp.title = argv[i];
-                if (treat_unknown_input_flag_as_error)
-                    return on_unknown_short_flag_found(pp, fmr);
-                pp.unknown_flags.push_back(pp.title);
-                continue;
-            }
-
-            auto cmr = matching_command(pp);
-            if (cmr.matched) {
-                cmr.obj->hit_title(pp.title.c_str());
-                pp.matched_commands.push_back(cmr.obj);
-                if (cmr.obj->on_command_hit()) {
-                    auto rc = cmr.obj->on_command_hit()(
-                            pp.last_matched_cmd(),
-                            remain_args(argv, i + 1, argc));
-                    if (rc < 0)
-                        return 0;
-                    if (rc == details::RequestHelpScreen)
-                        pp.help_requesting = true;
-                }
-                continue;
-            }
-            if (cmr.should_abort)
-                return 0;
-            if (treat_unknown_input_command_as_error)
-                return on_unknown_command_found(pp, cmr);
-            pp.unknown_commands.push_back(argv[i]);
-
-#if 0
-            if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
-                printf("Usage: App <options>\nOptions are:\n");
-                printf("Option list goes here");
-                exit(0);
-            } else if (!strcmp(argv[i], "-c") || !strcmp(argv[i], "--custom")) {
-                printf("argument accepted");
-            } else {
-                if (i == argc - 1) {
-                    break;
-                }
-            }
-#endif
-        }
-
-        if (pp.help_requesting) {
-            print_usages(&pp.curr_command());
-            return 0;
-        }
-
-        if (auto cc = pp.last_matched_cmd(); cc.valid()) {
-            if (cc.no_sub_commands()) {
-                // invoking cc
-                return invoke_command(cc, remain_args(pp, argv, pp.index, argc), pp);
-            }
-
-            pp.help_requesting = true;
-            print_usages(&pp.curr_command());
-            return 0;
-        }
-        return 0;
     }
 
     inline void app::print_cmd(std::ostream &ss, cmdr::terminal::colors::colorize &c, cmd *cc, std::string const &app_name, std::string const &exe_name) {
@@ -925,6 +896,63 @@ namespace cmdr::opt {
 
         std::cout << ss.str();
     }
+
+    inline int app::run(int argc, char *argv[]) {
+        // std::cout << "Hello, World!" << std::endl;
+
+        parsing_pkg pp{this};
+        pp.matched_commands.push_back(this);
+
+        for (int i = 1; i < argc; i++) {
+            pp.title = argv[i];
+            pp.index = i;
+
+            if (pp.title[0] == '-') {
+                // flag?
+                if (pp.title[1] == '-') {
+                    if (pp.title[2] == 0) {
+                        pp.passthru_flag = true;
+                        continue;
+                    }
+
+                    // long
+                    auto rc = process_long_flag(pp, argc, argv);
+                    if (rc < details::OK || rc >= details::Abortion)
+                        return 0;
+                    continue;
+                }
+
+                // short flag
+                auto rc = process_short_flag(pp, argc, argv);
+                if (rc < details::OK || rc >= details::Abortion)
+                    return 0;
+                continue;
+            }
+
+            // command
+            auto rc = process_command(pp, argc, argv);
+            if (rc < details::OK || rc >= details::Abortion)
+                return 0;
+        }
+
+        if (pp.help_requesting) {
+            print_usages(&pp.curr_command());
+            return 0;
+        }
+
+        if (auto cc = pp.last_matched_cmd(); cc.valid()) {
+            if (cc.no_sub_commands()) {
+                // invoking cc
+                return invoke_command(cc, remain_args(pp, argv, pp.index, argc), pp);
+            }
+
+            pp.help_requesting = true;
+            print_usages(&pp.curr_command());
+            return 0;
+        }
+        return 0;
+    }
+
 } // namespace cmdr::opt
 
 

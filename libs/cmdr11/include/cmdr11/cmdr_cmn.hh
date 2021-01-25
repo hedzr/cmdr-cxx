@@ -35,8 +35,10 @@ namespace cmdr::opt {
         //
 
         enum Action {
-            RequestHelpScreen = 1,
             OK = 0,
+            RequestHelpScreen = 1,
+            Continue = 2,
+            Abortion = 33,
         };
 
         /**

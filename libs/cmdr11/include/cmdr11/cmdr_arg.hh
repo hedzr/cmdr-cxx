@@ -40,6 +40,8 @@ namespace cmdr::opt {
         std::string _hit_title;
         int _hit_count;
 
+        cmd *_owner{};
+
     public:
         bas() = default;
         ~bas() override = default;
@@ -69,6 +71,8 @@ namespace cmdr::opt {
 
             __COPY(_hit_title);
             __COPY(_hit_count);
+
+            __COPY(_owner);
         }
 
     public:
@@ -87,18 +91,26 @@ namespace cmdr::opt {
         return (*this);              \
     }                                \
     std::string const &title_##mn() const { return _##mn; }
-#define PROP_SET3(mn, typ)          \
-    bas &title_##mn(const typ &s) { \
-        _##mn = s;                  \
-        return (*this);             \
-    }                               \
-    typ const &title_##mn() const { return _##mn; }
+#define PROP_SET3(mn, typ)                          \
+    bas &title_##mn(const typ &s) {                 \
+        _##mn = s;                                  \
+        return (*this);                             \
+    }                                               \
+    typ const &title_##mn() const { return _##mn; } \
+    typ &title_##mn() { return _##mn; }
 #define PROP_SET4(mn, typ)  \
     bas &mn(const typ &s) { \
         _##mn = s;          \
         return (*this);     \
     }                       \
     typ mn() const { return _##mn; }
+#define PROP_SET5(mn, typ)                  \
+    bas &mn(const typ &s) {                 \
+        _##mn = s;                          \
+        return (*this);                     \
+    }                                       \
+    typ const &mn() const { return _##mn; } \
+    typ &mn() { return _##mn; }
 
         PROP_SET2(long)
         PROP_SET2(short)
@@ -115,6 +127,10 @@ namespace cmdr::opt {
         PROP_SET4(hit_count, int)
         PROP_SET4(hit_long, bool)
         PROP_SET4(hit_special, bool)
+
+        bas &owner(cmd *o);
+        cmd const *owner() const;
+        cmd *owner();
 
 #undef PROP_SET
 #undef PROP_SET2

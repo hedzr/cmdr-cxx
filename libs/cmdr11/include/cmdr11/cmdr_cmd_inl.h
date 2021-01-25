@@ -24,7 +24,15 @@
 
 namespace cmdr::opt {
 
-    inline cmd &cmd::operator+(const arg &a) {
+    inline bas &bas::owner(cmd *o) {
+        _owner = o;
+        return (*this);
+    }
+
+    inline cmd const *bas::owner() const { return _owner; }
+    inline cmd *bas::owner() { return _owner; }
+
+    inline cmd &cmd::operator+(arg const &a) {
         if (a.valid()) {
             auto gn = a.group_name();
             if (gn.empty()) {
@@ -66,17 +74,18 @@ namespace cmdr::opt {
             }
 
             _last_added_arg = ptr;
+            ptr->owner(this);
             // std::cout << gn << ',' << _grouped_args[gn].size() << std::endl;
         }
         return *this;
     }
 
-    inline cmd &cmd::operator+=(const arg &a) {
+    inline cmd &cmd::operator+=(arg const &a) {
         this->operator+(a);
         return *this;
     }
 
-    inline cmd &cmd::operator+(const cmd &a) {
+    inline cmd &cmd::operator+(cmd const &a) {
         if (a.valid()) {
             auto gn = a.group_name();
             if (gn.empty()) {
@@ -115,11 +124,12 @@ namespace cmdr::opt {
             }
 
             _last_added_command = ptr;
+            ptr->owner(this);
         }
         return *this;
     }
 
-    inline cmd &cmd::operator+=(const cmd &a) {
+    inline cmd &cmd::operator+=(cmd const &a) {
         this->operator+(a);
         return *this;
     }

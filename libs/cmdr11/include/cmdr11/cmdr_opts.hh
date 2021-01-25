@@ -37,13 +37,13 @@ namespace cmdr::opt {
 
         public:
             virtual details::option operator()() const {
-                return [this](cmd &a) {
+                return [&](cmd &a) {
                     a += _arg;
                 };
             }
 
             [[nodiscard]] virtual details::option get() const {
-                return [this](cmd &a) {
+                return [&](cmd &a) {
                     a += _arg;
                 };
             }

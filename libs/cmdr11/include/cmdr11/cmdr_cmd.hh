@@ -117,10 +117,10 @@ namespace cmdr::opt {
         [[nodiscard]] bool no_sub_commands() const { return _all_commands.empty(); }
 
     public:
-        virtual cmd &operator+(const arg &a);
-        virtual cmd &operator+=(const arg &a);
-        virtual cmd &operator+(const cmd &a);
-        virtual cmd &operator+=(const cmd &a);
+        virtual cmd &operator+(arg const &a);
+        virtual cmd &operator+=(arg const &a);
+        virtual cmd &operator+(cmd const &a);
+        virtual cmd &operator+=(cmd const &a);
 
         friend cmd &operator+(cmd &lhs, const opts::cmd_base &rhs);
         friend cmd &operator+=(cmd &lhs, const opts::cmd_base &rhs);

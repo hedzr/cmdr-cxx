@@ -270,25 +270,37 @@ namespace cmdr::opt {
     inline void app::print_cmd(std::ostream &ss, cmdr::terminal::colors::colorize &c, cmd *cc, std::string const &app_name, std::string const &exe_name) {
         if (!cc->description().empty()) {
             ss << std::endl
-               << "DESCRIPTION" << std::endl
+               << "Description" << std::endl
                << string::pad_left(cc->description()) << std::endl;
         }
         if (!cc->examples().empty()) {
             ss << std::endl
-               << "EXAMPLES" << std::endl
+               << "Examples" << std::endl
                << string::pad_left(string::reg_replace(cc->examples(), "~", exe_name)) << std::endl;
         }
         ss << std::endl
-           << "USAGE" << std::endl;
+           << "Usage" << std::endl;
         ss << string::pad_left(exe_name, 2) << " [commands] [options] [Tail Args]" << std::endl;
 
         ss << std::endl
-           << "COMMANDS" << std::endl;
+           << "Commands" << std::endl;
         cc->print_commands(ss, c, _minimal_tab_width, true, 0);
 
-        ss << std::endl
-           << "OPTIONS" << std::endl;
-        cc->print_flags(ss, c, _minimal_tab_width, true, 0);
+        auto trivial = cc;
+        do {
+            std::ostringstream tt;
+            if (trivial == cc)
+                tt << "Options";
+            else if (trivial->owner()) {
+                tt << "Parent Options of " << std::quoted(trivial->title());
+            } else {
+                tt << "Global Options";
+            }
+
+            ss << std::endl
+               << tt.str() << std::endl;
+            trivial->print_flags(ss, c, _minimal_tab_width, true, 0);
+        } while ((trivial = trivial->owner()) != nullptr);
 
         unused(app_name);
         unused(exe_name);

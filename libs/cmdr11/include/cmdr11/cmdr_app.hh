@@ -21,26 +21,6 @@ namespace cmdr::opt {
     class app;
 
     class app : public cmd {
-        std::string _name;
-        std::string _version;
-        std::string _author;
-        std::string _copyright;
-        std::string _header;
-        // std::string _description;
-        std::string _tail_line;
-        // std::string _examples;
-
-        //
-        cmdr::opt::vars::store _store;
-
-        // static colorize &colorizer() {...}
-
-        details::on_pre_invoke _global_on_pre_invoke;
-        details::on_post_invoke _global_on_post_invoke;
-        bool _treat_unknown_input_command_as_error = true;
-        bool _treat_unknown_input_flag_as_error = true;
-        details::on_unknown_argument_found _on_unknown_argument_found;
-
     private:
         app() = default;
 
@@ -98,11 +78,11 @@ namespace cmdr::opt {
             if (std::current_exception() != nullptr) {
                 handle_eptr(std::current_exception());
             } else {
-                if (help_hit()) {
-                    //
-                } else {
-                    //
-                }
+                // if (help_hit()) {
+                //     //
+                // } else {
+                //     //
+                // }
             }
         }
 
@@ -110,8 +90,8 @@ namespace cmdr::opt {
 
     public:
         [[maybe_unused]] void dummy() {}
-        [[nodiscard]] bool help_hit() const { return _help_hit > 0; }
-        [[nodiscard]] cmd *command_hit() const { return _cmd_hit; }
+        //[[nodiscard]] bool help_hit() const { return _help_hit > 0; }
+        //[[nodiscard]] cmd *command_hit() const { return _cmd_hit; }
 
     public:
         app &set_global_pre_invoke_handler(details::on_pre_invoke cb) {
@@ -250,11 +230,33 @@ namespace cmdr::opt {
         app &operator+=(const cmd &a) override;
 
     private:
-        int _help_hit{};
-        cmd *_cmd_hit{};
+
+        std::string _name;
+        std::string _version;
+        std::string _author;
+        std::string _copyright;
+        std::string _header;
+        // std::string _description;
+        std::string _tail_line;
+        // std::string _examples;
+
+        //
+        cmdr::opt::vars::store _store;
+
+        // static colorize &colorizer() {...}
+
+        details::on_pre_invoke _global_on_pre_invoke;
+        details::on_post_invoke _global_on_post_invoke;
+        bool _treat_unknown_input_command_as_error = true;
+        bool _treat_unknown_input_flag_as_error = true;
+        details::on_unknown_argument_found _on_unknown_argument_found;
+
+        //int _help_hit{};
+        //cmd *_cmd_hit{};
         std::unordered_map<details::Action,
                            std::function<int(parsing_context &pc, int argc, char *argv[])>>
                 _internal_actions{};
+
         int _minimal_tab_width{43};
         static bool _longest_first;
     };

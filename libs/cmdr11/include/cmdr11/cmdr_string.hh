@@ -119,6 +119,37 @@ namespace cmdr::string {
     }
 
 
+    inline std::string join(string_array const &array, char delim = ',', char before = '\0', char after = '\0') {
+        std::stringstream ss;
+        int i = 0;
+        if (before != '\0')
+            ss << before;
+        for (auto const &it : array) {
+            if (i++ > 0)
+                ss << delim;
+            ss << it;
+        }
+        if (after != '\0')
+            ss << after;
+        return ss.str();
+    }
+
+    inline std::string join(string_array const &array, const_chars delim = ",", const_chars before = nullptr, const_chars after = nullptr) {
+        std::stringstream ss;
+        int i = 0;
+        if (before)
+            ss << before;
+        for (auto const &it : array) {
+            if (i++ > 0)
+                ss << delim;
+            ss << it;
+        }
+        if (after)
+            ss << after;
+        return ss.str();
+    }
+
+
     inline bool replace(std::string &str, const std::string &from, const std::string &to) {
         size_t start_pos = str.find(from);
         if (start_pos == std::string::npos)

@@ -27,7 +27,7 @@ namespace cmdr::opt {
 
     inline string_array app::remain_args(parsing_context &pc, char *argv[], int i, int argc) {
         string_array a;
-        for (auto &it : pc.non_commands) {
+        for (auto &it : pc.remain_args()) {
             a.push_back(it);
         }
         for (; i < argc; i++) {
@@ -48,7 +48,7 @@ namespace cmdr::opt {
         auto cmr = matching_command(pc);
         if (cmr.matched) {
             cmr.obj->hit_title(pc.title.c_str());
-            pc.matched_commands.push_back(cmr.obj);
+            pc.add_matched_cmd(cmr.obj);
             if (cmr.obj->on_command_hit()) {
                 auto rc = cmr.obj->on_command_hit()(
                         pc.last_matched_cmd(),
@@ -62,9 +62,10 @@ namespace cmdr::opt {
         }
         if (cmr.should_abort)
             return details::Abortion;
-        if (_treat_unknown_input_command_as_error)
+        pc.add_unknown_cmd(argv[pc.index]);
+        if (_treat_unknown_input_command_as_error) {
             return unknown_command_found(pc, cmr);
-        pc.unknown_commands.push_back(argv[pc.index]);
+        }
         return details::Continue;
     }
 
@@ -73,7 +74,7 @@ namespace cmdr::opt {
         auto amr = matching_long_flag(pc);
         if (amr.matched) {
             amr.obj->hit_title(pc.title.c_str());
-            pc.matched_flags.push_back(amr.obj);
+            pc.add_matched_arg(amr.obj);
             if (amr.obj->on_flag_hit()) {
                 auto rc = amr.obj->on_flag_hit()(
                         pc.last_matched_cmd(),
@@ -89,9 +90,10 @@ namespace cmdr::opt {
         if (amr.should_abort)
             return details::Abortion;
         pc.title = argv[pc.index];
-        if (_treat_unknown_input_flag_as_error)
+        pc.add_unknown_arg(pc.title);
+        if (_treat_unknown_input_flag_as_error) {
             return unknown_long_flag_found(pc, amr);
-        pc.unknown_flags.push_back(pc.title);
+        }
         return details::Continue;
     }
 
@@ -100,7 +102,7 @@ namespace cmdr::opt {
         auto amr = matching_long_flag(pc);
         if (amr.matched) {
             amr.obj->hit_title(pc.title.c_str());
-            pc.matched_flags.push_back(amr.obj);
+            pc.add_matched_arg(amr.obj);
             if (amr.obj->on_flag_hit()) {
                 auto rc = amr.obj->on_flag_hit()(
                         pc.last_matched_cmd(),
@@ -116,9 +118,10 @@ namespace cmdr::opt {
         if (amr.should_abort)
             return details::Abortion;
         pc.title = argv[pc.index];
-        if (_treat_unknown_input_flag_as_error)
+        pc.add_unknown_arg(pc.title);
+        if (_treat_unknown_input_flag_as_error) {
             return unknown_long_flag_found(pc, amr);
-        pc.unknown_flags.push_back(pc.title);
+        }
         return details::Continue;
     }
 
@@ -127,7 +130,7 @@ namespace cmdr::opt {
         auto amr = matching_short_flag(pc);
         if (amr.matched) {
             amr.obj->hit_title(pc.title.c_str());
-            pc.matched_flags.push_back(amr.obj);
+            pc.add_matched_arg(amr.obj);
             if (amr.obj->on_flag_hit()) {
                 auto rc = amr.obj->on_flag_hit()(
                         pc.last_matched_cmd(),
@@ -143,9 +146,10 @@ namespace cmdr::opt {
         if (amr.should_abort)
             return details::Abortion;
         pc.title = argv[pc.index];
-        if (_treat_unknown_input_flag_as_error)
+        pc.add_unknown_arg(pc.title);
+        if (_treat_unknown_input_flag_as_error) {
             return unknown_short_flag_found(pc, amr);
-        pc.unknown_flags.push_back(pc.title);
+        }
         return details::Continue;
     }
 
@@ -169,15 +173,14 @@ namespace cmdr::opt {
 
     inline app::arg_matching_result app::matching_flag_on(app::parsing_context &pc, std::function<details::indexed_args const &(cmd *)> li) {
         arg_matching_result amr;
-        for (auto it = pc.matched_commands.rbegin(); it != pc.matched_commands.rend(); it++) {
-            auto c = (*it);
-            auto d = li(c);
+        pc.reverse_foreach_matched_commands([=, &amr](auto &it) {
+            auto d = li(it);
             if (auto const &itz = d.find(pc.title); itz != d.end()) {
                 amr.matched = true;
                 amr.obj = (arg *) &(itz->second->update_hit_count(pc.title, 1));
-                break;
+                return;
             }
-        }
+        });
         return amr;
     }
 
@@ -311,63 +314,73 @@ namespace cmdr::opt {
     inline int app::run(int argc, char *argv[]) {
         // std::cout << "Hello, World!" << std::endl;
 
-        parsing_context pp{this};
-        pp.matched_commands.push_back(this);
+        parsing_context pc{this};
+        pc.add_matched_cmd(this);
 
         for (int i = 1; i < argc; i++) {
-            pp.title = argv[i];
-            pp.index = i;
+            pc.title = argv[i];
+            pc.index = i;
 
-            if (pp.title[0] == '~' && pp.title[1] == '~') {
+            if (pc.title[0] == '~' && pc.title[1] == '~') {
                 // special flags
-                auto rc = process_short_flag(pp, argc, argv);
+                auto rc = process_short_flag(pc, argc, argv);
                 if (rc < details::OK || rc >= details::Abortion)
                     return 0;
                 continue;
             }
 
-            if (pp.title[0] == '-') {
+            if (pc.title[0] == '-') {
                 // flag?
-                if (pp.title[1] == '-') {
-                    if (pp.title[2] == 0) {
-                        pp.passthru_flag = true;
+                if (pc.title[1] == '-') {
+                    if (pc.title[2] == 0) {
+                        pc.passthru_flag = true;
                         break;
                     }
 
                     // long
-                    auto rc = process_long_flag(pp, argc, argv);
+                    auto rc = process_long_flag(pc, argc, argv);
                     if (rc < details::OK || rc >= details::Abortion)
                         return 0;
                     continue;
                 }
 
                 // short flag
-                auto rc = process_short_flag(pp, argc, argv);
+                auto rc = process_short_flag(pc, argc, argv);
                 if (rc < details::OK || rc >= details::Abortion)
                     return 0;
                 continue;
             }
 
             // command
-            auto rc = process_command(pp, argc, argv);
+            auto &c = pc.last_matched_cmd();
+            if (c.valid()) {
+                if (c.no_sub_commands()) {
+                    pc.add_remain_arg(pc.title);
+                    continue;
+                }
+            }
+            auto rc = process_command(pc, argc, argv);
             if (rc < details::OK || rc >= details::Abortion)
                 return 0;
         }
 
-        if (pp.help_requesting) {
-            print_usages(&pp.curr_command());
+        return after_run(pc, argc, argv);
+    }
+
+    inline int app::after_run(parsing_context &pc, int argc, char *argv[]) {
+        if (pc.help_requesting) {
+            print_usages(&pc.curr_command());
             return 0;
         }
 
-        if (auto cc = pp.last_matched_cmd(); cc.valid()) {
+        if (auto cc = pc.last_matched_cmd(); cc.valid()) {
             if (cc.no_sub_commands()) {
                 // invoking cc
-                return invoke_command(cc, remain_args(pp, argv, pp.index, argc), pp);
+                return invoke_command(cc, remain_args(pc, argv, pc.index, argc), pc);
             }
 
-            pp.help_requesting = true;
-            print_usages(&pp.curr_command());
-            return 0;
+            pc.help_requesting = true;
+            print_usages(&pc.curr_command());
         }
         return 0;
     }

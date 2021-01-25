@@ -138,12 +138,17 @@ namespace cmdr::opt {
             bool is_flag{false};
             bool help_requesting{false};
             bool passthru_flag{false};
+            parsing_context(app *a)
+                : _root(a) {}
+
+        private:
             details::arg_pointers matched_flags{};
             details::cmd_pointers matched_commands{};
             string_array unknown_flags{};
             string_array unknown_commands{};
             string_array non_commands{};
 
+        public:
             [[nodiscard]] cmd &curr_command() {
                 if (matched_commands.empty())
                     return *_root;
@@ -158,6 +163,16 @@ namespace cmdr::opt {
                 if (matched_flags.empty())
                     return null_arg();
                 return *matched_flags.back();
+            }
+
+            void add_matched_cmd(cmd *obj) { matched_commands.push_back(obj); }
+            void add_matched_arg(arg *obj) { matched_flags.push_back(obj); }
+            void add_unknown_cmd(std::string const &obj) { unknown_commands.push_back(obj); }
+            void add_unknown_arg(std::string const &obj) { unknown_flags.push_back(obj); }
+            void add_remain_arg(std::string const &arg) { non_commands.push_back(arg); }
+            [[nodiscard]] string_array const &remain_args() const { return non_commands; }
+            void reverse_foreach_matched_commands(std::function<void(details::cmd_pointers::value_type &it)> f) {
+                std::for_each(matched_commands.rbegin(), matched_commands.rend(), f);
             }
         };
         struct cmd_matching_result {
@@ -190,6 +205,8 @@ namespace cmdr::opt {
         details::Action unknown_long_flag_found(parsing_context &pc, arg_matching_result &amr);
         details::Action unknown_short_flag_found(parsing_context &pc, arg_matching_result &amr);
 
+        int after_run(parsing_context &pc, int argc, char *argv[]);
+
         int invoke_command(cmd &cc, string_array remain_args, parsing_context &pc);
 
         static void handle_eptr(std::exception_ptr eptr) {
@@ -207,8 +224,8 @@ namespace cmdr::opt {
                               std::string const &app_name, std::string const &exe_name);
 
         void initialize_internal_commands();
-        void add_global_options(cmdr::opt::app &cli);
-        void add_generator_menu(cmdr::opt::app &cli);
+        static void add_global_options(cmdr::opt::app &cli);
+        static void add_generator_menu(cmdr::opt::app &cli);
 
     public:
         app &operator+(const arg &a) override;

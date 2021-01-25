@@ -69,8 +69,9 @@ namespace cmdr::opt {
                        .on_invoke([](cmd const &hit, string_array const &remain_args) -> int {
                            unused(hit);
                            unused(remain_args);
-                           std::cout << "help, !!!\n";
                            cmdr::get_app().print_usages(nullptr);
+                           std::cout << "help, !!!\n";
+                           std::cout << "args: " << cmdr::string::join(remain_args, ',', '[', ']') << std::endl;
                            return 0;
                        });
 
@@ -127,7 +128,8 @@ namespace cmdr::opt {
                        .titles("tree")
                        .description("print all commands as a tree")
                        .hidden()
-                       .special().no_non_special()
+                       .special()
+                       .no_non_special()
                        .group(SYS_MGMT_GROUP);
 
         cli += cmdr::opt::opt<bool>{}

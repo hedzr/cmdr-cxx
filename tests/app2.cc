@@ -10,6 +10,44 @@ void fatal_exit(const std::string &msg) {
     exit(-1);
 }
 
+void add_sub1_menu(cmdr::opt::app &cli, cmdr::opt::cmd &t1, const_chars title) {
+    using namespace cmdr::opt;
+    unused(cli);
+
+
+    t1 += subcmd{}
+                  .titles(title)
+                  .description((std::string(title) + " command").c_str());
+
+    auto &ct1 = t1(title);
+    {
+        ct1 += opt{10}
+                       .titles("retry", "r")
+                       .description("set the retry times");
+        ct1 += opt{9}
+                       .titles("retry1", "r1")
+                       .description("set the retry times");
+        ct1 += opt{"saved-bash"}
+                       .titles("shell-name", "sn")
+                       .description("flag a");
+        ct1 += opt<bool>{}
+                       .titles("arch", "a")
+                       .description("flag a");
+        ct1 += opt<bool>{}
+                       .titles("bech", "b")
+                       .description("flag b");
+        ct1 += opt<bool>{}
+                       .titles("coach", "c")
+                       .description("flag c");
+        ct1 += opt<bool>{}
+                       .titles("dent", "d")
+                       .description("flag d");
+        ct1 += opt<bool>{}
+                       .titles("etch", "e")
+                       .description("flag e");
+    }
+}
+
 void add_test_menu(cmdr::opt::app &cli) {
     using namespace cmdr::opt;
 
@@ -26,81 +64,50 @@ void add_test_menu(cmdr::opt::app &cli) {
                       .titles("retry", "r")
                       .description("set the retry times");
         t1 += opt{9}
-                .titles("retry1", "r1")
-                .description("set the retry times");
+                      .titles("retry1", "r1")
+                      .description("set the retry times");
         t1 += opt<bool>{}
-                .titles("arch", "a")
-                .description("flag a");
+                      .titles("arch", "a")
+                      .description("flag a");
         t1 += opt<bool>{}
-                .titles("bech", "b")
-                .description("flag b");
+                      .titles("bech", "b")
+                      .description("flag b");
         t1 += opt<bool>{}
-                .titles("coach", "c")
-                .description("flag c");
+                      .titles("coach", "c")
+                      .description("flag c");
         t1 += opt<bool>{}
-                .titles("dent", "d")
-                .description("flag d");
+                      .titles("dent", "d")
+                      .description("flag d");
         t1 += opt<bool>{}
-                .titles("etch", "e")
-                .description("flag e");
+                      .titles("etch", "e")
+                      .description("flag e");
 
-        t1 += subcmd{}
-                .titles("sub1", "s1", "svr1")
-                .description("sub1 command")
-                ;
-        t1 += subcmd{}
-                .titles("sub2", "s2", "svr2")
-                .description("sub2 command")
-                ;
+        add_sub1_menu(cli, t1, "sub1");
+        add_sub1_menu(cli, t1, "sub2");
+        add_sub1_menu(cli, t1, "sub3");
+        add_sub1_menu(cli, t1, "sub4");
 
-        auto ct1 = t1("sub1");
-        {
-            ct1 += opt{10}
-                          .titles("retry", "r")
-                          .description("set the retry times");
-            ct1 += opt{9}
-                          .titles("retry1", "r1")
-                          .description("set the retry times");
-            ct1 += opt<bool>{}
-                          .titles("arch", "a")
-                          .description("flag a");
-            ct1 += opt<bool>{}
-                          .titles("bech", "b")
-                          .description("flag b");
-            ct1 += opt<bool>{}
-                          .titles("coach", "c")
-                          .description("flag c");
-            ct1 += opt<bool>{}
-                          .titles("dent", "d")
-                          .description("flag d");
-            ct1 += opt<bool>{}
-                          .titles("etch", "e")
-                          .description("flag e");
-        }
-        auto ct2 = t1("sub2");
-        {
-            ct2 += opt{-1}
-                    .titles("retry", "r")
-                    .description("set the retry times");
-            ct2 += opt{9}
-                    .titles("retry1", "r1")
-                    .description("set the retry times");
-            ct2 += opt<bool>{}
-                    .titles("arch", "a")
-                    .description("flag a");
-            ct2 += opt<bool>{}
-                    .titles("bech", "b")
-                    .description("flag b");
-            ct2 += opt<bool>{}
-                    .titles("coach", "c")
-                    .description("flag c");
-            ct2 += opt<bool>{}
-                    .titles("dent", "d")
-                    .description("flag d");
-            ct2 += opt<bool>{}
-                    .titles("etch", "e")
-                    .description("flag e");
-        }
+        auto &t2 = t1("sub2");
+        add_sub1_menu(cli, t2, "sub-sub1");
+        add_sub1_menu(cli, t2, "sub-sub2");
+        add_sub1_menu(cli, t2, "sub-sub3");
+
+        auto &t3 = t1("sub3");
+        add_sub1_menu(cli, t3, "sub-bug1");
+        add_sub1_menu(cli, t3, "sub-bug2");
+        add_sub1_menu(cli, t3, "sub-bug3");
+
+        auto &t4 = t1("sub4");
+        add_sub1_menu(cli, t4, "bug-bug1");
+        add_sub1_menu(cli, t4, "bug-bug2");
+
+        auto &t42 = t4("bug-bug2");
+        add_sub1_menu(cli, t42, "zero-sub1");
+        add_sub1_menu(cli, t42, "zero-sub2");
+        add_sub1_menu(cli, t42, "zero-sub3");
+        add_sub1_menu(cli, t42, "zero-sub4");
+        add_sub1_menu(cli, t42, "zero-sub5");
+
     }
 }
 

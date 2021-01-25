@@ -39,6 +39,7 @@ namespace cmdr::opt {
         details::on_post_invoke _global_on_post_invoke;
         bool _treat_unknown_input_command_as_error = true;
         bool _treat_unknown_input_flag_as_error = true;
+        details::on_unknown_argument_found _on_unknown_argument_found;
 
     private:
         app() = default;
@@ -136,9 +137,9 @@ namespace cmdr::opt {
             std::string title{};
             int index{};
             bool is_flag{false};
-            bool help_requesting{false};
+            // bool help_requesting{false};
             bool passthru_flag{false};
-            parsing_context(app *a)
+            explicit parsing_context(app *a)
                 : _root(a) {}
 
         private:
@@ -197,16 +198,19 @@ namespace cmdr::opt {
         details::Action process_short_flag(parsing_context &pc, int argc, char *argv[]);
 
         static cmd_matching_result matching_command(parsing_context &pc);
+        static arg_matching_result matching_special_flag(parsing_context &pc);
         static arg_matching_result matching_long_flag(parsing_context &pc);
         static arg_matching_result matching_short_flag(parsing_context &pc);
-        static arg_matching_result matching_flag_on(parsing_context &pc, std::function<details::indexed_args const &(cmd *)> li);
+        static arg_matching_result matching_flag_on(parsing_context &pc,
+                                                    bool is_long, bool is_special,
+                                                    std::function<details::indexed_args const &(cmd *)> li);
 
         details::Action unknown_command_found(parsing_context &pc, cmd_matching_result &cmr);
         details::Action unknown_long_flag_found(parsing_context &pc, arg_matching_result &amr);
         details::Action unknown_short_flag_found(parsing_context &pc, arg_matching_result &amr);
 
-        int after_run(parsing_context &pc, int argc, char *argv[]);
-
+        int after_run(details::Action rc, parsing_context &pc, int argc, char *argv[]);
+        int internal_action(details::Action rc, parsing_context &pc, int argc, char *argv[]);
         int invoke_command(cmd &cc, string_array remain_args, parsing_context &pc);
 
         static void handle_eptr(std::exception_ptr eptr) {
@@ -224,8 +228,15 @@ namespace cmdr::opt {
                               std::string const &app_name, std::string const &exe_name);
 
         void initialize_internal_commands();
+        void register_actions();
         static void add_global_options(cmdr::opt::app &cli);
         static void add_generator_menu(cmdr::opt::app &cli);
+
+        static int print_debug_info_screen(parsing_context &pc, int argc, char *argv[]);
+        static int print_manual_screen(parsing_context &pc, int argc, char *argv[]);
+        static int print_tree_screen(parsing_context &pc, int argc, char *argv[]);
+
+        static void fatal_exit(const std::string &msg);
 
     public:
         app &operator+(const arg &a) override;
@@ -235,7 +246,10 @@ namespace cmdr::opt {
 
     private:
         int _help_hit{};
-        cmd *_cmd_hit{nullptr};
+        cmd *_cmd_hit{};
+        std::unordered_map<details::Action,
+                           std::function<int(parsing_context &pc, int argc, char *argv[])>>
+                _internal_actions{};
     };
 
 } // namespace cmdr::opt

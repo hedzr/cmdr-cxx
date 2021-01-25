@@ -34,6 +34,8 @@ namespace cmdr::opt {
         bool _hidden : 1;
         bool _special : 1;
         bool _no_non_special : 1;
+        bool _hit_long : 1;
+        bool _hit_special : 1;
 
         std::string _hit_title;
         int _hit_count;
@@ -111,6 +113,8 @@ namespace cmdr::opt {
 
         PROP_SET(hit_title)
         PROP_SET4(hit_count, int)
+        PROP_SET4(hit_long, bool)
+        PROP_SET4(hit_special, bool)
 
 #undef PROP_SET
 #undef PROP_SET2
@@ -118,9 +122,11 @@ namespace cmdr::opt {
 #undef PROP_SET4
 
     public:
-        bas &update_hit_count(std::string const &hit_title, int inc_hit_count = 1) {
+        bas &update_hit_count(std::string const &hit_title, int inc_hit_count = 1, bool is_long = false, bool is_special = false) {
             _hit_title = hit_title;
             _hit_count += inc_hit_count;
+            _hit_long = is_long;
+            _hit_special = is_special;
             return (*this);
         }
 

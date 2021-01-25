@@ -256,6 +256,23 @@ namespace cmdr::string {
     }
 
 
+    inline bool has_prefix(const std::string str, const std::string &prefix) {
+        if (str.length() >= prefix.length()) {
+            if (str.substr(0, prefix.length()) == prefix)
+                return true;
+        }
+        return false;
+    }
+
+    inline bool has_suffix(const std::string str, const std::string &suffix) {
+        if (str.length() >= suffix.length()) {
+            if (str.substr(str.length() - suffix.length()) == suffix)
+                return true;
+        }
+        return false;
+    }
+
+
     namespace conv {
 
         //        static constexpr int is_signed = std::is_signed<T>::value ? 1 : 0;

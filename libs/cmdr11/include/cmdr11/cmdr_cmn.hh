@@ -36,10 +36,36 @@ namespace cmdr::opt {
 
         enum Action {
             OK = 0,
-            RequestHelpScreen = 1,
-            Continue = 2,
+
+            // the action between OK and Continue would like to request cmdr
+            // internal features, such as: print help screen, ...
+
+            RequestHelpScreen = 10,
+            RequestBuildInfoScreen,
+            RequestVersionsScreen,
+            RequestTreeScreen,
+            RequestManualScreen,
+
+            RequestDebugInfoScreen = 20,
+
+            Continue = 31,
+
+            // the action beyond (and) Abortion will notify cmdr parsing processor
+            // to exit itself right now.
+
             Abortion = 33,
+
+            // and, RunDefaultAction is a special action especially for
+            // unknown_command_found handlers.
+            // Your handlers could be return this value and cmdr's
+            // processor will invoke the default logic.
+            RunDefaultAction,
         };
+
+        typedef std::function<details::Action(
+                std::string &title, cmd const &last_matched_cmd,
+                bool long_or_short, bool cmd_or_arg)>
+                on_unknown_argument_found;
 
         /**
          * @brief return negative will abort the parsing and the command invoking later.

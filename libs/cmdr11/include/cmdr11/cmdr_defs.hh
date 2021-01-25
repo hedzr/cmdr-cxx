@@ -28,6 +28,13 @@
 #define __COPY(m) this->m = o.m
 #endif
 
+#ifndef TEXT
+#define TEXT(x) (#x)
+#endif
+
+
+//
+
 
 // https://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor/46177613
 // https://stackoverflow.com/questions/142508/how-do-i-check-os-with-a-preprocessor-directive/8249232
@@ -83,6 +90,9 @@
 #endif
 
 
+//
+
+
 template<typename T>
 struct always_false : std::false_type {};
 
@@ -96,6 +106,11 @@ typedef std::vector<std::string> string_array;
 
 const char *const UNSORTED_GROUP = "1230.Unsorted";
 const char *const SYS_MGMT_GROUP = "9000.System Management";
+// nobody group: 3333 .. 3333+50
+// When you specify a group without leading sorter piece (just
+// like '1230.'), we name it as nobody group.
+// We sort those all nobody group with an auto-increasing
+// number which have a base from 3333.
 const char *const NOBODY_GROUP_SORTER = "3333";
 
 //template<class T=std::string>

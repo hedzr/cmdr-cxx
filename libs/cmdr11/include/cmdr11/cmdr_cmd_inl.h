@@ -94,7 +94,10 @@ namespace cmdr::opt {
 
             if (_grouped_commands.find(gn) == _grouped_commands.end())
                 _grouped_commands.emplace(gn, details::cmd_pointers{});
-            _grouped_commands[gn].push_back(ptr);
+            auto &list = _grouped_commands[gn];
+            auto size = list.size();
+            list.push_back(ptr);
+            assert(list.size() == size + 1);
 
             _indexed_commands.insert({a.title_long(), ptr});
             if (!a.title_short().empty()) {
@@ -166,10 +169,22 @@ namespace cmdr::opt {
 
     inline cmd &cmd::find_command(const_chars long_title, bool extensive) {
         auto it = _indexed_commands.find(long_title);
-        if (it != _indexed_commands.end())
+        if (it != _indexed_commands.end()) {
+            auto cc = (*it).second;
+#if defined(_DEBUG)
+            bool found = false;
+            for (auto const &itl : _grouped_commands[cc->group_name()]) {
+                if (itl == cc) {
+                    found = true;
+                    break;
+                }
+            }
+            assert(found);
+#endif
             return *((*it).second);
+        }
         if (extensive) {
-            for (auto itz : _indexed_commands) {
+            for (const auto &itz : _indexed_commands) {
                 if (itz.second->title_short() == long_title)
                     return *((itz).second);
                 for (auto &k : itz.second->title_aliases()) {
@@ -190,26 +205,29 @@ namespace cmdr::opt {
         return 0;
     }
 
-    inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, bool grouped) {
+    inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, bool grouped, int level) {
         unused(grouped);
+        unused(level);
 
         std::set<std::string> keys;
         std::map<std::string, std::string> dotted_key_on_keys;
+        auto nobody_num = std::stoi(NOBODY_GROUP_SORTER);
         for (auto &it : _grouped_commands) {
-            keys.insert(it.first);
-            auto ptr = it.first.find('.');
+            auto &title = it.first;
+            keys.insert(title);
+            auto ptr = title.find('.');
             if (ptr != std::string::npos) {
-                auto dotted = it.first.substr(0, ptr);
-                dotted_key_on_keys.insert({dotted, it.first});
+                auto dotted = title.substr(0, ptr);
+                dotted_key_on_keys.insert({dotted, title});
             } else {
-                dotted_key_on_keys.insert({NOBODY_GROUP_SORTER, it.first});
+                dotted_key_on_keys.insert({std::to_string(nobody_num++), title});
             }
         }
 
         int count_all{};
         for (auto &it : dotted_key_on_keys) {
             auto val = _grouped_commands[it.second];
-            auto clean_key = it.first == NOBODY_GROUP_SORTER ? it.second : it.second.substr(it.first.length() + 1);
+            auto clean_key = string::has_prefix(it.second, it.first) ? it.second.substr(it.first.length() + 1) : it.second;
 
             int wf = 0, ws = 0, wa = 0, wt = 0, w = 0, valid_count = 0;
             for (auto &x : val) {
@@ -233,6 +251,7 @@ namespace cmdr::opt {
             if (valid_count == 0)
                 continue;
 
+            int level_pad = 0;
             if (it.second != UNSORTED_GROUP) {
                 int i = 0;
                 for (auto &x : val) {
@@ -240,17 +259,24 @@ namespace cmdr::opt {
                     i++;
                 }
                 if (i > 0) {
-                    ss << ' ' << ' ';
+                    if (level >= 0)
+                        ss << std::string(level * 2, ' ') << '-' << ' ';
+                    else
+                        ss << ' ' << ' ';
                     std::stringstream tmp;
                     tmp << '[' << clean_key << ']';
                     ss << c.dim().s(tmp.str()) << std::endl;
+                    level_pad++;
                 }
             }
 
             for (auto &x : val) {
                 if (x->hidden()) continue;
-                // ss << "  " << std::setw(43) << std::left << x->title();
-                ss << "  " << std::left << std::setfill(' ');
+
+                if (level >= 0)
+                    ss << std::string((level + level_pad) * 2, ' ') << '*' << ' ';
+                else
+                    ss << "  " << std::left << std::setfill(' ');
                 if (!x->title_long().empty()) {
                     w = x->title_long().length();
                     ss << c.underline().s(x->title_long());
@@ -295,6 +321,10 @@ namespace cmdr::opt {
                    << std::endl;
 
                 count_all++;
+
+                if (level >= 0 && !x->no_sub_commands()) {
+                    x->print_commands(ss, c, grouped, level + level_pad + 1);
+                }
             }
         }
 
@@ -303,11 +333,13 @@ namespace cmdr::opt {
         }
     }
 
-    inline void cmd::print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, bool grouped) {
+    inline void cmd::print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, bool grouped, int level) {
         unused(grouped);
+        unused(level);
 
         std::set<std::string> keys;
         std::map<std::string, std::string> dotted_key_on_keys;
+        auto nobody_num = std::stoi(NOBODY_GROUP_SORTER);
         for (auto &it : _grouped_args) {
             keys.insert(it.first);
             auto ptr = it.first.find('.');
@@ -315,14 +347,14 @@ namespace cmdr::opt {
                 auto dotted = it.first.substr(0, ptr);
                 dotted_key_on_keys.insert({dotted, it.first});
             } else {
-                dotted_key_on_keys.insert({NOBODY_GROUP_SORTER, it.first});
+                dotted_key_on_keys.insert({std::to_string(nobody_num++), it.first});
             }
         }
 
         int count_all{};
         for (auto &it : dotted_key_on_keys) {
             auto val = _grouped_args[it.second];
-            auto clean_key = it.first == NOBODY_GROUP_SORTER ? it.second : it.second.substr(it.first.length() + 1);
+            auto clean_key = string::has_prefix(it.second, it.first) ? it.second.substr(it.first.length() + 1) : it.second;
 
             int wf = 0, ws = 0, wa = 0, wt = 0, w = 0, valid_count = 0;
             for (auto &x : val) {

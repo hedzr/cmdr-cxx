@@ -53,10 +53,8 @@ namespace cmdr::opt {
                 auto rc = cmr.obj->on_command_hit()(
                         pc.last_matched_cmd(),
                         remain_args(argv, pc.index + 1, argc));
-                if (rc < details::OK || rc >= details::Abortion)
-                    return rc;
-                if (rc == details::RequestHelpScreen)
-                    pc.help_requesting = true;
+                // if (rc < details::OK || rc >= details::Abortion)
+                return rc;
             }
             return details::Continue;
         }
@@ -71,7 +69,7 @@ namespace cmdr::opt {
 
     inline details::Action app::process_special_flag(app::parsing_context &pc, int argc, char *argv[]) {
         pc.title = pc.title.substr(2);
-        auto amr = matching_long_flag(pc);
+        auto amr = matching_special_flag(pc);
         if (amr.matched) {
             amr.obj->hit_title(pc.title.c_str());
             pc.add_matched_arg(amr.obj);
@@ -80,10 +78,8 @@ namespace cmdr::opt {
                         pc.last_matched_cmd(),
                         pc.last_matched_flg(),
                         remain_args(argv, pc.index + 1, argc));
-                if (rc < details::OK || rc >= details::Abortion)
-                    return rc;
-                if (rc == details::RequestHelpScreen)
-                    pc.help_requesting = true;
+                // if (rc < details::OK || rc >= details::Abortion)
+                return rc;
             }
             return details::Continue;
         }
@@ -108,10 +104,8 @@ namespace cmdr::opt {
                         pc.last_matched_cmd(),
                         pc.last_matched_flg(),
                         remain_args(argv, pc.index + 1, argc));
-                if (rc < details::OK || rc >= details::Abortion)
-                    return rc;
-                if (rc == details::RequestHelpScreen)
-                    pc.help_requesting = true;
+                // if (rc < details::OK || rc >= details::Abortion)
+                return rc;
             }
             return details::Continue;
         }
@@ -136,10 +130,8 @@ namespace cmdr::opt {
                         pc.last_matched_cmd(),
                         pc.last_matched_flg(),
                         remain_args(argv, pc.index + 1, argc));
-                if (rc < details::OK || rc >= details::Abortion)
-                    return rc;
-                if (rc == details::RequestHelpScreen)
-                    pc.help_requesting = true;
+                // if (rc < details::OK || rc >= details::Abortion)
+                return rc;
             }
             return details::Continue;
         }
@@ -159,39 +151,48 @@ namespace cmdr::opt {
         details::indexed_commands &li = c._long_commands;
         if (auto const &it = li.find(pc.title); it != li.end()) {
             cmr.matched = true;
-            cmr.obj = (cmd *) &(it->second->update_hit_count(pc.title, 1));
+            cmr.obj = (cmd *) &(it->second->update_hit_count(pc.title, 1, true));
         } else {
             li = c._short_commands;
             auto const &it1 = li.find(pc.title);
             if (it1 != li.end()) {
                 cmr.matched = true;
-                cmr.obj = (cmd *) &(it->second->update_hit_count(pc.title, 1));
+                cmr.obj = (cmd *) &(it->second->update_hit_count(pc.title, 1, false));
             }
         }
         return cmr;
     }
 
-    inline app::arg_matching_result app::matching_flag_on(app::parsing_context &pc, std::function<details::indexed_args const &(cmd *)> li) {
+    inline app::arg_matching_result
+    app::matching_flag_on(app::parsing_context &pc,
+                          bool is_long, bool is_special,
+                          std::function<details::indexed_args const &(cmd *)> li) {
         arg_matching_result amr;
         pc.reverse_foreach_matched_commands([=, &amr](auto &it) {
             auto d = li(it);
             if (auto const &itz = d.find(pc.title); itz != d.end()) {
                 amr.matched = true;
-                amr.obj = (arg *) &(itz->second->update_hit_count(pc.title, 1));
+                amr.obj = (arg *) &(itz->second->update_hit_count(pc.title, 1, is_long, is_special));
                 return;
             }
         });
         return amr;
     }
 
+    inline app::arg_matching_result app::matching_special_flag(app::parsing_context &pc) {
+        return matching_flag_on(pc, true, true, [](cmd *c) -> details::indexed_args & {
+            return c->_long_args;
+        });
+    }
+
     inline app::arg_matching_result app::matching_long_flag(app::parsing_context &pc) {
-        return matching_flag_on(pc, [](cmd *c) -> details::indexed_args & {
+        return matching_flag_on(pc, true, false, [](cmd *c) -> details::indexed_args & {
             return c->_long_args;
         });
     }
 
     inline app::arg_matching_result app::matching_short_flag(app::parsing_context &pc) {
-        return matching_flag_on(pc, [](cmd *c) -> details::indexed_args & {
+        return matching_flag_on(pc, false, false, [](cmd *c) -> details::indexed_args & {
             return c->_short_args;
         });
     }
@@ -199,6 +200,9 @@ namespace cmdr::opt {
     inline details::Action app::unknown_long_flag_found(app::parsing_context &pc, arg_matching_result &amr) {
         unused(pc);
         unused(amr);
+        if (_on_unknown_argument_found)
+            if (auto rc = _on_unknown_argument_found(pc.title, pc.last_matched_cmd(), true, false); rc != details::RunDefaultAction)
+                return rc;
         std::cerr << "Unknown long flag: " << std::quoted(pc.title);
         auto &c = pc.last_matched_cmd();
         if (c.valid())
@@ -210,6 +214,9 @@ namespace cmdr::opt {
     inline details::Action app::unknown_short_flag_found(app::parsing_context &pc, arg_matching_result &amr) {
         unused(pc);
         unused(amr);
+        if (_on_unknown_argument_found)
+            if (auto rc = _on_unknown_argument_found(pc.title, pc.last_matched_cmd(), false, false); rc != details::RunDefaultAction)
+                return rc;
         std::cerr << "Unknown short flag: " << std::quoted(pc.title);
         auto &c = pc.last_matched_cmd();
         if (c.valid())
@@ -220,6 +227,9 @@ namespace cmdr::opt {
 
     inline details::Action app::unknown_command_found(parsing_context &pc, cmd_matching_result &cmr) {
         unused(cmr);
+        if (_on_unknown_argument_found)
+            if (auto rc = _on_unknown_argument_found(pc.title, pc.last_matched_cmd(), false, true); rc != details::RunDefaultAction)
+                return rc;
         std::cerr << "Unknown command: " << std::quoted(pc.title);
         auto &c = pc.last_matched_cmd();
         if (c.valid())
@@ -316,6 +326,7 @@ namespace cmdr::opt {
 
         parsing_context pc{this};
         pc.add_matched_cmd(this);
+        details::Action rc;
 
         for (int i = 1; i < argc; i++) {
             pc.title = argv[i];
@@ -323,7 +334,7 @@ namespace cmdr::opt {
 
             if (pc.title[0] == '~' && pc.title[1] == '~') {
                 // special flags
-                auto rc = process_short_flag(pc, argc, argv);
+                rc = process_special_flag(pc, argc, argv);
                 if (rc < details::OK || rc >= details::Abortion)
                     return 0;
                 continue;
@@ -338,14 +349,14 @@ namespace cmdr::opt {
                     }
 
                     // long
-                    auto rc = process_long_flag(pc, argc, argv);
+                    rc = process_long_flag(pc, argc, argv);
                     if (rc < details::OK || rc >= details::Abortion)
                         return 0;
                     continue;
                 }
 
                 // short flag
-                auto rc = process_short_flag(pc, argc, argv);
+                rc = process_short_flag(pc, argc, argv);
                 if (rc < details::OK || rc >= details::Abortion)
                     return 0;
                 continue;
@@ -359,29 +370,34 @@ namespace cmdr::opt {
                     continue;
                 }
             }
-            auto rc = process_command(pc, argc, argv);
+            rc = process_command(pc, argc, argv);
             if (rc < details::OK || rc >= details::Abortion)
                 return 0;
         }
 
-        return after_run(pc, argc, argv);
+        return after_run(rc, pc, argc, argv);
     }
 
-    inline int app::after_run(parsing_context &pc, int argc, char *argv[]) {
-        if (pc.help_requesting) {
-            print_usages(&pc.curr_command());
-            return 0;
-        }
+    inline int app::after_run(details::Action rc, parsing_context &pc, int argc, char *argv[]) {
+        if (rc > details::OK && rc < details::Continue)
+            return internal_action(rc, pc, argc, argv);
 
         if (auto cc = pc.last_matched_cmd(); cc.valid()) {
             if (cc.no_sub_commands()) {
                 // invoking cc
-                return invoke_command(cc, remain_args(pc, argv, pc.index, argc), pc);
+                return invoke_command(cc, remain_args(pc, argv, pc.index + 1, argc), pc);
             }
 
-            pc.help_requesting = true;
+            print_usages(&cc);
+        } else {
             print_usages(&pc.curr_command());
         }
+        return 0;
+    }
+
+    inline int app::internal_action(details::Action rc, parsing_context &pc, int argc, char *argv[]) {
+        if (auto it = _internal_actions.find(rc); it != _internal_actions.end())
+            return it->second(pc, argc, argv);
         return 0;
     }
 

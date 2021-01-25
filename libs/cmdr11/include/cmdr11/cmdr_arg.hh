@@ -14,6 +14,7 @@
 #include <variant>
 
 #include "cmdr_cmn.hh"
+#include "cmdr_string.hh"
 #include "cmdr_var_t.hh"
 
 
@@ -237,6 +238,25 @@ namespace cmdr::opt {
             //     }
             // }
             return (*this);
+        }
+
+    public:
+        bool match(std::string const &str, int &len) {
+            if (string::has_prefix(str, _long)) {
+                len = _long.length();
+                return true;
+            }
+            if (string::has_prefix(str, _short)) {
+                len = _short.length();
+                return true;
+            }
+            for (auto const &s : _aliases) {
+                if (string::has_prefix(str, s)) {
+                    len = s.length();
+                    return true;
+                }
+            }
+            return false;
         }
     }; // class bas
 

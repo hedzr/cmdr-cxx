@@ -135,10 +135,12 @@ namespace cmdr::opt {
         struct parsing_context {
             cmd *_root;
             std::string title{};
-            int index{};
+            int index{}; // argv's index
             bool is_flag{false};
-            // bool help_requesting{false};
             bool passthru_flag{false};
+            int matching_flag_type{}; // short: 0, long: 1, special: 2, ...
+            std::size_t pos{}; // start position of title
+
             explicit parsing_context(app *a)
                 : _root(a) {}
 
@@ -186,6 +188,8 @@ namespace cmdr::opt {
             bool matched{};
             bool should_abort{};
             arg *obj;
+            int matched_length{};
+            std::string matched_str{};
             std::exception e;
         };
 

@@ -256,17 +256,37 @@ namespace cmdr::string {
     }
 
 
-    inline bool has_prefix(const std::string str, const std::string &prefix) {
-        if (str.length() >= prefix.length()) {
-            if (str.substr(0, prefix.length()) == prefix)
+    inline bool has_prefix(const std::string str, const_chars prefix) {
+        int sl = std::strlen(prefix), ml = str.length();
+        if (ml >= sl) {
+            if (str.compare(0, sl, prefix) == 0)
                 return true;
         }
         return false;
     }
 
-    inline bool has_suffix(const std::string str, const std::string &suffix) {
-        if (str.length() >= suffix.length()) {
-            if (str.substr(str.length() - suffix.length()) == suffix)
+    inline bool has_prefix(const std::string &str, const std::string &prefix) {
+        int sl = prefix.length(), ml = str.length();
+        if (ml>= sl) {
+            if (str.compare(0, sl, prefix) == 0)
+                return true;
+        }
+        return false;
+    }
+
+    inline bool has_suffix(const std::string &str, const_chars suffix) {
+        int sl = std::strlen(suffix), ml = str.length();
+        if (ml >= sl) {
+            if (str.compare(ml - sl, sl, suffix) == 0)
+                return true;
+        }
+        return false;
+    }
+
+    inline bool has_suffix(const std::string &str, const std::string &suffix) {
+        int sl = suffix.length(), ml = str.length();
+        if (ml >= sl) {
+            if (str.compare(ml - sl, sl, suffix) == 0)
                 return true;
         }
         return false;

@@ -284,11 +284,11 @@ namespace cmdr::opt {
 
         ss << std::endl
            << "COMMANDS" << std::endl;
-        cc->print_commands(ss, c);
+        cc->print_commands(ss, c, _minimal_tab_width, true, 0);
 
         ss << std::endl
            << "OPTIONS" << std::endl;
-        cc->print_flags(ss, c);
+        cc->print_flags(ss, c, _minimal_tab_width, true, 0);
 
         unused(app_name);
         unused(exe_name);

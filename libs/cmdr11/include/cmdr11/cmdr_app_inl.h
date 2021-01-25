@@ -107,7 +107,7 @@ namespace cmdr::opt {
                     << ts.str() << std::endl;
             return 0;
         });
-        _internal_actions.emplace(details::RequestTreeScreen, print_tree_screen);
+        _internal_actions.emplace(details::RequestTreeScreen, [this](parsing_context &pc, int argc, char *argv[]) -> int { return print_tree_screen(pc, argc, argv); });
         _internal_actions.emplace(details::RequestManualScreen, print_manual_screen);
         _internal_actions.emplace(details::RequestDebugInfoScreen, print_debug_info_screen);
 #pragma clang diagnostic pop
@@ -187,7 +187,7 @@ namespace cmdr::opt {
 
         // _pr_tree(std::cout, &pc.last_matched_cmd());
         auto c = cmdr::terminal::colors::colorize::create();
-        pc.last_matched_cmd().print_commands(std::cout, c, true, 0);
+        pc.last_matched_cmd().print_commands(std::cout, c, _minimal_tab_width, true, 0);
         return 0;
     }
 

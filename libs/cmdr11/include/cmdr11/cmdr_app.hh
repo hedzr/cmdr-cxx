@@ -223,9 +223,9 @@ namespace cmdr::opt {
             }
         }
 
-        static void print_cmd(std::ostream &ss,
-                              cmdr::terminal::colors::colorize &c, cmd *cc,
-                              std::string const &app_name, std::string const &exe_name);
+        void print_cmd(std::ostream &ss,
+                       cmdr::terminal::colors::colorize &c, cmd *cc,
+                       std::string const &app_name, std::string const &exe_name);
 
         void initialize_internal_commands();
         void register_actions();
@@ -234,7 +234,7 @@ namespace cmdr::opt {
 
         static int print_debug_info_screen(parsing_context &pc, int argc, char *argv[]);
         static int print_manual_screen(parsing_context &pc, int argc, char *argv[]);
-        static int print_tree_screen(parsing_context &pc, int argc, char *argv[]);
+        int print_tree_screen(parsing_context &pc, int argc, char *argv[]);
 
         static void fatal_exit(const std::string &msg);
 
@@ -250,6 +250,7 @@ namespace cmdr::opt {
         std::unordered_map<details::Action,
                            std::function<int(parsing_context &pc, int argc, char *argv[])>>
                 _internal_actions{};
+        int _minimal_tab_width{43};
     };
 
 } // namespace cmdr::opt

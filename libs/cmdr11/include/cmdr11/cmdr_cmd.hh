@@ -185,8 +185,10 @@ namespace cmdr::opt {
         virtual void post_run() const {}
 
     public:
-        void print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, bool grouped = true, int level = -1);
-        void print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, bool grouped = true, int level = -1);
+        // wt: total width for description part.
+        void print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped = true, int level = -1);
+        // wt: total width for description part.
+        void print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped = true, int level = -1);
 
     }; // class cmd
 

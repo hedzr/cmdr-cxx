@@ -205,7 +205,7 @@ namespace cmdr::opt {
         return 0;
     }
 
-    inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, bool grouped, int level) {
+    inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, int level) {
         unused(grouped);
         unused(level);
 
@@ -225,11 +225,37 @@ namespace cmdr::opt {
         }
 
         int count_all{};
+        if (wt <= 0) {
+            for (auto &it : dotted_key_on_keys) {
+                auto val = _grouped_commands[it.second];
+                auto clean_key = string::has_prefix(it.second, it.first) ? it.second.substr(it.first.length() + 1) : it.second;
+
+                int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
+                for (auto &x : val) {
+                    if (x->hidden()) continue;
+                    valid_count++;
+                    w = x->title_long().length();
+                    if (w > wf) wf = w;
+                    w = x->title_short().length();
+                    if (w > ws) ws = w;
+                    w = 0;
+                    for (auto const &t : x->title_aliases()) {
+                        if (w > 0) w += 1;
+                        w += t.length();
+                    }
+                    if (w > wa) wa = w;
+                }
+
+                wt = wf + 2 + ws + 2 + wa + 2;
+                if (wt < 43) wt = 43;
+            }
+        }
+
         for (auto &it : dotted_key_on_keys) {
             auto val = _grouped_commands[it.second];
             auto clean_key = string::has_prefix(it.second, it.first) ? it.second.substr(it.first.length() + 1) : it.second;
 
-            int wf = 0, ws = 0, wa = 0, wt = 0, w = 0, valid_count = 0;
+            int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
             for (auto &x : val) {
                 if (x->hidden()) continue;
                 valid_count++;
@@ -244,9 +270,6 @@ namespace cmdr::opt {
                 }
                 if (w > wa) wa = w;
             }
-
-            wt = wf + 2 + ws + 2 + wa + 2;
-            if (wt < 43) wt = 43;
 
             if (valid_count == 0)
                 continue;
@@ -314,16 +337,17 @@ namespace cmdr::opt {
                     ss << std::setw(wa) << ' ';
 
                 w = wf + 2 + ws + 2 + wa;
-                ss << std::setw(wt - w) << ' ';
+                ss << std::setw(wt - w - (level >= 0 ? level : 0)) << ' ';
 
-                ss << c.dim().s(x->descriptions())
-                   // << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa
-                   << std::endl;
+                ss // << wt << ',' << level << ','
+                        << c.dim().s(x->descriptions())
+                        // << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa
+                        << std::endl;
 
                 count_all++;
 
                 if (level >= 0 && !x->no_sub_commands()) {
-                    x->print_commands(ss, c, grouped, level + level_pad + 1);
+                    x->print_commands(ss, c, wt, grouped, level + level_pad + 1);
                 }
             }
         }
@@ -333,7 +357,7 @@ namespace cmdr::opt {
         }
     }
 
-    inline void cmd::print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, bool grouped, int level) {
+    inline void cmd::print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, int level) {
         unused(grouped);
         unused(level);
 
@@ -352,11 +376,37 @@ namespace cmdr::opt {
         }
 
         int count_all{};
+        if (wt <= 0) {
+            for (auto &it : dotted_key_on_keys) {
+                auto val = _grouped_args[it.second];
+                auto clean_key = string::has_prefix(it.second, it.first) ? it.second.substr(it.first.length() + 1) : it.second;
+
+                int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
+                for (auto &x : val) {
+                    if (x->hidden()) continue;
+                    valid_count++;
+                    w = x->title_long().length() + 2;
+                    if (w > wf) wf = w;
+                    w = x->title_short().length() + 1;
+                    if (w > ws) ws = w;
+                    w = 0;
+                    for (auto const &t : x->title_aliases()) {
+                        if (w > 0) w += 1;
+                        w += t.length() + 2;
+                    }
+                    if (w > wa) wa = w;
+                }
+
+                wt = wf + 2 + ws + 2 + wa + 2;
+                if (wt < 43) wt = 43;
+            }
+        }
+
         for (auto &it : dotted_key_on_keys) {
             auto val = _grouped_args[it.second];
             auto clean_key = string::has_prefix(it.second, it.first) ? it.second.substr(it.first.length() + 1) : it.second;
 
-            int wf = 0, ws = 0, wa = 0, wt = 0, w = 0, valid_count = 0;
+            int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
             for (auto &x : val) {
                 if (x->hidden()) continue;
                 valid_count++;
@@ -371,9 +421,6 @@ namespace cmdr::opt {
                 }
                 if (w > wa) wa = w;
             }
-
-            wt = wf + 2 + ws + 2 + wa + 2;
-            if (wt < 43) wt = 43;
 
             if (valid_count == 0)
                 continue;
@@ -432,7 +479,7 @@ namespace cmdr::opt {
                     ss << std::setw(wa) << ' ';
 
                 w = wf + 2 + ws + 2 + wa;
-                ss << std::setw(wt - w) << ' ';
+                ss << std::setw(wt - w - (level >= 0 ? level * 2 : 0)) << ' ';
 
                 ss << c.dim().s(x->descriptions());
 

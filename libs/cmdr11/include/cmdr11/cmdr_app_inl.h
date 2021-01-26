@@ -22,7 +22,7 @@
 #include "cmdr_terminal.hh"
 
 
-namespace cmdr::opt {
+namespace cmdr {
 
     inline app::app(const_chars name, const_chars version, const_chars author,
                     const_chars copyright, const_chars description_,
@@ -58,15 +58,15 @@ namespace cmdr::opt {
     inline void app::register_actions() {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-parameter"
-        _internal_actions.emplace(details::RequestHelpScreen, [=](parsing_context &pc, int argc, char *argv[]) -> int {
+        _internal_actions.emplace(opt::RequestHelpScreen, [=](parsing_context &pc, int argc, char *argv[]) -> int {
             print_usages(&pc.last_matched_cmd());
             return 0;
         });
-        _internal_actions.emplace(details::RequestVersionsScreen, [=](parsing_context &pc, int argc, char *argv[]) -> int {
+        _internal_actions.emplace(opt::RequestVersionsScreen, [=](parsing_context &pc, int argc, char *argv[]) -> int {
             std::cout << this->_version << std::endl;
             return 0;
         });
-        _internal_actions.emplace(details::RequestBuildInfoScreen, [=](parsing_context &pc, int argc, char *argv[]) -> int {
+        _internal_actions.emplace(opt::RequestBuildInfoScreen, [=](parsing_context &pc, int argc, char *argv[]) -> int {
             std::stringstream compiler;
             compiler <<
             // https://blog.kowalczyk.info/article/j/guide-to-predefined-macros-in-c-compilers-gcc-clang-msvc-etc..html
@@ -107,9 +107,9 @@ namespace cmdr::opt {
                     << ts.str() << std::endl;
             return 0;
         });
-        _internal_actions.emplace(details::RequestTreeScreen, [this](parsing_context &pc, int argc, char *argv[]) -> int { return print_tree_screen(pc, argc, argv); });
-        _internal_actions.emplace(details::RequestManualScreen, print_manual_screen);
-        _internal_actions.emplace(details::RequestDebugInfoScreen, print_debug_info_screen);
+        _internal_actions.emplace(opt::RequestTreeScreen, [this](parsing_context &pc, int argc, char *argv[]) -> int { return print_tree_screen(pc, argc, argv); });
+        _internal_actions.emplace(opt::RequestManualScreen, print_manual_screen);
+        _internal_actions.emplace(opt::RequestDebugInfoScreen, print_debug_info_screen);
 #pragma clang diagnostic pop
     }
 
@@ -191,7 +191,7 @@ namespace cmdr::opt {
         return 0;
     }
 
-    inline void app::add_global_options(cmdr::opt::app &cli) {
+    inline void app::add_global_options(app &cli) {
         // using namespace cmdr::opt;
 
         const bool hide_sys_tools = false;
@@ -220,11 +220,11 @@ namespace cmdr::opt {
                        .description("display this help screen")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
-                       .on_hit([](cmd const &hit, arg const &hit_flag, string_array const &remain_args) -> details::Action {
+                       .on_hit([](opt::cmd const &hit, opt::arg const &hit_flag, string_array const &remain_args) -> opt::Action {
                            unused(hit);
                            unused(hit_flag);
                            unused(remain_args);
-                           return details::RequestHelpScreen;
+                           return opt::RequestHelpScreen;
                        });
 
         // version
@@ -234,10 +234,10 @@ namespace cmdr::opt {
                        .description("display the version information")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
-                       .on_invoke([](cmd const &hit, string_array const &remain_args) -> int {
+                       .on_invoke([](opt::cmd const &hit, string_array const &remain_args) -> int {
                            unused(hit);
                            unused(remain_args);
-                           return details::RequestVersionsScreen;
+                           return opt::RequestVersionsScreen;
                        });
 
         cli += cmdr::opt::opt<bool>{}
@@ -245,11 +245,11 @@ namespace cmdr::opt {
                        .description("display the version information")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
-                       .on_hit([](cmd const &hit, arg const &hit_flag, string_array const &remain_args) -> details::Action {
+                       .on_hit([](opt::cmd const &hit, opt::arg const &hit_flag, string_array const &remain_args) -> opt::Action {
                            unused(hit);
                            unused(hit_flag);
                            unused(remain_args);
-                           return details::RequestVersionsScreen;
+                           return opt::RequestVersionsScreen;
                        });
 
         // build-info
@@ -259,11 +259,11 @@ namespace cmdr::opt {
                        .description("display the building information")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
-                       .on_hit([](cmd const &hit, arg const &hit_flag, string_array const &remain_args) -> details::Action {
+                       .on_hit([](opt::cmd const &hit, opt::arg const &hit_flag, string_array const &remain_args) -> opt::Action {
                            unused(hit);
                            unused(hit_flag);
                            unused(remain_args);
-                           return details::RequestBuildInfoScreen;
+                           return opt::RequestBuildInfoScreen;
                        });
 
         // more...
@@ -284,10 +284,10 @@ namespace cmdr::opt {
                        .description("print cmdr internal information")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
-                       .on_invoke([](cmd const &hit, string_array const &remain_args) -> int {
+                       .on_invoke([](opt::cmd const &hit, string_array const &remain_args) -> int {
                            unused(hit);
                            unused(remain_args);
-                           return details::RequestDebugInfoScreen;
+                           return opt::RequestDebugInfoScreen;
                        });
 
         cli += cmdr::opt::opt<bool>{}
@@ -297,13 +297,13 @@ namespace cmdr::opt {
                        .special()
                        .no_non_special()
                        .group(SYS_MGMT_GROUP)
-                       .on_hit([](cmd const &hit, arg const &hit_flag, string_array const &remain_args) -> details::Action {
+                       .on_hit([](opt::cmd const &hit, opt::arg const &hit_flag, string_array const &remain_args) -> opt::Action {
                            unused(hit);
                            unused(hit_flag);
                            unused(remain_args);
                            if (hit_flag.hit_special())
-                               return details::RequestTreeScreen;
-                           return details::RequestTreeScreen;
+                               return opt::RequestTreeScreen;
+                           return opt::RequestTreeScreen;
                        });
 
         cli += cmdr::opt::opt<bool>{}
@@ -311,13 +311,13 @@ namespace cmdr::opt {
                        .description("enable debugging mode for more verbose outputting")
                        .special()
                        .group(SYS_MGMT_GROUP)
-                       .on_hit([](cmd const &hit, arg const &hit_flag, string_array const &remain_args) -> details::Action {
+                       .on_hit([](opt::cmd const &hit, opt::arg const &hit_flag, string_array const &remain_args) -> opt::Action {
                            unused(hit);
                            unused(hit_flag);
                            unused(remain_args);
                            if (hit_flag.hit_special())
-                               return details::RequestDebugInfoScreen;
-                           return details::OK;
+                               return opt::RequestDebugInfoScreen;
+                           return opt::OK;
                        });
 
         cli += cmdr::opt::opt<bool>{}
@@ -326,7 +326,7 @@ namespace cmdr::opt {
                        .group(SYS_MGMT_GROUP);
     }
 
-    inline void app::add_generator_menu(cmdr::opt::app &cli) {
+    inline void app::add_generator_menu(app &cli) {
         // using namespace cmdr::opt;
 
         // generators
@@ -334,15 +334,16 @@ namespace cmdr::opt {
                        .titles("generator", "g", "gen")
                        .description("generators of this app (such as manual, markdown, ...)")
                        .group(SYS_MGMT_GROUP)
-                       .opt(opt_dummy{}())
-                       .opt(opt_dummy{}());
+                // .opt(opt_dummy{}())
+                // .opt(opt_dummy{}());
+                ;
         {
             auto &t1 = *cli.last_added_command();
             t1 += cmdr::opt::subcmd{}
                           .titles("doc", "d", "markdown", "docx", "pdf", "tex")
-                          .description("generate a markdown document, or: pdf/TeX/...")
-                          .opt(opt_dummy{}())
-                          .opt(opt_dummy{}());
+                          .description("generate a markdown document, or: pdf/TeX/...");
+            // .opt(opt_dummy{}())
+            // .opt(opt_dummy{}());
 
             auto c1 = *t1.last_added_command();
             c1 += cmdr::opt::opt<bool>{}
@@ -362,39 +363,41 @@ namespace cmdr::opt {
             t1 += cmdr::opt::subcmd{}
                           .titles("manual", "m", "man")
                           .description("generate linux man page.")
-                          .opt(opt_dummy{}())
-                          .opt(opt_dummy{}());
+                    // .opt(opt_dummy{}())
+                    // .opt(opt_dummy{}())
+                    ;
 
             t1 += cmdr::opt::subcmd{}
                           .titles("shell", "s", "sh")
                           .description("generate the bash/zsh auto-completion script or install it.")
-                          .opt(opt_dummy{}())
-                          .opt(opt_dummy{}());
+                    // .opt(opt_dummy{}())
+                    // .opt(opt_dummy{}())
+                    ;
         }
     }
 
-    inline app &app::operator+(const arg &a) {
+    inline app &app::operator+(const opt::arg &a) {
         cmd::operator+(a);
         return *this;
     }
 
-    inline app &app::operator+=(const arg &a) {
+    inline app &app::operator+=(const opt::arg &a) {
         cmd::operator+=(a);
         return *this;
     }
 
-    inline app &app::operator+(const cmd &a) {
+    inline app &app::operator+(const opt::cmd &a) {
         cmd::operator+(a);
         return *this;
     }
 
-    inline app &app::operator+=(const cmd &a) {
+    inline app &app::operator+=(const opt::cmd &a) {
         cmd::operator+=(a);
         return *this;
     }
 
 
-} // namespace cmdr::opt
+} // namespace cmdr
 
 
 #endif //CMDR_CXX11_CMDR_APP_INL_H

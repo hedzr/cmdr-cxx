@@ -10,7 +10,7 @@ void fatal_exit(const std::string &msg) {
     exit(-1);
 }
 
-void add_sub1_menu(cmdr::opt::app &cli, cmdr::opt::cmd &t1, const_chars title) {
+void add_sub1_menu(cmdr::app &cli, cmdr::opt::cmd &t1, const_chars title) {
     using namespace cmdr::opt;
     unused(cli);
 
@@ -48,7 +48,7 @@ void add_sub1_menu(cmdr::opt::app &cli, cmdr::opt::cmd &t1, const_chars title) {
     }
 }
 
-void add_test_menu(cmdr::opt::app &cli) {
+void add_test_menu(cmdr::app &cli) {
     using namespace cmdr::opt;
 
     cli += subcmd{}
@@ -110,7 +110,7 @@ void add_test_menu(cmdr::opt::app &cli) {
     }
 }
 
-void add_server_menu(cmdr::opt::app &cli) {
+void add_server_menu(cmdr::app &cli) {
     using namespace cmdr::opt;
 
     cli += subcmd{}

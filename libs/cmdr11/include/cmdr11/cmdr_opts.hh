@@ -11,8 +11,6 @@
 
 namespace cmdr::opt {
 
-    class app;
-
     namespace opts {
 
 #if 0

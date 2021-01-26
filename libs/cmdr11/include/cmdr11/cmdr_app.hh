@@ -14,17 +14,11 @@
 #include "cmdr_terminal.hh"
 
 
-namespace cmdr::opt {
-
-    class arg;
-    class cmd;
-
-    class subcmd;
-    template <class T> class opt;
+namespace cmdr {
 
 
     // template<class V = support_types>
-    class app : public cmd {
+    class app : public opt::cmd {
     private:
         app() = default;
 
@@ -98,11 +92,11 @@ namespace cmdr::opt {
         //[[nodiscard]] cmd *command_hit() const { return _cmd_hit; }
 
     public:
-        app &set_global_pre_invoke_handler(details::on_pre_invoke cb) {
+        app &set_global_pre_invoke_handler(opt::details::on_pre_invoke cb) {
             _global_on_pre_invoke = std::move(cb);
             return (*this);
         }
-        app &set_global_post_invoke_handler(details::on_post_invoke cb) {
+        app &set_global_post_invoke_handler(opt::details::on_post_invoke cb) {
             _global_on_post_invoke = std::move(cb);
             return (*this);
         }
@@ -117,7 +111,7 @@ namespace cmdr::opt {
 
     private:
         struct parsing_context {
-            cmd *_root;
+            opt::cmd *_root;
             std::string title{};
             int index{}; // argv's index
             bool is_flag{false};
@@ -129,50 +123,50 @@ namespace cmdr::opt {
                 : _root(a) {}
 
         private:
-            details::arg_pointers matched_flags{};
-            details::cmd_pointers matched_commands{};
+            opt::details::arg_pointers matched_flags{};
+            opt::details::cmd_pointers matched_commands{};
             string_array unknown_flags{};
             string_array unknown_commands{};
             string_array non_commands{};
 
         public:
-            [[nodiscard]] cmd &curr_command() {
+            [[nodiscard]] opt::cmd &curr_command() {
                 if (matched_commands.empty())
                     return *_root;
                 return *matched_commands.back();
             }
-            [[nodiscard]] cmd &last_matched_cmd() {
+            [[nodiscard]] opt::cmd &last_matched_cmd() {
                 if (matched_commands.empty())
                     return null_command();
                 return *matched_commands.back();
             }
-            [[nodiscard]] arg &last_matched_flg() {
+            [[nodiscard]] opt::arg &last_matched_flg() {
                 if (matched_flags.empty())
                     return null_arg();
                 return *matched_flags.back();
             }
 
-            void add_matched_cmd(cmd *obj) { matched_commands.push_back(obj); }
-            void add_matched_arg(arg *obj) { matched_flags.push_back(obj); }
+            void add_matched_cmd(opt::cmd *obj) { matched_commands.push_back(obj); }
+            void add_matched_arg(opt::arg *obj) { matched_flags.push_back(obj); }
             void add_unknown_cmd(std::string const &obj) { unknown_commands.push_back(obj); }
             void add_unknown_arg(std::string const &obj) { unknown_flags.push_back(obj); }
             void add_remain_arg(std::string const &arg) { non_commands.push_back(arg); }
             [[nodiscard]] string_array const &remain_args() const { return non_commands; }
             auto &mc() { return matched_commands; }
-            void reverse_foreach_matched_commands(std::function<void(details::cmd_pointers::value_type &it)> f) {
+            void reverse_foreach_matched_commands(std::function<void(opt::details::cmd_pointers::value_type &it)> f) {
                 std::for_each(matched_commands.rbegin(), matched_commands.rend(), f);
             }
         };
         struct cmd_matching_result {
             bool matched{};
             bool should_abort{};
-            cmd *obj;
+            opt::cmd *obj;
             std::exception e;
         };
         struct arg_matching_result {
             bool matched{};
             bool should_abort{};
-            arg *obj;
+            opt::arg *obj;
             int matched_length{};
             std::string matched_str{};
             std::exception e;
@@ -181,10 +175,10 @@ namespace cmdr::opt {
         static string_array remain_args(parsing_context &pc, char *argv[], int i, int argc);
         static string_array remain_args(char *argv[], int i, int argc);
 
-        details::Action process_command(parsing_context &pc, int argc, char *argv[]);
-        details::Action process_special_flag(parsing_context &pc, int argc, char *argv[]);
-        details::Action process_long_flag(parsing_context &pc, int argc, char *argv[]);
-        details::Action process_short_flag(parsing_context &pc, int argc, char *argv[]);
+        opt::Action process_command(parsing_context &pc, int argc, char *argv[]);
+        opt::Action process_special_flag(parsing_context &pc, int argc, char *argv[]);
+        opt::Action process_long_flag(parsing_context &pc, int argc, char *argv[]);
+        opt::Action process_short_flag(parsing_context &pc, int argc, char *argv[]);
 
         static cmd_matching_result matching_command(parsing_context &pc);
         static arg_matching_result matching_special_flag(parsing_context &pc);
@@ -192,20 +186,20 @@ namespace cmdr::opt {
         static arg_matching_result matching_short_flag(parsing_context &pc);
         static arg_matching_result matching_flag_on(parsing_context &pc,
                                                     bool is_long, bool is_special,
-                                                    std::function<details::indexed_args const &(cmd *)> li);
+                                                    std::function<opt::details::indexed_args const &(cmd *)> li);
 
-        details::Action unknown_command_found(parsing_context &pc, cmd_matching_result &cmr);
-        details::Action unknown_long_flag_found(parsing_context &pc, arg_matching_result &amr);
-        details::Action unknown_short_flag_found(parsing_context &pc, arg_matching_result &amr);
+        opt::Action unknown_command_found(parsing_context &pc, cmd_matching_result &cmr);
+        opt::Action unknown_long_flag_found(parsing_context &pc, arg_matching_result &amr);
+        opt::Action unknown_short_flag_found(parsing_context &pc, arg_matching_result &amr);
 
         void initialize_internal_commands();
         void register_actions();
-        static void add_global_options(cmdr::opt::app &cli);
-        static void add_generator_menu(cmdr::opt::app &cli);
+        static void add_global_options(app &cli);
+        static void add_generator_menu(app &cli);
 
         void prepare();
-        int after_run(details::Action rc, parsing_context &pc, int argc, char *argv[]);
-        int internal_action(details::Action rc, parsing_context &pc, int argc, char *argv[]);
+        int after_run(opt::Action rc, parsing_context &pc, int argc, char *argv[]);
+        int internal_action(opt::Action rc, parsing_context &pc, int argc, char *argv[]);
         int invoke_command(cmd &cc, string_array remain_args, parsing_context &pc);
 
         static void handle_eptr(std::exception_ptr eptr) {
@@ -229,10 +223,10 @@ namespace cmdr::opt {
         int print_tree_screen(parsing_context &pc, int argc, char *argv[]);
 
     public:
-        app &operator+(const arg &a) override;
-        app &operator+=(const arg &a) override;
-        app &operator+(const cmd &a) override;
-        app &operator+=(const cmd &a) override;
+        app &operator+(const opt::arg &a) override;
+        app &operator+=(const opt::arg &a) override;
+        app &operator+(const opt::cmd &a) override;
+        app &operator+=(const opt::cmd &a) override;
 
     private:
         std::string _name;
@@ -249,15 +243,15 @@ namespace cmdr::opt {
 
         // static colorize &colorizer() {...}
 
-        details::on_pre_invoke _global_on_pre_invoke;
-        details::on_post_invoke _global_on_post_invoke;
+        opt::details::on_pre_invoke _global_on_pre_invoke;
+        opt::details::on_post_invoke _global_on_post_invoke;
         bool _treat_unknown_input_command_as_error = true;
         bool _treat_unknown_input_flag_as_error = true;
-        details::on_unknown_argument_found _on_unknown_argument_found;
+        opt::details::on_unknown_argument_found _on_unknown_argument_found;
 
         //int _help_hit{};
         //cmd *_cmd_hit{};
-        std::unordered_map<details::Action,
+        std::unordered_map<opt::Action,
                            std::function<int(parsing_context &pc, int argc, char *argv[])>>
                 _internal_actions{};
 
@@ -267,6 +261,6 @@ namespace cmdr::opt {
 
     inline bool app::_longest_first = true;
 
-} // namespace cmdr::opt
+} // namespace cmdr
 
 #endif // CMDR_CXX11_CMDR_APP_HH

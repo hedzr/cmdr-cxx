@@ -43,6 +43,5 @@ int main(int argc, char *argv[]) {
 
     } catch (...) {
         cmdr::get_app().post_run(); // optional to post_run(), for the rare exception post processing if necessary
-
     }
 }

@@ -30,5 +30,4 @@ int main() {
     std::string s("hi");
     std::printf("stack space = %zu, heap space = %zu, capacity = %zu\n",
                 sizeof(s), allocated, s.capacity());
-
 }

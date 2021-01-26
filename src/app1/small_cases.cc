@@ -29,8 +29,8 @@
 
 
 #define ENABLE_VARIABLE
-#include "version.h"
 #include "cmdr11/cmdr11.hh"
+#include "version.h"
 
 #include "custom_iterator.hh"
 

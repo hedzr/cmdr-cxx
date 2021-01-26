@@ -13,7 +13,8 @@
 namespace cmdr::opt {
 
     // class subcmd;
-    template <class T> class opt;
+    template<class T>
+    class opt;
 
 
     /**
@@ -22,7 +23,8 @@ namespace cmdr::opt {
     // template<class V = support_types>
     class cmd : public bas {
     protected:
-        friend class app;
+        friend class cmdr::app;
+
         details::arg_list _all_args{};
         details::grouped_arg_list _grouped_args{{UNSORTED_GROUP, details::arg_pointers{}}};
         details::indexed_args _indexed_args{}; // just long-titles
@@ -134,8 +136,10 @@ namespace cmdr::opt {
 
         friend cmd &operator+(cmd &lhs, const opts::cmd_base &rhs);
         friend cmd &operator+=(cmd &lhs, const opts::cmd_base &rhs);
-        template <class T> friend cmd &operator+(cmd &lhs, const opt<T> &rhs);
-        template <class T> friend cmd &operator+=(cmd &lhs, const opt<T> &rhs);
+        template<class T>
+        friend cmd &operator+(cmd &lhs, const opt<T> &rhs);
+        template<class T>
+        friend cmd &operator+=(cmd &lhs, const opt<T> &rhs);
 
         /**
          * @brief return the matched arg/flag object or null_arg if not found.

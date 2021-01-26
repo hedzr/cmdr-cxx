@@ -19,6 +19,7 @@
 #include "cmdr_cmd.hh"
 #include "cmdr_cmn.hh"
 #include "cmdr_internals.hh"
+#include "cmdr_opts.hh"
 #include "cmdr_terminal.hh"
 
 
@@ -187,13 +188,6 @@ namespace cmdr::opt {
         auto &mc = pc.mc();
 
         for (auto it = mc.rbegin(); it != mc.rend(); it++) {
-            // pc.reverse_foreach_matched_commands([=, &amr](auto &it) {
-            // auto d = li(it);
-            // if (auto const &itz = d.find(pc.title); itz != d.end()) {
-            //     amr.matched = true;
-            //     amr.obj = (arg *) &(itz->second->update_hit_count(pc.title, 1, is_long, is_special));
-            //     return;
-            // }
             auto ptr = (*it);
             auto title = pc.title.substr(pc.pos);
         lookup_parents:
@@ -339,7 +333,7 @@ namespace cmdr::opt {
            << "Commands" << std::endl;
 
         std::ostringstream os1;
-        cc->print_commands(os1, c, _minimal_tab_width, true, 0);
+        cc->print_commands(os1, c, _minimal_tab_width, true, -1);
 
         std::ostringstream os2;
         auto trivial = cc;
@@ -356,12 +350,12 @@ namespace cmdr::opt {
 
             os2 << std::endl
                 << tt.str() << std::endl;
-            trivial->print_flags(os2, c, _minimal_tab_width, true, 0);
+            trivial->print_flags(os2, c, _minimal_tab_width, true, -1);
         } while ((trivial = trivial->owner()) != nullptr);
 
         if (saved_minimal_tab_width < _minimal_tab_width) {
             std::ostringstream os3;
-            cc->print_commands(os3, c, _minimal_tab_width, true, 0);
+            cc->print_commands(os3, c, _minimal_tab_width, true, -1);
             ss << os3.str() << os2.str();
         } else {
             ss << os1.str() << os2.str();
@@ -399,8 +393,14 @@ namespace cmdr::opt {
         // todo reset all internal states so that we can restart a new session for parsing.
     }
 
+    inline void app::prepare() {
+        //
+    }
+
     inline int app::run(int argc, char *argv[]) {
         // std::cout << "Hello, World!" << std::endl;
+
+        prepare();
 
         parsing_context pc{this};
         pc.add_matched_cmd(this);
@@ -479,6 +479,35 @@ namespace cmdr::opt {
             return it->second(pc, argc, argv);
         return 0;
     }
+
+
+    //
+    //
+    //
+
+
+    inline cmd &operator+(cmd &lhs, const opts::cmd_base &rhs) {
+        lhs += rhs.underlying();
+        return lhs;
+    }
+
+    inline cmd &operator+=(cmd &lhs, const opts::cmd_base &rhs) {
+        lhs += rhs.underlying();
+        return lhs;
+    }
+
+    template<class T>
+    inline cmd &operator+(cmd &lhs, const opt<T> &rhs) {
+        lhs += rhs.underlying();
+        return lhs;
+    }
+
+    template<class T>
+    inline cmd &operator+=(cmd &lhs, const opt<T> &rhs) {
+        lhs += rhs.underlying();
+        return lhs;
+    }
+
 
 } // namespace cmdr::opt
 

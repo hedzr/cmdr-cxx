@@ -9,6 +9,8 @@
 #include <unordered_map>
 
 namespace cmdr::opt {
+
+    // template<class V = support_types>
     class arg;
 
     namespace details {
@@ -126,9 +128,13 @@ namespace cmdr::opt {
     } // namespace details
 
     namespace opts {
-        class opt_base;
+        // class opt_base;
         class cmd_base;
     } // namespace opts
+
+    class subcmd;
+    template<class T> class opt;
+
 
 } // namespace cmdr::opt
 

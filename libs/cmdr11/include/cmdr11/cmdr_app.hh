@@ -17,9 +17,13 @@
 namespace cmdr::opt {
 
     class arg;
+    class cmd;
 
-    class app;
+    class subcmd;
+    template <class T> class opt;
 
+
+    // template<class V = support_types>
     class app : public cmd {
     private:
         app() = default;
@@ -194,6 +198,12 @@ namespace cmdr::opt {
         details::Action unknown_long_flag_found(parsing_context &pc, arg_matching_result &amr);
         details::Action unknown_short_flag_found(parsing_context &pc, arg_matching_result &amr);
 
+        void initialize_internal_commands();
+        void register_actions();
+        static void add_global_options(cmdr::opt::app &cli);
+        static void add_generator_menu(cmdr::opt::app &cli);
+
+        void prepare();
         int after_run(details::Action rc, parsing_context &pc, int argc, char *argv[]);
         int internal_action(details::Action rc, parsing_context &pc, int argc, char *argv[]);
         int invoke_command(cmd &cc, string_array remain_args, parsing_context &pc);
@@ -208,20 +218,15 @@ namespace cmdr::opt {
             }
         }
 
+        static void fatal_exit(const std::string &msg);
+
         void print_cmd(std::ostream &ss,
                        cmdr::terminal::colors::colorize &c, cmd *cc,
                        std::string const &app_name, std::string const &exe_name);
 
-        void initialize_internal_commands();
-        void register_actions();
-        static void add_global_options(cmdr::opt::app &cli);
-        static void add_generator_menu(cmdr::opt::app &cli);
-
         static int print_debug_info_screen(parsing_context &pc, int argc, char *argv[]);
         static int print_manual_screen(parsing_context &pc, int argc, char *argv[]);
         int print_tree_screen(parsing_context &pc, int argc, char *argv[]);
-
-        static void fatal_exit(const std::string &msg);
 
     public:
         app &operator+(const arg &a) override;
@@ -230,7 +235,6 @@ namespace cmdr::opt {
         app &operator+=(const cmd &a) override;
 
     private:
-
         std::string _name;
         std::string _version;
         std::string _author;

@@ -388,12 +388,17 @@ namespace cmdr::opt {
     public:
         [[nodiscard]] virtual std::string defaults() const {
             std::stringstream ss;
-            ss << ' ' << '[' << "DEFAULT=" << _default << ']';
+            ss << ' ' << '[' << "DEFAULT";
+            if (!_placeholder.empty())
+                ss << ' ' << _placeholder;
+            ss << '=' << _default << ']';
             // if (!std::holds_alternative<std::monostate>(_default)) {
             //     ss << ' ' << '[' << "DEFAULT=" << variant_to_string(_default) << ']';
             // }
             return ss.str();
         }
+        [[nodiscard]] const vars::streamable_any &default_value() const { return _default; }
+        vars::streamable_any &default_value() { return _default; }
 
         [[nodiscard]] virtual const std::string &toggle_group_name() const {
             return _toggle_group;
@@ -402,7 +407,16 @@ namespace cmdr::opt {
         [[nodiscard]] virtual bool is_toggleable() const { return !_toggle_group.empty(); }
 
     public:
-        arg &default_value(const support_types &v) {
+        arg &default_value(const vars::streamable_any &v) {
+            _default = v;
+            return (*this);
+        }
+        arg &default_value(const_chars v) {
+            _default = std::string(v);
+            return (*this);
+        }
+        template<class T>
+        arg &default_value(T const &v) {
             _default = v;
             return (*this);
         }

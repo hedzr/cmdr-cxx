@@ -134,25 +134,11 @@ namespace cmdr::opt {
         return *this;
     }
 
-    inline cmd &operator+(cmd &lhs, const opts::cmd_base &rhs) {
-        lhs += rhs.underlying();
-        return lhs;
-    }
+    inline arg &cmd::operator[](const_chars long_title) { return find_flag(long_title); }
+    inline const arg &cmd::operator[](const_chars long_title) const { return const_cast<cmd &>(*this).find_flag(long_title); }
 
-    inline cmd &operator+=(cmd &lhs, const opts::cmd_base &rhs) {
-        lhs += rhs.underlying();
-        return lhs;
-    }
-
-    inline cmd &operator+(cmd &lhs, const opts::opt_base &rhs) {
-        lhs += rhs.underlying();
-        return lhs;
-    }
-
-    inline cmd &operator+=(cmd &lhs, const opts::opt_base &rhs) {
-        lhs += rhs.underlying();
-        return lhs;
-    }
+    inline cmd &cmd::operator()(const_chars long_title, bool extensive) { return find_command(long_title, extensive); }
+    inline cmd const &cmd::operator()(const_chars long_title, bool extensive) const { return const_cast<cmd &>(*this).find_command(long_title, extensive); }
 
     inline arg &cmd::find_flag(const_chars long_title, bool extensive) {
         auto s = long_title;
@@ -173,9 +159,6 @@ namespace cmdr::opt {
         }
         return null_arg();
     }
-
-    inline arg &cmd::operator[](const_chars long_title) { return find_flag(long_title); }
-    inline const arg &cmd::operator[](const_chars long_title) const { return const_cast<cmd &>(*this).find_flag(long_title); }
 
     inline cmd &cmd::find_command(const_chars long_title, bool extensive) {
         auto it = _indexed_commands.find(long_title);
@@ -205,9 +188,6 @@ namespace cmdr::opt {
         }
         return null_command();
     }
-
-    inline cmd &cmd::operator()(const_chars long_title, bool extensive) { return find_command(long_title, extensive); }
-    inline cmd const &cmd::operator()(const_chars long_title, bool extensive) const { return const_cast<cmd &>(*this).find_command(long_title, extensive); }
 
     inline int cmd::run(int argc, char *argv[]) {
         unused(argc);
@@ -396,6 +376,8 @@ namespace cmdr::opt {
                     if (x->hidden()) continue;
                     valid_count++;
                     w = x->title_long().length() + 2;
+                    if (!x->placeholder().empty())
+                        w += x->placeholder().length() + 1;
                     if (w > wf) wf = w;
                     w = x->title_short().length() + 1;
                     if (w > ws) ws = w;
@@ -421,6 +403,8 @@ namespace cmdr::opt {
                 if (x->hidden()) continue;
                 valid_count++;
                 w = x->title_long().length() + 2;
+                if (!x->placeholder().empty())
+                    w += x->placeholder().length() + 1;
                 if (w > wf) wf = w;
                 w = x->title_short().length() + 1;
                 if (w > ws) ws = w;
@@ -455,12 +439,17 @@ namespace cmdr::opt {
                 if (!x->title_long().empty()) {
                     w = x->title_long().length();
                     ss << '-' << '-' << c.underline().s(x->title_long());
+                    if (!x->placeholder().empty())
+                        ss << '=' << x->placeholder();
 
                     if (!x->title_short().empty() || !x->title_aliases().empty()) ss << ", ";
                     else
                         ss << "  ";
 
                     w = wf - w - 2;
+                    if (!x->placeholder().empty())
+                        w -= x->placeholder().length() + 1;
+
                     if (w > 0) ss << std::setw(w) << ' ';
                 } else
                     ss << std::setw(wf + 2) << ' ';
@@ -491,7 +480,8 @@ namespace cmdr::opt {
                 w = wf + 2 + ws + 2 + wa;
                 ss << std::setw(wt - w - (level >= 0 ? level * 2 : 0)) << ' ';
 
-                ss << c.dim().s(x->descriptions());
+                ss << w << ',' << wt << ','
+                   << c.dim().s(x->descriptions());
 
                 auto se = x->env_vars_get();
                 if (!se.empty()) {
@@ -508,6 +498,10 @@ namespace cmdr::opt {
                     tmp << ")";
                     if (w > 0)
                         ss << c.dim().s(tmp.str());
+                }
+
+                if (x->title_long() == "host") {
+                    w++;
                 }
 
                 auto sd = x->defaults();

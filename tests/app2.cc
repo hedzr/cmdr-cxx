@@ -107,7 +107,6 @@ void add_test_menu(cmdr::opt::app &cli) {
         add_sub1_menu(cli, t42, "zero-sub3");
         add_sub1_menu(cli, t42, "zero-sub4");
         add_sub1_menu(cli, t42, "zero-sub5");
-
     }
 }
 
@@ -133,11 +132,17 @@ void add_server_menu(cmdr::opt::app &cli) {
                       .titles("count", "c")
                       .description("set counter value");
 
-        t1 += opt{"localhost"}
+        t1 += opt<std::string>{"localhost"}
                       .titles("host", "H", "hostname", "server-name")
                       .description("hostname or ip address")
                       .group("TCP")
-                      .placeholder("HOST[:IP]");
+                      .placeholder("HOST[:IP]")
+                      .env_vars("HOST");
+
+        std::cout << "test" << '\n';
+        auto dv1 = t1.last_added_arg()->default_value();
+        assert(std::string(std::any_cast<std::string>(dv1)) == "localhost");
+        std::cout << "test: " << dv1 << '\n';
 
         t1 += opt{(int16_t) 4567}
                       .titles("port", "p")

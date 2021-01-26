@@ -18,5 +18,7 @@ void test_high_resolution_duration() {
 }
 
 int main() {
+    cmdr::chrono::high_res_duration _hrd;
+
     test_high_resolution_duration();
 }

@@ -344,10 +344,20 @@ namespace cmdr::opt {
                           .opt(opt_dummy{}())
                           .opt(opt_dummy{}());
 
-            t1 += cmdr::opt::opt<int>{}
-                          .titles("count", "c")
-                          .description("set counter value")
-                          .default_value(cmdr::support_types((int16_t)(3)));
+            auto c1 = *t1.last_added_command();
+            c1 += cmdr::opt::opt<bool>{}
+                          .titles("pages", "pg")
+                          .description("set pdf pages")
+                          .group("PDF");
+            c1 += cmdr::opt::opt{1}
+                          .titles("start-number", "sn", "start")
+                          .description("set the start of auto-numbering in markdown export")
+                          .group("Markdown");
+
+            // t1 += cmdr::opt::opt<int>{}
+            //               .titles("count", "c")
+            //               .description("set counter value")
+            //               .default_value(cmdr::vars::streamer_any((int16_t)(3)));
 
             t1 += cmdr::opt::subcmd{}
                           .titles("manual", "m", "man")

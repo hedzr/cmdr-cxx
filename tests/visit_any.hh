@@ -58,15 +58,15 @@ namespace study {
         typedef std::unordered_map<std::type_index, std::function<void(std::ostream &os, std::any const &)>> R;
         static R &any_visitors() {
             static R _visitors = {
-                to_any_visitor<void>([](std::ostream &os) { os << "{}"; }),
-                to_any_visitor<int>([](std::ostream &os, int x) { os << x; }),
-                to_any_visitor<unsigned>([](std::ostream &os, unsigned x) { os << x; }),
-                to_any_visitor<float>([](std::ostream &os, float x) { os << x; }),
-                to_any_visitor<double>([](std::ostream &os, double x) { os << x; }),
-                to_any_visitor<char const *>([](std::ostream &os, char const *s) { os << std::quoted(s); }),
-                // ... add more handlers for your types ...
-                to_any_visitor<std::chrono::nanoseconds>([](std::ostream &os, const std::chrono::nanoseconds &x) { cmdr::chrono::format_duration(os, x); }),
-                to_any_visitor<std::chrono::seconds>([](std::ostream &os, const std::chrono::seconds &x) { cmdr::chrono::format_duration(os, x); }),
+                    to_any_visitor<void>([](std::ostream &os) { os << "{}"; }),
+                    to_any_visitor<int>([](std::ostream &os, int x) { os << x; }),
+                    to_any_visitor<unsigned>([](std::ostream &os, unsigned x) { os << x; }),
+                    to_any_visitor<float>([](std::ostream &os, float x) { os << x; }),
+                    to_any_visitor<double>([](std::ostream &os, double x) { os << x; }),
+                    to_any_visitor<char const *>([](std::ostream &os, char const *s) { os << std::quoted(s); }),
+                    // ... add more handlers for your types ...
+                    to_any_visitor<std::chrono::nanoseconds>([](std::ostream &os, const std::chrono::nanoseconds &x) { cmdr::chrono::format_duration(os, x); }),
+                    to_any_visitor<std::chrono::seconds>([](std::ostream &os, const std::chrono::seconds &x) { cmdr::chrono::format_duration(os, x); }),
             };
             return _visitors;
         }

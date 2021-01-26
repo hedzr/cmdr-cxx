@@ -20,14 +20,14 @@ set(PROJECT_ARCHIVE_NAME ${PROJECT_NAME}s-${PROJECT_VERSION})
 
 #find_package(Catch2)
 #if (NOT CATCH2_FOUND)
-    Include(FetchContent)
+Include(FetchContent)
 
-    FetchContent_Declare(
-            Catch2
-            GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-            GIT_TAG        v2.13.3)
+FetchContent_Declare(
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG v2.13.3)
 
-    FetchContent_MakeAvailable(Catch2)
+FetchContent_MakeAvailable(Catch2)
 #endif ()
 
 # so_stuff: just a tester for ARGN
@@ -60,27 +60,28 @@ function(define_test_program name)
             CXX_STANDARD_REQUIRED ON
             CXX_EXTENSIONS OFF
             )
-    if(MSVC)
+    if (MSVC)
         target_compile_options(${PROJECT_NAME}-${name} PRIVATE /W4 /WX /utf-8)
-    else()
+    else ()
         target_compile_options(${PROJECT_NAME}-${name} PRIVATE -pedantic -Wall -Wextra -Wshadow -Werror)
-    endif()
-    if(ANDROID)
+    endif ()
+    if (ANDROID)
         add_test(NAME ${PROJECT_NAME}-${name} WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
                 COMMAND ${CMAKE_COMMAND} "-DANDROID_NDK=${ANDROID_NDK}"
                 "-DTEST_RESOURCES_DIR=${CMAKE_SOURCE_DIR}"
                 "-DTEST_RESOURCES=tests/data;tests/file_data.txt;Makefile"
                 "-DUNITTEST=${PROJECT_NAME}-${name}"
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/ExecuteOnAndroid.cmake)
-    else()
+    else ()
         add_test(NAME ${PROJECT_NAME}-${name} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                 COMMAND ${PROJECT_NAME}-${name})
-    endif()
+    endif ()
 endfunction()
 
 
 define_test_program(sso-1 sso_test_1.cc)
 define_test_program(sso-2 sso_test_2.cc)
+define_test_program(any-1 any_1.cc)
 define_test_program(visit-any
         visit_any.cc
         second_src.cc)

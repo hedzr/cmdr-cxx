@@ -29,7 +29,7 @@
 
 namespace cmdr::opt::vars {
 
-#if defined(NEVER_USED) || defined(ENABLE_VARIABLE)
+#if defined(NEVER_USED) || defined(ENABLE_VARIABLE) || 1
 
     template<typename T>
     class variable {

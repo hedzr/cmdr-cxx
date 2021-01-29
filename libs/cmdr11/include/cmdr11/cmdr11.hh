@@ -35,8 +35,8 @@
 
 
 // #define CAST_CONST_CHARS_AS_STD_STRING
-// To cast a const char* string as a std::string instance in cmd/arg titles
-// storing, uncomment the above line.
+// To cast a const char* string as a std::string instance in extracting 
+// arg default value, uncomment the above line.
 
 #include "cmdr_defs.hh"
 #include "cmdr_types.hh"

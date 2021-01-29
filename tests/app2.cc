@@ -5,6 +5,10 @@
 #include "version.h"
 #include <cmdr-cxx.hh>
 
+#include <cmath>
+#include <complex>
+
+
 void fatal_exit(const std::string &msg) {
     std::cerr << msg << '\n';
     exit(-1);
@@ -61,6 +65,13 @@ void add_test_menu(cmdr::app &cli) {
                       .description("flag d");
         t1 += opt{}("etch", "e")
                       .description("flag e");
+
+        using namespace std::complex_literals;
+
+        t1 += opt{1i}("complex-1")
+                      .description("complex-1 flag");
+        t1 += opt{3. + 4i}("complex-2")
+                      .description("complex-2 flag");
 
         add_sub1_menu(cli, t1, "sub1");
         add_sub1_menu(cli, t1, "sub2");

@@ -25,6 +25,9 @@
 
 #include <utility>
 
+#include <cmath>
+#include <complex>
+
 
 #include "cmdr_chrono.hh"
 #include "cmdr_defs.hh"
@@ -54,10 +57,13 @@ namespace cmdr::vars {
     public:
         typedef variable self_type;
         using target_type = std::any;
+
         variable() = default;
         template<class A, typename... Args,
                  std::enable_if_t<
                          std::is_constructible<target_type, A, Args...>::value &&
+                                 !std::is_same<std::decay_t<A>, variable>::value &&
+                                 !std::is_same<std::decay_t<A>, std::any>::value &&
                                  !std::is_same<std::decay_t<A>, self_type>::value,
                          int> = 0>
         explicit variable(A &&a0, Args &&...args)
@@ -65,11 +71,25 @@ namespace cmdr::vars {
         template<class A,
                  std::enable_if_t<
                          std::is_constructible<target_type, A>::value &&
+                                 !std::is_same<std::decay_t<A>, variable>::value &&
+                                 !std::is_same<std::decay_t<A>, std::any>::value &&
                                  !std::is_same<std::decay_t<A>, self_type>::value,
                          int> = 0>
         explicit variable(A &&a)
             : _value(std::forward<A>(a)) {}
+        // explicit variable(variable &&a)
+        //     : _value(std::move(a.value_any())) {}
+        explicit variable(std::any &&a)
+            : _value(std::move(a)) {}
+        // explicit variable(variable const &a)
+        //     : _value(std::move(a.value_any())) {}
+        explicit variable(std::any const &a)
+            : _value(std::move(a)) {}
         virtual ~variable() = default;
+
+        // variable& operator=(const variable& o){
+        //     (*this)._value.swap(o.value_any());
+        // }
 
         template<class... Args>
         void emplace(Args &&...args) {
@@ -108,6 +128,7 @@ namespace cmdr::vars {
             }
             os << ']';
         }
+
         template<class T>
         static void format_list(std::ostream &os, std::list<T> const &o) {
             int i = 0;
@@ -118,6 +139,21 @@ namespace cmdr::vars {
                 os << (*it);
             }
             os << ']';
+        }
+
+        template<class T>
+        static void format_complex(std::ostream &os, std::complex<T> const &o) {
+            // os << o;
+            auto r = o.real();
+            if (r != 0) {
+                os << r;
+            }
+            auto i = o.imag();
+            if (i != 0) {
+                if (r != 0)
+                    os << '+';
+                os << i << 'i';
+            }
         }
 
     private:
@@ -166,6 +202,10 @@ namespace cmdr::vars {
                     details::to_any_visitor<std::vector<float>>([](std::ostream &os, std::vector<float> const &a) { format_array(os, a); }),
                     details::to_any_visitor<std::vector<double>>([](std::ostream &os, std::vector<double> const &a) { format_array(os, a); }),
                     details::to_any_visitor<std::vector<long double>>([](std::ostream &os, std::vector<long double> const &a) { format_array(os, a); }),
+
+                    details::to_any_visitor<std::complex<float>>([](std::ostream &os, std::complex<float> const &a) { format_complex(os, a); }),
+                    details::to_any_visitor<std::complex<double>>([](std::ostream &os, std::complex<double> const &a) { format_complex(os, a); }),
+                    details::to_any_visitor<std::complex<long double>>([](std::ostream &os, std::complex<long double> const &a) { format_complex(os, a); }),
 
                     details::to_any_visitor<std::chrono::nanoseconds>([](std::ostream &os, const std::chrono::nanoseconds &x) { cmdr::chrono::format_duration(os, x); }),
                     details::to_any_visitor<std::chrono::microseconds>([](std::ostream &os, const std::chrono::microseconds &x) { cmdr::chrono::format_duration(os, x); }),
@@ -436,6 +476,7 @@ namespace cmdr::vars {
         template<class A, typename... Args,
                  std::enable_if_t<
                          std::is_constructible<T, A, Args...>::value &&
+                                 !std::is_same<std::decay_t<A>, vars::variable>::value &&
                                  !std::is_same<std::decay_t<A>, self_type>::value,
                          int> = 0>
         void set(char const *key, A &&a0, Args &&...args) {
@@ -443,11 +484,19 @@ namespace cmdr::vars {
         }
         template<class A,
                  std::enable_if_t<std::is_constructible<T, A>::value &&
+                                          !std::is_same<std::decay_t<A>, vars::variable>::value &&
                                           !std::is_same<std::decay_t<A>, self_type>::value,
                                   int> = 0>
         void set(char const *key, A &&a) {
             _root.template set(key, a);
         }
+        void set(char const *key, vars::variable &&a) {
+            _root.set(key, a.value_any());
+        }
+        void set(char const *key, vars::variable const &a) {
+            _root.set(key, a.value_any());
+        }
+
         T const &get(char const *key) const {
             return _root.get(key);
         }

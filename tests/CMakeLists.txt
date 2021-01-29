@@ -89,6 +89,7 @@ define_test_program(chrono chrono_test.cc)
 define_test_program(chrono-literals chrono_literals_test.cc)
 define_test_program(inplace-constructions inplace_constructions.cc)
 define_test_program(valarray-test valarray_test.cc)
+define_test_program(complex-test complex_test.cc)
 
 define_test_program(store-c2 c2_store.cc)
 define_test_program(app2-c2 app2.cc)

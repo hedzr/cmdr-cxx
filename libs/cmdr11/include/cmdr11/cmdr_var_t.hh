@@ -91,11 +91,34 @@ namespace cmdr::vars {
         T cast_as() const {
             return std::any_cast<T>(_value);
         }
-        
+
         [[nodiscard]] bool has_value() const { return _value.has_value(); }
         [[nodiscard]] bool empty() const { return !_value.has_value(); }
         void reset() { _value.reset(); }
         [[nodiscard]] const std::type_info &type() const noexcept { return _value.type(); }
+
+        template<class T>
+        static void format_array(std::ostream &os, std::vector<T> const &o) {
+            int i = 0;
+            os << '[';
+            for (typename std::vector<T>::const_iterator it = o.begin(); it != o.end(); it++) {
+                if (i++)
+                    os << ',';
+                os << (*it);
+            }
+            os << ']';
+        }
+        template<class T>
+        static void format_list(std::ostream &os, std::list<T> const &o) {
+            int i = 0;
+            os << '[';
+            for (typename std::vector<T>::const_iterator it = o.begin(); it != o.end(); it++) {
+                if (i++)
+                    os << ',';
+                os << (*it);
+            }
+            os << ']';
+        }
 
     private:
         typedef std::unordered_map<std::type_index, std::function<void(std::ostream &os, std::any const &)>> R;
@@ -115,10 +138,35 @@ namespace cmdr::vars {
                     details::to_any_visitor<uint64_t>([](std::ostream &os, uint64_t x) { os << x; }),
                     details::to_any_visitor<long>([](std::ostream &os, long x) { os << x; }),
                     details::to_any_visitor<unsigned long>([](std::ostream &os, unsigned long x) { os << x; }),
+                    details::to_any_visitor<long long>([](std::ostream &os, long long x) { os << x; }),
+                    details::to_any_visitor<unsigned long long>([](std::ostream &os, unsigned long long x) { os << x; }),
                     details::to_any_visitor<float>([](std::ostream &os, float x) { os << x; }),
                     details::to_any_visitor<double>([](std::ostream &os, double x) { os << x; }),
+                    details::to_any_visitor<long double>([](std::ostream &os, long double x) { os << x; }),
                     details::to_any_visitor<char const *>([](std::ostream &os, char const *s) { os << std::quoted(s); }),
                     details::to_any_visitor<std::string>([](std::ostream &os, std::string const &s) { os << std::quoted(s); }),
+
+                    details::to_any_visitor<std::vector<char const *>>([](std::ostream &os, std::vector<char const *> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<std::string>>([](std::ostream &os, std::vector<std::string> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<bool>>([](std::ostream &os, std::vector<bool> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<int>>([](std::ostream &os, std::vector<int> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<int8_t>>([](std::ostream &os, std::vector<int8_t> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<int16_t>>([](std::ostream &os, std::vector<int16_t> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<int32_t>>([](std::ostream &os, std::vector<int32_t> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<int64_t>>([](std::ostream &os, std::vector<int64_t> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<unsigned>>([](std::ostream &os, std::vector<unsigned> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<uint8_t>>([](std::ostream &os, std::vector<uint8_t> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<uint16_t>>([](std::ostream &os, std::vector<uint16_t> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<uint32_t>>([](std::ostream &os, std::vector<uint32_t> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<uint64_t>>([](std::ostream &os, std::vector<uint64_t> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<long>>([](std::ostream &os, std::vector<long> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<unsigned long>>([](std::ostream &os, std::vector<unsigned long> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<long long>>([](std::ostream &os, std::vector<long long> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<unsigned long long>>([](std::ostream &os, std::vector<unsigned long long> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<float>>([](std::ostream &os, std::vector<float> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<double>>([](std::ostream &os, std::vector<double> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<long double>>([](std::ostream &os, std::vector<long double> const &a) { format_array(os, a); }),
+
                     details::to_any_visitor<std::chrono::nanoseconds>([](std::ostream &os, const std::chrono::nanoseconds &x) { cmdr::chrono::format_duration(os, x); }),
                     details::to_any_visitor<std::chrono::microseconds>([](std::ostream &os, const std::chrono::microseconds &x) { cmdr::chrono::format_duration(os, x); }),
                     details::to_any_visitor<std::chrono::milliseconds>([](std::ostream &os, const std::chrono::milliseconds &x) { cmdr::chrono::format_duration(os, x); }),

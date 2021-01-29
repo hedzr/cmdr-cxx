@@ -31,6 +31,7 @@
 
 #include "cmdr_chrono.hh"
 #include "cmdr_defs.hh"
+#include "cmdr_terminal.hh"
 #include "cmdr_types.hh"
 
 
@@ -417,16 +418,27 @@ namespace cmdr::vars {
         }
 
     private:
-        void dump_tree(std::ostream &os, int level) const {
+        void dump_tree(std::ostream &os, cmdr::terminal::colors::colorize *c, int level) const {
             for (auto const &[k, v] : _children) {
                 for (int i = 0; i < level; i++) os << "  ";
-                os << k << ": " << v << std::endl;
-                v.dump_tree(os, level + 1);
+
+                std::stringstream ss;
+                ss << v;
+
+                os << k << ": ";
+                if (c)
+                    os << c->dim().s(ss.str());
+                else
+                    os << ss.str();
+
+                os << std::endl;
+
+                v.dump_tree(os, c, level + 1);
             }
             unused(level);
         }
 
-        void dump_full_keys(std::ostream &os, int level = 0) const {
+        void dump_full_keys(std::ostream &os, cmdr::terminal::colors::colorize *c, int level = 0) const {
             // std::vector<std::string> keys;
             // keys.reserve(_full_key_map.size());
             // for (auto &it : _full_key_map) {
@@ -437,28 +449,37 @@ namespace cmdr::vars {
             // for (auto &it : keys) {
             //     os << " - " << it << " => " << _full_key_map[it] << std::endl;
             // }
-            print_sorted(os, _indexes);
+            print_sorted(os, c, _indexes);
             unused(level);
         }
 
     private:
         struct map_streamer {
             std::ostream &_os;
+            cmdr::terminal::colors::colorize *c;
 
-            explicit map_streamer(std::ostream &os)
-                : _os(os) {}
+            explicit map_streamer(std::ostream &os, cmdr::terminal::colors::colorize *c)
+                : _os(os)
+                , c(c) {}
 
             template<class K, class V>
             void operator()(std::pair<K, V> const &val) {
                 // .first is your key, .second is your value
-                _os << " - " << val.first << " : " << (*val.second) << "\n";
+                _os << " - " << val.first << " : ";
+                std::stringstream ss;
+                ss << (*val.second);
+                if (c)
+                    _os << c->dim().s(ss.str());
+                else
+                    _os << ss.str();
+                _os << "\n";
             }
         };
 
         template<class K, class V, class Comp = std::less<K>>
-        inline void print_sorted(std::ostream &os, std::unordered_map<K, V> const &um, Comp pred = Comp()) const {
+        inline void print_sorted(std::ostream &os, cmdr::terminal::colors::colorize *c, std::unordered_map<K, V> const &um, Comp pred = Comp()) const {
             std::map<K, V> m(um.begin(), um.end(), pred);
-            std::for_each(m.begin(), m.end(), map_streamer(os));
+            std::for_each(m.begin(), m.end(), map_streamer(os, c));
         }
 
     }; // class nodeT<T>
@@ -503,18 +524,22 @@ namespace cmdr::vars {
 
     public:
         void dump_tree(std::ostream &os, const_chars leading_title = nullptr, node *start = nullptr) const {
-            if (leading_title) os << leading_title;
+            auto c = cmdr::terminal::colors::colorize::create();
+            if (leading_title)
+                os << leading_title;
             else
                 os << "Dumping for var_t as Tree ...";
             os << std::endl;
-            (start ? start : &_root)->dump_tree(os, 0);
+            (start ? start : &_root)->dump_tree(os, &c, 0);
         }
         void dump_full_keys(std::ostream &os, const_chars leading_title = nullptr, node *start = nullptr) const {
-            if (leading_title) os << leading_title;
+            auto c = cmdr::terminal::colors::colorize::create();
+            if (leading_title)
+                os << leading_title;
             else
                 os << "Dumping for var_t ...";
             os << std::endl;
-            (start ? start : &_root)->dump_full_keys(os, 0);
+            (start ? start : &_root)->dump_full_keys(os, &c, 0);
         }
 
     private:

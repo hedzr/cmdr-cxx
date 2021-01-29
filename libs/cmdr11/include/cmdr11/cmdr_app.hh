@@ -16,7 +16,6 @@
 
 namespace cmdr {
 
-
     class app : public opt::cmd {
     private:
         app() = default;
@@ -262,6 +261,27 @@ namespace cmdr {
 
         int _minimal_tab_width{43};
         static bool _longest_first;
+
+        std::vector<details::on_arg_added> _on_arg_added;
+        std::vector<details::on_cmd_added> _on_cmd_added;
+
+    public:
+        void on_arg_added(opt::arg *a) {
+            auto key = a->dotted_key();
+            _store.set(key.c_str(), a->default_value());
+            for (auto &cb : _on_arg_added) {
+                if (cb)
+                    cb(a);
+            }
+        }
+        void on_cmd_added(opt::cmd *a) {
+            // auto key = a->dotted_key();
+            // _store.set(key, a->default_value());
+            for (auto &cb : _on_cmd_added) {
+                if (cb)
+                    cb(a);
+            }
+        }
     };
 
     inline bool app::_longest_first = true;

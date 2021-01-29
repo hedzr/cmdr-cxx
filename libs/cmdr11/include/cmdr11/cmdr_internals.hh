@@ -10,6 +10,8 @@
 
 namespace cmdr {
 
+    class app;
+    
     class app_holder final : public util::singleton<app_holder> {
     public:
         explicit app_holder(typename util::singleton<app_holder>::token) { /*std::cout << "AppHolder constructed" << std::endl;*/

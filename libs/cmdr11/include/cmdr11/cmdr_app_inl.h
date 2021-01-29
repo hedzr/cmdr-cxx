@@ -50,6 +50,7 @@ namespace cmdr {
     }
 
     inline void app::initialize_internal_commands() {
+        _long = "app.cli";
         register_actions();
         add_global_options(*this);
         add_generator_menu(*this);

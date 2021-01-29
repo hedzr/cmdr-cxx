@@ -139,6 +139,7 @@ namespace cmdr::opt {
         bas &owner(cmd *o);
         cmd const *owner() const;
         cmd *owner();
+        std::string dotted_key() const;
 
 #undef PROP_SET
 #undef PROP_SET2
@@ -282,7 +283,7 @@ namespace cmdr::opt {
         details::on_flag_hit _on_flag_hit;
 
     public:
-        arg() = default;
+        arg() :_default(false){}
         ~arg() override = default;
         arg(const arg &o)
             : bas(o) { _copy(o); }

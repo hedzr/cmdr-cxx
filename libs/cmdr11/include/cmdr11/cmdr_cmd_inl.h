@@ -32,6 +32,14 @@ namespace cmdr::opt {
     inline cmd const *bas::owner() const { return _owner; }
     inline cmd *bas::owner() { return _owner; }
 
+    inline std::string bas::dotted_key() const {
+        std::vector<std::string> a;
+        bas const *p = this;
+        do {
+            a.insert(a.begin(), p->_long);
+        } while ((p = p->owner()) != nullptr);
+        return string::join(a, '.');
+    }
 
     //
     //
@@ -81,6 +89,10 @@ namespace cmdr::opt {
 
             _last_added_arg = ptr;
             ptr->owner(this);
+
+            // auto dk = dotted_key();
+            cmdr::get_app().on_arg_added(ptr);
+            
             // std::cout << gn << ',' << _grouped_args[gn].size() << std::endl;
         }
         return *this;
@@ -131,6 +143,8 @@ namespace cmdr::opt {
 
             _last_added_command = ptr;
             ptr->owner(this);
+
+            cmdr::get_app().on_cmd_added(ptr);
         }
         return *this;
     }

@@ -10,6 +10,16 @@
 
 namespace cmdr {
     class app;
+
+    namespace opt {
+        class arg;
+        class cmd;
+    }
+    
+    namespace details {
+        using on_arg_added = std::function<void(opt::arg*)>;
+        using on_cmd_added = std::function<void(opt::cmd*)>;
+    }
 }; // namespace cmdr
 
 // namespace cmdr::opt::vars {

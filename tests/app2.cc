@@ -114,9 +114,17 @@ void add_server_menu(cmdr::app &cli) {
                       .env_vars("HOST");
 
         std::cout << "test" << '\n';
-        auto dv1 = t1.last_added_arg()->default_value();
-        assert(std::string(std::any_cast<std::string>(dv1)) == "localhost");
-        std::cout << "test: " << dv1 << '\n';
+        std::any v1 = "lolo";
+        auto v1e = std::any_cast<char const *>(v1);
+        auto &dv1 = t1.last_added_arg()->default_value();
+        std::cout << dv1.as_string() << ". type: " << dv1.type().name() << '\n';
+#if defined(CAST_CONST_CHARS_AS_STD_STRING)
+        auto dv2 = dv1.cast_as<std::string>();
+#else
+        auto dv2 = dv1.cast_as<char const *>();
+#endif
+        assert(std::string(dv2) == "localhost");
+        std::cout << "test: " << dv1 << v1e << '\n';
 
         t1 += opt{(int16_t) 4567}("port", "p")
                       .description("listening port number")

@@ -87,6 +87,16 @@ namespace cmdr::vars {
             return os.str();
         }
 
+        template<class T>
+        T cast_as() const {
+            return std::any_cast<T>(_value);
+        }
+        
+        [[nodiscard]] bool has_value() const { return _value.has_value(); }
+        [[nodiscard]] bool empty() const { return !_value.has_value(); }
+        void reset() { _value.reset(); }
+        [[nodiscard]] const std::type_info &type() const noexcept { return _value.type(); }
+
     private:
         typedef std::unordered_map<std::type_index, std::function<void(std::ostream &os, std::any const &)>> R;
         static R &any_visitors() {
@@ -108,6 +118,7 @@ namespace cmdr::vars {
                     details::to_any_visitor<float>([](std::ostream &os, float x) { os << x; }),
                     details::to_any_visitor<double>([](std::ostream &os, double x) { os << x; }),
                     details::to_any_visitor<char const *>([](std::ostream &os, char const *s) { os << std::quoted(s); }),
+                    details::to_any_visitor<std::string>([](std::ostream &os, std::string const &s) { os << std::quoted(s); }),
                     details::to_any_visitor<std::chrono::nanoseconds>([](std::ostream &os, const std::chrono::nanoseconds &x) { cmdr::chrono::format_duration(os, x); }),
                     details::to_any_visitor<std::chrono::microseconds>([](std::ostream &os, const std::chrono::microseconds &x) { cmdr::chrono::format_duration(os, x); }),
                     details::to_any_visitor<std::chrono::milliseconds>([](std::ostream &os, const std::chrono::milliseconds &x) { cmdr::chrono::format_duration(os, x); }),

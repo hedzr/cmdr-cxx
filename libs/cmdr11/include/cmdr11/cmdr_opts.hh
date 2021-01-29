@@ -107,14 +107,18 @@ namespace cmdr::opt {
                                  !std::is_same<std::decay_t<A>, opt>::value,
                          int> = 0>
         explicit opt(A &&a0, Args &&...args)
-            : _value(std::forward<A>(a0), std::forward<Args>(args)...) {
+            : _arg(std::forward<A>(a0), std::forward<Args>(args)...) {
         }
         template<class A,
                  std::enable_if_t<std::is_constructible<vars::variable, A>::value &&
                                           !std::is_same<std::decay_t<A>, opt>::value,
                                   int> = 0>
         explicit opt(A &&a)
-            : _value(std::forward<A>(a)) {}
+            : _arg(std::forward<A>(a)) {}
+#if defined(CAST_CONST_CHARS_AS_STD_STRING)
+        explicit opt(char const* &&a)
+                : _arg(std::string(a)) {}
+#endif
         ~opt() = default;
 
         details::option get() {
@@ -196,7 +200,7 @@ namespace cmdr::opt {
 
     private:
         arg _arg;
-        vars::variable _value{};
+        // vars::variable _value{};
     }; // class opt
 
 

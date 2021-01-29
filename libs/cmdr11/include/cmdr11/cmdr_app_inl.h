@@ -136,17 +136,18 @@ namespace cmdr {
         store.set("app.server.tls.handshake.timeout", 10s);
         store.set("app.server.tls.handshake.max-idle-time", 45min);
         store.set("app.server.tls.domains", std::vector{"example.com", "example.org"});
-        store.set("app.server.tls.fixed-list", std::array{"item1", "item2"});
+        // store.set("app.server.tls.fixed-list", std::array{"item1", "item2"});
 
 #if defined(_DEBUG) || 1
-        store.root().dump_full_keys(std::cout);
-        store.root().dump_tree(std::cout);
+        store.dump_full_keys(std::cout);
+        store.dump_tree(std::cout);
 #endif
 
         auto vv = store.get("app.server.tls.handshake.max-idle-time");
-        std::cout << "max-idle-time: " << vv << '\n';
-        if (vv.as_string() != "45m")
-            fatal_exit("  ^-- ERR: expect '45m'.");
+        (void) (vv);
+        // std::cout << "max-idle-time: " << vv << '\n';
+        //if (vv.as_string() != "45m")
+        //    fatal_exit("  ^-- ERR: expect '45m'.");
 #endif
 
 #if defined(_DEBUG) || 1
@@ -198,12 +199,11 @@ namespace cmdr {
 
         // help
 
-        cli += cmdr::opt::subcmd{}
-                       .titles("help", "h", "info", "usages")
+        cli += cmdr::opt::sub_cmd{}("help", "h", "info", "usages")
                        .description("display this help screen")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
-                       .on_invoke([](cmd const &hit, string_array const &remain_args) -> int {
+                       .on_invoke([](opt::cmd const &hit, string_array const &remain_args) -> int {
                            unused(hit);
                            unused(remain_args);
                            cmdr::get_app().print_usages(nullptr);
@@ -215,8 +215,7 @@ namespace cmdr {
                            return 0;
                        });
 
-        cli += cmdr::opt::opt<bool>{}
-                       .titles("help", "h", "?", "info", "usages")
+        cli += cmdr::opt::opt{}("help", "h", "?", "info", "usages")
                        .description("display this help screen")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
@@ -229,8 +228,7 @@ namespace cmdr {
 
         // version
 
-        cli += cmdr::opt::subcmd{}
-                       .titles("version", "V", "versions", "ver")
+        cli += cmdr::opt::sub_cmd{}("version", "V", "versions", "ver")
                        .description("display the version information")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
@@ -240,8 +238,7 @@ namespace cmdr {
                            return opt::RequestVersionsScreen;
                        });
 
-        cli += cmdr::opt::opt<bool>{}
-                       .titles("version", "V", "versions", "ver")
+        cli += cmdr::opt::opt{}("version", "V", "versions", "ver")
                        .description("display the version information")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
@@ -254,8 +251,7 @@ namespace cmdr {
 
         // build-info
 
-        cli += cmdr::opt::opt<bool>{}
-                       .titles("build-info", "#", "bdinf")
+        cli += cmdr::opt::opt{}("build-info", "#", "bdinf")
                        .description("display the building information")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
@@ -268,19 +264,16 @@ namespace cmdr {
 
         // more...
 
-        cli += cmdr::opt::opt<bool>{}
-                       .titles("verbose", "v")
+        cli += cmdr::opt::opt{}("verbose", "v")
                        .description("verbose mode")
                        .group(SYS_MGMT_GROUP);
-        cli += cmdr::opt::opt<bool>{}
-                       .titles("quiet", "q")
+        cli += cmdr::opt::opt{}("quiet", "q")
                        .description("quiet mode")
                        .group(SYS_MGMT_GROUP);
 
         // debugging and tracing
 
-        cli += cmdr::opt::subcmd{}
-                       .titles("print", "pr", "display")
+        cli += cmdr::opt::sub_cmd{}("print", "pr", "display")
                        .description("print cmdr internal information")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
@@ -290,8 +283,7 @@ namespace cmdr {
                            return opt::RequestDebugInfoScreen;
                        });
 
-        cli += cmdr::opt::opt<bool>{}
-                       .titles("tree")
+        cli += cmdr::opt::opt{}("tree")
                        .description("print all commands as a tree")
                        .hidden()
                        .special()
@@ -306,8 +298,7 @@ namespace cmdr {
                            return opt::RequestTreeScreen;
                        });
 
-        cli += cmdr::opt::opt<bool>{}
-                       .titles("debug", "D", "debug-mode")
+        cli += cmdr::opt::opt{}("debug", "D", "debug-mode")
                        .description("enable debugging mode for more verbose outputting")
                        .special()
                        .group(SYS_MGMT_GROUP)
@@ -320,8 +311,7 @@ namespace cmdr {
                            return opt::OK;
                        });
 
-        cli += cmdr::opt::opt<bool>{}
-                       .titles("trace", "tr", "trace-mode")
+        cli += cmdr::opt::opt{}("trace", "tr", "trace-mode")
                        .description("enable tracing mode for developer perspective")
                        .group(SYS_MGMT_GROUP);
     }
@@ -330,28 +320,24 @@ namespace cmdr {
         // using namespace cmdr::opt;
 
         // generators
-        cli += cmdr::opt::subcmd{}
-                       .titles("generator", "g", "gen")
-                       .description("generators of this app (such as manual, markdown, ...)")
+        cli += cmdr::opt::sub_cmd{}("generator", "g", "gen")
+                       .description("generators of this appT (such as manual, markdown, ...)")
                        .group(SYS_MGMT_GROUP)
                 // .opt(opt_dummy{}())
                 // .opt(opt_dummy{}());
                 ;
         {
             auto &t1 = *cli.last_added_command();
-            t1 += cmdr::opt::subcmd{}
-                          .titles("doc", "d", "markdown", "docx", "pdf", "tex")
+            t1 += cmdr::opt::sub_cmd{}("doc", "d", "markdown", "docx", "pdf", "tex")
                           .description("generate a markdown document, or: pdf/TeX/...");
             // .opt(opt_dummy{}())
             // .opt(opt_dummy{}());
 
             auto c1 = *t1.last_added_command();
-            c1 += cmdr::opt::opt<bool>{}
-                          .titles("pages", "pg")
+            c1 += cmdr::opt::opt{}("pages", "pg")
                           .description("set pdf pages")
                           .group("PDF");
-            c1 += cmdr::opt::opt{1}
-                          .titles("start-number", "sn", "start")
+            c1 += cmdr::opt::opt{1}("start-number", "sn", "start")
                           .description("set the start of auto-numbering in markdown export")
                           .group("Markdown");
 
@@ -360,15 +346,13 @@ namespace cmdr {
             //               .description("set counter value")
             //               .default_value(cmdr::vars::streamer_any((int16_t)(3)));
 
-            t1 += cmdr::opt::subcmd{}
-                          .titles("manual", "m", "man")
+            t1 += cmdr::opt::sub_cmd{}("manual", "m", "man")
                           .description("generate linux man page.")
                     // .opt(opt_dummy{}())
                     // .opt(opt_dummy{}())
                     ;
 
-            t1 += cmdr::opt::subcmd{}
-                          .titles("shell", "s", "sh")
+            t1 += cmdr::opt::sub_cmd{}("shell", "s", "sh")
                           .description("generate the bash/zsh auto-completion script or install it.")
                     // .opt(opt_dummy{}())
                     // .opt(opt_dummy{}())
@@ -376,25 +360,25 @@ namespace cmdr {
         }
     }
 
-    inline app &app::operator+(const opt::arg &a) {
-        cmd::operator+(a);
-        return *this;
-    }
-
-    inline app &app::operator+=(const opt::arg &a) {
-        cmd::operator+=(a);
-        return *this;
-    }
-
-    inline app &app::operator+(const opt::cmd &a) {
-        cmd::operator+(a);
-        return *this;
-    }
-
-    inline app &app::operator+=(const opt::cmd &a) {
-        cmd::operator+=(a);
-        return *this;
-    }
+    // inline app &app::operator+(const opt::opt &o) {
+    //     cmd::operator+(a);
+    //     return *this;
+    // }
+    //
+    // inline app &app::operator+=(const opt::opt &o) {
+    //     operator+(a);
+    //     return *this;
+    // }
+    //
+    // inline app &app::operator+(const opt::sub_cmd &o) {
+    //     opt::cmd::operator+(a);
+    //     return *this;
+    // }
+    //
+    // inline app &app::operator+=(const opt::sub_cmd &o) {
+    //     operator+=(a);
+    //     return *this;
+    // }
 
 
 } // namespace cmdr

@@ -45,7 +45,7 @@ namespace cmdr {
         return a;
     }
 
-    inline opt::Action app::process_command(app::parsing_context &pc, int argc, char *argv[]) {
+    inline opt::Action app::process_command(parsing_context &pc, int argc, char *argv[]) {
         auto cmr = matching_command(pc);
         if (cmr.matched) {
             cmr.obj->hit_title(pc.title.c_str());
@@ -68,7 +68,7 @@ namespace cmdr {
         return opt::Continue;
     }
 
-    inline opt::Action app::process_special_flag(app::parsing_context &pc, int argc, char *argv[]) {
+    inline opt::Action app::process_special_flag(parsing_context &pc, int argc, char *argv[]) {
         pc.title = pc.title.substr(2);
         auto amr = matching_special_flag(pc);
         if (amr.matched) {
@@ -94,7 +94,7 @@ namespace cmdr {
         return opt::Continue;
     }
 
-    inline opt::Action app::process_long_flag(app::parsing_context &pc, int argc, char *argv[]) {
+    inline opt::Action app::process_long_flag(parsing_context &pc, int argc, char *argv[]) {
         pc.title = pc.title.substr(2);
         auto amr = matching_long_flag(pc);
         if (amr.matched) {
@@ -121,7 +121,7 @@ namespace cmdr {
         return opt::Continue;
     }
 
-    inline opt::Action app::process_short_flag(app::parsing_context &pc, int argc, char *argv[]) {
+    inline opt::Action app::process_short_flag(parsing_context &pc, int argc, char *argv[]) {
         pc.title = pc.title.substr(1);
     next_combined:
         auto amr = matching_short_flag(pc);
@@ -162,28 +162,28 @@ namespace cmdr {
         return opt::Continue;
     }
 
-    inline app::cmd_matching_result app::matching_command(app::parsing_context &pc) {
+    inline typename app::cmd_matching_result app::matching_command(parsing_context &pc) {
         cmd_matching_result cmr;
-        opt::cmd &c = pc.curr_command();
+        auto &c = pc.curr_command();
         opt::details::indexed_commands &li = c._long_commands;
         if (auto const &it = li.find(pc.title); it != li.end()) {
             cmr.matched = true;
-            cmr.obj = (cmd *) &(it->second->update_hit_count(pc.title, 1, true));
+            cmr.obj = (opt::cmd *) &(it->second->update_hit_count(pc.title, 1, true));
         } else {
             li = c._short_commands;
             auto const &it1 = li.find(pc.title);
             if (it1 != li.end()) {
                 cmr.matched = true;
-                cmr.obj = (cmd *) &(it->second->update_hit_count(pc.title, 1, false));
+                cmr.obj = (opt::cmd *) &(it->second->update_hit_count(pc.title, 1, false));
             }
         }
         return cmr;
     }
 
-    inline app::arg_matching_result
-    app::matching_flag_on(app::parsing_context &pc,
+    inline typename app::arg_matching_result
+    app::matching_flag_on(parsing_context &pc,
                           bool is_long, bool is_special,
-                          std::function<opt::details::indexed_args const &(cmd *)> li) {
+                          std::function<opt::details::indexed_args const &(opt::cmd *)> li) {
         arg_matching_result amr;
         auto &mc = pc.mc();
 
@@ -220,25 +220,28 @@ namespace cmdr {
         return amr;
     }
 
-    inline app::arg_matching_result app::matching_special_flag(app::parsing_context &pc) {
-        return matching_flag_on(pc, true, true, [](cmd *c) -> opt::details::indexed_args & {
+    inline typename app::arg_matching_result
+    app::matching_special_flag(parsing_context &pc) {
+        return matching_flag_on(pc, true, true, [](opt::cmd *c) -> opt::details::indexed_args const & {
             return c->_long_args;
         });
     }
 
-    inline app::arg_matching_result app::matching_long_flag(app::parsing_context &pc) {
-        return matching_flag_on(pc, true, false, [](cmd *c) -> opt::details::indexed_args & {
+    inline typename app::arg_matching_result
+    app::matching_long_flag(parsing_context &pc) {
+        return matching_flag_on(pc, true, false, [](opt::cmd *c) -> opt::details::indexed_args const & {
             return c->_long_args;
         });
     }
 
-    inline app::arg_matching_result app::matching_short_flag(app::parsing_context &pc) {
-        return matching_flag_on(pc, false, false, [](cmd *c) -> opt::details::indexed_args & {
+    inline typename app::arg_matching_result
+    app::matching_short_flag(parsing_context &pc) {
+        return matching_flag_on(pc, false, false, [](opt::cmd *c) -> opt::details::indexed_args const & {
             return c->_short_args;
         });
     }
 
-    inline opt::Action app::unknown_long_flag_found(app::parsing_context &pc, arg_matching_result &amr) {
+    inline opt::Action app::unknown_long_flag_found(parsing_context &pc, arg_matching_result &amr) {
         unused(pc);
         unused(amr);
         if (_on_unknown_argument_found)
@@ -253,7 +256,7 @@ namespace cmdr {
         return opt::Abortion;
     }
 
-    inline opt::Action app::unknown_short_flag_found(app::parsing_context &pc, arg_matching_result &amr) {
+    inline opt::Action app::unknown_short_flag_found(parsing_context &pc, arg_matching_result &amr) {
         unused(pc);
         unused(amr);
         if (_on_unknown_argument_found)
@@ -282,7 +285,7 @@ namespace cmdr {
         return opt::Abortion;
     }
 
-    inline int app::invoke_command(cmd &c, string_array remain_args, parsing_context &pc) {
+    inline int app::invoke_command(opt::cmd &c, string_array remain_args, parsing_context &pc) {
         unused(pc);
 
         int rc{0};
@@ -299,7 +302,7 @@ namespace cmdr {
                     std::cout << "INVOKE: " << std::quoted(c.title()) << ".\n";
 #if defined(_DEBUG)
                     // store.root().dump_full_keys(std::cout);
-                    _store.root().dump_tree(std::cout);
+                    _store.dump_tree(std::cout);
 #endif
                 }
             }
@@ -318,7 +321,7 @@ namespace cmdr {
     }
 
     inline void app::print_cmd(std::ostream &ss, cmdr::terminal::colors::colorize &c,
-                               cmd *cc,
+                               opt::cmd *cc,
                                std::string const &app_name, std::string const &exe_name) {
         if (!cc->description().empty()) {
             ss << std::endl
@@ -370,7 +373,7 @@ namespace cmdr {
         unused(exe_name);
     }
 
-    inline void app::print_usages(cmd *start) {
+    inline void app::print_usages(opt::cmd *start) {
         std::string exe_name = path::executable_name();
         auto c = cmdr::terminal::colors::colorize::create();
 
@@ -494,24 +497,22 @@ namespace cmdr::opt {
     //
 
 
-    inline cmd &operator+(cmd &lhs, const opts::cmd_base &rhs) {
+    inline cmd &operator+(cmd &lhs, const sub_cmd &rhs) {
         lhs += rhs.underlying();
         return lhs;
     }
 
-    inline cmd &operator+=(cmd &lhs, const opts::cmd_base &rhs) {
+    inline cmd &operator+=(cmd &lhs, const sub_cmd &rhs) {
         lhs += rhs.underlying();
         return lhs;
     }
 
-    template<class T>
-    inline cmd &operator+(cmd &lhs, const opt<T> &rhs) {
+    inline cmd &operator+(cmd &lhs, const opt &rhs) {
         lhs += rhs.underlying();
         return lhs;
     }
 
-    template<class T>
-    inline cmd &operator+=(cmd &lhs, const opt<T> &rhs) {
+    inline cmd &operator+=(cmd &lhs, const opt &rhs) {
         lhs += rhs.underlying();
         return lhs;
     }

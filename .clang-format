@@ -36,6 +36,7 @@ BreakInheritanceList: BeforeComma
 ColumnLimit: 0
 CompactNamespaces: true
 ContinuationIndentWidth: 8
+FixNamespaceComments: true
 IndentCaseLabels: true
 IndentPPDirectives: None
 IndentWidth: 4

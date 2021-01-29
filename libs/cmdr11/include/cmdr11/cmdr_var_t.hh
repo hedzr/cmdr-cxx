@@ -6,20 +6,24 @@
 #define CMDR_CXX11_CMDR_VAR_T_HH
 
 #include <any>
+#include <list>
+#include <map>
+#include <optional>
+#include <unordered_map>
+#include <unordered_set>
+#include <variant>
+
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
-#include <list>
-#include <map>
-#include <optional>
 #include <sstream>
+
 #include <type_traits>
-#include <unordered_map>
-#include <unordered_set>
+#include <typeindex>
+
 #include <utility>
-#include <variant>
 
 
 #include "cmdr_chrono.hh"
@@ -27,137 +31,390 @@
 #include "cmdr_types.hh"
 
 
-namespace cmdr::opt::vars {
+namespace cmdr::vars {
 
-#if defined(NEVER_USED) || defined(ENABLE_VARIABLE) || 1
 
-    template<typename T>
+    namespace details {
+        template<class T, class F>
+        inline std::pair<const std::type_index, std::function<void(std::ostream &os, std::any const &)>>
+        to_any_visitor(F const &f) {
+            return {
+                    std::type_index(typeid(T)),
+                    [g = f](std::ostream &os, std::any const &a) {
+                        if constexpr (std::is_void_v<T>)
+                            g(os);
+                        else
+                            g(os, std::any_cast<T const &>(a));
+                    }};
+        }
+    } // namespace details
+
+
     class variable {
     public:
-        T &value() { return _value; }
-
-        [[nodiscard]] const T &value() const { return _value; }
-
-        friend std::ostream &operator<<(std::ostream &output, const variable &v) {
-            output << v._value;
-            return output;
-        }
-
-        friend std::istream &operator>>(std::istream &input, variable &v) {
-            input >> v._value;
-            return input;
-        }
-
-        // friend std::ostream &operator<<(std::ostream &output, const T &v) {
-        //     output << v;
-        //     return output;
-        // }
-        //
-        // friend std::istream &operator>>(std::istream &input, T &v) {
-        //     input >> v;
-        //     return input;
-        // }
-
-        static void test() {
-            // variable<std::string> v;
-            variable<std::string> v("a string");
-            std::cout << v << std::endl;
-            std::istringstream is("abc-string");
-            is >> v;
-            std::cout << v << " | expect 'abc-string' after stream inputting" << std::endl;
-
-#if BETTER
-            variable<std::string> v2(8, ' ');
-#else
-            variable<std::string> v2(std::in_place, 8, ' ');
-#endif
-            std::cout << std::quoted(v2.value())
-                      << " | expect '        ' (8-spaces) after in-place construction"
-                      << std::endl;
-
-            variable<std::string> v3 = v2;
-            std::cout << std::quoted(v3.value()) << std::endl;
-
-            variable<std::string> v4(v2);
-            std::cout << std::quoted(v4.value()) << std::endl;
-        }
-
-    public:
+        typedef variable self_type;
+        using target_type = std::any;
         variable() = default;
-        ~variable() = default;
-
-#if BETTER
-
-        variable(variable const &) = default;
-        variable(variable &&) noexcept = default;
-
-        template<typename A = T, typename... Args,
+        template<class A, typename... Args,
                  std::enable_if_t<
-                         std::is_constructible<T, A, Args...>::value &&
-                                 !std::is_same<std::decay_t<A>, variable>::value,
+                         std::is_constructible<target_type, A, Args...>::value &&
+                                 !std::is_same<std::decay_t<A>, self_type>::value,
                          int> = 0>
         explicit variable(A &&a0, Args &&...args)
             : _value(std::forward<A>(a0), std::forward<Args>(args)...) {}
+        template<class A,
+                 std::enable_if_t<
+                         std::is_constructible<target_type, A>::value &&
+                                 !std::is_same<std::decay_t<A>, self_type>::value,
+                         int> = 0>
+        explicit variable(A &&a)
+            : _value(std::forward<A>(a)) {}
+        virtual ~variable() = default;
 
-        explicit variable(T &&v)
-            : _value(std::move(v)) {}
+        template<class... Args>
+        void emplace(Args &&...args) {
+            _value.template emplace<Args...>(args...);
+            // auto v = {args...};
+            // (void) v;
+        }
 
-#else
+        [[nodiscard]] target_type const &value_any() const { return _value; }
+        target_type &value_any() { return _value; }
 
-        variable(const variable &o)
-            : _value(o._value) {}
-        variable(variable &&o) noexcept
-            : _value(o._value) {}
-        explicit variable(const T &t)
-            : _value(t) {}
-        explicit variable(T &&t)
-            : _value(std::forward<T>(t)) {}
-
-        template<class... ARGS>
-        explicit variable(std::in_place_t, ARGS &&...args)
-            : _value(T(std::forward<ARGS>(args)...)) {}
-
-#endif
+        [[nodiscard]] std::string as_string() const {
+            std::stringstream os;
+            os << (*this);
+            return os.str();
+        }
 
     private:
-        T _value;
-    };
+        typedef std::unordered_map<std::type_index, std::function<void(std::ostream &os, std::any const &)>> R;
+        static R &any_visitors() {
+            static R _registry{
+                    details::to_any_visitor<void>([](std::ostream &os) { os << "{}"; }),
+                    details::to_any_visitor<bool>([](std::ostream &os, bool x) { os << std::boolalpha << x; }),
+                    details::to_any_visitor<int>([](std::ostream &os, int x) { os << x; }),
+                    details::to_any_visitor<int8_t>([](std::ostream &os, int8_t x) { os << x; }),
+                    details::to_any_visitor<int16_t>([](std::ostream &os, int16_t x) { os << x; }),
+                    details::to_any_visitor<int32_t>([](std::ostream &os, int32_t x) { os << x; }),
+                    details::to_any_visitor<int64_t>([](std::ostream &os, int64_t x) { os << x; }),
+                    details::to_any_visitor<unsigned>([](std::ostream &os, unsigned x) { os << x; }),
+                    details::to_any_visitor<uint8_t>([](std::ostream &os, uint8_t x) { os << x; }),
+                    details::to_any_visitor<uint16_t>([](std::ostream &os, uint16_t x) { os << x; }),
+                    details::to_any_visitor<uint32_t>([](std::ostream &os, uint32_t x) { os << x; }),
+                    details::to_any_visitor<uint64_t>([](std::ostream &os, uint64_t x) { os << x; }),
+                    details::to_any_visitor<long>([](std::ostream &os, long x) { os << x; }),
+                    details::to_any_visitor<unsigned long>([](std::ostream &os, unsigned long x) { os << x; }),
+                    details::to_any_visitor<float>([](std::ostream &os, float x) { os << x; }),
+                    details::to_any_visitor<double>([](std::ostream &os, double x) { os << x; }),
+                    details::to_any_visitor<char const *>([](std::ostream &os, char const *s) { os << std::quoted(s); }),
+                    details::to_any_visitor<std::chrono::nanoseconds>([](std::ostream &os, const std::chrono::nanoseconds &x) { cmdr::chrono::format_duration(os, x); }),
+                    details::to_any_visitor<std::chrono::microseconds>([](std::ostream &os, const std::chrono::microseconds &x) { cmdr::chrono::format_duration(os, x); }),
+                    details::to_any_visitor<std::chrono::milliseconds>([](std::ostream &os, const std::chrono::milliseconds &x) { cmdr::chrono::format_duration(os, x); }),
+                    details::to_any_visitor<std::chrono::seconds>([](std::ostream &os, const std::chrono::seconds &x) { cmdr::chrono::format_duration(os, x); }),
+                    details::to_any_visitor<std::chrono::minutes>([](std::ostream &os, const std::chrono::minutes &x) { cmdr::chrono::format_duration(os, x); }),
+                    details::to_any_visitor<std::chrono::hours>([](std::ostream &os, const std::chrono::hours &x) { cmdr::chrono::format_duration(os, x); }),
+                    details::to_any_visitor<std::chrono::duration<long double, std::ratio<1>>>([](std::ostream &os, const std::chrono::duration<long double, std::ratio<1>> &x) { cmdr::chrono::format_duration(os, x); }),
+                    details::to_any_visitor<std::chrono::duration<long double, std::ratio<60>>>([](std::ostream &os, const std::chrono::duration<long double, std::ratio<60>> &x) { cmdr::chrono::format_duration(os, x); }),
+                    details::to_any_visitor<std::chrono::duration<double, std::ratio<60>>>([](std::ostream &os, const std::chrono::duration<double, std::ratio<60>> &x) { cmdr::chrono::format_duration(os, x); }),
+                    details::to_any_visitor<std::chrono::duration<float, std::ratio<60>>>([](std::ostream &os, const std::chrono::duration<float, std::ratio<60>> &x) { cmdr::chrono::format_duration(os, x); }),
+                    details::to_any_visitor<std::chrono::duration<float, std::ratio<1>>>([](std::ostream &os, const std::chrono::duration<float, std::ratio<1>> &x) { cmdr::chrono::format_duration(os, x); }),
+                    // ... add more handlers for your types ...
+            };
+            return _registry;
+        }
+
+        inline void process(std::ostream &os, const std::any &a) const {
+            if (const auto it = any_visitors().find(std::type_index(a.type()));
+                it != any_visitors().cend()) {
+                it->second(os, a);
+            } else {
+                std::cout << "Unregistered type " << std::quoted(a.type().name());
+            }
+        }
+
+        template<class T, class F>
+        inline void register_any_visitor(F const &f) {
+            std::cout << "Register visitor for type "
+                      << std::quoted(typeid(T).name()) << '\n';
+            any_visitors().insert(details::to_any_visitor<T>(f));
+        }
+
+        friend std::ostream &operator<<(std::ostream &os, variable const &a) {
+            a.process(os, a._value);
+            return os;
+        }
+
+    private:
+        target_type _value;
+    }; // class variable
+
+    // variable:
+    //
 
 
-    class extractor {
+    template<class T, typename small_string = std::string>
+    class treeT;
+
+    template<class T, class small_string = std::string>
+    class nodeT;
+
+
+    template<class T, class small_string>
+    class nodeT : public T {
     public:
-        // app:
-        //   server:
-        //     tls:
-        //       enabled: true
-        //
-        //  app *vt{}
-        //  app.server *vt{}
-        //  app.server.tls  *vt{}
-        //  app.server.tls.enabled  *vt{}
-        //
-        //  app vt{
-        //    server vt {
-        //      tls {
-        //        enabled: vt{enabled => true}
-        //        ca {
-        //          file: vt {file => 'ca.cer'}
-        //        }
-        //      }
-        //      statics {}
-        //    }
-        //    client vt {
-        //    }
-        //  }
-        //
-        //
-        // ['app', []
-        // ]
-    };
+        friend class treeT<T, small_string>;
+        typedef nodeT<T, small_string> self_type;
+        using node_vec = std::list<self_type>;
+        using node_pointer = self_type *;
+        using node_map = std::unordered_map<small_string, self_type>;
+        using node_idx = std::unordered_map<small_string, node_pointer>;
 
-#endif // defined(NEVER_USED)
+        nodeT() = default;
+        template<class A, typename... Args,
+                 std::enable_if_t<
+                         std::is_constructible<T, A, Args...>::value &&
+                                 !std::is_same<std::decay_t<A>, self_type>::value,
+                         int> = 0>
+        explicit nodeT(A &&a0, Args &&...args)
+            : T(std::forward<A>(a0), std::forward<Args>(args)...) {}
+        template<class A,
+                 std::enable_if_t<
+                         std::is_constructible<T, A>::value &&
+                                 !std::is_same<std::decay_t<A>, self_type>::value,
+                         int> = 0>
+        explicit nodeT(A &&a)
+            : T(std::forward<A>(a)) {}
+        ~nodeT() override = default;
+
+    private:
+        node_map _children{};
+        node_idx _indexes{};
+        node_pointer _parent{};
+
+    public:
+        template<class A, typename... Args,
+                 std::enable_if_t<
+                         std::is_constructible<T, A, Args...>::value &&
+                                 !std::is_same<std::decay_t<A>, self_type>::value,
+                         int> = 0>
+        void set(char const *key, A &&a0, Args &&...args) {
+            this->_set(
+                    key, [&](char const *, node_pointer) {}, a0, args...);
+        }
+        template<class A,
+                 std::enable_if_t<std::is_constructible<T, A>::value &&
+                                          !std::is_same<std::decay_t<A>, self_type>::value,
+                                  int> = 0>
+        void set(char const *key, A &&a) {
+            this->_set(
+                    key, [&](char const *, node_pointer) {}, a);
+        }
+
+    private:
+        typedef std::function<void(char const *, node_pointer)> update_parent_index;
+
+        template<class A, typename... Args,
+                 std::enable_if_t<
+                         std::is_constructible<T, A, Args...>::value &&
+                                 !std::is_same<std::decay_t<A>, self_type>::value,
+                         int> = 0>
+        void _set(char const *key, update_parent_index const &cb, A &&a0, Args &&...args) {
+            char const *part = std::strchr(key, '.');
+            if (part) {
+                small_string base(key);
+                std::size_t pos = part - key;
+                small_string k = base.substr(0, pos), remains = base.substr(pos + 1);
+                auto it = _children.find(k);
+                if (it == _children.end()) {
+                    _children.emplace(std::make_pair(k, self_type{}));
+                    it = _children.find(k);
+                }
+                it->second._set(
+                        remains.c_str(), [&](char const *end_key, node_pointer ptr) {
+                            // small_string sk(key);
+                            // sk += '.';
+                            // sk += end_key;
+                            unused(end_key);
+                            _indexes.template emplace(std::make_pair(key, ptr));
+                            if (cb)
+                                cb(key, ptr);
+                        },
+                        a0, args...);
+            } else {
+                small_string k(key);
+                auto it = _children.find(k);
+                if (it == _children.end()) {
+                    _children.emplace(std::make_pair(k, self_type(std::forward<A>(a0), std::forward<Args>(args)...)));
+                    it = _children.find(k);
+                } else
+                    it->second.emplace(a0, args...);
+
+                // build index
+                auto ptr = &(it->second);
+                _indexes.template emplace(std::make_pair(k, ptr));
+                if (cb)
+                    cb(key, ptr);
+                return;
+            }
+        }
+
+        template<class A,
+                 std::enable_if_t<std::is_constructible<T, A>::value &&
+                                          !std::is_same<std::decay_t<A>, self_type>::value,
+                                  int> = 0>
+        void _set(char const *key, update_parent_index const &cb, A &&a) {
+            char const *part = std::strchr(key, '.');
+            if (part) {
+                small_string base(key);
+                std::size_t pos = part - key;
+                small_string k = base.substr(0, pos), remains = base.substr(pos + 1);
+                auto it = _children.find(k);
+                if (it == _children.end()) {
+                    _children.emplace(std::make_pair(k, self_type{}));
+                    it = _children.find(k);
+                }
+                it->second._set(
+                        remains.c_str(), [&](char const *end_key, node_pointer ptr) {
+                            // small_string sk(key);
+                            // sk += '.';
+                            // sk += end_key;
+                            unused(end_key);
+                            _indexes.template emplace(std::make_pair(key, ptr));
+                            if (cb)
+                                cb(key, ptr);
+                        },
+                        a);
+            } else {
+                small_string k(key);
+                auto it = _children.find(k);
+                if (it == _children.end()) {
+                    _children.emplace(std::make_pair(k, self_type(std::forward<A>(a))));
+                    it = _children.find(k);
+                } else
+                    it->second.emplace(a);
+
+                // build index
+                auto ptr = &(it->second);
+                _indexes.template emplace(std::make_pair(k, ptr));
+                if (cb)
+                    cb(key, ptr);
+                return;
+            }
+        }
+
+    public:
+        T const &get(char const *key) const {
+            auto it = _indexes.find(key);
+            if (it == _indexes.end()) {
+                return null_element();
+            }
+            return *it->second;
+        }
+
+        static T &null_element() {
+            static T t{};
+            return t;
+        }
+
+    private:
+        void dump_tree(std::ostream &os, int level) const {
+            for (auto const &[k, v] : _children) {
+                for (int i = 0; i < level; i++) os << "  ";
+                os << k << ": " << v << std::endl;
+                v.dump_tree(os, level + 1);
+            }
+            unused(level);
+        }
+
+        void dump_full_keys(std::ostream &os, int level = 0) const {
+            // std::vector<std::string> keys;
+            // keys.reserve(_full_key_map.size());
+            // for (auto &it : _full_key_map) {
+            //     keys.push_back(it.first);
+            // }
+            // std::sort(keys.begin(), keys.end());
+            //
+            // for (auto &it : keys) {
+            //     os << " - " << it << " => " << _full_key_map[it] << std::endl;
+            // }
+            print_sorted(os, _indexes);
+            unused(level);
+        }
+
+    private:
+        struct map_streamer {
+            std::ostream &_os;
+
+            explicit map_streamer(std::ostream &os)
+                : _os(os) {}
+
+            template<class K, class V>
+            void operator()(std::pair<K, V> const &val) {
+                // .first is your key, .second is your value
+                _os << " - " << val.first << " : " << (*val.second) << "\n";
+            }
+        };
+
+        template<class K, class V, class Comp = std::less<K>>
+        inline void print_sorted(std::ostream &os, std::unordered_map<K, V> const &um, Comp pred = Comp()) const {
+            std::map<K, V> m(um.begin(), um.end(), pred);
+            std::for_each(m.begin(), m.end(), map_streamer(os));
+        }
+
+    }; // class nodeT<T>
+
+    template<class T, typename small_string>
+    class treeT {
+    public:
+        using self_type = treeT<T, small_string>;
+        using node = nodeT<T, small_string>;
+        using node_pointer = node *;
+        using node_vec = std::list<node>;
+        using node_index = std::unordered_map<small_string, node_pointer>;
+
+    public:
+        template<class A, typename... Args,
+                 std::enable_if_t<
+                         std::is_constructible<T, A, Args...>::value &&
+                                 !std::is_same<std::decay_t<A>, self_type>::value,
+                         int> = 0>
+        void set(char const *key, A &&a0, Args &&...args) {
+            _root.template set(key, a0, args...);
+        }
+        template<class A,
+                 std::enable_if_t<std::is_constructible<T, A>::value &&
+                                          !std::is_same<std::decay_t<A>, self_type>::value,
+                                  int> = 0>
+        void set(char const *key, A &&a) {
+            _root.template set(key, a);
+        }
+        T const &get(char const *key) const {
+            return _root.get(key);
+        }
+
+    public:
+        void dump_tree(std::ostream &os, const_chars leading_title = nullptr, node *start = nullptr) const {
+            if (leading_title) os << leading_title;
+            else
+                os << "Dumping for var_t as Tree ...";
+            os << std::endl;
+            (start ? start : &_root)->dump_tree(os, 0);
+        }
+        void dump_full_keys(std::ostream &os, const_chars leading_title = nullptr, node *start = nullptr) const {
+            if (leading_title) os << leading_title;
+            else
+                os << "Dumping for var_t ...";
+            os << std::endl;
+            (start ? start : &_root)->dump_full_keys(os, 0);
+        }
+
+    private:
+        node _root;
+    }; // class treeT<T>
 
 
+#if 0
     struct streamable_any : std::any {
         void (*streamer)(std::ostream &, streamable_any const &); //= nullptr;
         friend std::ostream &operator<<(std::ostream &os, streamable_any const &a) {
@@ -251,7 +508,9 @@ namespace cmdr::opt::vars {
             return (*this);
         }
     };
+#endif
 
+#if 0
     /**
      * @brief a node at a hierarchical data structure
      * @tparam holderT the real value type stored in this node
@@ -341,8 +600,10 @@ namespace cmdr::opt::vars {
                 // }
                 (void) (prefix);
                 (void) (ptr);
+#if defined(TMP_TMP)
                 if (LOGGING_ENABLED)
                     std::cout << "      > this: '" << (*this) << "', key: " << key << ", matching key: " << prefix << std::endl;
+#endif
                 (void) (this);
                 (void) (key);
             });
@@ -379,14 +640,19 @@ namespace cmdr::opt::vars {
 
                 ptr = &((*itc).second);
                 ptr->_parent = parent;
+
+#if defined(TMP_TMP)
                 if (LOGGING_ENABLED)
                     std::cout << "   -> putting '" << (*ptr) << "' into \"" << key << "\".\n";
+#endif
 
                 prefix1 = key.substr(0, pos);
                 if (auto it = _full_key_map.find(prefix1); it == _full_key_map.end()) {
                     _full_key_map.template emplace(prefix1, ptr);
+#if defined(TMP_TMP)
                     if (LOGGING_ENABLED)
                         std::cout << "      _full_key_map['" << prefix1 << "'] = '" << (*ptr) << "'\n";
+#endif
                 }
                 if (on_picked)
                     on_picked(prefix1, ptr);
@@ -406,9 +672,11 @@ namespace cmdr::opt::vars {
                         //if (this->_parent != nullptr) {
                         if (auto it = _full_key_map.find(sk); it == _full_key_map.end()) {
                             _full_key_map.template emplace(sk, ptr);
+#if defined(TMP_TMP)
                             if (LOGGING_ENABLED)
                                 std::cout << "      ^ _full_key_map['" << sk << "'] = '" << (*ptr) << "'\n";
                             // std::cout << "      putting '" << (*ptr) << "' into \"" << sk << "\".\n";
+#endif
                         }
                         // }
 
@@ -530,9 +798,10 @@ namespace cmdr::opt::vars {
         self_type *_parent{nullptr}; // need not to use std::weak_ptr
         // std::string _key_part;
     }; // class opt_var_t
+#endif
 
-
-    template<typename holderT = streamable_any>
+#if 0
+    template<typename holderT /* = streamable_any*/>
     class store_base {
     public:
         typedef var_t<holderT> var_type;
@@ -587,9 +856,23 @@ namespace cmdr::opt::vars {
     }; // class store
 
 
-    typedef cmdr::opt::vars::store_base<> store;
+    template<class V = support_types>
+    using store = cmdr::opt::vars::store_base<V>;
+#endif
 
 
-} // namespace cmdr::opt::vars
+    class store : public treeT<variable> {
+    public:
+        store() = default;
+        ~store() = default;
+
+        friend std::ostream &operator<<(std::ostream &os, store const &o) {
+            o.dump_tree(os);
+            return os;
+        }
+    }; // class store
+
+
+} // namespace cmdr::vars
 
 #endif //CMDR_CXX11_CMDR_VAR_T_HH

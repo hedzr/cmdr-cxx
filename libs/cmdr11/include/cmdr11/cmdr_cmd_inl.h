@@ -24,13 +24,19 @@
 
 namespace cmdr::opt {
 
+
     inline bas &bas::owner(cmd *o) {
         _owner = o;
         return (*this);
     }
-
     inline cmd const *bas::owner() const { return _owner; }
     inline cmd *bas::owner() { return _owner; }
+
+
+    //
+    //
+    //
+
 
     inline cmd &cmd::operator+(arg const &a) {
         if (a.valid()) {
@@ -135,10 +141,13 @@ namespace cmdr::opt {
     }
 
     inline arg &cmd::operator[](const_chars long_title) { return find_flag(long_title); }
+
     inline const arg &cmd::operator[](const_chars long_title) const { return const_cast<cmd &>(*this).find_flag(long_title); }
 
     inline cmd &cmd::operator()(const_chars long_title, bool extensive) { return find_command(long_title, extensive); }
+
     inline cmd const &cmd::operator()(const_chars long_title, bool extensive) const { return const_cast<cmd &>(*this).find_command(long_title, extensive); }
+
 
     inline arg &cmd::find_flag(const_chars long_title, bool extensive) {
         auto s = long_title;
@@ -194,6 +203,7 @@ namespace cmdr::opt {
         unused(argv);
         return 0;
     }
+
 
     inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, int level) {
         unused(grouped);
@@ -346,6 +356,7 @@ namespace cmdr::opt {
             ss << c.dim().s("  (no sub-commands)") << '\n';
         }
     }
+
 
     inline void cmd::print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, int level) {
         unused(grouped);

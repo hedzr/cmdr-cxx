@@ -23,7 +23,7 @@ void test_store_1() {
 
     std::cout << "\nstore testing... \n\n";
 
-    cmdr::opt::vars::store_base<> store;
+    cmdr::vars::store store;
     store.set("app.server.tls.enabled", true);
     store.set("app.server.tls.ca.cert", "ca.cer");
     store.set("app.server.tls.server.cert", "server.cer");
@@ -35,8 +35,8 @@ void test_store_1() {
     store.set("app.server.tls.fixed-list", std::array{"item1", "item2"});
 
 #if defined(_DEBUG)
-    store.root().dump_full_keys(std::cout);
-    store.root().dump_tree(std::cout);
+    store.dump_full_keys(std::cout);
+    store.dump_tree(std::cout);
 #endif
 
     auto vv = store.get("app.server.tls.handshake.max-idle-time");

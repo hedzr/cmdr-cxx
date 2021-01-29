@@ -20,20 +20,15 @@ int main(int argc, char *argv[]) {
                          "Copyright © 2021 by hedzr, All Rights Reserved.",
                          "A demo app for cmdr-c11 library.",
                          "$ ~ --help")
-                .opt(opt_dummy{}())
-                .opt(subcmd{}
-                             .titles("server", "s", "svr")
+                .opt(sub_cmd{}("server", "s", "svr")
                              .description("server operations for listening")
-                             .opt(opt_dummy{}())
-                             .opt(opt_dummy{}())
                              .get())
-                .opt(opt<int>{}
-                             .titles("count", "c")
+                .opt(opt{(int16_t)(3)}("count", "c")
                              .description("set counter value")
-                             .default_value(cmdr::support_types((int16_t)(3)))())
-                .opt(subcmd{}
-                             .titles("host", "h", "hostname", "server-name")
-                             .description("hostname or ip address")())
+                             .get())
+                .opt(sub_cmd{}("host", "h", "hostname", "server-name")
+                             .description("hostname or ip address")
+                             .get())
                 .run(argc, argv);
     } catch (std::exception &e) {
         std::cerr << "Exception caught : " << e.what() << std::endl;

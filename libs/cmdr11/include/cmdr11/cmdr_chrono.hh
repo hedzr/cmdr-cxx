@@ -48,7 +48,7 @@ namespace cmdr::chrono {
 
 
     template<class Duration>
-    inline std::ostream &format_duration(std::ostream &os, Duration ns) {
+    inline std::ostream &format_duration_simple(std::ostream &os, Duration const &ns) {
         char fill = os.fill();
         os.fill('0');
 #if __cplusplus > 201703L
@@ -72,6 +72,122 @@ namespace cmdr::chrono {
         return os;
     }
 
+    // inline std::ostream &format_duration_simple(std::ostream &os, std::chrono::duration<long double, std::ratio<60>> const &ns) {
+    //     return os;
+    // }
+    // inline std::ostream &format_duration_simple(std::ostream &os, std::chrono::duration<long double, std::ratio<1>> const &ns) {
+    //     return os;
+    // }
+
+    template<typename T>
+    inline std::ostream &format_duration(std::ostream &os, T timeunit) {
+        using namespace std;
+        using namespace std::chrono;
+        nanoseconds ns = duration_cast<nanoseconds>(timeunit);
+        // std::ostringstream os;
+        bool foundNonZero = false;
+        os.fill('0');
+        typedef duration<int, std::ratio<86400 * 365>> years;
+        const auto y = duration_cast<years>(ns);
+        if (y.count()) {
+            foundNonZero = true;
+            os << y.count() << "y:";
+            ns -= y;
+        }
+        typedef duration<int, std::ratio<86400>> days;
+        const auto d = duration_cast<days>(ns);
+        if (d.count()) {
+            foundNonZero = true;
+            os << d.count() << "d:";
+            ns -= d;
+        }
+        const auto h = duration_cast<hours>(ns);
+        if (h.count() || foundNonZero) {
+            foundNonZero = true;
+            os << h.count() << "h:";
+            ns -= h;
+        }
+        const auto m = duration_cast<minutes>(ns);
+        if (m.count() || foundNonZero) {
+            foundNonZero = true;
+            os << m.count() << "m";
+            ns -= m;
+        }
+
+        bool z{};
+        const auto s = duration_cast<seconds>(ns);
+        if (s.count() || z) {
+            z = true;
+            if (foundNonZero) os << ':';
+            os << s.count() << "s";
+            ns -= s;
+        }
+        bool z1{};
+        const auto ms = duration_cast<milliseconds>(ns);
+        if (ms.count() || z1) {
+            if (foundNonZero) {
+                os << std::setw(3);
+            }
+            os << ms.count();
+            ns -= ms;
+            z1 = true;
+        }
+        bool z2{};
+        const auto us = duration_cast<microseconds>(ns);
+        if (us.count() || z2) {
+            if (foundNonZero) {
+                os << std::setw(3);
+            }
+            if (z1) os << '.';
+            os << us.count();
+            ns -= us;
+            z2 = true;
+        }
+        bool z3{};
+        if (ns.count() || z3) {
+            if (z1 || z2) os << '.';
+            os << std::setw(3) << ns.count();
+            z3 = true;
+        }
+        if (z1 || z2 || z3) {
+            if (z3)
+                os << "ns";
+            else if (z2)
+                os << "us";
+            else
+                os << "ms";
+        }
+        return os; // .str();
+    }
+
+
+    template<typename T, typename _ = void>
+    struct is_duration : std::false_type {};
+
+    template<typename... Ts>
+    struct is_duration_helper {};
+
+    template<typename T>
+    struct is_duration<
+            T,
+            std::conditional_t<
+                    false,
+                    is_duration_helper<
+                            typename T::rep,
+                            typename T::period,
+                            decltype(std::declval<T>().count()),
+                            decltype(std::declval<T>().zero()),
+                            decltype(std::declval<T>().min()),
+                            decltype(std::declval<T>().max())>,
+                    void>> : public std::true_type {};
+
 } // namespace cmdr::chrono
+
+template<typename T,
+         std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool> = true>
+inline std::ostream &operator<<(std::ostream &os, T const &v) {
+    cmdr::chrono::format_duration(os, v);
+    return os;
+}
 
 #endif //CMDR_CXX11_CMDR_CHRONO_HH

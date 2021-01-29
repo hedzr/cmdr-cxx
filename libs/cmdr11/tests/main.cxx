@@ -55,8 +55,8 @@ void test_types_check_1() {
 }
 
 void test_var_t_1() {
-    cmdr::opt::vars::var_t<std::string> vs;
-    std::cout << "var_t: " << vs << std::endl;
+    // cmdr::vars::var_t<std::string> vs;
+    // std::cout << "var_t: " << vs << std::endl;
 }
 
 int main(int, char **) {

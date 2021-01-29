@@ -3,17 +3,20 @@
 //
 
 #include <any>
+#include <array>
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
+#include <list>
 #include <memory>
 #include <new>
 #include <string>
 #include <typeindex>
 #include <typeinfo>
 #include <unordered_map>
+#include <vector>
 
 
 #include "cmdr11/cmdr_utils.hh"
@@ -37,6 +40,7 @@ public:
         : _arg(std::forward<A>(a0), std::forward<Args>(args)...) {
         std::cout << ".1." << a0 << std::endl;
     }
+
     template<typename A,
              std::enable_if_t<!std::is_same<std::decay_t<A>, std::any>::value &&
                                       !std::is_same<std::decay_t<A>, X>::value,
@@ -55,8 +59,9 @@ public:
 };
 
 void test_streamer_any() {
-    using cmdr::opt::vars::streamable_any;
+#if OBSELETED
     using cmdr::util::streamer_any;
+    using cmdr::vars::streamable_any;
     using namespace std::chrono_literals;
 
     std::cout << "test_streamable_any manually:" << '\n';
@@ -74,9 +79,11 @@ void test_streamer_any() {
     std::cout << vo5 << std::endl;
 
     std::cout << '\n';
+#endif
 }
 
 void test_streamable_any() {
+#if OBSELETED
     using cmdr::opt::vars::streamable_any;
     using cmdr::util::streamer_any;
     using namespace std::chrono_literals;
@@ -126,6 +133,7 @@ void test_streamable_any() {
 
 
     std::cout << '\n';
+#endif
 }
 
 struct A {
@@ -169,12 +177,75 @@ void test_types() {
 
 void test_variable() {
     using namespace std::chrono_literals;
-    using namespace cmdr::opt::vars;
+    using namespace cmdr::vars;
+
     //
+}
+
+#include <climits>
+#include <cstdint>
+#include <iostream>
+#include <type_traits>
+#include <utility>
+#include <vector>
+
+
+namespace fold {
+    template<typename... Args>
+    bool all(Args... args) { return (... && args); }
+
+    template<typename... Args>
+    int sum(Args &&...args) {
+        //    return (args + ... + 1 * 2); // 错误：优先级低于转型的运算符
+        return (args + ... + (1 * 2)); // OK
+    }
+
+    template<class... Args>
+    void printer(Args &&...args) {
+        (std::cout << ... << args) << '\n';
+    }
+
+    template<class T, class... Args>
+    void push_back_vec(std::vector<T> &v, Args &&...args) {
+        static_assert((std::is_constructible_v<T, Args &> && ...));
+        (v.push_back(args), ...);
+    }
+
+    // 基于 http://stackoverflow.com/a/36937049 的编译时端序交换
+    template<class T, std::size_t... N>
+    constexpr T bswap_impl(T i, std::index_sequence<N...>) {
+        return (((i >> N * CHAR_BIT & std::uint8_t(-1)) << (sizeof(T) - 1 - N) * CHAR_BIT) | ...);
+    }
+
+    template<class T, class U = std::make_unsigned_t<T>>
+    constexpr U bswap(T i) {
+        return bswap_impl<U>(i, std::make_index_sequence<sizeof(T)>{});
+    }
+} // namespace fold
+
+void test_fold() {
+    bool b = fold::all(true, true, true, false);
+    assert(!b);
+
+    fold::printer(1, 2, 3, "abc");
+
+    std::vector<int> v;
+    fold::push_back_vec(v, 6, 2, 45, 12);
+    fold::push_back_vec(v, 1, 2, 9);
+    for (int i : v) std::cout << i << ' ';
+
+    static_assert(fold::bswap<std::uint16_t>(0x1234u) == 0x3412u);
+    static_assert(fold::bswap<std::uint64_t>(0x0123456789abcdefULL) == 0xefcdab8967452301ULL);
+}
+
+void test_variant() {
+    // cmdr::support_types v1(std::vector{"example", "no body"});
+    // (void) v1;
 }
 
 int main() {
     std::cout << std::boolalpha;
+
 
     X x1{1};
     X x2{(int16_t) 2};
@@ -194,4 +265,6 @@ int main() {
     test_streamable_any();
     test_types();
     test_variable();
+    test_fold();
+    test_variant();
 }

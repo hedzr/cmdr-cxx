@@ -7,6 +7,6 @@ include(CMakeFindDependencyMacro)
 
 ## Import the targets
 if (NOT TARGET cmdr11::cmdr11)
-    #include("${SM_LIB_CMAKE_DIR}/cmdr11Targets.cmake")
-    include("${CMAKE_CURRENT_LIST_DIR}/cmdr11Targets.cmake")
+  #include("${SM_LIB_CMAKE_DIR}/cmdr11Targets.cmake")
+  include("${CMAKE_CURRENT_LIST_DIR}/cmdr11Targets.cmake")
 endif ()

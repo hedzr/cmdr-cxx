@@ -28,13 +28,13 @@ int main() {
     std::printf("stack space = %zu, heap space = %zu, capacity = %zu\n",
                 sizeof(s), allocated, s.capacity());
 
-    cmdr::opt::vars::var_t<std::string> vs;
-    std::cout << "var_t: " << vs << std::endl;
+    // cmdr:::vars::var_t<std::string> vs;
+    // std::cout << "var_t: " << vs << std::endl;
 
 
     using namespace std::chrono_literals;
 
-    cmdr::opt::vars::store_base<> store;
+    cmdr::vars::store store;
     store.set("app.server.tls.enabled", true);
     store.set("app.server.tls.ca.cert", "ca.cer");
     store.set("app.server.tls.server.cert", "server.cer");
@@ -48,8 +48,8 @@ int main() {
     std::cout << "store: " << store << std::endl;
 
 #if defined(_DEBUG)
-    store.root().dump_full_keys(std::cout);
-    store.root().dump_tree(std::cout);
+    store.dump_full_keys(std::cout);
+    store.dump_tree(std::cout);
 #endif
 
     std::cout << std::boolalpha;

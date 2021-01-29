@@ -8,14 +8,22 @@
 namespace cmdr::log {
     class Logger {
     public:
-        void print(const char *fmt, void *args);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+
+        template<class... Args>
+        void print(const char *fmt, Args const &...args) {
+            //
+        }
+
+#pragma clang diagnostic pop
     };
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-parameter"
 
-    inline void Logger::print(const char *fmt, void *args) {
-    }
+    // inline void Logger::print(const char *fmt, void *args) {
+    // }
 
 #pragma clang diagnostic pop
 

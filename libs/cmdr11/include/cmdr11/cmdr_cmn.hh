@@ -10,29 +10,48 @@
 
 namespace cmdr {
     class app;
-};
+}; // namespace cmdr
 
+// namespace cmdr::opt::vars {
+//     template<class V = support_types>
+//     class store;
+// } // namespace cmdr::opt::vars
+
+//
+// Core
+//
 namespace cmdr::opt {
 
-    // template<class V = support_types>
     class arg;
 
     namespace details {
-        typedef std::list<arg> arg_list;
-        typedef std::list<arg *> arg_pointers;
-        typedef std::unordered_map<std::string, arg_pointers> grouped_arg_list; // key: group-name
-        typedef std::unordered_map<std::string, arg *> indexed_args;            // key: long-title
+        using arg_list = std::list<arg>;
+        using arg_pointers = std::list<arg *>;
+        using grouped_arg_list = std::unordered_map<std::string, arg_pointers>; // key: group-name
+        using indexed_args = std::unordered_map<std::string, arg *>;            // key: long-title
     }                                                                           // namespace details
 
     class cmd;
 
     namespace details {
-        typedef std::list<cmd> cmd_list;
-        typedef std::list<cmd *> cmd_pointers;
-        typedef std::unordered_map<std::string, cmd_pointers> grouped_cmd_list; // key: group-name
-        typedef std::unordered_map<std::string, cmd *> indexed_commands;        // key: long-title
-        typedef std::function<void(cmd &)> option;                              // void (*option)(app &a);
+        using cmd_list = std::list<cmd>;
+        using cmd_pointers = std::list<cmd *>;
+        using grouped_cmd_list = std::unordered_map<std::string, cmd_pointers>; // key: group-name
+        using indexed_commands = std::unordered_map<std::string, cmd *>;        // key: long-title
+        using option = std::function<void(cmd &)>;                              // void (*option)(app &a);
     }                                                                           // namespace details
+
+} // namespace cmdr::opt
+
+
+//
+// API for developers
+//
+namespace cmdr::opt {
+
+    class sub_cmd;
+
+    class opt;
 
     //
     // parsing and hitting
@@ -68,10 +87,12 @@ namespace cmdr::opt {
 
     namespace details {
 
-        typedef std::function<Action(
-                std::string &title, cmd const &last_matched_cmd,
-                bool long_or_short, bool cmd_or_arg)>
-                on_unknown_argument_found;
+        using on_unknown_argument_found =
+                std::function<Action(
+                        std::string &title,
+                        cmdr::opt::cmd const &last_matched_cmd,
+                        bool long_or_short,
+                        bool cmd_or_arg)>;
 
         /**
          * @brief return negative will abort the parsing and the command invoking later.
@@ -80,9 +101,9 @@ namespace cmdr::opt {
          * a termination normally. If you wanna pass the OS return code,
          * using [exit(n)] in C-API.
          */
-        typedef std::function<Action(cmd const &c,
-                                     string_array const &remain_args)>
-                on_command_hit; // callback handler
+        using on_command_hit =
+                std::function<Action(cmdr::opt::cmd const &c,
+                                     string_array const &remain_args)>; // callback handler
 
         /**
          * @brief return negative will abort the parsing and the command invoking later.
@@ -91,10 +112,10 @@ namespace cmdr::opt {
          * a termination normally. If you wanna pass the OS return code,
          * using [exit(n)] in C-API.
          */
-        typedef std::function<Action(cmd const &c,
-                                     arg const &f,
-                                     string_array const &remain_args)>
-                on_flag_hit; // callback handler
+        using on_flag_hit =
+                std::function<Action(cmdr::opt::cmd const &c,
+                                     cmdr::opt::arg const &f,
+                                     string_array const &remain_args)>; // callback handler
 
         //
         // invoke a command finally
@@ -109,15 +130,15 @@ namespace cmdr::opt {
          * a termination normally. If you wanna pass the OS return code,
          * using [exit(n)] in C-API.
          */
-        typedef std::function<int(cmd const &c,
-                                  string_array const &remain_args)>
-                on_pre_invoke; // callback handler
+        using on_pre_invoke =
+                std::function<int(cmdr::opt::cmd const &c,
+                                  string_array const &remain_args)>; // callback handler
         /**
          * @brief the return value will be transferred to OS.
          */
-        typedef std::function<int(cmd const &c,
-                                  string_array const &remain_args)>
-                on_invoke; // callback handler
+        using on_invoke =
+                std::function<int(cmdr::opt::cmd const &c,
+                                  string_array const &remain_args)>; // callback handler
         /**
          * @brief NOTE that on_post_invoke() will be always invoked before app terminating.
          *
@@ -125,22 +146,11 @@ namespace cmdr::opt {
          * a termination normally. If you wanna pass the OS return code,
          * using [exit(n)] in C-API.
          */
-        typedef std::function<int(cmd const &c,
-                                  string_array const &remain_args)>
-                on_post_invoke; // callback handler
+        using on_post_invoke =
+                std::function<int(cmdr::opt::cmd const &c,
+                                  string_array const &remain_args)>; // callback handler
 
     } // namespace details
-
-
-    namespace opts {
-        // class opt_base;
-        class cmd_base;
-    } // namespace opts
-
-    class subcmd;
-    template<class T>
-    class opt;
-
 
 } // namespace cmdr::opt
 

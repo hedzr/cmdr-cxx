@@ -8,9 +8,199 @@
 #include "cmdr_arg.hh"
 #include "cmdr_cmd.hh"
 #include "cmdr_cmn.hh"
+#include "cmdr_var_t.hh"
+
 
 namespace cmdr::opt {
 
+
+    class sub_cmd {
+    public:
+        sub_cmd() = default;
+        ~sub_cmd() = default;
+
+        details::option get() {
+            return [=](cmd &c) {
+                c += _cmd;
+            };
+        }
+
+    public:
+        sub_cmd &operator()(const char *long_, const char *short_ = nullptr) {
+            _cmd.template titles(long_, short_);
+            return (*this);
+        }
+
+        template<class... Args>
+        sub_cmd &operator()(const char *long_, const char *short_, Args... args) {
+            _cmd.template titles(long_, short_, args...);
+            return (*this);
+        }
+
+        sub_cmd &group(const char *s) {
+            _cmd.group(s);
+            return (*this);
+        }
+
+        sub_cmd &hidden(bool b = true) {
+            _cmd.hidden(b);
+            return (*this);
+        }
+
+        sub_cmd &description(const char *desc, const char *long_desc = nullptr) {
+            _cmd.description(desc, long_desc);
+            return (*this);
+        }
+
+        sub_cmd &examples(const char *s) {
+            _cmd.examples(s);
+            return (*this);
+        }
+
+        sub_cmd &special(bool b = true) {
+            _cmd.special(b);
+            return (*this);
+        }
+
+        sub_cmd &no_non_special(bool b = true) {
+            _cmd.no_non_special(b);
+            return (*this);
+        }
+
+        sub_cmd &on_hit(details::on_command_hit cb) {
+            _cmd.on_command_hit(cb);
+            return (*this);
+        }
+
+        sub_cmd &on_pre_invoke(details::on_pre_invoke cb) {
+            _cmd.on_pre_invoke(cb);
+            return (*this);
+        }
+
+        sub_cmd &on_post_invoke(details::on_post_invoke cb) {
+            _cmd.on_post_invoke(cb);
+            return (*this);
+        }
+
+        sub_cmd &on_invoke(details::on_invoke cb) {
+            _cmd.on_invoke(cb);
+            return (*this);
+        }
+
+
+        cmd &underlying() { return _cmd; }
+        [[nodiscard]] cmd const &underlying() const { return _cmd; }
+
+    private:
+        cmd _cmd;
+    }; // class cmd
+
+
+    class opt {
+    public:
+        opt() = default;
+        opt(opt const *) = delete;
+        opt(opt &&) = delete;
+        template<class A, typename... Args,
+                 std::enable_if_t<
+                         std::is_constructible<vars::variable, A, Args...>::value &&
+                                 !std::is_same<std::decay_t<A>, opt>::value,
+                         int> = 0>
+        explicit opt(A &&a0, Args &&...args)
+            : _value(std::forward<A>(a0), std::forward<Args>(args)...) {
+        }
+        template<class A,
+                 std::enable_if_t<std::is_constructible<vars::variable, A>::value &&
+                                          !std::is_same<std::decay_t<A>, opt>::value,
+                                  int> = 0>
+        explicit opt(A &&a)
+            : _value(std::forward<A>(a)) {}
+        ~opt() = default;
+
+        details::option get() {
+            return [=](cmd &c) {
+                c += _arg;
+            };
+        }
+
+    public:
+        opt &operator()(const char *long_, const char *short_ = nullptr) {
+            _arg.titles(long_, short_);
+            return (*this);
+        }
+
+        template<class... Args>
+        opt &operator()(const char *long_, const char *short_, Args... args) {
+            _arg.titles(long_, short_, args...);
+            return (*this);
+        }
+
+        opt &group(const char *s) {
+            _arg.group(s);
+            return (*this);
+        }
+
+        opt &hidden(bool b = true) {
+            _arg.hidden(b);
+            return (*this);
+        }
+
+        opt &description(const char *desc, const char *long_desc = nullptr) {
+            _arg.description(desc, long_desc);
+            return (*this);
+        }
+
+        opt &examples(const char *s) {
+            _arg.examples(s);
+            return (*this);
+        }
+
+        opt &required(bool b = true) {
+            _arg.required(b);
+            return (*this);
+        }
+
+        opt &special(bool b = true) {
+            _arg.special(b);
+            return (*this);
+        }
+
+        opt &no_non_special(bool b = true) {
+            _arg.no_non_special(b);
+            return (*this);
+        }
+
+        opt &on_hit(details::on_flag_hit cb) {
+            _arg.on_flag_hit(cb);
+            return (*this);
+        }
+
+        opt &placeholder(const char *s) {
+            _arg.placeholder(s);
+            return (*this);
+        }
+
+        opt &toggle_group(const char *s) {
+            _arg.toggle_group(s);
+            return (*this);
+        }
+
+        template<typename... Args>
+        opt &env_vars(Args... args) {
+            _arg.template env_vars(args...);
+            return (*this);
+        }
+
+        arg &underlying() { return _arg; }
+        [[nodiscard]] const arg &underlying() const { return _arg; }
+
+    private:
+        arg _arg;
+        vars::variable _value{};
+    }; // class opt
+
+
+#if 0
     namespace opts {
 
 #if 0
@@ -38,19 +228,20 @@ namespace cmdr::opt {
         }; //class opt_base
 #endif
 
+        template<class V>
         class cmd_base : public obj {
         public:
             cmd_base() = default;
             ~cmd_base() override = default;
 
         public:
-            virtual details::option operator()() const {
+            virtual details::option<V> operator()() const {
                 return [this](class cmd &a) {
                     a += _cmd;
                 };
             }
 
-            [[nodiscard]] virtual details::option get() const {
+            [[nodiscard]] virtual details::option<V> get() const {
                 return [this](class cmd &a) {
                     a += _cmd;
                 };
@@ -96,28 +287,28 @@ namespace cmdr::opt {
                 return (*this);
             }
 
-            cmd_base &on_hit(details::on_command_hit const &cb) {
+            cmd_base &on_hit(details::on_command_hit<V> const &cb) {
                 _cmd.on_command_hit(cb);
                 return (*this);
             }
-            cmd_base &on_pre_invoke(details::on_pre_invoke const &cb) {
+            cmd_base &on_pre_invoke(details::on_pre_invoke<V> const &cb) {
                 _cmd.on_pre_invoke(cb);
                 return (*this);
             }
-            cmd_base &on_invoke(details::on_invoke const &cb) {
+            cmd_base &on_invoke(details::on_invoke<V> const &cb) {
                 _cmd.on_invoke(cb);
                 return (*this);
             }
-            cmd_base &on_post_invoke(details::on_post_invoke const &cb) {
+            cmd_base &on_post_invoke(details::on_post_invoke<V> const &cb) {
                 _cmd.on_post_invoke(cb);
                 return (*this);
             }
 
-            cmd_base &opt(const details::option &opt_) {
+            cmd_base &opt(const details::option<V> &opt_) {
                 _cmd.option(opt_);
                 return (*this);
             }
-            cmd_base &option(const details::option &opt_) {
+            cmd_base &option(const details::option<V> &opt_) {
                 _cmd.option(opt_);
                 return (*this);
             }
@@ -126,14 +317,16 @@ namespace cmdr::opt {
             class cmd _cmd;
         }; // class cmd_base
     }      // namespace opts
-
+#endif
 
     //
     //
     //
 
 
-    class subcmd : public opts::cmd_base {
+#if 0
+    template<class V>
+    class subcmd : public opts::cmd_base<V> {
     public:
         subcmd() = default;
         ~subcmd() override = default;
@@ -146,7 +339,7 @@ namespace cmdr::opt {
     /**
      * @brief opt_new is a generic options definer
      */
-    template<class T>
+    template<class V, class T>
     class opt : public obj {
     public:
         opt() = default;
@@ -176,13 +369,13 @@ namespace cmdr::opt {
         // friend cmd &operator+=(cmd &a, const opt &o);
 
     public:
-        virtual details::option operator()() const {
+        virtual details::option<V> operator()() const {
             return [&](cmd &a) {
                 a += _arg;
             };
         }
 
-        [[nodiscard]] virtual details::option get() const {
+        [[nodiscard]] virtual details::option<V> get() const {
             return [&](cmd &a) {
                 a += _arg;
             };
@@ -276,7 +469,7 @@ namespace cmdr::opt {
             return (*this);
         }
 
-        opt &on_hit(details::on_flag_hit const &cb) {
+        opt &on_hit(details::on_flag_hit<V> const &cb) {
             _arg.on_flag_hit(cb);
             return (*this);
         }
@@ -286,7 +479,8 @@ namespace cmdr::opt {
     }; // class opt
 
 
-    class opt_dummy : public opt<bool> {
+    template<class V>
+    class opt_dummy : public opt<V, bool> {
     public:
         opt_dummy() = default;
         ~opt_dummy() override = default;
@@ -319,6 +513,8 @@ namespace cmdr::opt {
     DEFINE_OPT_BY_TYPE(bool);
     DEFINE_OPT_BY_TYPE(int);
     DEFINE_OPT_BY_TYPE(string);
+#endif
+
 #endif
 
 

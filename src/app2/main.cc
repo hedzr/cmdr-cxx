@@ -19,21 +19,15 @@ int main(int argc, char *argv[]) {
                              "A demo app for cmdr-c11 library.",
                              "$ ~ --help");
 
-        cli.opt(opt_dummy{}());
+        // cli.opt(opt_dummy{}());
 
-        cli += subcmd{}
-                       .titles("server", "s", "svr")
-                       .description("server operations for listening")
-                       .opt(opt_dummy{}())
-                       .opt(opt_dummy{}());
+        cli += sub_cmd{}("server", "s", "svr")
+                       .description("server operations for listening");
 
-        cli += opt<int>{1}
-                       .titles("count", "c")
-                       .description("set counter value")
-                       .default_value(cmdr::support_types((int16_t)(3)));
+        cli += opt{1}("count", "c")
+                       .description("set counter value");
 
-        cli += opt<std::string>{}
-                       .titles("host", "h", "hostname", "server-name")
+        cli += opt{""}("host", "h", "hostname", "server-name")
                        .description("hostname or ip address");
 
         return cli.run(argc, argv);

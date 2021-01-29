@@ -52,9 +52,10 @@ void test_any() {
 }
 
 void test_streamable_any() {
+#if NOT_YET
     cmdr::opt::vars::var_t<cmdr::opt::vars::streamable_any> v("yes");
     std::cout << v << '\n';
-#if NOT_YET
+
     v = 123;
     std::cout << v << '\n';
 #endif

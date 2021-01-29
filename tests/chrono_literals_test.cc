@@ -5,6 +5,10 @@
 #include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <vector>
+
+#include "cmdr11/cmdr_chrono.hh"
+
 
 void test_literals() {
     using namespace std::chrono_literals;
@@ -18,6 +22,33 @@ void test_literals() {
     std::chrono::milliseconds d2 = 1s;
     std::cout << "250ms = " << d1.count() << " milliseconds\n"
               << "1s = " << d2.count() << " milliseconds\n";
+
+    auto aa = std::vector<std::chrono::duration<long double, std::ratio<60>>>{
+            0.75min,
+            501ns,
+            730us,
+            233ms,
+            7s,
+            7.2s,
+            1024h,
+            89.843204843s,
+    };
+
+    static_assert(cmdr::chrono::is_duration<decltype(7.5min)>::value);
+    std::cout << 7.5min;
+
+    for (auto const &vxa : aa) {
+        std::cout << vxa << '\n';
+    }
+
+    std::cout << 918734032564785ns << "\n";
+    std::cout << "3. " << std::setprecision(3) << 918734032564785ns << "\n";
+    std::cout << std::setprecision(9) << 918734032564785ns << "\n";
+    std::cout << std::setprecision(0) << 918734032564785ns << "\n";
+    std::cout << std::setprecision(3) << 432034ms << "\n";
+    std::cout << 14h + 32min + 37s + 645ms << "\n";
+    std::cout << 86472s << "\n";
+    std::cout << 4324ms << "\n";
 
     // using namespace std::literals;
     // std::cout

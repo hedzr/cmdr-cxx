@@ -17,7 +17,6 @@
 namespace cmdr {
 
 
-    // template<class V = support_types>
     class app : public opt::cmd {
     private:
         app() = default;
@@ -39,7 +38,8 @@ namespace cmdr {
         if (s)               \
             _##mn = s;       \
         return (*this);      \
-    }
+    }                        \
+    const std::string &mn() const { return _##mn; }
 
         PROP_SET(name)
         PROP_SET(version)
@@ -51,8 +51,8 @@ namespace cmdr {
 
 #undef PROP_SET
 
-        [[nodiscard]] cmdr::opt::vars::store const &store() const { return _store; }
-        cmdr::opt::vars::store &store() { return _store; }
+        [[nodiscard]] auto const &store() const { return _store; }
+        auto &store() { return _store; }
 
     public:
         /**
@@ -84,7 +84,7 @@ namespace cmdr {
             }
         }
 
-        void print_usages(cmd *start = nullptr);
+        void print_usages(opt::cmd *start = nullptr);
 
     public:
         [[maybe_unused]] void dummy() {}
@@ -137,12 +137,12 @@ namespace cmdr {
             }
             [[nodiscard]] opt::cmd &last_matched_cmd() {
                 if (matched_commands.empty())
-                    return null_command();
+                    return opt::cmd::null_command();
                 return *matched_commands.back();
             }
             [[nodiscard]] opt::arg &last_matched_flg() {
                 if (matched_flags.empty())
-                    return null_arg();
+                    return opt::cmd::null_arg();
                 return *matched_flags.back();
             }
 
@@ -153,9 +153,9 @@ namespace cmdr {
             void add_remain_arg(std::string const &arg) { non_commands.push_back(arg); }
             [[nodiscard]] string_array const &remain_args() const { return non_commands; }
             auto &mc() { return matched_commands; }
-            void reverse_foreach_matched_commands(std::function<void(opt::details::cmd_pointers::value_type &it)> f) {
-                std::for_each(matched_commands.rbegin(), matched_commands.rend(), f);
-            }
+            // void reverse_foreach_matched_commands(std::function<void(opt::details::cmd_pointers<V>::value_type &it)> f) {
+            //     std::for_each(matched_commands.rbegin(), matched_commands.rend(), f);
+            // }
         };
         struct cmd_matching_result {
             bool matched{};
@@ -186,7 +186,7 @@ namespace cmdr {
         static arg_matching_result matching_short_flag(parsing_context &pc);
         static arg_matching_result matching_flag_on(parsing_context &pc,
                                                     bool is_long, bool is_special,
-                                                    std::function<opt::details::indexed_args const &(cmd *)> li);
+                                                    std::function<opt::details::indexed_args const &(opt::cmd *)> li);
 
         opt::Action unknown_command_found(parsing_context &pc, cmd_matching_result &cmr);
         opt::Action unknown_long_flag_found(parsing_context &pc, arg_matching_result &amr);
@@ -200,7 +200,7 @@ namespace cmdr {
         void prepare();
         int after_run(opt::Action rc, parsing_context &pc, int argc, char *argv[]);
         int internal_action(opt::Action rc, parsing_context &pc, int argc, char *argv[]);
-        int invoke_command(cmd &cc, string_array remain_args, parsing_context &pc);
+        int invoke_command(opt::cmd &cc, string_array remain_args, parsing_context &pc);
 
         static void handle_eptr(std::exception_ptr eptr) {
             try {
@@ -215,7 +215,7 @@ namespace cmdr {
         static void fatal_exit(const std::string &msg);
 
         void print_cmd(std::ostream &ss,
-                       cmdr::terminal::colors::colorize &c, cmd *cc,
+                       cmdr::terminal::colors::colorize &c, opt::cmd *cc,
                        std::string const &app_name, std::string const &exe_name);
 
         static int print_debug_info_screen(parsing_context &pc, int argc, char *argv[]);
@@ -223,10 +223,15 @@ namespace cmdr {
         int print_tree_screen(parsing_context &pc, int argc, char *argv[]);
 
     public:
-        app &operator+(const opt::arg &a) override;
-        app &operator+=(const opt::arg &a) override;
-        app &operator+(const opt::cmd &a) override;
-        app &operator+=(const opt::cmd &a) override;
+        // app &operator+(const opt::opt &a) override;
+        // app &operator+=(const opt::opt &a) override;
+        // app &operator+(const opt::subcmd &a) override;
+        // app &operator+=(const opt::subcmd &a) override;
+
+        // app &operator+(opt::arg const &a) override;
+        // app &operator+=(opt::arg const &a) override;
+        // app &operator+(opt::cmd const &a) override;
+        // app &operator+=(opt::cmd const &a) override;
 
     private:
         std::string _name;
@@ -239,7 +244,7 @@ namespace cmdr {
         // std::string _examples;
 
         //
-        cmdr::opt::vars::store _store;
+        cmdr::vars::store _store;
 
         // static colorize &colorizer() {...}
 

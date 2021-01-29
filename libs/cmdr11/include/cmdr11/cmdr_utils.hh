@@ -39,7 +39,7 @@
 namespace cmdr::util {
 
     //
-
+#if 0
     template<typename T>
     class Nullable {
     public:
@@ -93,8 +93,10 @@ namespace cmdr::util {
     private:
         T *_value{nullptr};
     }; // class Nullable<T>
+#endif
 
 
+#if 0
     template<class OS = std::ostream>
     class streamer_any {
     public:
@@ -160,6 +162,7 @@ namespace cmdr::util {
             any_visitors.insert(to_any_visitor<T>(f));
         }
     };
+#endif
 
 
     template<class Visitor>

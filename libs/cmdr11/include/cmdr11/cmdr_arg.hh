@@ -33,11 +33,14 @@ namespace cmdr::opt {
         std::string _examples;
         std::string _group;
         bool _hidden : 1;
+        bool _required : 1;
         bool _special : 1;
         bool _no_non_special : 1;
+
+        // These internal flags cannot be used for setter
+
         bool _hit_long : 1;
         bool _hit_special : 1;
-
         std::string _hit_title;
         int _hit_count;
 
@@ -48,6 +51,8 @@ namespace cmdr::opt {
         ~bas() override = default;
         bas(const bas &o) { _copy(o); }
         bas &operator=(const bas &o) {
+            if (this == &o)
+                return *this;
             _copy(o);
             return (*this);
         }
@@ -67,6 +72,7 @@ namespace cmdr::opt {
             __COPY(_examples);
             __COPY(_group);
             __COPY(_hidden);
+            __COPY(_required);
             __COPY(_special);
             __COPY(_no_non_special);
 
@@ -121,6 +127,7 @@ namespace cmdr::opt {
         // PROP_SET(description)
         PROP_SET(desc_long)
         PROP_SET4(hidden, bool)
+        PROP_SET4(required, bool)
         PROP_SET4(special, bool)
         PROP_SET4(no_non_special, bool)
 
@@ -267,7 +274,7 @@ namespace cmdr::opt {
     class arg : public bas {
     protected:
         // support_types _default;
-        vars::streamable_any _default;
+        vars::variable _default;
         string_array _env_vars;
         std::string _placeholder;
         std::string _toggle_group;
@@ -280,6 +287,8 @@ namespace cmdr::opt {
         arg(const arg &o)
             : bas(o) { _copy(o); }
         arg &operator=(const arg &o) {
+            if (this == &o)
+                return *this;
             _copy(o);
             return (*this);
         }
@@ -288,13 +297,13 @@ namespace cmdr::opt {
         arg(arg &&o) noexcept = default;
         template<typename A, typename... Args,
                  std::enable_if_t<
-                         std::is_constructible<vars::streamable_any, A, Args...>::value &&
+                         std::is_constructible<vars::variable, A, Args...>::value &&
                                  !std::is_same<std::decay_t<A>, arg>::value,
                          int> = 0>
         explicit arg(A &&a0, Args &&...args)
             : _default(std::forward<A>(a0), std::forward<Args>(args)...) {}
         template<typename A,
-                 std::enable_if_t<!std::is_same<std::decay_t<A>, vars::streamable_any>::value &&
+                 std::enable_if_t<!std::is_same<std::decay_t<A>, vars::variable>::value &&
                                           !std::is_same<std::decay_t<A>, arg>::value,
                                   int> = 0>
         explicit arg(A &&v)
@@ -341,28 +350,34 @@ namespace cmdr::opt {
         PROP_SET(placeholder)
         // PROP_SET(default)
 
-        PROP_SET3(on_flag_hit, details::on_flag_hit)
+        // PROP_SET3(on_flag_hit, auto)
 
 #undef PROP_SET
 #undef PROP_SET2
 #undef PROP_SET3
 
+        arg &on_flag_hit(details::on_flag_hit const &h) {
+            _on_flag_hit = h;
+            return (*this);
+        }
+        auto const &on_flag_hit() const { return _on_flag_hit; }
+
     public:
         [[nodiscard]] std::string title() const override {
             std::stringstream ss;
-            if (!_long.empty()) {
-                ss << '-' << '-' << _long;
+            if (!bas::_long.empty()) {
+                ss << '-' << '-' << bas::_long;
                 if (!_placeholder.empty()) {
                     ss << '=' << _placeholder;
                 }
             }
-            if (!_short.empty()) {
+            if (!bas::_short.empty()) {
                 if (ss.tellp() > 0)
                     ss << ',' << ' ';
-                ss << '-' << _short;
+                ss << '-' << bas::_short;
             }
             auto sp = " ";
-            for (auto &x : _aliases) {
+            for (auto &x : bas::_aliases) {
                 if (ss.tellp() > 0)
                     ss << ',' << sp, sp = "";
                 ss << '-' << '-' << x;
@@ -372,16 +387,16 @@ namespace cmdr::opt {
 
         [[nodiscard]] std::string descriptions() const override {
             std::stringstream ss;
-            ss << _description;
+            ss << bas::_description;
             return ss.str();
         }
 
         [[nodiscard]] std::string group_name() const override {
             std::stringstream ss;
-            if (_group.empty())
+            if (bas::_group.empty())
                 ss << _toggle_group;
             else
-                ss << _group;
+                ss << bas::_group;
             return ss.str();
         }
 
@@ -397,8 +412,8 @@ namespace cmdr::opt {
             // }
             return ss.str();
         }
-        [[nodiscard]] const vars::streamable_any &default_value() const { return _default; }
-        vars::streamable_any &default_value() { return _default; }
+        [[nodiscard]] const vars::variable &default_value() const { return _default; }
+        vars::variable &default_value() { return _default; }
 
         [[nodiscard]] virtual const std::string &toggle_group_name() const {
             return _toggle_group;
@@ -407,22 +422,22 @@ namespace cmdr::opt {
         [[nodiscard]] virtual bool is_toggleable() const { return !_toggle_group.empty(); }
 
     public:
-        arg &default_value(const vars::streamable_any &v) {
-            _default = v;
+        arg &default_value(const vars::variable &v) {
+            _default.emplace(v);
             return (*this);
         }
         arg &default_value(const_chars v) {
-            _default = std::string(v);
+            _default.emplace(std::string(v));
             return (*this);
         }
         template<class T>
         arg &default_value(T const &v) {
-            _default = v;
+            _default.template emplace(v);
             return (*this);
         }
         arg &toggle_group(const_chars s) {
             if (s) _toggle_group = s;
-            if (!_group.empty()) _group = _toggle_group;
+            if (!bas::_group.empty()) bas::_group = _toggle_group;
             return (*this);
         }
 

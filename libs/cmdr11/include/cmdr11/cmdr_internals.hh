@@ -10,11 +10,9 @@
 
 namespace cmdr {
 
-    class app;
-
     class app_holder final : public util::singleton<app_holder> {
     public:
-        explicit app_holder(token) { /*std::cout << "AppHolder constructed" << std::endl;*/
+        explicit app_holder(typename util::singleton<app_holder>::token) { /*std::cout << "AppHolder constructed" << std::endl;*/
         }
         ~app_holder() = default;
 
@@ -36,7 +34,7 @@ namespace cmdr {
     };
 
     inline app &get_app() { return *app_holder::instance().get_ptr(); }
-    inline auto &get_store() { return app_holder::instance().get_ptr()->store(); }
+    inline auto &get_store() { return get_app().store(); }
 
     inline app cli(const_chars name, const_chars version,
                    const_chars author = nullptr, const_chars copyright = nullptr,

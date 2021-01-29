@@ -10,6 +10,7 @@
 
 
 #include <any>
+#include <array>
 #include <cassert>
 #include <chrono>
 #include <iomanip>
@@ -36,7 +37,10 @@ namespace cmdr {
     // old cmdr,
     using support_types = std::variant<std::monostate,
                                        bool, char,
-                                       int, uint, int8_t, int16_t, int32_t, int64_t, uint8_t, uint16_t, uint32_t, uint64_t,
+                                       int, uint, int8_t, int16_t,
+                                       //int32_t, int64_t,
+                                       uint8_t, uint16_t,
+                                       //uint32_t, uint64_t,
                                        long, long long, u_long, unsigned long long,
                                        float, double,
                                        std::chrono::nanoseconds,
@@ -54,6 +58,9 @@ namespace cmdr {
                                        // std::chrono::time_zone,
                                        std::chrono::system_clock,
 #endif
+                                       std::byte,
+                                       std::vector<std::string>,
+                                       const char *,
                                        std::string>;
 
 #if 0

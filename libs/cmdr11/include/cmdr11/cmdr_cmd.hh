@@ -12,15 +12,10 @@
 
 namespace cmdr::opt {
 
-    // class subcmd;
-    template<class T>
-    class opt;
-
 
     /**
      * @brief A command or sub-command
      */
-    // template<class V = support_types>
     class cmd : public bas {
     protected:
         friend class cmdr::app;
@@ -51,6 +46,8 @@ namespace cmdr::opt {
         cmd(const cmd &o)
             : bas(o) { _copy(o); }
         cmd &operator=(const cmd &o) {
+            if (this == &o)
+                return *this;
             _copy(o);
             return (*this);
         }
@@ -134,12 +131,10 @@ namespace cmdr::opt {
         // friend cmd &operator+(cmd &lhs, const opts::opt_base &rhs);
         // friend cmd &operator+=(cmd &lhs, const opts::opt_base &rhs);
 
-        friend cmd &operator+(cmd &lhs, const opts::cmd_base &rhs);
-        friend cmd &operator+=(cmd &lhs, const opts::cmd_base &rhs);
-        template<class T>
-        friend cmd &operator+(cmd &lhs, const opt<T> &rhs);
-        template<class T>
-        friend cmd &operator+=(cmd &lhs, const opt<T> &rhs);
+        friend cmd &operator+(cmd &lhs, const sub_cmd &rhs);
+        friend cmd &operator+=(cmd &lhs, const sub_cmd &rhs);
+        friend cmd &operator+(cmd &lhs, const opt &rhs);
+        friend cmd &operator+=(cmd &lhs, const opt &rhs);
 
         /**
          * @brief return the matched arg/flag object or null_arg if not found.

@@ -51,20 +51,20 @@ void add_test_menu(cmdr::app &cli) {
     {
         auto &t1 = *cli.last_added_command();
 
-        t1 += opt{10}("retry", "r")
-                      .description("set the retry times");
-        t1 += opt{9}("retry1", "r1")
-                      .description("set the retry times");
-        t1 += opt{}("arch", "a")
+        t1 += opt{10}("int", "i")
+                      .description("set the int-value");
+        t1 += opt{""}("string", "str")
+                      .description("set the string-value");
+        t1 += opt{}("b-arch", "a")
                       .description("flag a");
-        t1 += opt{}("bech", "b")
+        t1 += opt{}("b-bech", "b")
                       .description("flag b");
-        t1 += opt{}("coach", "c")
+        t1 += opt{}("b-coach", "c")
                       .description("flag c");
-        t1 += opt{}("dent", "d")
+        t1 += opt{}("b-dent", "d")
                       .description("flag d");
-        t1 += opt{}("etch", "e")
-                      .description("flag e");
+        t1 += opt{std::vector{"a"}}("array", "e")
+                      .description("flag array");
 
         using namespace std::complex_literals;
 
@@ -192,12 +192,14 @@ int main(int argc, char *argv[]) {
         assert(cc("start").valid());
         assert(cc("run", true).valid());
 #endif
-        
+
+#if 0
         cli.on_command_not_hooked([](cmdr::opt::cmd const &, string_array const &) {
             cmdr::get_store().dump_full_keys(std::cout);
             cmdr::get_store().dump_tree(std::cout);
             return 0;
         });
+#endif
         
         return cli.run(argc, argv);
 

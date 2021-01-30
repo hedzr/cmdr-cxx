@@ -31,8 +31,10 @@
 
 #include "cmdr_chrono.hh"
 #include "cmdr_defs.hh"
+#include "cmdr_string.hh"
 #include "cmdr_terminal.hh"
 #include "cmdr_types.hh"
+#include "cmdr_types_check.hh"
 
 
 namespace cmdr::vars {
@@ -49,6 +51,23 @@ namespace cmdr::vars {
                             g(os);
                         else
                             g(os, std::any_cast<T const &>(a));
+                    }};
+        }
+        template<class T, class F>
+        inline std::pair<const std::type_index, std::function<void(std::istream &is, std::any &)>>
+        from_any_visitor(F const &f) {
+            return {
+                    std::type_index(typeid(T)),
+                    [g = f](std::istream &is, std::any &a) {
+                        if constexpr (std::is_void_v<T>) {
+                            g(is);
+                        } else if constexpr (std::is_same_v<typename lambda_func_type<decltype(g)>::type, void(std::istream &, std::any &) const>) {
+                            g(is, a);
+                        } else {
+                            T t;
+                            g(is, t);
+                            a.template emplace<T>(t);
+                        }
                     }};
         }
     } // namespace details
@@ -88,6 +107,12 @@ namespace cmdr::vars {
             : _value(std::move(a)) {}
         virtual ~variable() = default;
 
+        template<typename T>
+        variable &operator=(T const &o) {
+            _value = o;
+            return (*this);
+        }
+
         // variable& operator=(const variable& o){
         //     (*this)._value.swap(o.value_any());
         // }
@@ -118,6 +143,10 @@ namespace cmdr::vars {
         void reset() { _value.reset(); }
         [[nodiscard]] const std::type_info &type() const noexcept { return _value.type(); }
 
+    public:
+        static self_type parse(std::string &s);
+
+    protected:
         template<class T>
         static void format_array(std::ostream &os, std::vector<T> const &o) {
             int i = 0;
@@ -157,7 +186,123 @@ namespace cmdr::vars {
             }
         }
 
+        template<class T>
+        static bool parse_complex(std::istream &is, std::complex<T> &a) {
+            bool ok;
+            std::string s;
+            ok = string::read_until(is, s, "+");
+            {
+                std::stringstream ss(s);
+                T t;
+                ss >> t;
+                a.real(t);
+            }
+            if (ok) {
+                ok = string::read_until(is, s, "i");
+                std::stringstream ss(s);
+                T t;
+                ss >> t;
+                a.imag(t);
+            }
+            return true;
+        }
+
+        template<class T>
+        static bool parse_array(std::istream &is, std::vector<T> &a) {
+            bool ok;
+            char ch;
+            std::string s;
+            is >> ch;
+            if (ch != '[') s += ch;
+            while ((ok = string::read_until(is, s, ","))) {
+                std::stringstream ss(s);
+                T t;
+                ss >> t;
+                a.push_back(t);
+            }
+
+            std::getline(is, s);
+            s = string::strip(s, "", "]");
+            T t;
+            std::stringstream ss(s);
+            ss >> t;
+            a.push_back(t);
+            return true;
+        }
+
+        static bool parse_void(std::istream &is) {
+            std::string tmp;
+            if (is.peek() == '{') {
+                string::read_until(is, "{}");
+            }
+            return true;
+        }
+
     private:
+        typedef std::unordered_map<std::type_index, std::function<void(std::istream &is, std::any &)>> I;
+        static I &any_parsers() {
+            static I _registry{
+                    details::from_any_visitor<void>([](std::istream &is) { parse_void(is); }),
+                    details::from_any_visitor<bool>([](std::istream &is, bool &x) { is >> std::boolalpha >> x; }),
+                    details::from_any_visitor<int>([](std::istream &is, int &x) { is >> x; }),
+                    details::from_any_visitor<int8_t>([](std::istream &is, int8_t &x) { is >> x; }),
+                    details::from_any_visitor<int16_t>([](std::istream &is, int16_t &x) { is >> x; }),
+                    details::from_any_visitor<int32_t>([](std::istream &is, int32_t &x) { is >> x; }),
+                    details::from_any_visitor<int64_t>([](std::istream &is, int64_t &x) { is >> x; }),
+                    details::from_any_visitor<unsigned>([](std::istream &is, unsigned &x) { is >> x; }),
+                    details::from_any_visitor<uint8_t>([](std::istream &is, uint8_t &x) { is >> x; }),
+                    details::from_any_visitor<uint16_t>([](std::istream &is, uint16_t &x) { is >> x; }),
+                    details::from_any_visitor<uint32_t>([](std::istream &is, uint32_t &x) { is >> x; }),
+                    details::from_any_visitor<uint64_t>([](std::istream &is, uint64_t &x) { is >> x; }),
+                    details::from_any_visitor<long>([](std::istream &is, long &x) { is >> x; }),
+                    details::from_any_visitor<unsigned long>([](std::istream &is, unsigned long &x) { is >> x; }),
+                    details::from_any_visitor<long long>([](std::istream &is, long long &x) { is >> x; }),
+                    details::from_any_visitor<unsigned long long>([](std::istream &is, unsigned long long &x) { is >> x; }),
+                    details::from_any_visitor<float>([](std::istream &is, float &x) { is >> x; }),
+                    details::from_any_visitor<double>([](std::istream &is, double &x) { is >> x; }),
+                    details::from_any_visitor<long double>([](std::istream &is, long double &x) { is >> x; }),
+                    details::from_any_visitor<char const *>([](std::istream &is, std::any &a) { std::string s; string::strip_quotes(is, s); a=s; }),
+                    details::from_any_visitor<std::string>([](std::istream &is, std::string &s) { string::strip_quotes(is, s); }),
+
+                    details::from_any_visitor<std::vector<char const *>>([](std::istream &is, std::any &a) { std::vector<std::string> vec; parse_array(is, vec);a=vec; }),
+                    details::from_any_visitor<std::vector<std::string>>([](std::istream &is, std::vector<std::string> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<bool>>([](std::istream &is, std::vector<bool> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<int>>([](std::istream &is, std::vector<int> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<int8_t>>([](std::istream &is, std::vector<int8_t> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<int16_t>>([](std::istream &is, std::vector<int16_t> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<int32_t>>([](std::istream &is, std::vector<int32_t> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<int64_t>>([](std::istream &is, std::vector<int64_t> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<unsigned>>([](std::istream &is, std::vector<unsigned> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<uint8_t>>([](std::istream &is, std::vector<uint8_t> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<uint16_t>>([](std::istream &is, std::vector<uint16_t> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<uint32_t>>([](std::istream &is, std::vector<uint32_t> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<uint64_t>>([](std::istream &is, std::vector<uint64_t> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<long>>([](std::istream &is, std::vector<long> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<unsigned long>>([](std::istream &is, std::vector<unsigned long> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<long long>>([](std::istream &is, std::vector<long long> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<unsigned long long>>([](std::istream &is, std::vector<unsigned long long> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<float>>([](std::istream &is, std::vector<float> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<double>>([](std::istream &is, std::vector<double> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<long double>>([](std::istream &is, std::vector<long double> &a) { parse_array(is, a); }),
+
+                    details::from_any_visitor<std::complex<float>>([](std::istream &is, std::complex<float> &a) { parse_complex(is, a); }),
+                    details::from_any_visitor<std::complex<double>>([](std::istream &is, std::complex<double> &a) { parse_complex(is, a); }),
+                    details::from_any_visitor<std::complex<long double>>([](std::istream &is, std::complex<long double> &a) { parse_complex(is, a); }),
+
+                    details::from_any_visitor<std::chrono::nanoseconds>([](std::istream &is, std::chrono::nanoseconds &x) { cmdr::chrono::parse_duration(is, x); }),
+                    details::from_any_visitor<std::chrono::microseconds>([](std::istream &is, std::chrono::microseconds &x) { cmdr::chrono::parse_duration(is, x); }),
+                    details::from_any_visitor<std::chrono::milliseconds>([](std::istream &is, std::chrono::milliseconds &x) { cmdr::chrono::parse_duration(is, x); }),
+                    details::from_any_visitor<std::chrono::seconds>([](std::istream &is, std::chrono::seconds &x) { cmdr::chrono::parse_duration(is, x); }),
+                    details::from_any_visitor<std::chrono::minutes>([](std::istream &is, std::chrono::minutes &x) { cmdr::chrono::parse_duration(is, x); }),
+                    details::from_any_visitor<std::chrono::hours>([](std::istream &is, std::chrono::hours &x) { cmdr::chrono::parse_duration(is, x); }),
+                    details::from_any_visitor<std::chrono::duration<long double, std::ratio<1>>>([](std::istream &is, std::chrono::duration<long double, std::ratio<1>> &x) { cmdr::chrono::parse_duration(is, x); }),
+                    details::from_any_visitor<std::chrono::duration<long double, std::ratio<60>>>([](std::istream &is, std::chrono::duration<long double, std::ratio<60>> &x) { cmdr::chrono::parse_duration(is, x); }),
+                    details::from_any_visitor<std::chrono::duration<double, std::ratio<60>>>([](std::istream &is, std::chrono::duration<double, std::ratio<60>> &x) { cmdr::chrono::parse_duration(is, x); }),
+                    details::from_any_visitor<std::chrono::duration<float, std::ratio<60>>>([](std::istream &is, std::chrono::duration<float, std::ratio<60>> &x) { cmdr::chrono::parse_duration(is, x); }),
+                    details::from_any_visitor<std::chrono::duration<float, std::ratio<1>>>([](std::istream &is, std::chrono::duration<float, std::ratio<1>> &x) { cmdr::chrono::parse_duration(is, x); }),
+            };
+            return _registry;
+        }
         typedef std::unordered_map<std::type_index, std::function<void(std::ostream &os, std::any const &)>> R;
         static R &any_visitors() {
             static R _registry{
@@ -224,25 +369,39 @@ namespace cmdr::vars {
             return _registry;
         }
 
-        inline void process(std::ostream &os, const std::any &a) const {
-            if (const auto it = any_visitors().find(std::type_index(a.type()));
-                it != any_visitors().cend()) {
+        inline void process(std::istream &is, std::any &a) const {
+            auto &reg = any_parsers();
+            if (const auto it = reg.find(std::type_index(a.type()));
+                it != reg.cend()) {
+                it->second(is, a);
+            } else {
+                std::cout << "Unregistered type for parsing " << std::quoted(a.type().name());
+            }
+        }
+        inline void process(std::ostream &os, std::any const &a) const {
+            auto &reg = any_visitors();
+            if (const auto it = reg.find(std::type_index(a.type()));
+                it != reg.cend()) {
                 it->second(os, a);
             } else {
-                std::cout << "Unregistered type " << std::quoted(a.type().name());
+                std::cout << "Unregistered type for visiting " << std::quoted(a.type().name());
             }
         }
 
         template<class T, class F>
-        inline void register_any_visitor(F const &f) {
+        inline void register_visitor(F const &f) {
             std::cout << "Register visitor for type "
                       << std::quoted(typeid(T).name()) << '\n';
             any_visitors().insert(details::to_any_visitor<T>(f));
         }
 
-        friend std::ostream &operator<<(std::ostream &os, variable const &a) {
-            a.process(os, a._value);
+        friend std::ostream &operator<<(std::ostream &os, variable const &o) {
+            o.process(os, o._value);
             return os;
+        }
+        friend std::istream &operator>>(std::istream &is, variable &o) {
+            o.process(is, o._value);
+            return is;
         }
 
     private:
@@ -550,7 +709,7 @@ namespace cmdr::vars {
 #if 0
     struct streamable_any : std::any {
         void (*streamer)(std::ostream &, streamable_any const &); //= nullptr;
-        friend std::ostream &operator<<(std::ostream &os, streamable_any const &a) {
+        friend std::ostream &operator<<(std::istream &is, streamable_any const &a) {
             a.streamer(os, a);
             return os;
         }
@@ -574,7 +733,7 @@ namespace cmdr::vars {
                          !std::is_same<std::decay_t<T>, streamable_any>{}>::type * = nullptr>
         explicit streamable_any(T &&t)
             : std::any(std::forward<T>(t))
-            , streamer([](std::ostream &os, streamable_any const &self) {
+            , streamer([](std::istream &is, streamable_any const &self) {
                 static_assert(!is_duration<std::decay_t<T>>::value);
                 static_assert(!is_stl_container<T>::value);
                 static_assert(!std::is_same<std::decay_t<T>, streamable_any>{});
@@ -595,19 +754,19 @@ namespace cmdr::vars {
             }) {}
 
         // template<class T, std::enable_if_t<!is_duration<T>::value, int> = 0>
-        // static void _format(std::ostream &os, T const &v) {
+        // static void _format(std::istream &is, T const &v) {
         //     os << v;
         // }
         // template<class T>
         // static void _format<T,
-        //                     std::enable_if_t<is_duration<T>::value, int>>(std::ostream &os, T const &v) {
+        //                     std::enable_if_t<is_duration<T>::value, int>>(std::istream &is, T const &v) {
         //     format_duration(os, v);
         // }
 
         template<class U>
         explicit streamable_any(U &&t, typename std::enable_if<is_duration<std::decay_t<U>>::value>::type * = nullptr)
             : std::any(std::forward<U>(t))
-            , streamer([](std::ostream &os, streamable_any const &self) {
+            , streamer([](std::istream &is, streamable_any const &self) {
                 static_assert(is_duration<std::decay_t<U>>::value);
                 // os << "[**duration**] ";
                 chrono::format_duration(os, std::any_cast<std::decay_t<U>>(self));
@@ -616,7 +775,7 @@ namespace cmdr::vars {
         template<class V>
         explicit streamable_any(V &&t, typename std::enable_if<is_stl_container<std::decay_t<V>>::value>::type * = nullptr)
             : std::any(std::forward<V>(t))
-            , streamer([](std::ostream &os, streamable_any const &self) {
+            , streamer([](std::istream &is, streamable_any const &self) {
                 os << '[';
                 for (auto const v : std::any_cast<std::decay_t<V>>(self)) {
                     os << v << ',';
@@ -627,7 +786,7 @@ namespace cmdr::vars {
         // specialize for bool streaming output
         explicit streamable_any(bool t)
             : std::any(std::forward<bool>(t))
-            , streamer([](std::ostream &os, streamable_any const &self) {
+            , streamer([](std::istream &is, streamable_any const &self) {
                 os << (std::any_cast<std::decay_t<bool>>(self) ? "true" : "false");
             }) {}
 
@@ -825,7 +984,7 @@ namespace cmdr::vars {
         struct map_streamer {
             std::ostream &_os;
 
-            explicit map_streamer(std::ostream &os)
+            explicit map_streamer(std::istream &is)
                 : _os(os) {}
 
             template<class K, class V>
@@ -836,7 +995,7 @@ namespace cmdr::vars {
         };
 
         template<class K, class V, class Comp = std::less<K>>
-        inline void print_sorted(std::ostream &os, std::unordered_map<K, V> const &um, Comp pred = Comp()) const {
+        inline void print_sorted(std::istream &is, std::unordered_map<K, V> const &um, Comp pred = Comp()) const {
             std::map<K, V> m(um.begin(), um.end(), pred);
             std::for_each(m.begin(), m.end(), map_streamer(os));
         }
@@ -846,7 +1005,7 @@ namespace cmdr::vars {
         //     print_sorted(um, std::less<K>());
         // }
 
-        void dump_full_keys(std::ostream &os, const_chars leading_title = nullptr) const {
+        void dump_full_keys(std::istream &is, const_chars leading_title = nullptr) const {
             if (leading_title) os << leading_title;
             else
                 os << "Dumping for var_t ...";
@@ -866,7 +1025,7 @@ namespace cmdr::vars {
         }
 
         // template<class K, class V, class Comp = std::less<K>>
-        void dump_tree(std::ostream &os, const_chars leading_title = nullptr) const {
+        void dump_tree(std::istream &is, const_chars leading_title = nullptr) const {
             if (leading_title) os << leading_title;
             else
                 os << "Dumping for var_t as Tree ...";
@@ -877,7 +1036,7 @@ namespace cmdr::vars {
 
     private:
         template<class K, class V>
-        void dump_tree(std::ostream &os, std::unordered_map<K, V> const &um, int level) const {
+        void dump_tree(std::istream &is, std::unordered_map<K, V> const &um, int level) const {
             for (auto const &[k, v] : um) {
                 for (int i = 0; i < level; i++)
                     os << "  ";
@@ -899,7 +1058,7 @@ namespace cmdr::vars {
         const holderT &value() const { return _value; }
 
         template<class T>
-        void format(std::ostream &os, T const &val) {
+        void format(std::istream &is, T const &val) {
             os << val;
         }
 
@@ -970,7 +1129,7 @@ namespace cmdr::vars {
         const var_type &root() const { return _root; }
 
         template<class T>
-        void format(std::ostream &os, T const &v) const {
+        void format(std::istream &is, T const &v) const {
             os << v;
         }
 

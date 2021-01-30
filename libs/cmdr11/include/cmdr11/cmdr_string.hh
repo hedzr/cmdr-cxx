@@ -292,6 +292,96 @@ namespace cmdr::string {
         return false;
     }
 
+    inline std::string wrap(const std::string &str, char pre = '[', char post = ']') {
+        std::stringstream ss;
+        ss << pre << str << post;
+        return ss.str();
+    }
+
+    inline std::string wrap(const std::string &str, char const *pre = "[", char const *post = "]") {
+        std::stringstream ss;
+        ss << pre << str << post;
+        return ss.str();
+    }
+
+    inline std::string wrap(const std::string &str, std::string const &pre, std::string const &post) {
+        std::stringstream ss;
+        ss << pre << str << post;
+        return ss.str();
+    }
+
+    inline std::string quoted(const std::string &str) {
+        return wrap(str, '"', '"');
+    }
+
+    inline std::string strip(const std::string &str, char const *pre, char const *post) {
+        std::size_t p1 = 0, p2 = str.length();
+        if (has_prefix(str, pre))
+            p1 = std::strlen(pre);
+        if (has_suffix(str, post))
+            p2 -= std::strlen(post);
+        return str.substr(p1, p2 - p1);
+    }
+
+    inline std::string strip_quotes(const std::string &str) {
+        std::size_t p1 = 0, p2 = str.length() - 1;
+        while (str[p1] == '"' || str[p1] == '\'') p1++;
+        while (str[p2] == '"' || str[p2] == '\'') p2--;
+        if (p2 < p1) p2 = p1;
+        return str.substr(p1, p2);
+    }
+
+    std::string read_until(std::istream &in, char delimiter = ',');
+
+    inline void strip_quotes(std::istream &is, std::string &s) {
+        auto ch = is.peek();
+        if (ch == '\'' || ch == '"') {
+            char c;
+            is >> c;
+            s = read_until(is, ch);
+        }
+    }
+
+    inline std::string read_until(std::istream &in, char delimiter) {
+        std::string cr;
+        size_t sz = 1, tot;
+        do {
+            std::string temp;
+            std::getline(in, temp, delimiter);
+            cr += temp + delimiter;
+            tot = cr.size();
+        } while ((tot < sz) || (cr.at(tot - sz) != delimiter));
+        return cr.substr(0, tot - sz); // or return cr; if you want to keep the delimiter
+    }
+
+    inline std::string read_until(std::istream &in, char const *delimiter = ",") {
+        std::string cr;
+        char delim = *delimiter;
+        size_t sz = std::strlen(delimiter), tot;
+        do {
+            std::string temp;
+            std::getline(in, temp, delim);
+            cr += temp + delim;
+            tot = cr.size();
+        } while ((tot < sz) || (cr.substr(tot - sz, sz) != delimiter));
+        return cr.substr(0, tot - sz); // or return cr; if you want to keep the delimiter
+    }
+
+    inline bool read_until(std::istream &in, std::string &ret, char const *delimiter = ",") {
+        std::string cr;
+        char delim = *delimiter;
+        size_t sz = std::strlen(delimiter), tot;
+        do {
+            std::string temp;
+            if (!std::getline(in, temp, delim))
+                return false;
+            cr += temp + delim;
+            tot = cr.size();
+        } while ((tot < sz) || (cr.substr(tot - sz, sz) != delimiter));
+        ret = cr.substr(0, tot - sz); // or return cr; if you want to keep the delimiter
+        return true;
+    }
+
 
     namespace conv {
 

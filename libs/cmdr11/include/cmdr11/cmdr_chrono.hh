@@ -16,6 +16,32 @@
 namespace cmdr::chrono {
 
 
+    template<typename T, typename _ = void>
+    struct is_duration : std::false_type {};
+
+    template<typename... Ts>
+    struct is_duration_helper {};
+
+    template<typename T>
+    struct is_duration<
+            T,
+            std::conditional_t<
+                    false,
+                    is_duration_helper<
+                            typename T::rep,
+                            typename T::period,
+                            decltype(std::declval<T>().count()),
+                            decltype(std::declval<T>().zero()),
+                            decltype(std::declval<T>().min()),
+                            decltype(std::declval<T>().max())>,
+                    void>> : public std::true_type {};
+
+
+    //
+    //
+    //
+
+
     template<class... Durations, class DurationIn>
     std::tuple<Durations...> break_down_durations(DurationIn d) {
         std::tuple<Durations...> retval;
@@ -161,25 +187,14 @@ namespace cmdr::chrono {
     }
 
 
-    template<typename T, typename _ = void>
-    struct is_duration : std::false_type {};
+    template<class Duration,
+             std::enable_if_t<is_duration<Duration>::value, bool> = true>
+    static bool parse_duration(std::istream &is, Duration &d) {
+        (void)(is);
+        (void)(d);
+        return true;
+    }
 
-    template<typename... Ts>
-    struct is_duration_helper {};
-
-    template<typename T>
-    struct is_duration<
-            T,
-            std::conditional_t<
-                    false,
-                    is_duration_helper<
-                            typename T::rep,
-                            typename T::period,
-                            decltype(std::declval<T>().count()),
-                            decltype(std::declval<T>().zero()),
-                            decltype(std::declval<T>().min()),
-                            decltype(std::declval<T>().max())>,
-                    void>> : public std::true_type {};
 
 } // namespace cmdr::chrono
 

@@ -127,6 +127,8 @@ namespace cmdr {
             string_array unknown_flags{};
             string_array unknown_commands{};
             string_array non_commands{};
+            typedef std::unordered_map<opt::arg *, vars::variable> val_map;
+            val_map _values_map;
 
         public:
             [[nodiscard]] opt::cmd &curr_command() {
@@ -147,6 +149,10 @@ namespace cmdr {
 
             void add_matched_cmd(opt::cmd *obj) { matched_commands.push_back(obj); }
             void add_matched_arg(opt::arg *obj) { matched_flags.push_back(obj); }
+            void add_matched_arg(opt::arg *obj, vars::variable const &v) {
+                matched_flags.push_back(obj);
+                _values_map.emplace(std::make_pair(obj, v));
+            }
             void add_unknown_cmd(std::string const &obj) { unknown_commands.push_back(obj); }
             void add_unknown_arg(std::string const &obj) { unknown_flags.push_back(obj); }
             void add_remain_arg(std::string const &arg) { non_commands.push_back(arg); }

@@ -361,7 +361,7 @@ namespace cmdr::opt {
             _on_flag_hit = h;
             return (*this);
         }
-        auto const &on_flag_hit() const { return _on_flag_hit; }
+        [[nodiscard]] auto const &on_flag_hit() const { return _on_flag_hit; }
 
     public:
         [[nodiscard]] std::string title() const override {
@@ -449,6 +449,10 @@ namespace cmdr::opt {
         }
         [[nodiscard]] const string_array &env_vars_get() const { return _env_vars; }
 
+    public:
+        // static vars::variable parse(std::string& s){
+        //     _default.parse(s);
+        // }
     }; // class arg
 
 } // namespace cmdr::opt

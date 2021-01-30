@@ -176,10 +176,14 @@ void test_types() {
 }
 
 void test_variable() {
-    using namespace std::chrono_literals;
-    using namespace cmdr::vars;
-
+    // using namespace std::chrono_literals;
+    // using namespace cmdr::vars;
     //
+    // variable v;
+    // std::stringstream ss("false");
+    // ss >> v;
+    //
+    // std::cout << v << '\n';
 }
 
 #include <climits>
@@ -238,14 +242,43 @@ void test_fold() {
     static_assert(fold::bswap<std::uint64_t>(0x0123456789abcdefULL) == 0xefcdab8967452301ULL);
 }
 
+// https://stackoverflow.com/a/7943736/6375060
+void main_lambda_compare() {
+    auto l = [](int i) { return long(i); };
+    typedef cmdr::lambda_func_type<decltype(l)>::type T;
+    static_assert(std::is_same<T, long(int) const>::value, "ok");
+}
+
 void test_variant() {
     // cmdr::support_types v1(std::vector{"example", "no body"});
     // (void) v1;
+
+    using namespace std::chrono_literals;
+    using namespace cmdr::vars;
+
+    std::cout << '\n'
+              << "variable testing...." << '\n';
+
+    variable v(true);
+    std::stringstream ss("false");
+    ss >> v;
+    std::cout << v << '\n';
+
+    v = "";
+    ss << "string is ok";
+    ss >> v;
+    std::cout << v << '\n';
+
+    auto g = [](std::istream &, std::any &) {};
+    std::cout << typeid(g).name() << '\n';
+    std::cout << cmdr::type_name<decltype(g)>() << '\n';
+    if constexpr (std::is_same_v<cmdr::lambda_func_type<decltype(g)>::type, void(std::istream &, std::any &) const>) {
+        std::cout << "matched!\n";
+    }
 }
 
 int main() {
     std::cout << std::boolalpha;
-
 
     X x1{1};
     X x2{(int16_t) 2};

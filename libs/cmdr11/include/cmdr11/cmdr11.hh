@@ -61,6 +61,7 @@
 #include "cmdr_app_inl.h"
 #include "cmdr_cmd_inl.h"
 #include "cmdr_impl.hh"
+#include "cmdr_imp1.hh" // vars / variable / parse
 #include "cmdr_internals.hh"
 
 #include "cmdr_opts.hh"

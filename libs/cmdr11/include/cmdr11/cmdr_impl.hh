@@ -72,6 +72,8 @@ namespace cmdr {
         pc.title = pc.title.substr(2);
         auto amr = matching_special_flag(pc);
         if (amr.matched) {
+            assert(amr.obj);
+
             amr.obj->hit_title(pc.title.c_str());
             pc.add_matched_arg(amr.obj);
             if (amr.obj->on_flag_hit()) {
@@ -98,8 +100,26 @@ namespace cmdr {
         pc.title = pc.title.substr(2);
         auto amr = matching_long_flag(pc);
         if (amr.matched) {
+            assert(amr.obj);
+
+            if (auto &typ = amr.obj->default_value().type();
+                typ != typeid(bool) && typ != typeid(void)) {
+                // try solving the following input as value of this matched arg.
+                auto remains = pc.title.substr(amr.matched_length);
+                if (remains[0] == '=') {
+                    remains = remains.substr(1);
+                }
+                remains = string::strip_quotes(remains);
+                if (remains.empty() && pc.index + 1 < argc)
+                    remains = argv[++pc.index];
+                std::stringstream sst(remains);
+                vars::variable val;
+                sst >> val;
+                pc.add_matched_arg(amr.obj, val);
+            } else
+                pc.add_matched_arg(amr.obj);
+
             amr.obj->hit_title(pc.title.c_str());
-            pc.add_matched_arg(amr.obj);
             if (amr.obj->on_flag_hit()) {
                 auto rc = amr.obj->on_flag_hit()(
                         pc.last_matched_cmd(),
@@ -126,6 +146,8 @@ namespace cmdr {
     next_combined:
         auto amr = matching_short_flag(pc);
         if (amr.matched) {
+            assert(amr.obj);
+
             std::cout << "! " << amr.matched_str << std::endl;
             amr.obj->hit_title(amr.matched_str.c_str());
             pc.add_matched_arg(amr.obj);
@@ -414,7 +436,7 @@ namespace cmdr {
         pc.add_matched_cmd(this);
         opt::Action rc;
 
-        for (int i = 1; i < argc; i++) {
+        for (int i = 1; i < argc; i = pc.index + 1) {
             pc.title = argv[i];
             pc.index = i;
             pc.pos = 0;

@@ -327,8 +327,8 @@ namespace cmdr::string {
         std::size_t p1 = 0, p2 = str.length() - 1;
         while (str[p1] == '"' || str[p1] == '\'') p1++;
         while (str[p2] == '"' || str[p2] == '\'') p2--;
-        if (p2 < p1) p2 = p1;
-        return str.substr(p1, p2);
+        if (p2 + 1 < p1) p2 = p1 - 1;
+        return str.substr(p1, p2 + 1);
     }
 
     std::string read_until(std::istream &in, char delimiter = ',');
@@ -339,7 +339,8 @@ namespace cmdr::string {
             char c;
             is >> c;
             s = read_until(is, ch);
-        }
+        } else
+            is >> s;
     }
 
     inline std::string read_until(std::istream &in, char delimiter) {

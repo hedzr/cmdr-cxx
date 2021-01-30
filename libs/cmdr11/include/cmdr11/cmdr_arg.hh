@@ -139,6 +139,8 @@ namespace cmdr::opt {
         bas &owner(cmd *o);
         cmd const *owner() const;
         cmd *owner();
+        cmd const *root() const;
+        cmd *root();
         std::string dotted_key() const;
 
 #undef PROP_SET

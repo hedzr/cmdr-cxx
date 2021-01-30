@@ -19,6 +19,8 @@ namespace cmdr {
     namespace details {
         using on_arg_added = std::function<void(opt::arg*)>;
         using on_cmd_added = std::function<void(opt::cmd*)>;
+        using on_arg_matched = std::function<void(opt::arg*)>;
+        using on_cmd_matched = std::function<void(opt::cmd*)>;
     }
 }; // namespace cmdr
 

@@ -54,6 +54,10 @@ namespace cmdr {
         register_actions();
         add_global_options(*this);
         add_generator_menu(*this);
+        _on_command_not_hooked = [](opt::cmd const &c, string_array const &remain_args) {
+            std::cout << "INVOKING: " << std::quoted(c.title()) << ", remains: " << string::join(remain_args, ',') << ".\n";
+            return 0;
+        };
     }
 
     inline void app::register_actions() {
@@ -311,6 +315,12 @@ namespace cmdr {
                                return opt::RequestDebugInfoScreen;
                            return opt::OK;
                        });
+
+        cli += cmdr::opt::opt{}("short")
+                       .description("enable shorter ~~debug")
+                       .special()
+                       .no_non_special()
+                       .group(SYS_MGMT_GROUP);
 
         cli += cmdr::opt::opt{}("trace", "tr", "trace-mode")
                        .description("enable tracing mode for developer perspective")

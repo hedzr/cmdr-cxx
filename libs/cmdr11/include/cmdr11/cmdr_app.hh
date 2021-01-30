@@ -123,7 +123,7 @@ namespace cmdr {
 
         private:
             opt::details::arg_pointers matched_flags{};
-            opt::details::cmd_pointers matched_commands{};
+            opt::details::cmd_pointers _matched_commands{};
             string_array unknown_flags{};
             string_array unknown_commands{};
             string_array non_commands{};
@@ -132,14 +132,14 @@ namespace cmdr {
 
         public:
             [[nodiscard]] opt::cmd &curr_command() {
-                if (matched_commands.empty())
+                if (_matched_commands.empty())
                     return *_root;
-                return *matched_commands.back();
+                return *_matched_commands.back();
             }
             [[nodiscard]] opt::cmd &last_matched_cmd() {
-                if (matched_commands.empty())
+                if (_matched_commands.empty())
                     return opt::cmd::null_command();
-                return *matched_commands.back();
+                return *_matched_commands.back();
             }
             [[nodiscard]] opt::arg &last_matched_flg() {
                 if (matched_flags.empty())
@@ -147,7 +147,7 @@ namespace cmdr {
                 return *matched_flags.back();
             }
 
-            void add_matched_cmd(opt::cmd *obj) { matched_commands.push_back(obj); }
+            void add_matched_cmd(opt::cmd *obj) { _matched_commands.push_back(obj); }
             void add_matched_arg(opt::arg *obj) { matched_flags.push_back(obj); }
             void add_matched_arg(opt::arg *obj, vars::variable const &v) {
                 matched_flags.push_back(obj);
@@ -157,7 +157,7 @@ namespace cmdr {
             void add_unknown_arg(std::string const &obj) { unknown_flags.push_back(obj); }
             void add_remain_arg(std::string const &arg) { non_commands.push_back(arg); }
             [[nodiscard]] string_array const &remain_args() const { return non_commands; }
-            auto &mc() { return matched_commands; }
+            auto &matched_commands() { return _matched_commands; }
             // void reverse_foreach_matched_commands(std::function<void(opt::details::cmd_pointers<V>::value_type &it)> f) {
             //     std::for_each(matched_commands.rbegin(), matched_commands.rend(), f);
             // }
@@ -181,6 +181,7 @@ namespace cmdr {
         static string_array remain_args(char *argv[], int i, int argc);
 
         opt::Action process_command(parsing_context &pc, int argc, char *argv[]);
+        opt::Action process_flag(parsing_context &pc, int argc, char *argv[], int leading_chars, std::function<arg_matching_result(parsing_context&)> const &matcher);
         opt::Action process_special_flag(parsing_context &pc, int argc, char *argv[]);
         opt::Action process_long_flag(parsing_context &pc, int argc, char *argv[]);
         opt::Action process_short_flag(parsing_context &pc, int argc, char *argv[]);
@@ -270,6 +271,9 @@ namespace cmdr {
 
         std::vector<details::on_arg_added> _on_arg_added;
         std::vector<details::on_cmd_added> _on_cmd_added;
+        std::vector<details::on_arg_matched> _on_arg_matched;
+        std::vector<details::on_cmd_matched> _on_cmd_matched;
+        opt::details::on_invoke _on_command_not_hooked;
 
     public:
         void on_arg_added(opt::arg *a) {
@@ -287,6 +291,26 @@ namespace cmdr {
                 if (cb)
                     cb(a);
             }
+        }
+        void on_arg_matched(opt::arg *a) {
+            auto key = a->dotted_key();
+            _store.set(key.c_str(), a->default_value());
+            for (auto &cb : _on_arg_matched) {
+                if (cb)
+                    cb(a);
+            }
+        }
+        void on_cmd_matched(opt::cmd *a) {
+            // auto key = a->dotted_key();
+            // _store.set(key, a->default_value());
+            for (auto &cb : _on_cmd_matched) {
+                if (cb)
+                    cb(a);
+            }
+        }
+        app &on_command_not_hooked(opt::details::on_invoke cb) {
+            _on_command_not_hooked = cb;
+            return (*this);
         }
     };
 

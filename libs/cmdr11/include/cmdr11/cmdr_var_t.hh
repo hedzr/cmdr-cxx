@@ -123,6 +123,8 @@ namespace cmdr::vars {
             // auto v = {args...};
             // (void) v;
         }
+        void emplace(std::any &&o) { _value.swap(o); }
+        void emplace(std::any const &o) { _value = o; }
 
         [[nodiscard]] target_type const &value_any() const { return _value; }
         target_type &value_any() { return _value; }
@@ -369,22 +371,32 @@ namespace cmdr::vars {
             return _registry;
         }
 
-        inline void process(std::istream &is, std::any &a) const {
+        inline bool process(std::istream &is, std::any &a) const {
             auto &reg = any_parsers();
             if (const auto it = reg.find(std::type_index(a.type()));
                 it != reg.cend()) {
                 it->second(is, a);
+                return true;
             } else {
-                std::cout << "Unregistered type for parsing " << std::quoted(a.type().name());
+#if defined(_DEBUG)
+                std::cout << "Unregistered type for parsing " << std::quoted(a.type().name()) << "\ufe0e" << '\n';
+                std::cerr << "Unregistered type for parsing " << std::quoted(a.type().name()) << "\ufe0e" << '\n';
+#endif
+                return false;
             }
         }
-        inline void process(std::ostream &os, std::any const &a) const {
+        inline bool process(std::ostream &os, std::any const &a) const {
             auto &reg = any_visitors();
             if (const auto it = reg.find(std::type_index(a.type()));
                 it != reg.cend()) {
                 it->second(os, a);
+                return true;
             } else {
-                std::cout << "Unregistered type for visiting " << std::quoted(a.type().name());
+#if defined(_DEBUG)
+                std::cout << "Unregistered type for visiting " << std::quoted(a.type().name()) << "\ufe0e" << '\n';
+                std::cerr << "Unregistered type for visiting " << std::quoted(a.type().name()) << "\ufe0e" << '\n';
+#endif
+                return false;
             }
         }
 
@@ -589,7 +601,6 @@ namespace cmdr::vars {
                     os << c->dim().s(ss.str());
                 else
                     os << ss.str();
-
                 os << std::endl;
 
                 v.dump_tree(os, c, level + 1);

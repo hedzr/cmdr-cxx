@@ -31,6 +31,20 @@ namespace cmdr::opt {
     }
     inline cmd const *bas::owner() const { return _owner; }
     inline cmd *bas::owner() { return _owner; }
+    inline cmd const *bas::root() const {
+        cmd *p = this->_owner, *last;
+        do {
+            last = p;
+        } while ((p = p->owner()) != nullptr);
+        return last;
+    }
+    inline cmd *bas::root() {
+        cmd *p = this->_owner, *last;
+        do {
+            last = p;
+        } while ((p = p->owner()) != nullptr);
+        return last;
+    }
 
     inline std::string bas::dotted_key() const {
         std::vector<std::string> a;
@@ -92,7 +106,7 @@ namespace cmdr::opt {
 
             // auto dk = dotted_key();
             cmdr::get_app().on_arg_added(ptr);
-            
+
             // std::cout << gn << ',' << _grouped_args[gn].size() << std::endl;
         }
         return *this;
@@ -505,8 +519,8 @@ namespace cmdr::opt {
                 w = wf + 2 + ws + 2 + wa;
                 ss << std::setw(wt - w - (level >= 0 ? level * 2 : 0)) << ' ';
 
-                ss << w << ',' << wt << ','
-                   << c.dim().s(x->descriptions());
+                ss // << w << ',' << wt << ','
+                        << c.dim().s(x->descriptions());
 
                 auto se = x->env_vars_get();
                 if (!se.empty()) {
@@ -523,10 +537,6 @@ namespace cmdr::opt {
                     tmp << ")";
                     if (w > 0)
                         ss << c.dim().s(tmp.str());
-                }
-
-                if (x->title_long() == "host") {
-                    w++;
                 }
 
                 auto sd = x->defaults();

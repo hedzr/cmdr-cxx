@@ -181,8 +181,7 @@ int main(int argc, char *argv[]) {
 
         // cli.opt(opt_dummy<support_types>{}());
 
-        // add_global_options(cli);
-        // add_generator_menu(cli);
+#if 1
         add_server_menu(cli);
         add_test_menu(cli);
 
@@ -192,7 +191,14 @@ int main(int argc, char *argv[]) {
         assert(cc("status").valid());
         assert(cc("start").valid());
         assert(cc("run", true).valid());
-
+#endif
+        
+        cli.on_command_not_hooked([](cmdr::opt::cmd const &, string_array const &) {
+            cmdr::get_store().dump_full_keys(std::cout);
+            cmdr::get_store().dump_tree(std::cout);
+            return 0;
+        });
+        
         return cli.run(argc, argv);
 
     } catch (std::exception &e) {

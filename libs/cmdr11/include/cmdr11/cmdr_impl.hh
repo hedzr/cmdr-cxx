@@ -50,6 +50,7 @@ namespace cmdr {
         if (cmr.matched) {
             cmr.obj->hit_title(pc.title.c_str());
             pc.add_matched_cmd(cmr.obj);
+            get_app().on_cmd_matched(cmr.obj);
             if (cmr.obj->on_command_hit()) {
                 auto rc = cmr.obj->on_command_hit()(
                         pc.last_matched_cmd(),
@@ -68,108 +69,80 @@ namespace cmdr {
         return opt::Continue;
     }
 
-    inline opt::Action app::process_special_flag(parsing_context &pc, int argc, char *argv[]) {
-        pc.title = pc.title.substr(2);
-        auto amr = matching_special_flag(pc);
+    inline opt::Action
+    app::process_flag(parsing_context &pc, int argc, char *argv[], int leading_chars,
+                      std::function<arg_matching_result(parsing_context &)> const &matcher) {
+        pc.title = pc.title.substr(leading_chars);
+        bool value_parsed{};
+        bool extra_argv;
+        auto rc{opt::Continue};
+    next_combined:
+        auto amr = matcher(pc);
         if (amr.matched) {
             assert(amr.obj);
+
+            std::cout << " - " << amr.matched_str << ' ' << '(' << amr.obj->dotted_key() << ')';
 
             amr.obj->hit_title(pc.title.c_str());
-            pc.add_matched_arg(amr.obj);
-            if (amr.obj->on_flag_hit()) {
-                auto rc = amr.obj->on_flag_hit()(
-                        pc.last_matched_cmd(),
-                        pc.last_matched_flg(),
-                        remain_args(argv, pc.index + 1, argc));
-                // if (rc < details::OK || rc >= details::Abortion)
-                return rc;
-            }
-            return opt::Continue;
-        }
-        if (amr.should_abort)
-            return opt::Abortion;
-        pc.title = argv[pc.index];
-        pc.add_unknown_arg(pc.title);
-        if (_treat_unknown_input_flag_as_error) {
-            return unknown_long_flag_found(pc, amr);
-        }
-        return opt::Continue;
-    }
-
-    inline opt::Action app::process_long_flag(parsing_context &pc, int argc, char *argv[]) {
-        pc.title = pc.title.substr(2);
-        auto amr = matching_long_flag(pc);
-        if (amr.matched) {
-            assert(amr.obj);
 
             if (auto &typ = amr.obj->default_value().type();
                 typ != typeid(bool) && typ != typeid(void)) {
                 // try solving the following input as value of this matched arg.
-                auto remains = pc.title.substr(amr.matched_length);
+                auto remains = pc.title.substr(pc.pos + amr.matched_length);
+                auto remains_orig_len = remains.length();
                 if (remains[0] == '=') {
                     remains = remains.substr(1);
                 }
                 remains = string::strip_quotes(remains);
-                if (remains.empty() && pc.index + 1 < argc)
+                if (remains.empty() && pc.index + 1 < argc) {
                     remains = argv[++pc.index];
+                    extra_argv = true;
+                }
+
                 std::stringstream sst(remains);
-                vars::variable val;
+                vars::variable &val = amr.obj->default_value();
+                auto xb = sst.tellg();
                 sst >> val;
+                auto xe = sst.tellg();
+                int read = (int) (xe - xb);
+                value_parsed = read > 0 || sst.eof();
+                if (!value_parsed) {
+                    if (extra_argv)
+                        --pc.index; // restore the parsing pointer
+                } else if (read > 0)
+                    amr.matched_length += read;
+                else if (!extra_argv)
+                    amr.matched_length += remains_orig_len;
+                
                 pc.add_matched_arg(amr.obj, val);
-            } else
+                std::cout << " -> " << val;
+            } else {
                 pc.add_matched_arg(amr.obj);
-
-            amr.obj->hit_title(pc.title.c_str());
-            if (amr.obj->on_flag_hit()) {
-                auto rc = amr.obj->on_flag_hit()(
-                        pc.last_matched_cmd(),
-                        pc.last_matched_flg(),
-                        remain_args(argv, pc.index + 1, argc));
-                return rc;
+                value_parsed = true;
             }
-            return opt::Continue;
-        }
 
-        if (amr.should_abort)
-            return opt::Abortion;
+            std::cout << std::endl;
 
-        pc.title = argv[pc.index];
-        pc.add_unknown_arg(pc.title);
-        if (_treat_unknown_input_flag_as_error) {
-            return unknown_long_flag_found(pc, amr);
-        }
-        return opt::Continue;
-    }
-
-    inline opt::Action app::process_short_flag(parsing_context &pc, int argc, char *argv[]) {
-        pc.title = pc.title.substr(1);
-    next_combined:
-        auto amr = matching_short_flag(pc);
-        if (amr.matched) {
-            assert(amr.obj);
-
-            std::cout << "! " << amr.matched_str << std::endl;
-            amr.obj->hit_title(amr.matched_str.c_str());
-            pc.add_matched_arg(amr.obj);
+            get_app().on_arg_matched(amr.obj);
             if (amr.obj->on_flag_hit()) {
-                auto rc = amr.obj->on_flag_hit()(
+                rc = amr.obj->on_flag_hit()(
                         pc.last_matched_cmd(),
                         pc.last_matched_flg(),
                         remain_args(argv, pc.index + 1, argc));
                 if (rc < opt::OK || rc >= opt::Abortion)
                     return rc;
-
-                pc.pos += amr.matched_length;
-                if (pc.pos < pc.title.length())
-                    goto next_combined;
-
-                return rc;
             }
 
             pc.pos += amr.matched_length;
-            if (pc.pos < pc.title.length())
-                goto next_combined;
 
+            if (value_parsed) {
+                if (pc.pos < pc.title.length())
+                    goto next_combined;
+                return rc;
+            }
+
+            // cannot parse the arg's value, ignore it and continue for the next arg
+            std::cerr << "cannot parse the value of the flag " << std::quoted(amr.matched_str) << '\n';
             return opt::Continue;
         }
 
@@ -177,11 +150,23 @@ namespace cmdr {
             return opt::Abortion;
 
         pc.title = argv[pc.index];
-        pc.add_unknown_arg(pc.title.substr(pc.pos));
+        pc.add_unknown_arg(pc.title);
         if (_treat_unknown_input_flag_as_error) {
-            return unknown_short_flag_found(pc, amr);
+            return unknown_long_flag_found(pc, amr);
         }
         return opt::Continue;
+    }
+
+    inline opt::Action app::process_special_flag(parsing_context &pc, int argc, char *argv[]) {
+        return process_flag(pc, argc, argv, 2, matching_special_flag);
+    }
+
+    inline opt::Action app::process_long_flag(parsing_context &pc, int argc, char *argv[]) {
+        return process_flag(pc, argc, argv, 2, matching_long_flag);
+    }
+
+    inline opt::Action app::process_short_flag(parsing_context &pc, int argc, char *argv[]) {
+        return process_flag(pc, argc, argv, 1, matching_short_flag);
     }
 
     inline typename app::cmd_matching_result app::matching_command(parsing_context &pc) {
@@ -207,7 +192,7 @@ namespace cmdr {
                           bool is_long, bool is_special,
                           std::function<opt::details::indexed_args const &(opt::cmd *)> li) {
         arg_matching_result amr;
-        auto &mc = pc.mc();
+        auto &mc = pc.matched_commands();
 
         for (auto it = mc.rbegin(); it != mc.rend(); it++) {
             auto ptr = (*it);
@@ -321,10 +306,11 @@ namespace cmdr {
                 if (c.on_invoke())
                     rc = c.on_invoke()(c, remain_args);
                 else {
-                    std::cout << "INVOKE: " << std::quoted(c.title()) << ".\n";
+                    if (_on_command_not_hooked)
+                        rc = _on_command_not_hooked(c, remain_args);
 #if defined(_DEBUG)
-                    // store.root().dump_full_keys(std::cout);
-                    _store.dump_tree(std::cout);
+                        // store.root().dump_full_keys(std::cout);
+                        // _store.dump_tree(std::cout);
 #endif
                 }
             }

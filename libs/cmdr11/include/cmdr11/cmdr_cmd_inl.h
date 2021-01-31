@@ -233,6 +233,20 @@ namespace cmdr::opt {
     }
 
 
+    inline void cmd::walk_args(std::function<void(arg &)> const &cb) {
+        for (auto &it : _grouped_commands) {
+            for (auto &z : it.second) {
+                z->walk_args(cb);
+            }
+        }
+
+        for (auto &it : this->_grouped_args) {
+            for (auto &z : it.second) {
+                cb(*z);
+            }
+        }
+    }
+
     inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, int level) {
         unused(grouped);
         unused(level);

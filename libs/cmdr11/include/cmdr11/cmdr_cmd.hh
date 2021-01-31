@@ -199,6 +199,7 @@ namespace cmdr::opt {
         // wt: total width for description part.
         void print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped = true, int level = -1);
 
+        void walk_args(std::function<void(arg &)> const &cb);
     }; // class cmd
 
 } // namespace cmdr::opt

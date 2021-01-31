@@ -240,12 +240,134 @@ namespace cmdr::vars {
             return true;
         }
 
+        /**
+         * @brief 1/0, T/F, Y/N, True/False, Yes/No, On/Off
+         * @param is 
+         * @param x 
+         * @return 
+         */
+        static bool parse_bool(std::istream &is, bool &x) {
+            char ch;
+            ch = is.peek();
+            if (ch == '0') {
+                x = false;
+                is >> ch;
+                return true;
+            }
+            if (ch == '1') {
+                x = true;
+                is >> ch;
+                return true;
+            }
+
+            if (ch == 't' || ch == 'T') {
+                is >> ch;
+                ch = is.peek();
+                if (ch == 'r' || ch == 'R') {
+                    is >> ch;
+                    ch = is.peek();
+                    if (ch == 'u' || ch == 'U') {
+                        is >> ch;
+                        ch = is.peek();
+                        if (ch == 'e' || ch == 'E') {
+                            is >> ch;
+                            x = true;
+                            return true;
+                        }
+                        is.unget();
+                    }
+                    is.unget();
+                } else {
+                    x = true;
+                    return true;
+                }
+                is.unget();
+            } else if (ch == 'y' || ch == 'Y') {
+                is >> ch;
+                is >> ch;
+                ch = is.peek();
+                if (ch == 'e' || ch == 'E') {
+                    is >> ch;
+                    ch = is.peek();
+                    if (ch == 's' || ch == 'S') {
+                        is >> ch;
+                        x = true;
+                        return true;
+                    }
+                    is.unget();
+                } else {
+                    x = true;
+                    return true;
+                }
+                is.unget();
+            } else if (ch == 'f' || ch == 'F') {
+                is >> ch;
+                ch = is.peek();
+                if (ch == 'a' || ch == 'A') {
+                    is >> ch;
+                    ch = is.peek();
+                    if (ch == 'l' || ch == 'L') {
+                        is >> ch;
+                        ch = is.peek();
+                        if (ch == 's' || ch == 'S') {
+                            is >> ch;
+                            ch = is.peek();
+                            if (ch == 'e' || ch == 'E') {
+                                is >> ch;
+                                x = false;
+                                return true;
+                            }
+                            is.unget();
+                        }
+                        is.unget();
+                    }
+                    is.unget();
+                } else {
+                    x = false;
+                    return true;
+                }
+                is.unget();
+            } else if (ch == 'n' || ch == 'N') {
+                is >> ch;
+                is >> ch;
+                ch = is.peek();
+                if (ch == 'o' || ch == 'O') {
+                    is >> ch;
+                    x = false;
+                    return true;
+                } else {
+                    x = false;
+                    return true;
+                }
+            } else if (ch == 'o' || ch == 'O') {
+                is >> ch;
+                ch = is.peek();
+                if (ch == 'n' || ch == 'N') {
+                    is >> ch;
+                    x = true;
+                    return true;
+                }
+                if (ch == 'f' || ch == 'F') {
+                    is >> ch;
+                    ch = is.peek();
+                    if (ch == 'f' || ch == 'F') {
+                        is >> ch;
+                        x = false;
+                        return true;
+                    }
+                    is.unget();
+                }
+                is.unget();
+            }
+            return false;
+        }
+
     private:
         typedef std::unordered_map<std::type_index, std::function<void(std::istream &is, std::any &)>> I;
         static I &any_parsers() {
             static I _registry{
                     details::from_any_visitor<void>([](std::istream &is) { parse_void(is); }),
-                    details::from_any_visitor<bool>([](std::istream &is, bool &x) { is >> std::boolalpha >> x; }),
+                    details::from_any_visitor<bool>([](std::istream &is, bool &x) { parse_bool(is, x); }),
                     details::from_any_visitor<int>([](std::istream &is, int &x) { is >> x; }),
                     details::from_any_visitor<int8_t>([](std::istream &is, int8_t &x) { is >> x; }),
                     details::from_any_visitor<int16_t>([](std::istream &is, int16_t &x) { is >> x; }),
@@ -265,6 +387,7 @@ namespace cmdr::vars {
                     details::from_any_visitor<long double>([](std::istream &is, long double &x) { is >> x; }),
                     details::from_any_visitor<char const *>([](std::istream &is, std::any &a) { std::string s; string::strip_quotes(is, s); a=s; }),
                     details::from_any_visitor<std::string>([](std::istream &is, std::string &s) { string::strip_quotes(is, s); }),
+                    details::from_any_visitor<variable>([](std::istream &is, variable &x) { is >> x; }),
 
                     details::from_any_visitor<std::vector<char const *>>([](std::istream &is, std::any &a) { std::vector<std::string> vec; parse_array(is, vec);a=vec; }),
                     details::from_any_visitor<std::vector<std::string>>([](std::istream &is, std::vector<std::string> &a) { parse_array(is, a); }),
@@ -286,6 +409,7 @@ namespace cmdr::vars {
                     details::from_any_visitor<std::vector<float>>([](std::istream &is, std::vector<float> &a) { parse_array(is, a); }),
                     details::from_any_visitor<std::vector<double>>([](std::istream &is, std::vector<double> &a) { parse_array(is, a); }),
                     details::from_any_visitor<std::vector<long double>>([](std::istream &is, std::vector<long double> &a) { parse_array(is, a); }),
+                    details::from_any_visitor<std::vector<variable>>([](std::istream &is, std::vector<variable> &a) { parse_array(is, a); }),
 
                     details::from_any_visitor<std::complex<float>>([](std::istream &is, std::complex<float> &a) { parse_complex(is, a); }),
                     details::from_any_visitor<std::complex<double>>([](std::istream &is, std::complex<double> &a) { parse_complex(is, a); }),
@@ -329,6 +453,7 @@ namespace cmdr::vars {
                     details::to_any_visitor<long double>([](std::ostream &os, long double x) { os << x; }),
                     details::to_any_visitor<char const *>([](std::ostream &os, char const *s) { os << std::quoted(s); }),
                     details::to_any_visitor<std::string>([](std::ostream &os, std::string const &s) { os << std::quoted(s); }),
+                    details::to_any_visitor<variable>([](std::ostream &os, variable x) { os << x; }),
 
                     details::to_any_visitor<std::vector<char const *>>([](std::ostream &os, std::vector<char const *> const &a) { format_array(os, a); }),
                     details::to_any_visitor<std::vector<std::string>>([](std::ostream &os, std::vector<std::string> const &a) { format_array(os, a); }),
@@ -350,6 +475,7 @@ namespace cmdr::vars {
                     details::to_any_visitor<std::vector<float>>([](std::ostream &os, std::vector<float> const &a) { format_array(os, a); }),
                     details::to_any_visitor<std::vector<double>>([](std::ostream &os, std::vector<double> const &a) { format_array(os, a); }),
                     details::to_any_visitor<std::vector<long double>>([](std::ostream &os, std::vector<long double> const &a) { format_array(os, a); }),
+                    details::to_any_visitor<std::vector<variable>>([](std::ostream &os, std::vector<variable> const &a) { format_array(os, a); }),
 
                     details::to_any_visitor<std::complex<float>>([](std::ostream &os, std::complex<float> const &a) { format_complex(os, a); }),
                     details::to_any_visitor<std::complex<double>>([](std::ostream &os, std::complex<double> const &a) { format_complex(os, a); }),
@@ -411,6 +537,21 @@ namespace cmdr::vars {
             o.process(os, o._value);
             return os;
         }
+        /**
+         * @brief convert to a value from stream, and put it into variable
+         * @param is 
+         * @param o 
+         * @return 
+         * 
+         * For an exact converting, A responding initial value with right type
+         * must be set into variable. For example:
+         * 
+         *     std::stringstream ss("true");
+         *     cmdr::vars::variable v{false}; // or v{} to initialize a bool value implicitly.
+         *     ss >> v; // so that we can convert the input stream with that type.
+         *     std::cout << std::boolalpha << v; // print v will get this output: true.
+         *     
+         */
         friend std::istream &operator>>(std::istream &is, variable &o) {
             o.process(is, o._value);
             return is;
@@ -575,14 +716,21 @@ namespace cmdr::vars {
         }
 
     public:
-        T const &get(char const *key) const {
-            auto it = _indexes.find(key);
-            if (it == _indexes.end()) {
-                return null_element();
-            }
-            return *it->second;
-        }
+        T const &get(char const *key) const { return _get(key); }
+        T &get(char const *key) { return _get(key); }
+        [[nodiscard]] T const &get(std::string const &key) const { return _get(key); }
+        T &get(std::string const &key) { return _get(key); }
 
+        T const &get_raw(char const *key) const { return _get_raw(key); }
+        T &get_raw(char const *key) { return _get_raw(key); }
+        [[nodiscard]] T const &get_raw(std::string const &key) const { return _get_raw(key); }
+        T &get_raw(std::string const &key) { return _get_raw(key); }
+
+    private:
+        T &_get(std::string const &key);
+        T &_get_raw(std::string const &key);
+
+    public:
         static T &null_element() {
             static T t{};
             return t;
@@ -623,6 +771,11 @@ namespace cmdr::vars {
             unused(level);
         }
 
+        template<class K, class V>
+        void walk_by_full_keys(std::function<void(std::pair<K, V> const &val)> const &cb) {
+            walk_sorted(_indexes, cb);
+        }
+
     private:
         struct map_streamer {
             std::ostream &_os;
@@ -650,6 +803,14 @@ namespace cmdr::vars {
         inline void print_sorted(std::ostream &os, cmdr::terminal::colors::colorize *c, std::unordered_map<K, V> const &um, Comp pred = Comp()) const {
             std::map<K, V> m(um.begin(), um.end(), pred);
             std::for_each(m.begin(), m.end(), map_streamer(os, c));
+        }
+
+        template<class K, class V, class Comp = std::less<K>>
+        inline void walk_sorted(std::unordered_map<K, V> const &um,
+                                std::function<void(std::pair<K, V> const &val)> const &cb,
+                                Comp pred = Comp()) const {
+            std::map<K, V> m(um.begin(), um.end(), pred);
+            std::for_each(m.begin(), m.end(), cb);
         }
 
     }; // class nodeT<T>
@@ -681,16 +842,18 @@ namespace cmdr::vars {
         void set(char const *key, A &&a) {
             _root.template set(key, a);
         }
-        void set(char const *key, vars::variable &&a) {
-            _root.set(key, a.value_any());
-        }
-        void set(char const *key, vars::variable const &a) {
-            _root.set(key, a.value_any());
-        }
+        void set(char const *key, vars::variable &&a) { _root.set(key, a.value_any()); }
+        void set(char const *key, vars::variable const &a) { _root.set(key, a.value_any()); }
 
-        T const &get(char const *key) const {
-            return _root.get(key);
-        }
+        T const &get(char const *key) const { return _root.get(key); }
+        T &get(char const *key) { return _root.get(key); }
+        [[nodiscard]] T const &get(std::string const &key) const { return _root.get(key); }
+        [[nodiscard]] T &get(std::string const &key) { return _root.get(key); }
+
+        T const &get_raw(char const *key) const { return _root.get_raw(key); }
+        T &get_raw(char const *key) { return _root.get_raw(key); }
+        [[nodiscard]] T const &get_raw(std::string const &key) const { return _root.get_raw(key); }
+        T &get_raw(std::string const &key) { return _root.get_raw(key); }
 
     public:
         void dump_tree(std::ostream &os, const_chars leading_title = nullptr, node *start = nullptr) const {
@@ -710,6 +873,10 @@ namespace cmdr::vars {
                 os << "Dumping for var_t ...";
             os << std::endl;
             (start ? start : &_root)->dump_full_keys(os, &c, 0);
+        }
+
+        void walk_by_full_keys(std::function<void(std::pair<small_string, node_pointer> const &val)> const &cb, node *start = nullptr) {
+            (start ? start : &_root)->walk_by_full_keys(cb);
         }
 
     private:

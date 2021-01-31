@@ -39,7 +39,7 @@ void test_store_1() {
     store.dump_tree(std::cout);
 #endif
 
-    auto vv = store.get("app.server.tls.handshake.max-idle-time");
+    auto vv = store.get("server.tls.handshake.max-idle-time");
     std::cout << "max-idle-time: " << vv << '\n';
     if (vv.as_string() != "45m")
         fatal_exit("  ^-- ERR: expect '45m'.");

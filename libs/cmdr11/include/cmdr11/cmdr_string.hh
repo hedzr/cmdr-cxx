@@ -384,6 +384,21 @@ namespace cmdr::string {
     }
 
 
+    inline std::string expand_env(std::string text) {
+        // static const std::regex env_re{R"--(\$\{?([^}]+)\}?)--"};
+        static const std::regex env_re{R"(\$\{?([a-z0-9_]+)\}?)", std::regex::icase};
+        std::smatch match;
+        while (std::regex_search(text, match, env_re)) {
+            auto const &from = match[0];
+            auto const &th = match[1];
+            auto const &var_name = th.str();
+            auto ptr = std::getenv(var_name.c_str());
+            text.replace(from.first, from.second, ptr ? ptr : "");
+        }
+        return text;
+    }
+
+
     namespace conv {
 
         //        static constexpr int is_signed = std::is_signed<T>::value ? 1 : 0;

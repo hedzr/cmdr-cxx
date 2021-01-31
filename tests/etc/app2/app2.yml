@@ -1,0 +1,22 @@
+app:
+  debug: true
+  file:
+    test-string: hello
+    test-map:
+      val-1: true
+      val-2: 8s
+      val-3: [a,b,c]
+      val-4:
+        small-little: just a demo
+  this:
+    is:
+      a:
+        string: yes
+        string-2: "yes"
+        string-3: "no"
+        string-4: "T"
+        string-5: "F"
+        string-6: "on"
+        string-7: "off"
+        string-8: "y"
+        string-9: "n"

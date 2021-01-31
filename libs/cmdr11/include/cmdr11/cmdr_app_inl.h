@@ -50,7 +50,7 @@ namespace cmdr {
     }
 
     inline void app::initialize_internal_commands() {
-        _long = "app.cli";
+        _long = DEFAULT_KEY_PREFIX;
         register_actions();
         add_global_options(*this);
         add_generator_menu(*this);
@@ -148,7 +148,7 @@ namespace cmdr {
         store.dump_tree(std::cout);
 #endif
 
-        auto vv = store.get("app.server.tls.handshake.max-idle-time");
+        auto vv = store.get("server.tls.handshake.max-idle-time");
         (void) (vv);
         // std::cout << "max-idle-time: " << vv << '\n';
         //if (vv.as_string() != "45m")
@@ -224,6 +224,7 @@ namespace cmdr {
                        .description("display this help screen")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
+                       .env_vars("HELP")
                        .on_hit([](opt::cmd const &hit, opt::arg const &hit_flag, string_array const &remain_args) -> opt::Action {
                            unused(hit);
                            unused(hit_flag);
@@ -247,6 +248,7 @@ namespace cmdr {
                        .description("display the version information")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
+                       .env_vars("VERSIONS")
                        .on_hit([](opt::cmd const &hit, opt::arg const &hit_flag, string_array const &remain_args) -> opt::Action {
                            unused(hit);
                            unused(hit_flag);
@@ -271,9 +273,11 @@ namespace cmdr {
 
         cli += cmdr::opt::opt{}("verbose", "v")
                        .description("verbose mode")
+                       .env_vars("VERBOSE")
                        .group(SYS_MGMT_GROUP);
         cli += cmdr::opt::opt{}("quiet", "q")
                        .description("quiet mode")
+                       .env_vars("QUIET")
                        .group(SYS_MGMT_GROUP);
 
         // debugging and tracing
@@ -307,6 +311,7 @@ namespace cmdr {
                        .description("enable debugging mode for more verbose outputting")
                        .special()
                        .group(SYS_MGMT_GROUP)
+                       .env_vars("DEBUG")
                        .on_hit([](opt::cmd const &hit, opt::arg const &hit_flag, string_array const &remain_args) -> opt::Action {
                            unused(hit);
                            unused(hit_flag);
@@ -324,6 +329,7 @@ namespace cmdr {
 
         cli += cmdr::opt::opt{}("trace", "tr", "trace-mode")
                        .description("enable tracing mode for developer perspective")
+                       .env_vars("TRACE")
                        .group(SYS_MGMT_GROUP);
     }
 
@@ -331,7 +337,7 @@ namespace cmdr {
         // using namespace cmdr::opt;
 
         // generators
-        cli += cmdr::opt::sub_cmd{}("generator", "g", "gen")
+        cli += cmdr::opt::sub_cmd{}("generate", "g", "gen")
                        .description("generators of this appT (such as manual, markdown, ...)")
                        .group(SYS_MGMT_GROUP)
                 // .opt(opt_dummy{}())

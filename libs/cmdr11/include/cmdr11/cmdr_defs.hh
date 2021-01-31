@@ -104,6 +104,9 @@ typedef const char *const_chars;
 typedef std::vector<std::string> string_array;
 
 
+const char *const DEFAULT_KEY_PREFIX = "app.cli";
+
+
 const char *const UNSORTED_GROUP = "1230.Unsorted";
 const char *const SYS_MGMT_GROUP = "9000.System Management";
 // nobody group: 3333 .. 3333+50

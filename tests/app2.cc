@@ -4,9 +4,12 @@
 
 #include "version.h"
 #include <cmdr-cxx.hh>
+#include "./addons/loaders/yaml_loader.hh"
 
 #include <cmath>
 #include <complex>
+#include <fstream>
+
 
 
 void fatal_exit(const std::string &msg) {
@@ -194,13 +197,18 @@ int main(int argc, char *argv[]) {
 #endif
 
 #if 0
-        cli.on_command_not_hooked([](cmdr::opt::cmd const &, string_array const &) {
+        cli.set_global_on_command_not_hooked([](cmdr::opt::cmd const &, string_array const &) {
             cmdr::get_store().dump_full_keys(std::cout);
             cmdr::get_store().dump_tree(std::cout);
             return 0;
         });
 #endif
-        
+
+#if 1
+        using namespace cmdr::addons::loaders;
+        cli.set_global_on_loading_externals(yaml_loader{}());
+#endif
+
         return cli.run(argc, argv);
 
     } catch (std::exception &e) {

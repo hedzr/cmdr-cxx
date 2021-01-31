@@ -91,11 +91,11 @@ namespace cmdr {
         //[[nodiscard]] cmd *command_hit() const { return _cmd_hit; }
 
     public:
-        app &set_global_pre_invoke_handler(opt::details::on_pre_invoke cb) {
+        app &set_global_pre_invoke_handler(opt::details::on_pre_invoke &&cb) {
             _global_on_pre_invoke = std::move(cb);
             return (*this);
         }
-        app &set_global_post_invoke_handler(opt::details::on_post_invoke cb) {
+        app &set_global_post_invoke_handler(opt::details::on_post_invoke &&cb) {
             _global_on_post_invoke = std::move(cb);
             return (*this);
         }
@@ -106,6 +106,74 @@ namespace cmdr {
         app &treat_unknown_input_flag_as_error(bool b) {
             _treat_unknown_input_flag_as_error = b;
             return (*this);
+        }
+
+        app& set_global_on_arg_added(details::on_arg_added &&cb){
+            _on_arg_added.push_back(cb);
+            return (*this);
+        }
+        app& set_global_on_cmd_added(details::on_cmd_added &&cb){
+            _on_cmd_added.push_back(cb);
+            return (*this);
+        }
+        app& set_global_on_arg_matched(details::on_arg_matched &&cb){
+            _on_arg_matched.push_back(cb);
+            return (*this);
+        }
+        app& set_global_on_cmd_matched(details::on_cmd_matched &&cb){
+            _on_cmd_matched.push_back(cb);
+            return (*this);
+        }
+        app& set_global_on_loading_externals(details::on_loading_externals &&cb){
+            _on_loading_externals.push_back(cb);
+            return (*this);
+        }
+        
+        app &set_global_on_command_not_hooked(opt::details::on_invoke cb) {
+            _on_command_not_hooked = cb;
+            return (*this);
+        }
+
+    protected:
+        friend class cmd;
+        
+        void on_arg_added(opt::arg *a) {
+            auto key = a->dotted_key();
+            _store.set(key.c_str(), a->default_value());
+            for (auto &cb : _on_arg_added) {
+                if (cb)
+                    cb(a);
+            }
+        }
+        void on_cmd_added(opt::cmd *a) {
+            // auto key = a->dotted_key();
+            // _store.set(key, a->default_value());
+            for (auto &cb : _on_cmd_added) {
+                if (cb)
+                    cb(a);
+            }
+        }
+        void on_arg_matched(opt::arg *a) {
+            auto key = a->dotted_key();
+            _store.set(key.c_str(), a->default_value());
+            for (auto &cb : _on_arg_matched) {
+                if (cb)
+                    cb(a);
+            }
+        }
+        void on_cmd_matched(opt::cmd *a) {
+            // auto key = a->dotted_key();
+            // _store.set(key, a->default_value());
+            for (auto &cb : _on_cmd_matched) {
+                if (cb)
+                    cb(a);
+            }
+        }
+        void on_loading_externals() {
+            for (auto & _on_loading_external : _on_loading_externals) {
+                if (_on_loading_external)
+                    _on_loading_external(*this);
+            }
         }
 
     private:
@@ -181,7 +249,7 @@ namespace cmdr {
         static string_array remain_args(char *argv[], int i, int argc);
 
         opt::Action process_command(parsing_context &pc, int argc, char *argv[]);
-        opt::Action process_flag(parsing_context &pc, int argc, char *argv[], int leading_chars, std::function<arg_matching_result(parsing_context&)> const &matcher);
+        opt::Action process_flag(parsing_context &pc, int argc, char *argv[], int leading_chars, std::function<arg_matching_result(parsing_context &)> const &matcher);
         opt::Action process_special_flag(parsing_context &pc, int argc, char *argv[]);
         opt::Action process_long_flag(parsing_context &pc, int argc, char *argv[]);
         opt::Action process_short_flag(parsing_context &pc, int argc, char *argv[]);
@@ -204,6 +272,9 @@ namespace cmdr {
         static void add_generator_menu(app &cli);
 
         void prepare();
+        void prepare_env_vars();
+        void load_externals();
+        void apply_env_vars();
         int after_run(opt::Action rc, parsing_context &pc, int argc, char *argv[]);
         int internal_action(opt::Action rc, parsing_context &pc, int argc, char *argv[]);
         int invoke_command(opt::cmd &cc, string_array remain_args, parsing_context &pc);
@@ -273,45 +344,8 @@ namespace cmdr {
         std::vector<details::on_cmd_added> _on_cmd_added;
         std::vector<details::on_arg_matched> _on_arg_matched;
         std::vector<details::on_cmd_matched> _on_cmd_matched;
+        std::vector<details::on_loading_externals> _on_loading_externals;
         opt::details::on_invoke _on_command_not_hooked;
-
-    public:
-        void on_arg_added(opt::arg *a) {
-            auto key = a->dotted_key();
-            _store.set(key.c_str(), a->default_value());
-            for (auto &cb : _on_arg_added) {
-                if (cb)
-                    cb(a);
-            }
-        }
-        void on_cmd_added(opt::cmd *a) {
-            // auto key = a->dotted_key();
-            // _store.set(key, a->default_value());
-            for (auto &cb : _on_cmd_added) {
-                if (cb)
-                    cb(a);
-            }
-        }
-        void on_arg_matched(opt::arg *a) {
-            auto key = a->dotted_key();
-            _store.set(key.c_str(), a->default_value());
-            for (auto &cb : _on_arg_matched) {
-                if (cb)
-                    cb(a);
-            }
-        }
-        void on_cmd_matched(opt::cmd *a) {
-            // auto key = a->dotted_key();
-            // _store.set(key, a->default_value());
-            for (auto &cb : _on_cmd_matched) {
-                if (cb)
-                    cb(a);
-            }
-        }
-        app &on_command_not_hooked(opt::details::on_invoke cb) {
-            _on_command_not_hooked = cb;
-            return (*this);
-        }
     };
 
     inline bool app::_longest_first = true;

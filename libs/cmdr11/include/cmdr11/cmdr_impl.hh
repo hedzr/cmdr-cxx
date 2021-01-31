@@ -5,6 +5,7 @@
 #ifndef CMDR_CXX11_CMDR_IMPL_HH
 #define CMDR_CXX11_CMDR_IMPL_HH
 
+#include <cstdlib>
 #include <exception>
 #include <iomanip>
 #include <iostream>
@@ -12,6 +13,7 @@
 #include <set>
 #include <sstream>
 #include <stdexcept>
+#include <stdlib.h>
 
 
 #include "cmdr_app.hh"
@@ -113,7 +115,7 @@ namespace cmdr {
                     amr.matched_length += read;
                 else if (!extra_argv)
                     amr.matched_length += remains_orig_len;
-                
+
                 pc.add_matched_arg(amr.obj, val);
                 std::cout << " -> " << val;
             } else {
@@ -410,7 +412,47 @@ namespace cmdr {
     }
 
     inline void app::prepare() {
-        //
+        prepare_env_vars();
+        load_externals();
+        apply_env_vars();
+    }
+
+    inline void app::prepare_env_vars() {
+        setenv("APP_NAME", _name.c_str(), 1);
+        setenv("EXE_DIR", path::get_executable_dir().c_str(), 1);
+        setenv("EXE_PATH", path::get_executable_path().c_str(), 1);
+    }
+
+    inline void app::load_externals() {
+        on_loading_externals();
+    }
+
+    inline void app::apply_env_vars() {
+        // auto env vars
+        _store.walk_by_full_keys([](std::pair<std::string, vars::variable *> const &val) {
+            auto ks = string::reg_replace(val.first, R"([.-])", "_");
+            string::to_upper(ks);
+            char *ptr = std::getenv(ks.c_str());
+            if (ptr) {
+                std::stringstream(ptr) >> (*val.second);
+                // std::cout << "  ENV[" << ks << '(' << val.first << ")] => " << ptr << '\n';
+            }
+        });
+
+        // cmd & args
+        this->walk_args([&](opt::arg &a) {
+            for (auto &ev : a.env_vars_get()) {
+                char *ptr = std::getenv(ev.c_str());
+                if (ptr) {
+                    auto dk = a.dotted_key();
+                    auto &v = _store.get_raw(dk);
+                    std::stringstream(ptr) >> v;
+                    // std::cout << "  ENV[" << ev << '(' << dk << ")] => " << ptr << " / " << _store.get_raw(dk) << '\n';
+                    a.default_value(v);
+                    // std::cout << " / " << a.default_value() << '\n';
+                }
+            }
+        });
     }
 
     inline int app::run(int argc, char *argv[]) {
@@ -476,6 +518,11 @@ namespace cmdr {
     inline int app::after_run(opt::Action rc, parsing_context &pc, int argc, char *argv[]) {
         if (rc > opt::OK && rc < opt::Continue)
             return internal_action(rc, pc, argc, argv);
+
+        if (store().get("help").cast_as<bool>()) {
+            print_usages(&pc.curr_command());
+            return true;
+        }
 
         if (auto cc = pc.last_matched_cmd(); cc.valid()) {
             if (cc.no_sub_commands()) {

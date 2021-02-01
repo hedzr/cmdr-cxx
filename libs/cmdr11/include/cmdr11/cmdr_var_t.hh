@@ -737,39 +737,8 @@ namespace cmdr::vars {
         }
 
     private:
-        void dump_tree(std::ostream &os, cmdr::terminal::colors::colorize *c, int level) const {
-            for (auto const &[k, v] : _children) {
-                for (int i = 0; i < level; i++) os << "  ";
-
-                std::stringstream ss;
-                ss << v;
-
-                os << k << ": ";
-                if (c)
-                    os << c->dim().s(ss.str());
-                else
-                    os << ss.str();
-                os << std::endl;
-
-                v.dump_tree(os, c, level + 1);
-            }
-            unused(level);
-        }
-
-        void dump_full_keys(std::ostream &os, cmdr::terminal::colors::colorize *c, int level = 0) const {
-            // std::vector<std::string> keys;
-            // keys.reserve(_full_key_map.size());
-            // for (auto &it : _full_key_map) {
-            //     keys.push_back(it.first);
-            // }
-            // std::sort(keys.begin(), keys.end());
-            //
-            // for (auto &it : keys) {
-            //     os << " - " << it << " => " << _full_key_map[it] << std::endl;
-            // }
-            print_sorted(os, c, _indexes);
-            unused(level);
-        }
+        void dump_tree(std::ostream &os, cmdr::terminal::colors::colorize *c, int level) const;
+        void dump_full_keys(std::ostream &os, cmdr::terminal::colors::colorize *c, int level = 0) const;
 
         template<class K, class V>
         void walk_by_full_keys(std::function<void(std::pair<K, V> const &val)> const &cb) {
@@ -780,10 +749,10 @@ namespace cmdr::vars {
         struct map_streamer {
             std::ostream &_os;
             cmdr::terminal::colors::colorize *c;
+            cmdr::terminal::colors::colorize::Colors256 fg;
+            bool dim;
 
-            explicit map_streamer(std::ostream &os, cmdr::terminal::colors::colorize *c)
-                : _os(os)
-                , c(c) {}
+            explicit map_streamer(std::ostream &os, cmdr::terminal::colors::colorize *c);
 
             template<class K, class V>
             void operator()(std::pair<K, V> const &val) {
@@ -792,7 +761,7 @@ namespace cmdr::vars {
                 std::stringstream ss;
                 ss << (*val.second);
                 if (c)
-                    _os << c->dim().s(ss.str());
+                    _os << c->fg(fg).dim(dim).s(ss.str());
                 else
                     _os << ss.str();
                 _os << "\n";

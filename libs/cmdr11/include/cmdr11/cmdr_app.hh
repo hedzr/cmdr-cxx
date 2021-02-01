@@ -337,6 +337,9 @@ namespace cmdr {
         // app &operator+(opt::cmd const &a) override;
         // app &operator+=(opt::cmd const &a) override;
 
+        cmdr::terminal::colors::colorize::Colors256 _dim_text_fg{cmdr::terminal::colors::colorize::Grey50};
+        bool _dim_text_dim{false};
+        
     private:
         std::string _name;
         std::string _version;

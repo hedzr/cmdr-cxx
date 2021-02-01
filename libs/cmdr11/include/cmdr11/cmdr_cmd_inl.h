@@ -250,6 +250,8 @@ namespace cmdr::opt {
     inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, int level) {
         unused(grouped);
         unused(level);
+        auto fg = get_app()._dim_text_fg;
+        auto dim = get_app()._dim_text_dim;
 
         std::set<std::string> keys;
         std::map<std::string, std::string> dotted_key_on_keys;
@@ -330,7 +332,7 @@ namespace cmdr::opt {
                         ss << ' ' << ' ';
                     std::stringstream tmp;
                     tmp << '[' << clean_key << ']';
-                    ss << c.dim().s(tmp.str()) << std::endl;
+                    ss << c.fg(fg).dim(dim).s(tmp.str()) << std::endl;
                     level_pad++;
                 }
             }
@@ -382,7 +384,7 @@ namespace cmdr::opt {
                 ss << std::setw(wt - w - (level >= 0 ? level : 0)) << ' ';
 
                 ss // << wt << ',' << level << ','
-                        << c.dim().s(x->descriptions())
+                        << c.fg(fg).dim(dim).s(x->descriptions())
                         // << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa
                         << std::endl;
 
@@ -395,7 +397,7 @@ namespace cmdr::opt {
         }
 
         if (count_all == 0) {
-            ss << c.dim().s("  (no sub-commands)") << '\n';
+            ss << c.fg(fg).dim(dim).s("  (no sub-commands)") << '\n';
         }
     }
 
@@ -403,6 +405,8 @@ namespace cmdr::opt {
     inline void cmd::print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, int level) {
         unused(grouped);
         unused(level);
+        auto fg = get_app()._dim_text_fg;
+        auto dim = get_app()._dim_text_dim;
 
         std::set<std::string> keys;
         std::map<std::string, std::string> dotted_key_on_keys;
@@ -482,7 +486,7 @@ namespace cmdr::opt {
                     ss << ' ' << ' ';
                     std::stringstream tmp;
                     tmp << '[' << clean_key << ']';
-                    ss << c.dim().s(tmp.str()) << std::endl;
+                    ss << c.fg(fg).dim(dim).s(tmp.str()) << std::endl;
                 }
             }
 
@@ -534,7 +538,7 @@ namespace cmdr::opt {
                 ss << std::setw(wt - w - (level >= 0 ? level * 2 : 0)) << ' ';
 
                 ss // << w << ',' << wt << ','
-                        << c.dim().s(x->descriptions());
+                        << c.fg(fg).dim(dim).s(x->descriptions());
 
                 auto se = x->env_vars_get();
                 if (!se.empty()) {
@@ -550,12 +554,12 @@ namespace cmdr::opt {
                     }
                     tmp << ")";
                     if (w > 0)
-                        ss << c.dim().s(tmp.str());
+                        ss << c.fg(fg).dim(dim).s(tmp.str());
                 }
 
                 auto sd = x->defaults();
                 if (!sd.empty())
-                    ss << c.dim().s(sd);
+                    ss << c.fg(fg).dim(dim).s(sd);
 
                 // ss << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa;
 
@@ -566,7 +570,7 @@ namespace cmdr::opt {
         }
 
         if (count_all == 0) {
-            ss << c.dim().s("  (no options)") << '\n';
+            ss << c.fg(fg).dim(dim).s("  (no options)") << '\n';
         }
     }
 

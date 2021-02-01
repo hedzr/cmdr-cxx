@@ -55,8 +55,9 @@ namespace cmdr {
         register_actions();
         add_global_options(*this);
         add_generator_menu(*this);
-        _on_command_not_hooked = [](opt::cmd const &c, string_array const &remain_args) {
+        _on_command_not_hooked = [&](opt::cmd const &c, string_array const &remain_args) {
             std::cout << "INVOKING: " << std::quoted(c.title()) << ", remains: " << string::join(remain_args, ',') << ".\n";
+            on_invoking_print_cmd(c,remain_args);
             return 0;
         };
     }
@@ -346,6 +347,7 @@ namespace cmdr {
                        .description("enable shorter ~~debug")
                        .special()
                        .no_non_special()
+                       .hidden()
                        .group(SYS_MGMT_GROUP);
 
         cli += cmdr::opt::opt{}("trace", "tr", "trace-mode")

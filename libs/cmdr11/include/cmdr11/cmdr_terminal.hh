@@ -241,7 +241,7 @@ namespace cmdr::terminal::colors {
             Navy,
             Purple,
             Teal,
-            Sliver,
+            Silver,
 
             Grey,
             Red,
@@ -528,11 +528,13 @@ namespace cmdr::terminal::colors {
         colorize &fg(int r, int g, int b) {
             // assert(c >= 0 && c <= 256);
             _fg = (r << 16) | (g << 8) | b;
+            _true_color_enabled = true;
             return (*this);
         }
         colorize &fg(Colors256 color256) {
             // assert(color256 >= 0 && color256 <= 256);
             _fg = color256;
+            _true_color_enabled = false;
             return (*this);
         }
         colorize &bg(int r, int g, int b) {
@@ -757,7 +759,7 @@ namespace cmdr::terminal {
     const char *const fg_reset_all = "\033[0m";
 
     const char *const fg_default = "\033[39m";
-    
+
     const char *const fg_black = "\033[30m";
 
     const char *const fg_red = "\033[31m";

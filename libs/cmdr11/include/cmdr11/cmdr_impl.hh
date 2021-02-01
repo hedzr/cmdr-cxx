@@ -90,7 +90,7 @@ namespace cmdr {
 
             if (auto &typ = amr.obj->default_value().type();
                 typ != typeid(bool) && typ != typeid(void)) {
-                
+
                 // try solving the following input as value of this matched arg.
                 auto remains = pc.title.substr(pc.pos + amr.matched_length);
                 auto remains_orig_len = remains.length();
@@ -121,7 +121,7 @@ namespace cmdr {
                 pc.add_matched_arg(amr.obj, val);
                 // std::cout << " -> " << val;
                 verbose_debug("   -> value: %s", val.as_string().c_str());
-                
+
             } else {
                 pc.add_matched_arg(amr.obj);
                 value_parsed = true;
@@ -181,13 +181,15 @@ namespace cmdr {
         opt::details::indexed_commands &li = c._long_commands;
         if (auto const &it = li.find(pc.title); it != li.end()) {
             cmr.matched = true;
-            cmr.obj = (opt::cmd *) &(it->second->update_hit_count(pc.title, 1, true));
+            auto p2 = it->second;
+            cmr.obj = (opt::cmd *) &(p2->update_hit_count(pc.title, 1, true));
         } else {
             li = c._short_commands;
             auto const &it1 = li.find(pc.title);
             if (it1 != li.end()) {
                 cmr.matched = true;
-                cmr.obj = (opt::cmd *) &(it->second->update_hit_count(pc.title, 1, false));
+                auto p2 = it1->second;
+                cmr.obj = (opt::cmd *) &(p2->update_hit_count(pc.title, 1, false));
             }
         }
         return cmr;
@@ -349,7 +351,13 @@ namespace cmdr {
         }
         ss << std::endl
            << "Usage" << std::endl;
-        ss << string::pad_left(exe_name, 2) << " [commands] [options] [Tail Args]" << std::endl;
+        std::vector<std::string> cmds;
+        auto pcc = cc;
+        while (pcc && pcc->owner()) {
+            cmds.insert(cmds.begin(), pcc->hit_count() > 0 ? pcc->hit_title() : pcc->title_long());
+            pcc = pcc->owner();
+        }
+        ss << string::pad_left(exe_name, 2) << ' ' << string::join(cmds, ' ') << " [options] [Tail Args]" << std::endl;
 
         ss << std::endl
            << "Commands" << std::endl;

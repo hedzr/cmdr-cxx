@@ -30,6 +30,7 @@ function(debug_dump_target_inc_dirs_all target)
     endforeach (dir)
 endfunction()
 
+# NOTE: debug_dump_target_inc_dirs can't work for a interface library.
 function(debug_dump_target_inc_dirs target)
     get_property(dirs1 TARGET ${target} PROPERTY INCLUDE_DIRECTORIES)
     get_property(dirs2 TARGET ${target} PROPERTY INTERFACE_INCLUDE_DIRECTORIES)

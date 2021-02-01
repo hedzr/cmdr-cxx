@@ -11,7 +11,7 @@
 namespace cmdr {
 
     class app;
-    
+
     class app_holder final : public util::singleton<app_holder> {
     public:
         explicit app_holder(typename util::singleton<app_holder>::token) { /*std::cout << "AppHolder constructed" << std::endl;*/
@@ -34,21 +34,6 @@ namespace cmdr {
         void put(app *ptr) { _app = ptr; }
         friend class app;
     };
-
-    inline app &get_app() { return *app_holder::instance().get_ptr(); }
-    inline auto &get_store() { return get_app().store(); }
-
-    inline app cli(const_chars name, const_chars version,
-                   const_chars author = nullptr, const_chars copyright = nullptr,
-                   const_chars description = nullptr,
-                   const_chars examples = nullptr) {
-        if (app_holder::instance().get_ptr()) {
-            throw std::logic_error("can't invoke create_app() multiple times.");
-        }
-
-        return app::create(name, version, author, copyright, description, examples);
-    }
-
 
 } // namespace cmdr
 

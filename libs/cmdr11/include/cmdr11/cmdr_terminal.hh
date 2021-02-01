@@ -685,6 +685,11 @@ namespace cmdr::terminal::colors {
 #define __R(x) (((x) >> 16) & 0xff)
 #define __G(x) (((x) >> 8) & 0xff)
 #define __B(x) (((x)) & 0xff)
+        std::string as_string() {
+            std::stringstream os;
+            os << (*this);
+            return os.str();
+        }
         friend std::ostream &operator<<(std::ostream &os, const colorize &o) {
             if (_colorful) {
                 os << "\033[" << o.modifiers();
@@ -748,7 +753,43 @@ namespace cmdr::terminal::colors {
 } // namespace cmdr::terminal::colors
 
 namespace cmdr::terminal {
-    //
+
+    const char *const fg_reset_all = "\033[0m";
+
+    const char *const fg_default = "\033[39m";
+    
+    const char *const fg_black = "\033[30m";
+
+    const char *const fg_red = "\033[31m";
+
+    const char *const fg_green = "\033[32m";
+
+    const char *const fg_yellow = "\033[33m";
+
+    const char *const fg_blue = "\033[34m";
+
+    const char *const fg_magenta = "\033[35m";
+
+    const char *const fg_cyan = "\033[36m";
+
+    const char *const fg_light_gray = "\033[37m";
+
+    const char *const fg_dark_gray = "\033[90m";
+
+    const char *const fg_light_red = "\033[91m";
+
+    const char *const fg_light_green = "\033[92m";
+
+    const char *const fg_light_yellow = "\033[93m";
+
+    const char *const fg_light_blue = "\033[94m";
+
+    const char *const fg_light_magenta = "\033[95m";
+
+    const char *const fg_light_cyan = "\033[96m";
+
+    const char *const fg_white = "\033[97m";
+
 } //namespace cmdr::terminal
 
 #endif //CMDR_CXX11_CMDR_TERMINAL_HH

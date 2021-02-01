@@ -21,7 +21,7 @@
 #endif
 
 #ifndef UNUSED
-#define UNUSED(x) (void) (x)
+#define UNUSED(x) do { (void)(expr); } while (0)
 #endif
 
 #ifndef __COPY
@@ -122,5 +122,8 @@ const char *const NOBODY_GROUP_SORTER = "3333";
 //template<class T=std::string>
 //constexpr T SYS_MGMT_GROUP = T("9000.System Management");
 
+// #if defined(CMDR_ENABLE_VERBOSE_LOG)
+// #include <spdlog/spdlog.h>
+// #endif
 
 #endif //CMDR_CXX11_CMDR_DEFS_HH

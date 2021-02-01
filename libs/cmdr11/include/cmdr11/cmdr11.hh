@@ -35,7 +35,7 @@
 
 
 // #define CAST_CONST_CHARS_AS_STD_STRING
-// To cast a const char* string as a std::string instance in extracting 
+// To cast a const char* string as a std::string instance in extracting
 // arg default value, uncomment the above line.
 
 #include "cmdr_defs.hh"
@@ -58,11 +58,13 @@
 #include "cmdr_cmd.hh"
 #include "cmdr_cmn.hh"
 
+#include "cmdr_internals.hh"
+#include "cmdr_public.hh"
+
 #include "cmdr_app_inl.h"
 #include "cmdr_cmd_inl.h"
-#include "cmdr_impl.hh"
 #include "cmdr_imp1.hh" // vars / variable / parse
-#include "cmdr_internals.hh"
+#include "cmdr_impl.hh"
 
 #include "cmdr_opts.hh"
 

@@ -32,6 +32,7 @@ namespace cmdr::opt {
         std::string _description;
         std::string _examples;
         std::string _group;
+        
         bool _hidden : 1;
         bool _required : 1;
         bool _special : 1;
@@ -41,10 +42,12 @@ namespace cmdr::opt {
 
         bool _hit_long : 1;
         bool _hit_special : 1;
+        bool _hit_env : 1;
+        
         std::string _hit_title;
-        int _hit_count;
+        int _hit_count{0};
 
-        cmd *_owner{};
+        cmd *_owner{nullptr};
 
     public:
         bas() = default;
@@ -76,6 +79,9 @@ namespace cmdr::opt {
             __COPY(_special);
             __COPY(_no_non_special);
 
+            __COPY(_hit_long);
+            __COPY(_hit_special);
+            __COPY(_hit_env);
             __COPY(_hit_title);
             __COPY(_hit_count);
 
@@ -135,13 +141,14 @@ namespace cmdr::opt {
         PROP_SET4(hit_count, int)
         PROP_SET4(hit_long, bool)
         PROP_SET4(hit_special, bool)
+        PROP_SET4(hit_env, bool)
 
         bas &owner(cmd *o);
-        cmd const *owner() const;
+        [[nodiscard]] cmd const *owner() const;
         cmd *owner();
-        cmd const *root() const;
+        [[nodiscard]] cmd const *root() const;
         cmd *root();
-        std::string dotted_key() const;
+        [[nodiscard]] std::string dotted_key() const;
 
 #undef PROP_SET
 #undef PROP_SET2
@@ -154,6 +161,14 @@ namespace cmdr::opt {
             _hit_count += inc_hit_count;
             _hit_long = is_long;
             _hit_special = is_special;
+            return (*this);
+        }
+        bas &update_hit_count_from_env(std::string const &env_var_name, int inc_hit_count = 1) {
+            _hit_title = env_var_name;
+            _hit_count += inc_hit_count;
+            _hit_long = true;
+            _hit_special = false;
+            _hit_env = true;
             return (*this);
         }
 

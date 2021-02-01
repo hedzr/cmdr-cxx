@@ -4,6 +4,7 @@
 ## Add the dependencies of our library
 include(CMakeFindDependencyMacro)
 #find_dependency(ZLIB REQUIRED)
+#find_dependency(fmt REQUIRED)
 
 ## Import the targets
 if (NOT TARGET cmdr11::cmdr11)

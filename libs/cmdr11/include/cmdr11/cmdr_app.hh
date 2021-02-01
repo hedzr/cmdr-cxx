@@ -45,13 +45,11 @@ namespace cmdr {
         PROP_SET(author)
         PROP_SET(copyright)
         PROP_SET(header)
+        PROP_SET(tail_line)
         // PROP_SET(description)
         // PROP_SET(examples)
 
 #undef PROP_SET
-
-        [[nodiscard]] auto const &store() const { return _store; }
-        auto &store() { return _store; }
 
     public:
         /**
@@ -90,6 +88,19 @@ namespace cmdr {
         //[[nodiscard]] bool help_hit() const { return _help_hit > 0; }
         //[[nodiscard]] cmd *command_hit() const { return _cmd_hit; }
 
+        [[nodiscard]] auto const &store() const { return _store; }
+        auto &store() { return _store; }
+
+        app &set_match_longest_first(bool b = true) {
+            _longest_first = b;
+            return (*this);
+        }
+
+        app &set_minimal_tab_stop(int width = 43) {
+            _minimal_tab_width = width;
+            return (*this);
+        }
+
     public:
         app &set_global_pre_invoke_handler(opt::details::on_pre_invoke &&cb) {
             _global_on_pre_invoke = std::move(cb);
@@ -108,27 +119,27 @@ namespace cmdr {
             return (*this);
         }
 
-        app& set_global_on_arg_added(details::on_arg_added &&cb){
+        app &set_global_on_arg_added(details::on_arg_added &&cb) {
             _on_arg_added.push_back(cb);
             return (*this);
         }
-        app& set_global_on_cmd_added(details::on_cmd_added &&cb){
+        app &set_global_on_cmd_added(details::on_cmd_added &&cb) {
             _on_cmd_added.push_back(cb);
             return (*this);
         }
-        app& set_global_on_arg_matched(details::on_arg_matched &&cb){
+        app &set_global_on_arg_matched(details::on_arg_matched &&cb) {
             _on_arg_matched.push_back(cb);
             return (*this);
         }
-        app& set_global_on_cmd_matched(details::on_cmd_matched &&cb){
+        app &set_global_on_cmd_matched(details::on_cmd_matched &&cb) {
             _on_cmd_matched.push_back(cb);
             return (*this);
         }
-        app& set_global_on_loading_externals(details::on_loading_externals &&cb){
+        app &set_global_on_loading_externals(details::on_loading_externals &&cb) {
             _on_loading_externals.push_back(cb);
             return (*this);
         }
-        
+
         app &set_global_on_command_not_hooked(opt::details::on_invoke cb) {
             _on_command_not_hooked = cb;
             return (*this);
@@ -136,7 +147,7 @@ namespace cmdr {
 
     protected:
         friend class cmd;
-        
+
         void on_arg_added(opt::arg *a) {
             auto key = a->dotted_key();
             _store.set(key.c_str(), a->default_value());
@@ -170,7 +181,7 @@ namespace cmdr {
             }
         }
         void on_loading_externals() {
-            for (auto & _on_loading_external : _on_loading_externals) {
+            for (auto &_on_loading_external : _on_loading_externals) {
                 if (_on_loading_external)
                     _on_loading_external(*this);
             }
@@ -289,7 +300,21 @@ namespace cmdr {
             }
         }
 
-        static void fatal_exit(const std::string &msg);
+        static void fatal_exit(const char *format) {
+            std::cout << format << '\n';
+            exit(-1);
+        }
+        template<class A, class... Args>
+        static void fatal_exit(const char *format, A const &a0, Args &&...args) {
+            for (; *format != '\0'; format++) {
+                if (*format == '%') {
+                    std::cout << a0;
+                    tprintf(format + 1, args...); // 递归调用
+                    return;
+                }
+                std::cout << *format;
+            }
+        }
 
         void print_cmd(std::ostream &ss,
                        cmdr::terminal::colors::colorize &c, opt::cmd *cc,
@@ -298,7 +323,9 @@ namespace cmdr {
         static int print_debug_info_screen(parsing_context &pc, int argc, char *argv[]);
         static int print_manual_screen(parsing_context &pc, int argc, char *argv[]);
         int print_tree_screen(parsing_context &pc, int argc, char *argv[]);
-
+        
+        int on_invoking_print_cmd(opt::cmd const &hit, string_array const &remain_args);
+        
     public:
         // app &operator+(const opt::opt &a) override;
         // app &operator+=(const opt::opt &a) override;

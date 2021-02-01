@@ -1,7 +1,47 @@
 project(cmdr11
         VERSION ${CMAKE_PROJECT_VERSION}
-        DESCRIPTION "libcmdr11 - cmdr cxx11 library"
+        DESCRIPTION "libcmdr11 - cmdr cxx library for C++17"
         LANGUAGES CXX)
+
+
+## OPTIONS ######################################
+
+if (CMAKE_BUILD_TYPE MATCHES Debug)
+    set(_cmdr_default_assertions ON)
+else ()
+    set(_cmdr_default_assertions OFF)
+endif ()
+
+option(CMDR_ENABLE_ASSERTIONS "whether or not to enable internal assertions for the cmdr cxx11 library" ${_cmdr_default_assertions})
+if (${CMDR_ENABLE_ASSERTIONS})
+    set(_cmdr_enable_assertions 1)
+else ()
+    set(_cmdr_enable_assertions 0)
+endif ()
+
+option(CMDR_ENABLE_PRECONDITION_CHECKS "whether or not to enable precondition checks" ON)
+if (${CMDR_ENABLE_PRECONDITION_CHECKS})
+    set(_cmdr_enable_precondition_checks 1)
+else ()
+    set(_cmdr_enable_precondition_checks 0)
+endif ()
+
+option(CMDR_ENABLE_WRAPPER "whether or not the wrappers in cmdr-cxx.hpp are used" ON)
+if (${CMDR_ENABLE_WRAPPER})
+    set(_cmdr_enable_wrapper 1)
+else ()
+    set(_cmdr_enable_wrapper 0)
+endif ()
+
+option(CMDR_ENABLE_VERBOSE_LOG "whether or not print the matching decisions to logging output in running" OFF)
+if (${CMDR_ENABLE_VERBOSE_LOG})
+    set(_cmdr_enable_verbose_log 1)
+else ()
+    set(_cmdr_enable_verbose_log 0)
+endif ()
+
+
+## SETTINGS ######################################
 
 set(PROJECT_ARCHIVE_NAME ${PROJECT_NAME}-${PROJECT_VERSION})
 #if (POLICY CMP0069)
@@ -18,7 +58,13 @@ endif ()
 
 
 #find_package(ZLIB REQUIRED)
-
+#find_package(fmt)
+#include(deps_inc_fmt)
+if (CMDR_ENABLE_VERBOSE_LOG)
+    # include(deps_inc_spdlog)
+    # Or for a spdlog standalone install:
+    # find_package(spdlog REQUIRED)
+endif ()
 
 #debug_print_hbar()
 #debug_dump_cmake_environments()
@@ -26,6 +72,38 @@ endif ()
 #debug_dump_cmake_variables()
 #debug_print_hbar_long()
 
+set(detail_header_files
+        )
+set(header_files
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/cmdr-cxx.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr11.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_app.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_app_inl.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_arg.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_chrono.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_cmd.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_cmd_inl.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_cmn.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_defs.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_if.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_imp1.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_impl.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_internals.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_ios.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_log.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_opts.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_path.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_public.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_small_string.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_string.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_terminal.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_types.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_types_check.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_utils.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_var_t.hh
+        )
+
+## TARGETS ######################################
 
 add_library(${PROJECT_NAME} INTERFACE)
 add_library(libs::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
@@ -34,8 +112,8 @@ add_library(libs::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_11)
-target_sources(${PROJECT_NAME} INTERFACE include/cmdr11/cmdr11.hh)
-#target_sources(${PROJECT_NAME} PRIVATE src/private.cc)
+#target_sources(${PROJECT_NAME} PRIVATE src/${PROJECT_NAME}.cc src/private.cc)
+target_sources(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${detail_header_files};${header_files}>")
 #set_target_properties(${PROJECT_NAME} PROPERTIES
 #        COMPILE_FEATURES cxx_std_14
 #        SOURCES src/${PROJECT_NAME}.cc
@@ -43,19 +121,77 @@ target_sources(${PROJECT_NAME} INTERFACE include/cmdr11/cmdr11.hh)
 target_include_directories(${PROJECT_NAME}
         INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
+        #$<INSTALL_INTERFACE:include>
         #PRIVATE
         #${ZLIB_INCLUDE_DIRS}
+        #${spdlog_SOURCE_DIR}/include
         )
+target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>)
+
+target_compile_definitions(${PROJECT_NAME} INTERFACE
+        CMDR_ENABLE_ASSERTIONS=${_cmdr_enable_assertions}
+        CMDR_ENABLE_PRECONDITION_CHECKS=${_cmdr_enable_precondition_checks}
+        CMDR_ENABLE_WRAPPER=${_cmdr_enable_wrapper}
+        CMDR_ENABLE_VERBOSE_LOG=${_cmdr_enable_verbose_log})
+#target_link_libraries(${PROJECT_NAME} INTERFACE debug_assert)
 #target_link_libraries(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARIES})
-#target_link_libraries(${PROJECT_NAME}
-#        PRIVATE
-#        libs::sm-lib)
+#target_link_libraries(${PROJECT_NAME} PRIVATE libs::sm-lib)
+#target_link_libraries(${PROJECT_NAME} INTERFACE fmt::fmt-header-only)
+if (CMDR_ENABLE_VERBOSE_LOG)
+#    target_link_libraries(${PROJECT_NAME} INTERFACE spdlog::spdlog)
+    #target_link_libraries(${PROJECT_NAME} INTERFACE spdlog::spdlog)
+    #add_dependencies(${PROJECT_NAME} spdlog)
+endif()
+
+if (MSVC)
+    target_compile_options(${PROJECT_NAME} INTERFACE /wd4800) # truncation to bool warning
+endif ()
+
+
+## TESTING ######################################
 
 if (BUILD_TESTING)
     message(STATUS trying add test with name ${PROJECT_NAME}_tests)
     add_unit_test(${PROJECT_NAME} tests ${PROJECT_NAME}_tests)
 endif ()
+
+
+## INSTALLING ######################################
+
+include(CMakePackageConfigHelpers)
+set(CONFIG_PACKAGE_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+
+write_basic_package_version_file(
+        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
+        VERSION ${CMAKE_PROJECT_VERSION}
+        COMPATIBILITY SameMajorVersion
+)
+
+install(TARGETS ${PROJECT_NAME} 
+        EXPORT ${PROJECT_NAME}Targets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )
+
+install(EXPORT ${PROJECT_NAME}Targets
+        FILE ${PROJECT_NAME}Targets.cmake
+        NAMESPACE ${PROJECT_NAME}::
+        DESTINATION ${CONFIG_PACKAGE_INSTALL_DIR})
+
+install(DIRECTORY include/${PROJECT_NAME}
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        )
+
+install(FILES
+        ${CMAKE_CURRENT_LIST_DIR}/cmake/${PROJECT_NAME}Config.cmake
+        DESTINATION
+        ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+
+
+## DEBUG ######################################
+
+# debug_dump_target_inc_dirs(${PROJECT_NAME})
+
 debug_print_value(ARCHIVE_NAME)
 debug_print_value(PROJECT_ARCHIVE_NAME)
 debug_print_value(BUILD_TESTING)

@@ -19,6 +19,7 @@
 #include "cmdr_cmd.hh"
 #include "cmdr_cmn.hh"
 #include "cmdr_internals.hh"
+#include "cmdr_public.hh"
 #include "cmdr_terminal.hh"
 
 
@@ -118,9 +119,30 @@ namespace cmdr {
 #pragma clang diagnostic pop
     }
 
-    inline void app::fatal_exit(const std::string &msg) {
-        std::cerr << msg << '\n';
-        exit(-1);
+    // inline void app::fatal_exit(std::string const &msg) {
+    //     std::cerr << msg << '\n';
+    //     exit(-1);
+    // }
+
+    // inline void app::fatal_exit(const std::string &msg) {
+    //     std::cerr << msg << '\n';
+    //     exit(-1);
+    // }
+
+    inline int app::on_invoking_print_cmd(opt::cmd const &hit, string_array const &remain_args) {
+        unused(hit);
+        unused(remain_args);
+        std::cout << "command " << std::quoted(hit.title()) << " hit." << '\n';
+        walk_args([](opt::arg &a) {
+            if (a.hit_count() > 0) {
+                std::cout << " - " << a.hit_count() << " hits: " << std::quoted(a.title())
+                          << " (hit title: " << std::quoted(a.hit_title())
+                          << ", spec:" << a.hit_special()
+                          << ", long:" << a.hit_long()
+                          << ", env:" << a.hit_env() << ")" << '\n';
+            }
+        });
+        return 0;
     }
 
     inline int app::print_debug_info_screen(parsing_context &pc, int argc, char *argv[]) {
@@ -180,6 +202,7 @@ namespace cmdr {
         unused(pc);
         unused(argc);
         unused(argv);
+        // todo print_manual_screen
         return 0;
     }
 
@@ -286,11 +309,9 @@ namespace cmdr {
                        .description("print cmdr internal information")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
-                       .on_invoke([](opt::cmd const &hit, string_array const &remain_args) -> int {
-                           unused(hit);
-                           unused(remain_args);
-                           return opt::RequestDebugInfoScreen;
-                       });
+                       .on_invoke([&](auto &&...args) -> int { return cli.on_invoking_print_cmd(args...); })
+                // .on_invoke(cli.on_invoking_print_cmd)
+                ;
 
         cli += cmdr::opt::opt{}("tree")
                        .description("print all commands as a tree")

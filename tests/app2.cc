@@ -127,18 +127,18 @@ void add_server_menu(cmdr::app &cli) {
                       .placeholder("HOST[:IP]")
                       .env_vars("HOST");
 
-        std::cout << "test" << '\n';
-        std::any v1 = "lolo";
-        auto v1e = std::any_cast<char const *>(v1);
+        // std::cout << "test" << '\n';
+        // std::any v1 = "lolo";
+        // auto v1e = std::any_cast<char const *>(v1);
         auto &dv1 = t1.last_added_arg()->default_value();
-        std::cout << dv1.as_string() << ". type: " << dv1.type().name() << '\n';
+        // std::cout << dv1.as_string() << ". type: " << dv1.type().name() << '\n';
 #if defined(CAST_CONST_CHARS_AS_STD_STRING)
         auto dv2 = dv1.cast_as<std::string>();
 #else
         auto dv2 = dv1.cast_as<char const *>();
 #endif
         assert(std::string(dv2) == "localhost");
-        std::cout << "test: " << dv1 << v1e << '\n';
+        // std::cout << "test: " << dv1 << v1e << '\n';
 
         t1 += opt{(int16_t) 4567}("port", "p")
                       .description("listening port number")
@@ -205,8 +205,10 @@ int main(int argc, char *argv[]) {
 #endif
 
 #if 1
-        using namespace cmdr::addons::loaders;
-        cli.set_global_on_loading_externals(yaml_loader{}());
+        {
+            using namespace cmdr::addons::loaders;
+            cli.set_global_on_loading_externals(yaml_loader{}());
+        }
 #endif
 
         return cli.run(argc, argv);

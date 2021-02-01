@@ -8,7 +8,8 @@ project(test
 #dump_list(INCLUDE_DIRECTORIES)
 #debug_print_list_value(INCLUDE_DIRECTORIES)
 
-#debug_print_hbar()
+debug_print_hbar()
+debug("  tests ")
 #debug_dump_cmake_environments()
 #debug_print_hbar()
 #debug_dump_cmake_variables()
@@ -17,18 +18,9 @@ project(test
 
 set(PROJECT_ARCHIVE_NAME ${PROJECT_NAME}s-${PROJECT_VERSION})
 
+include(deps_inc_catch2)
+include(deps_inc_fmt)
 
-#find_package(Catch2)
-#if (NOT CATCH2_FOUND)
-Include(FetchContent)
-
-FetchContent_Declare(
-        Catch2
-        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG v2.13.3)
-
-FetchContent_MakeAvailable(Catch2)
-#endif ()
 
 # so_stuff: just a tester for ARGN
 function(do_stuff arg1 arg2)
@@ -55,6 +47,7 @@ function(define_test_program name)
             PRIVATE
             libs::cmdr11
             Catch2::Catch2
+            fmt::fmt-header-only
             )
     set_target_properties(${PROJECT_NAME}-${name} PROPERTIES
             CXX_STANDARD 17

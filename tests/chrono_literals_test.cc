@@ -59,6 +59,15 @@ void test_literals() {
     //         << int(65578y) << '\n';  // 未指定
 }
 
+#include <fmt/chrono.h>
+
+void test_fmt() {
+    using namespace std::literals::chrono_literals;
+    fmt::print("Default format: {} {}\n", 42s, 100ms);
+    fmt::print("strftime-like format: {:%H:%M:%S}\n", 3h + 15min + 30s);
+}
+
 int main() {
     test_literals();
+    test_fmt();
 }

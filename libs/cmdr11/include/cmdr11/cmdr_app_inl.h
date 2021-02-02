@@ -52,14 +52,20 @@ namespace cmdr {
 
     inline void app::initialize_internal_commands() {
         _long = DEFAULT_CLI_KEY_PREFIX;
+
         register_actions();
         add_global_options(*this);
         add_generator_menu(*this);
+
         _on_command_not_hooked = [&](opt::cmd const &c, string_array const &remain_args) {
             std::cout << "INVOKING: " << std::quoted(c.title()) << ", remains: " << string::join(remain_args, ',') << ".\n";
             on_invoking_print_cmd(c, remain_args);
             return 0;
         };
+
+        if (auto p = std::getenv("CMDR_DIM"); p && p[0] == '1') {
+            _dim_text_dim = true;
+        }
     }
 
     inline void app::register_actions() {
@@ -138,13 +144,15 @@ namespace cmdr {
         unused(hit);
         unused(remain_args);
         std::cout << "command " << std::quoted(hit.title()) << " hit." << '\n';
-        walk_args([](opt::arg &a) {
+        walk_args([=](opt::arg &a) {
             if (a.hit_count() > 0) {
+                auto k = a.dotted_key();
+                auto &v = _store.get_raw(k);
                 std::cout << " - " << a.hit_count() << " hits: " << std::quoted(a.title())
                           << " (hit title: " << std::quoted(a.hit_title())
                           << ", spec:" << a.hit_special()
                           << ", long:" << a.hit_long()
-                          << ", env:" << a.hit_env() << ")" << '\n';
+                          << ", env:" << a.hit_env() << ") => " << v << '\n';
             }
         });
         return 0;

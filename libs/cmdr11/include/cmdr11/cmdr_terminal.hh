@@ -5,8 +5,14 @@
 #ifndef CMDR_CXX11_CMDR_TERMINAL_HH
 #define CMDR_CXX11_CMDR_TERMINAL_HH
 
-
-#include <unistd.h>
+#if !defined(OS_WIN) && !defined(OS_ANDROID)
+#include <sys/ioctl.h> //ioctl() and TIOCGWINSZ
+#include <unistd.h>    // for STDOUT_FILENO
+#elif defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#define VC_EXTRALEAN
+#include <Windows.h>
+#endif
 
 #include <cstdlib>
 // #include <stdlib.h>
@@ -68,6 +74,23 @@ namespace cmdr::terminal {
             int count = 8;
             is >> count;
             return count;
+#endif
+        }
+
+        static std::tuple<int, int> get_win_size() {
+#if defined(_WIN32)
+            CONSOLE_SCREEN_BUFFER_INFO csbi;
+            GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+            width = (int) (csbi.dwSize.X);
+            height = (int) (csbi.dwSize.Y);
+            return {height, width};
+#elif defined(__linux__) || defined(OS_MACOS)
+            // #if !defined(OS_WIN) && !defined(OS_ANDROID)
+            struct winsize size {};
+            ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
+            return {size.ws_row, size.ws_col <= 0 ? 100 : size.ws_col};
+#else
+            return {1000, 1000};
 #endif
         }
     };

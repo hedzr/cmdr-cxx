@@ -240,7 +240,7 @@ int main(int argc, char *argv[]) {
 
     } catch (std::exception &e) {
         std::cerr << "Exception caught for testing (NOT BUG) : " << e.what() << std::endl;
-        cmdr::dump_stack_trace(e);
+        CMDR_DUMP_STACK_TRACE(e);
     }
     
     return cli.run(argc, argv);

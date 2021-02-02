@@ -42,6 +42,8 @@
 #include "cmdr_types.hh"
 #include "cmdr_types_check.hh"
 
+#include "cmdr_dbg.hh"
+
 #include "cmdr_chrono.hh"
 #include "cmdr_ios.hh"
 #include "cmdr_log.hh"

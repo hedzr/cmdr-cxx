@@ -140,12 +140,12 @@ namespace cmdr::log {
 //     va_end(va);
 // }
 #if defined(_MSC_VER)
-#define verbose_debug(...) cmdr::log::holder(__FILE__, __LINE__, __FUNCSIG__)(__VA_ARGS__)
+#define cmdr_verbose_debug(...) cmdr::log::holder(__FILE__, __LINE__, __FUNCSIG__)(__VA_ARGS__)
 #else
-#define verbose_debug(..) cmdr::log::holder(__FILE__, __LINE__, __PRETTY_FUNCTION__)(__VA_ARGS__)
+#define cmdr_verbose_debug(..) cmdr::log::holder(__FILE__, __LINE__, __PRETTY_FUNCTION__)(__VA_ARGS__)
 #endif
 #else
-#define verbose_debug(...)                                                                    \
+#define cmdr_verbose_debug(...)                                                                    \
     _Pragma("GCC diagnostic push")                                                            \
             _Pragma("GCC diagnostic ignored \"-Wunused-value\"") do { (void) (__VA_ARGS__); } \
     while (0)                                                                                 \
@@ -154,9 +154,9 @@ namespace cmdr::log {
 
 #if defined(_DEBUG)
 #if defined(_MSC_VER)
-#define debug(...) cmdr::log::holder(__FILE__, __LINE__, __FUNCSIG__)(__VA_ARGS__)
+#define cmdr_debug(...) cmdr::log::holder(__FILE__, __LINE__, __FUNCSIG__)(__VA_ARGS__)
 #else
-#define debug(...) cmdr::log::holder(__FILE__, __LINE__, __PRETTY_FUNCTION__)(__VA_ARGS__)
+#define cmdr_debug(...) cmdr::log::holder(__FILE__, __LINE__, __PRETTY_FUNCTION__)(__VA_ARGS__)
 #endif
 #else
 #define debug(...)                                                                            \

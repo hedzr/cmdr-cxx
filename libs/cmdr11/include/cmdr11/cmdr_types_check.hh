@@ -21,86 +21,11 @@
 #include <utility>
 #include <vector>
 
-#ifndef _MSC_VER
-#include <cxxabi.h>
-#endif
 #include <cstdlib>
 #include <memory>
 #include <string>
 
 namespace cmdr {
-
-#if __cplusplus < 201402
-    template<class T>
-    std::string
-    type_name() {
-        typedef typename std::remove_reference<T>::type TR;
-        std::unique_ptr<char, void (*)(void *)> own(
-#ifndef _MSC_VER
-                abi::__cxa_demangle(typeid(TR).name(), nullptr,
-                                    nullptr, nullptr),
-#else
-                nullptr,
-#endif
-                std::free);
-        std::string r = own != nullptr ? own.get() : typeid(TR).name();
-        if (std::is_const<TR>::value)
-            r += " const";
-        if (std::is_volatile<TR>::value)
-            r += " volatile";
-        if (std::is_lvalue_reference<T>::value)
-            r += "&";
-        else if (std::is_rvalue_reference<T>::value)
-            r += "&&";
-        return r;
-    }
-#else
-    template<typename T>
-    constexpr auto type_name() noexcept {
-        std::string_view name = "Error: unsupported compiler", prefix, suffix;
-#ifdef __clang__
-        name = __PRETTY_FUNCTION__;
-        prefix = "auto type_name() [T = ";
-        suffix = "]";
-#elif defined(__GNUC__)
-        name = __PRETTY_FUNCTION__;
-        prefix = "constexpr auto type_name() [with T = ";
-        suffix = "]";
-#elif defined(_MSC_VER)
-        name = __FUNCSIG__;
-        prefix = "auto __cdecl type_name<";
-        suffix = ">(void) noexcept";
-#endif
-        name.remove_prefix(prefix.size());
-        name.remove_suffix(suffix.size());
-        return name;
-    }
-#endif
-
-
-    // to detect the type of a lambda function, following:
-    //   https://stackoverflow.com/a/7943736/6375060
-
-    template<class>
-    struct mem_type;
-
-    template<class C, class T>
-    struct mem_type<T C::*> {
-        typedef T type;
-    };
-
-    template<class T>
-    struct lambda_func_type {
-        typedef typename mem_type<decltype(&T::operator())>::type type;
-    };
-
-#if 0
-    void main_lambda_compare() {
-        auto l = [](int i) { return long(i); };
-        typedef lambda_func_type<decltype(l)>::type T;
-        static_assert(std::is_same<T, long(int) const>::value, "ok");
-    }
-#endif
 
 
     // template<class T, typename=void>

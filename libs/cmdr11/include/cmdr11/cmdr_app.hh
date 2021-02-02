@@ -10,9 +10,9 @@
 #include "cmdr_arg.hh"
 #include "cmdr_cmd.hh"
 #include "cmdr_cmn.hh"
+#include "cmdr_dbg.hh"
 #include "cmdr_opts.hh"
 #include "cmdr_terminal.hh"
-
 
 namespace cmdr {
 
@@ -308,7 +308,7 @@ namespace cmdr {
                 }
             } catch (const std::exception &e) {
                 std::cout << "Caught exception \"" << e.what() << "\"\n";
-                dump_stack_trace(e);
+                CMDR_DUMP_STACK_TRACE(e);
             }
         }
 

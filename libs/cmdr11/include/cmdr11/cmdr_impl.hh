@@ -86,7 +86,7 @@ namespace cmdr {
             assert(amr.obj);
 
             // std::cout << " - " << amr.matched_str << ' ' << '(' << amr.obj->dotted_key() << ')';
-            verbose_debug(" - %s (%s)", amr.matched_str.c_str(), amr.obj->dotted_key().c_str());
+            cmdr_verbose_debug(" - %s (%s)", amr.matched_str.c_str(), amr.obj->dotted_key().c_str());
 
             amr.obj->hit_title(amr.matched_str.c_str()); // pc.title.c_str());
 
@@ -122,7 +122,7 @@ namespace cmdr {
 
                 pc.add_matched_arg(amr.obj, val);
                 // std::cout << " -> " << val;
-                verbose_debug("   -> value: %s", val.as_string().c_str());
+                cmdr_verbose_debug("   -> value: %s", val.as_string().c_str());
 
             } else {
                 pc.add_matched_arg(amr.obj);
@@ -453,7 +453,7 @@ namespace cmdr {
             char *ptr = std::getenv(ks.c_str());
             if (ptr) {
                 std::stringstream(ptr) >> (*val.second);
-                verbose_debug("  ENV[%s (%s)] => %s", ks.c_str(), val.first.c_str(), ptr);
+                cmdr_verbose_debug("  ENV[%s (%s)] => %s", ks.c_str(), val.first.c_str(), ptr);
                 // std::cout << "  ENV[" << ks << '(' << val.first << ")] => " << ptr << '\n';
             }
         });
@@ -467,7 +467,7 @@ namespace cmdr {
                     auto &v = _store.get_raw(dk);
                     std::stringstream(ptr) >> v;
                     // std::cout << "  ENV[" << ev << '(' << dk << ")] => " << ptr << " / " << _store.get_raw(dk) << '\n';
-                    verbose_debug("  ENV[%s (%s)] => %s / %s", ev.c_str(), dk.c_str(), ptr, _store.get_raw(dk).as_string().c_str());
+                    cmdr_verbose_debug("  ENV[%s (%s)] => %s / %s", ev.c_str(), dk.c_str(), ptr, _store.get_raw(dk).as_string().c_str());
                     a.default_value(v);
                     a.update_hit_count_from_env(ev, 1);
                     // std::cout << " / " << a.default_value() << '\n';
@@ -537,7 +537,7 @@ namespace cmdr {
 
         } catch (std::exception const &e) {
             std::cerr << "Exception caught : " << e.what() << std::endl;
-            cmdr::dump_stack_trace(e);
+            CMDR_DUMP_STACK_TRACE(e);
 
         } catch (...) {
             post_run(); // optional to post_run(), for the rare exception post processing if necessary

@@ -33,7 +33,7 @@
 
 #include <chrono>
 
-#include "cmdr_defs.hh"
+#include "cmdr_dbg.hh"
 
 #include "cmdr_chrono.hh"
 
@@ -169,7 +169,7 @@ namespace cmdr::util {
 
     template<class Visitor>
     inline void visit_any_as(std::any const &, Visitor &&) {
-        throw_line("std::any contained no suitable type, unable to visit");
+        cmdr_throw_line("std::any contained no suitable type, unable to visit");
     }
 
     template<class First, class... Rest, class Visitor>

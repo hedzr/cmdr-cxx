@@ -33,6 +33,8 @@
 #include "cmdr_types.hh"
 #include "cmdr_types_check.hh"
 
+#include "cmdr_dbg.hh"
+
 #include "cmdr_chrono.hh"
 #include "cmdr_string.hh"
 #include "cmdr_terminal.hh"
@@ -62,7 +64,7 @@ namespace cmdr::vars {
                     [g = f](std::istream &is, std::any &a) {
                         if constexpr (std::is_void_v<T>) {
                             g(is);
-                        } else if constexpr (std::is_same_v<typename lambda_func_type<decltype(g)>::type, void(std::istream &, std::any &) const>) {
+                        } else if constexpr (std::is_same_v<typename debug::lambda_func_type<decltype(g)>::type, void(std::istream &, std::any &) const>) {
                             g(is, a);
                         } else {
                             T t;

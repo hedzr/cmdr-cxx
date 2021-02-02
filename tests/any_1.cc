@@ -245,7 +245,7 @@ void test_fold() {
 // https://stackoverflow.com/a/7943736/6375060
 void main_lambda_compare() {
     auto l = [](int i) { return long(i); };
-    typedef cmdr::lambda_func_type<decltype(l)>::type T;
+    typedef cmdr::debug::lambda_func_type<decltype(l)>::type T;
     static_assert(std::is_same<T, long(int) const>::value, "ok");
 }
 
@@ -271,8 +271,8 @@ void test_variant() {
 
     auto g = [](std::istream &, std::any &) {};
     std::cout << typeid(g).name() << '\n';
-    std::cout << cmdr::type_name<decltype(g)>() << '\n';
-    if constexpr (std::is_same_v<cmdr::lambda_func_type<decltype(g)>::type, void(std::istream &, std::any &) const>) {
+    std::cout << cmdr::debug::type_name<decltype(g)>() << '\n';
+    if constexpr (std::is_same_v<cmdr::debug::lambda_func_type<decltype(g)>::type, void(std::istream &, std::any &) const>) {
         std::cout << "matched!\n";
     }
 }

@@ -129,40 +129,5 @@ const char *const NOBODY_GROUP_SORTER = "3333";
 // #include <spdlog/spdlog.h>
 // #endif
 
-#include <stdexcept>
-#include <sstream>
-
-namespace cmdr {
-
-    class cmdr_exception : public std::runtime_error {
-        std::string msg;
-
-    public:
-        cmdr_exception(const std::string &arg, const char *file, int line)
-            : std::runtime_error(arg) {
-            std::ostringstream o;
-            o << arg << "  " << file << ":" << line;
-            msg = o.str();
-        }
-        ~cmdr_exception() noexcept override = default;
-        [[nodiscard]] const char *what() const noexcept override {
-            return msg.c_str();
-        }
-    };
-#define throw_line(arg) throw cmdr_exception(arg, __FILE__, __LINE__);
-
-    // unwrap nested exceptions, printing each nested exception to
-    // std::cerr
-    inline void dump_stack_trace(const std::exception &e, std::size_t depth = 0) {
-        std::cerr << "  [EX][ERR]: " << std::string(depth, ' ') << e.what() << '\n';
-        try {
-            std::rethrow_if_nested(e);
-        } catch (const std::exception &nested) {
-            dump_stack_trace(nested, depth + 1);
-        }
-    }
-
-} // namespace cmdr
-
 
 #endif //CMDR_CXX11_CMDR_DEFS_HH

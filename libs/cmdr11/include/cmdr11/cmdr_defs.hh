@@ -129,6 +129,9 @@ const char *const NOBODY_GROUP_SORTER = "3333";
 // #include <spdlog/spdlog.h>
 // #endif
 
+#include <stdexcept>
+#include <sstream>
+
 namespace cmdr {
 
     class cmdr_exception : public std::runtime_error {
@@ -141,8 +144,8 @@ namespace cmdr {
             o << arg << "  " << file << ":" << line;
             msg = o.str();
         }
-        ~cmdr_exception() noexcept {}
-        [[nodiscard]] const char *what() const noexcept {
+        ~cmdr_exception() noexcept override = default;
+        [[nodiscard]] const char *what() const noexcept override {
             return msg.c_str();
         }
     };

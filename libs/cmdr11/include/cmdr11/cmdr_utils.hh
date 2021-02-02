@@ -33,6 +33,8 @@
 
 #include <chrono>
 
+#include "cmdr_defs.hh"
+
 #include "cmdr_chrono.hh"
 
 

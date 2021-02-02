@@ -73,26 +73,73 @@ namespace cmdr::addons::loaders {
         cmdr::types::on_loading_externals operator()() const {
             return [=](cmdr::app &c) {
                 unused(c);
-                std::vector searches = {
+
+                static std::vector searches = {
+                    "", // for --config
 #if defined(_DEBUG)
                     "./tests/etc/$APP_NAME/$APP_NAME.yml",
                     "../tests/etc/$APP_NAME/$APP_NAME.yml",
 #endif
                     "/etc/$APP_NAME/$APP_NAME.yml",
                     "/usr/local/etc/$APP_NAME/$APP_NAME.yml",
+                    "$HOME/.config/$APP_NAME/$APP_NAME.yml",
                     "$HOME/.$APP_NAME/$APP_NAME.yml",
+                    "$APP_NAME.yml",
+                    ".$APP_NAME.yml",
                 };
+                
+                const char *const env_var = "CONFIG_FILE";
+                c += cmdr::opt::opt{""}("config")
+                             .description("the directory or the full-path of the main config file")
+                             .group(SYS_MGMT_GROUP)
+                             .placeholder("CONFIG_FILE")
+                             .env_vars(env_var)
+                             .on_hit([&](opt::cmd const &hit, opt::arg const &hit_flag, string_array const &remain_args) -> opt::Action {
+                                 unused(hit);
+                                 unused(hit_flag);
+                                 unused(remain_args);
+                                 if (hit_flag.hit_count()) {
+                                     auto file = cmdr::get_for_cli<std::string>("config");
+                                     load_config_file_or_dir(file, c);
+                                 }
+                                 return opt::Continue;
+                             });
+
+                // load from env_var
+                auto ptr = std::getenv(env_var);
+                if (ptr) {
+                    auto file = std::string(ptr);
+                    load_config_file_or_dir(file, c);
+                }
+                
+                // scan the pre-defined locations
                 using namespace cmdr::string;
                 using namespace cmdr::path;
                 //std::cout << "loading from " << get_current_dir() << '\n';
                 for (auto const &sp : searches) {
                     auto p = expand_env(sp);
-                    if (file_exists(p)) {
+                    if (!p.empty() && file_exists(p)) {
                         // load it
                         load_to(p, c);
                     }
                 }
             };
+        }
+        void load_config_file_or_dir(std::string &file, cmdr::app &c) const {
+            namespace fs = std::filesystem;
+            if (path::file_exists(file)) {
+                if (fs::is_directory(file)) {
+                    auto p = fs::path(file);
+                    p /= (c.name() + ".yml");
+                    file = p;
+                    if (path::file_exists(file)) {
+                        load_to(file, c);
+                        return;
+                    }
+                }
+
+                load_to(file, c);
+            }
         }
         void load_to(std::string const &p, cmdr::app &c) const {
             YAML::Node config = YAML::LoadFile(p);

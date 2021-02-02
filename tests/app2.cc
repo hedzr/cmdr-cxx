@@ -206,23 +206,6 @@ int main(int argc, char *argv[]) {
         assert(cc("run", true).valid());
 #endif
 
-#if 1
-
-        cli += sub_cmd{}("dup", "dup")
-                       .description("dup command/flag for testing")
-                       .group("Test");
-        {
-            auto &t1 = *cli.last_added_command();
-
-            t1 += opt{10}("int", "i")
-                          .description("set the int-value");
-            t1 += opt{10}("int", "i")
-                          .description("set the int-value");
-            t1 += opt{""}("string", "str")
-                          .description("set the string-value");
-        }
-#endif
-
 #if CMDR_TEST_ON_COMMAND_NOT_HOOKED
         cli.set_global_on_command_not_hooked([](cmdr::opt::cmd const &, string_array const &) {
             cmdr::get_store().dump_full_keys(std::cout);
@@ -235,6 +218,23 @@ int main(int argc, char *argv[]) {
         {
             using namespace cmdr::addons::loaders;
             cli.set_global_on_loading_externals(yaml_loader{}());
+        }
+#endif
+
+#if 1
+
+        cli += sub_cmd{}("dup", "dup")
+                .description("dup command/flag for testing")
+                .group("Test");
+        {
+            auto &t1 = *cli.last_added_command();
+
+            t1 += opt{10}("int", "i")
+                    .description("set the int-value");
+            t1 += opt{10}("int", "i")
+                    .description("set the int-value");
+            t1 += opt{""}("string", "str")
+                    .description("set the string-value");
         }
 #endif
 

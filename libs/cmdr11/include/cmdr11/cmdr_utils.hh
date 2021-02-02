@@ -167,7 +167,7 @@ namespace cmdr::util {
 
     template<class Visitor>
     inline void visit_any_as(std::any const &, Visitor &&) {
-        throw std::logic_error("std::any contained no suitable type, unable to visit");
+        throw_line("std::any contained no suitable type, unable to visit");
     }
 
     template<class First, class... Rest, class Visitor>

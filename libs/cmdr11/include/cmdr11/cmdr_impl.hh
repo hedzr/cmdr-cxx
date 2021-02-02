@@ -474,62 +474,71 @@ namespace cmdr {
 
     inline int app::run(int argc, char *argv[]) {
         // std::cout << "Hello, World!" << std::endl;
+        try {
+            prepare();
 
-        prepare();
+            parsing_context pc{this};
+            pc.add_matched_cmd(this);
+            opt::Action rc;
 
-        parsing_context pc{this};
-        pc.add_matched_cmd(this);
-        opt::Action rc;
+            for (int i = 1; i < argc; i = pc.index + 1) {
+                pc.title = argv[i];
+                pc.index = i;
+                pc.pos = 0;
 
-        for (int i = 1; i < argc; i = pc.index + 1) {
-            pc.title = argv[i];
-            pc.index = i;
-            pc.pos = 0;
-
-            if (pc.title[0] == '~' && pc.title[1] == '~') {
-                // special flags
-                rc = process_special_flag(pc, argc, argv);
-                if (rc < opt::OK || rc >= opt::Abortion)
-                    return 0;
-                continue;
-            }
-
-            if (pc.title[0] == '-') {
-                // flag?
-                if (pc.title[1] == '-') {
-                    if (pc.title[2] == 0) {
-                        pc.passthru_flag = true;
-                        break;
-                    }
-
-                    // long
-                    rc = process_long_flag(pc, argc, argv);
+                if (pc.title[0] == '~' && pc.title[1] == '~') {
+                    // special flags
+                    rc = process_special_flag(pc, argc, argv);
                     if (rc < opt::OK || rc >= opt::Abortion)
                         return 0;
                     continue;
                 }
 
-                // short flag
-                rc = process_short_flag(pc, argc, argv);
-                if (rc < opt::OK || rc >= opt::Abortion)
-                    return 0;
-                continue;
-            }
+                if (pc.title[0] == '-') {
+                    // flag?
+                    if (pc.title[1] == '-') {
+                        if (pc.title[2] == 0) {
+                            pc.passthru_flag = true;
+                            break;
+                        }
 
-            // command
-            auto &c = pc.last_matched_cmd();
-            if (c.valid()) {
-                if (c.no_sub_commands()) {
-                    pc.add_remain_arg(pc.title);
+                        // long
+                        rc = process_long_flag(pc, argc, argv);
+                        if (rc < opt::OK || rc >= opt::Abortion)
+                            return 0;
+                        continue;
+                    }
+
+                    // short flag
+                    rc = process_short_flag(pc, argc, argv);
+                    if (rc < opt::OK || rc >= opt::Abortion)
+                        return 0;
                     continue;
                 }
-            }
-            rc = process_command(pc, argc, argv);
-            if (rc < opt::OK || rc >= opt::Abortion)
-                return 0;
-        }
 
-        return after_run(rc, pc, argc, argv);
+                // command
+                auto &c = pc.last_matched_cmd();
+                if (c.valid()) {
+                    if (c.no_sub_commands()) {
+                        pc.add_remain_arg(pc.title);
+                        continue;
+                    }
+                }
+                rc = process_command(pc, argc, argv);
+                if (rc < opt::OK || rc >= opt::Abortion)
+                    return 0;
+            }
+
+            return after_run(rc, pc, argc, argv);
+            
+        } catch (std::exception &e) {
+            std::cerr << "Exception caught : " << e.what() << std::endl;
+            cmdr::dump_stack_trace(e);
+
+        } catch (...) {
+            post_run(); // optional to post_run(), for the rare exception post processing if necessary
+        }
+        return -1;
     }
 
     inline int app::after_run(opt::Action rc, parsing_context &pc, int argc, char *argv[]) {

@@ -89,15 +89,15 @@ namespace cmdr::opt {
             _indexed_args.insert({a.title_long(), ptr});
             if (!a.title_short().empty()) {
                 if (auto const &it = _short_args.find(a.title_short()); it != _short_args.end())
-                    throw std::logic_error(std::string("duplicated short flag found: -") + a.title_short());
+                    throw_line(std::string("duplicated short flag found: -") + a.title_short());
                 _short_args.insert({a.title_short(), ptr});
             }
             if (auto const &it = _long_args.find(a.title_long()); it != _long_args.end())
-                throw std::logic_error(std::string("duplicated long flag found: --") + a.title_long());
+                throw_line(std::string("duplicated long flag found: --") + a.title_long());
             _long_args.insert({a.title_long(), ptr});
             for (auto const &itz : a.title_aliases()) {
                 if (auto const &it = _long_args.find(itz); it != _long_args.end())
-                    throw std::logic_error(std::string("duplicated alias flag found: -") + itz);
+                    throw_line(std::string("duplicated alias flag found: -") + itz);
                 _long_args.insert({itz, ptr});
             }
 
@@ -143,15 +143,15 @@ namespace cmdr::opt {
             _indexed_commands.insert({a.title_long(), ptr});
             if (!a.title_short().empty()) {
                 if (auto const &it = _short_commands.find(a.title_short()); it != _short_commands.end())
-                    throw std::logic_error(std::string("duplicated short command found: -") + a.title_short());
+                    throw_line(std::string("duplicated short command found: -") + a.title_short());
                 _short_commands.insert({a.title_short(), ptr});
             }
             if (auto const &it = _long_commands.find(a.title_long()); it != _long_commands.end())
-                throw std::logic_error(std::string("duplicated long command found: --") + a.title_long());
+                throw_line(std::string("duplicated long command found: --") + a.title_long());
             _long_commands.insert({a.title_long(), ptr});
             for (auto const &itz : a.title_aliases()) {
                 if (auto const &it = _long_commands.find(itz); it != _long_commands.end())
-                    throw std::logic_error(std::string("duplicated alias command found: -") + itz);
+                    throw_line(std::string("duplicated alias command found: -") + itz);
                 _long_commands.insert({itz, ptr});
             }
 

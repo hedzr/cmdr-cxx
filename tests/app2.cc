@@ -16,47 +16,6 @@
 #include <stdexcept>
 #include <string>
 
-// this function will re-throw the current exception, nested inside a
-// new one. If the std::current_exception is derived from logic_error,
-// this function will throw a logic_error. Otherwise it will throw a
-// runtime_error
-// The message of the exception will be composed of the arguments
-// context and the variadic arguments args... which may be empty.
-// The current exception will be nested inside the new one
-// @pre context and args... must support ostream operator <<
-template<class Context, class... Args>
-void rethrow(Context &&context, Args &&...args) {
-    // build an error message
-    std::ostringstream ss;
-    ss << context;
-    auto sep = " : ";
-    using expand = int[];
-    void(expand{0, ((ss << sep << args), sep = ", ", 0)...});
-    // figure out what kind of exception is active
-    try {
-        std::rethrow_exception(std::current_exception());
-    } catch (const std::invalid_argument &e) {
-        std::throw_with_nested(std::invalid_argument(ss.str()));
-    } catch (const std::logic_error &e) {
-        std::throw_with_nested(std::logic_error(ss.str()));
-    }
-    // etc - default to a runtime_error
-    catch (...) {
-        std::throw_with_nested(std::runtime_error(ss.str()));
-    }
-}
-
-// unwrap nested exceptions, printing each nested exception to
-// std::cerr
-void print_exception(const std::exception &e, std::size_t depth = 0) {
-    std::cerr << "exception: " << std::string(depth, ' ') << e.what() << '\n';
-    try {
-        std::rethrow_if_nested(e);
-    } catch (const std::exception &nested) {
-        print_exception(nested, depth + 1);
-    }
-}
-
 
 void fatal_exit(const std::string &msg) {
     std::cerr << msg << '\n';
@@ -224,13 +183,13 @@ void add_server_menu(cmdr::app &cli) {
 }
 
 int main(int argc, char *argv[]) {
+    auto cli = cmdr::cli("app2", xVERSION_STRING, "hedzr",
+                         "Copyright © 2021 by hedzr, All Rights Reserved.",
+                         "A demo app for cmdr-c11 library.",
+                         "$ ~ --help");
+
     try {
         using namespace cmdr::opt;
-
-        auto cli = cmdr::cli("app2", xVERSION_STRING, "hedzr",
-                             "Copyright © 2021 by hedzr, All Rights Reserved.",
-                             "A demo app for cmdr-c11 library.",
-                             "$ ~ --help");
 
         // cli.opt(opt_dummy<support_types>{}());
 
@@ -257,12 +216,14 @@ int main(int argc, char *argv[]) {
 
             t1 += opt{10}("int", "i")
                           .description("set the int-value");
+            t1 += opt{10}("int", "i")
+                          .description("set the int-value");
             t1 += opt{""}("string", "str")
                           .description("set the string-value");
         }
 #endif
 
-#if 0
+#if CMDR_TEST_ON_COMMAND_NOT_HOOKED
         cli.set_global_on_command_not_hooked([](cmdr::opt::cmd const &, string_array const &) {
             cmdr::get_store().dump_full_keys(std::cout);
             cmdr::get_store().dump_tree(std::cout);
@@ -277,13 +238,10 @@ int main(int argc, char *argv[]) {
         }
 #endif
 
-        return cli.run(argc, argv);
-
     } catch (std::exception &e) {
-        std::cerr << "Exception caught : " << e.what() << std::endl;
-        print_exception(e);
-
-    } catch (...) {
-        cmdr::get_app().post_run(); // optional to post_run(), for the rare exception post processing if necessary
+        std::cerr << "Exception caught for testing (NOT BUG) : " << e.what() << std::endl;
+        cmdr::dump_stack_trace(e);
     }
+    
+    return cli.run(argc, argv);
 }

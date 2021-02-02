@@ -136,14 +136,14 @@ namespace cmdr::opt {
         friend cmd &operator+(cmd &lhs, const opt &rhs);
         friend cmd &operator+=(cmd &lhs, const opt &rhs);
 
-        /**
+        virtual /**
          * @brief return the matched arg/flag object or null_arg if not found.
          * To ensure the return obj is a valid one, use [#ar.valid()]
          * @param long_title
          * @return
          */
         arg &operator[](const_chars long_title);
-        /**
+        virtual /**
          * @brief return the matched arg/flag object or null_arg if not found.
          * To ensure the return obj is a valid one, use [#arg.valid()]
          * @param long_title
@@ -151,14 +151,14 @@ namespace cmdr::opt {
          */
         const arg &operator[](const_chars long_title) const;
 
-        /**
+        virtual /**
          * @brief return the matched sub-command object or null_command if not found.
          * To ensure the return obj is a valid one, use [#cmd.valid()]
          * @param long_title
          * @return
          */
         cmd &operator()(const_chars long_title, bool extensive = false);
-        /**
+        virtual /**
          * @brief return the matched sub-command object or null_command if not found.
          * To ensure the return obj is a valid one, use [#cmd.valid()]
          * @param long_title

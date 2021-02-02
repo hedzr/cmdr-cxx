@@ -17,7 +17,7 @@ namespace cmdr {
                    const_chars description = nullptr,
                    const_chars examples = nullptr) {
         if (app_holder::instance().get_ptr()) {
-            throw std::logic_error("can't invoke create_app() multiple times.");
+            throw_line("can't invoke create_app() multiple times.");
         }
 
         return app::create(name, version, author, copyright, description, examples);

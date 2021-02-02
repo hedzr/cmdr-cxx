@@ -146,6 +146,11 @@ namespace cmdr {
             return (*this);
         }
 
+        app &set_on_handle_exception_ptr(std::function<void(const std::exception_ptr &eptr)> cb) {
+            _on_handle_exception_ptr = cb;
+            return (*this);
+        }
+
     protected:
         friend class cmd;
 
@@ -291,13 +296,19 @@ namespace cmdr {
         int internal_action(opt::Action rc, parsing_context &pc, int argc, char *argv[]);
         int invoke_command(opt::cmd &cc, string_array remain_args, parsing_context &pc);
 
-        static void handle_eptr(std::exception_ptr eptr) {
+        void handle_eptr(const std::exception_ptr &eptr) const {
+            if (_on_handle_exception_ptr) {
+                _on_handle_exception_ptr(eptr);
+                return;
+            }
+
             try {
                 if (eptr) {
                     std::rethrow_exception(eptr);
                 }
             } catch (const std::exception &e) {
                 std::cout << "Caught exception \"" << e.what() << "\"\n";
+                dump_stack_trace(e);
             }
         }
 
@@ -339,14 +350,14 @@ namespace cmdr {
         // app &operator+=(opt::cmd const &a) override;
 
 
-        opt::arg &operator[](const_chars long_title) {
+        opt::arg &operator[](const_chars long_title) override {
             std::stringstream st;
             if (!_long.empty())
                 st << _long << '.';
             st << long_title;
             return find_flag(st.str().c_str());
         }
-        const opt::arg &operator[](const_chars long_title) const {
+        const opt::arg &operator[](const_chars long_title) const override {
             std::stringstream st;
             if (!_long.empty())
                 st << _long << '.';
@@ -370,14 +381,14 @@ namespace cmdr {
         }
 
 
-        opt::cmd &operator()(const_chars long_title, bool extensive = false) {
+        opt::cmd &operator()(const_chars long_title, bool extensive = false) override {
             std::stringstream st;
             //if (!_long.empty())
             //    st << _long << '.';
             st << long_title;
             return find_command(st.str().c_str(), extensive);
         }
-        const opt::cmd &operator()(const_chars long_title, bool extensive = false) const {
+        const opt::cmd &operator()(const_chars long_title, bool extensive = false) const override {
             std::stringstream st;
             // if (!_long.empty())
             //     st << _long << '.';
@@ -450,6 +461,7 @@ namespace cmdr {
         std::vector<details::on_cmd_matched> _on_cmd_matched;
         std::vector<details::on_loading_externals> _on_loading_externals;
         opt::details::on_invoke _on_command_not_hooked;
+        std::function<void(const std::exception_ptr &eptr)> _on_handle_exception_ptr;
     };
 
     inline bool app::_longest_first = true;

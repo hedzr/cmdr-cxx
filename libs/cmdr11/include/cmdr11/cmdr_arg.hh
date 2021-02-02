@@ -32,7 +32,7 @@ namespace cmdr::opt {
         std::string _description;
         std::string _examples;
         std::string _group;
-        
+
         bool _hidden : 1;
         bool _required : 1;
         bool _special : 1;
@@ -43,7 +43,7 @@ namespace cmdr::opt {
         bool _hit_long : 1;
         bool _hit_special : 1;
         bool _hit_env : 1;
-        
+
         std::string _hit_title;
         int _hit_count{0};
 
@@ -300,7 +300,8 @@ namespace cmdr::opt {
         details::on_flag_hit _on_flag_hit;
 
     public:
-        arg() :_default(false){}
+        arg()
+            : _default(false) {}
         ~arg() override = default;
         arg(const arg &o)
             : bas(o) { _copy(o); }

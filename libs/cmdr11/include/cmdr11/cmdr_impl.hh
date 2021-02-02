@@ -15,14 +15,16 @@
 #include <stdexcept>
 #include <stdlib.h>
 
+#include "cmdr_log.hh"
+#include "cmdr_terminal.hh"
+
+#include "cmdr_cmn.hh"
 
 #include "cmdr_app.hh"
 #include "cmdr_arg.hh"
 #include "cmdr_cmd.hh"
-#include "cmdr_cmn.hh"
 #include "cmdr_internals.hh"
 #include "cmdr_opts.hh"
-#include "cmdr_terminal.hh"
 
 
 namespace cmdr {
@@ -534,7 +536,7 @@ namespace cmdr {
         if (rc > opt::OK && rc < opt::Continue)
             return internal_action(rc, pc, argc, argv);
 
-        if (store().get("help").cast_as<bool>()) {
+        if (store().get_raw_p(_long, "help").cast_as<bool>()) {
             print_usages(&pc.curr_command());
             return true;
         }

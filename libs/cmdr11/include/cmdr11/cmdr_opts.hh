@@ -116,8 +116,8 @@ namespace cmdr::opt {
         explicit opt(A &&a)
             : _arg(std::forward<A>(a)) {}
 #if defined(CAST_CONST_CHARS_AS_STD_STRING)
-        explicit opt(char const* &&a)
-                : _arg(std::string(a)) {}
+        explicit opt(char const *&&a)
+            : _arg(std::string(a)) {}
 #endif
         ~opt() = default;
 
@@ -135,6 +135,17 @@ namespace cmdr::opt {
 
         template<class... Args>
         opt &operator()(const char *long_, const char *short_, Args... args) {
+            _arg.titles(long_, short_, args...);
+            return (*this);
+        }
+
+        opt &operator()(const std::string &long_, const std::string &short_) {
+            _arg.titles(long_.c_str(), short_.empty() ? nullptr : short_.c_str());
+            return (*this);
+        }
+
+        template<class... Args>
+        opt &operator()(const std::string &long_, const std::string &short_, Args... args) {
             _arg.titles(long_, short_, args...);
             return (*this);
         }

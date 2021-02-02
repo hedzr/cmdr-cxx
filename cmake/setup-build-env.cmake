@@ -17,23 +17,23 @@
 #endif()
 
 if (MSVC)
-    # warning level 4 and all warnings as errors
-    add_compile_options(/W4 /WX)
+  # warning level 4 and all warnings as errors
+  add_compile_options(/W4 /WX)
 else ()
-    # lots of warnings and all warnings as errors
-    add_compile_options(-Wall -Wextra -pedantic -Werror
-            -Wno-unknown-pragmas
-            )
+  # lots of warnings and all warnings as errors
+  add_compile_options(-Wall -Wextra -pedantic -Werror
+          -Wno-unknown-pragmas
+          )
 endif ()
 
 if (DEBUG AND MINGW)
-    add_link_options(--allow-multiple-definition)
+  add_link_options(--allow-multiple-definition)
 endif ()
 
 if (DEBUG)
-    add_compile_options(-D_DEBUG -DDEBUG=1)
+  add_compile_options(-D_DEBUG -DDEBUG=1)
 else ()
-    add_compile_options(-DNDEBUG=1)
+  add_compile_options(-DNDEBUG=1)
 endif ()
 
 #

@@ -177,10 +177,24 @@ namespace cmdr::opt {
     inline cmd const &cmd::operator()(const_chars long_title, bool extensive) const { return const_cast<cmd &>(*this).find_command(long_title, extensive); }
 
 
+    /**
+     * @brief 
+     * @param long_title is a dotted string like 'app.cli.server.port',
+     *     or just a key for this command level such as 'port'. NOTE that
+     *     'app.cli' is DEFAULT_CLI_KEY_PREFIX.
+     *     Any prefixes like '-' or '--' will be stripped automatically.
+     * @param extensive  whether or not do match with short/alias titles
+     * @return 
+     */
     inline arg &cmd::find_flag(const_chars long_title, bool extensive) {
-        auto s = long_title;
-        if (is_leading_switch_char(s)) s++;
-        if (is_leading_switch_char(s)) s++;
+        std::stringstream st;
+        //if (!_long.empty())
+        //    st << _long << '.';
+        if (is_leading_switch_char(long_title)) long_title++;
+        if (is_leading_switch_char(long_title)) long_title++;
+        st << long_title;
+        auto s = st.str();
+
         auto it = _indexed_args.find(s);
         if (it != _indexed_args.end())
             return *((*it).second);
@@ -197,8 +211,23 @@ namespace cmdr::opt {
         return null_arg();
     }
 
+    /**
+     * @brief 
+     * @param long_title is a dotted string like 'app.cli.server.install.systemd', 
+     *   it means the sub-command sequences 'server install systemd', in which
+     *   'app.cli' is DEFAULT_CLI_KEY_PREFIX. Or,
+     *   a long_title can be just a simple key for this command level such as 'systemd'.
+     * @param extensive whether or not do match with short/alias titles
+     * @return 
+     */
     inline cmd &cmd::find_command(const_chars long_title, bool extensive) {
-        auto it = _indexed_commands.find(long_title);
+        std::stringstream st;
+        //if (!_long.empty())
+        //    st << _long << '.';
+        st << long_title;
+
+        auto s = st.str();
+        auto it = _indexed_commands.find(s);
         if (it != _indexed_commands.end()) {
             auto cc = (*it).second;
 #if defined(_DEBUG)
@@ -215,10 +244,10 @@ namespace cmdr::opt {
         }
         if (extensive) {
             for (const auto &itz : _indexed_commands) {
-                if (itz.second->title_short() == long_title)
+                if (itz.second->title_short() == s)
                     return *((itz).second);
                 for (auto &k : itz.second->title_aliases()) {
-                    if (k == long_title)
+                    if (k == s)
                         return *((itz).second);
                 }
             }

@@ -7,8 +7,8 @@
 
 #pragma once
 
-#include <string>
 #include <filesystem>
+#include <string>
 
 
 namespace cmdr::path {
@@ -132,7 +132,7 @@ namespace cmdr::path {
     inline std::string merge(std::string pathA, std::string pathB) {
         return pathA + "/" + pathB;
     }
-    
+
     inline std::filesystem::path get_current_dir() {
         return std::filesystem::current_path();
     }

@@ -48,8 +48,8 @@ int main() {
     std::cout << "store: " << store << std::endl;
 
 #if defined(_DEBUG)
-    store.dump_full_keys(std::cout);
-    store.dump_tree(std::cout);
+    store.dump_full_keys(store.dim_text_fg, store.dim_text_dim, std::cout);
+    store.dump_tree(store.dim_text_fg, store.dim_text_dim, std::cout);
 #endif
 
     std::cout << std::boolalpha;

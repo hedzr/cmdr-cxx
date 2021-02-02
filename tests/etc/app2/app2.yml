@@ -5,7 +5,7 @@ app:
     test-map:
       val-1: true
       val-2: 8s
-      val-3: [a,b,c]
+      val-3: [ a,b,c ]
       val-4:
         small-little: just a demo
   this:

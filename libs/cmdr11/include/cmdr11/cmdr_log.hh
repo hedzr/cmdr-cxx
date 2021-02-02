@@ -145,11 +145,11 @@ namespace cmdr::log {
 #define verbose_debug(..) cmdr::log::holder(__FILE__, __LINE__, __PRETTY_FUNCTION__)(__VA_ARGS__)
 #endif
 #else
-#define verbose_debug(...) \
-  _Pragma("GCC diagnostic push") \
-  _Pragma("GCC diagnostic ignored \"-Wunused-value\"") \
-  do { (void)(__VA_ARGS__); } while (0) \
-  _Pragma("GCC diagnostic pop")
+#define verbose_debug(...)                                                                    \
+    _Pragma("GCC diagnostic push")                                                            \
+            _Pragma("GCC diagnostic ignored \"-Wunused-value\"") do { (void) (__VA_ARGS__); } \
+    while (0)                                                                                 \
+    _Pragma("GCC diagnostic pop")
 #endif
 
 #if defined(_DEBUG)
@@ -159,11 +159,11 @@ namespace cmdr::log {
 #define debug(...) cmdr::log::holder(__FILE__, __LINE__, __PRETTY_FUNCTION__)(__VA_ARGS__)
 #endif
 #else
-#define debug(...) \
-  _Pragma("GCC diagnostic push") \
-  _Pragma("GCC diagnostic ignored \"-Wunused-value\"") \
-  do { (void)(__VA_ARGS__); } while (0) \
-  _Pragma("GCC diagnostic pop")
+#define debug(...)                                                                            \
+    _Pragma("GCC diagnostic push")                                                            \
+            _Pragma("GCC diagnostic ignored \"-Wunused-value\"") do { (void) (__VA_ARGS__); } \
+    while (0)                                                                                 \
+    _Pragma("GCC diagnostic pop")
 #endif
 
 #endif //CMDR_CXX11_CMDR_LOG_HH

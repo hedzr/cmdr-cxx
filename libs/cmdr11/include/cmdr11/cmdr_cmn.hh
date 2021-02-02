@@ -14,18 +14,18 @@ namespace cmdr {
     namespace opt {
         class arg;
         class cmd;
-    }
-    
+    } // namespace opt
+
     namespace details {
-        using on_arg_added = std::function<void(opt::arg*)>;
-        using on_cmd_added = std::function<void(opt::cmd*)>;
-        using on_arg_matched = std::function<void(opt::arg*)>;
-        using on_cmd_matched = std::function<void(opt::cmd*)>;
-        
+        using on_arg_added = std::function<void(opt::arg *)>;
+        using on_cmd_added = std::function<void(opt::cmd *)>;
+        using on_arg_matched = std::function<void(opt::arg *)>;
+        using on_cmd_matched = std::function<void(opt::cmd *)>;
+
         // using exceptions if loading failed...
-        using on_loading_externals = std::function<void(app& cli)>; 
-    }
-}; // namespace cmdr
+        using on_loading_externals = std::function<void(app &cli)>;
+    } // namespace details
+};    // namespace cmdr
 
 // namespace cmdr::opt::vars {
 //     template<class V = support_types>

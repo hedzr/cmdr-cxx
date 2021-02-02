@@ -2,12 +2,12 @@
 # set LLVM base directory
 #     https://llvm.org/docs/CMake.html
 IF (MAC)
-    set(LLVM_ROOT /usr/local/opt/llvm)
-    set(LLVM_DIR "${LLVM_ROOT}/share/cmake/modules")
+  set(LLVM_ROOT /usr/local/opt/llvm)
+  set(LLVM_DIR "${LLVM_ROOT}/share/cmake/modules")
 ELSEIF (UNIX)
 ELSE ()
-    #set(LLVM_CMAKE_DIR "/usr/share/llvm-3.6/share/llvm/cmake")
-    #set(LLVM_CMAKE_DIR "${LLVM_DIR}/share/llvm/cmake")
+  #set(LLVM_CMAKE_DIR "/usr/share/llvm-3.6/share/llvm/cmake")
+  #set(LLVM_CMAKE_DIR "${LLVM_DIR}/share/llvm/cmake")
 ENDIF ()
 set(LLVM_CMAKE_DIR "${LLVM_DIR}")
 MESSAGE("LLVM_CMAKE_DIR = ${LLVM_CMAKE_DIR}")

@@ -48,6 +48,7 @@ namespace cmdr {
         PROP_SET(tail_line)
         // PROP_SET(description)
         // PROP_SET(examples)
+        PROP_SET(store_prefix)
 
 #undef PROP_SET
 
@@ -320,12 +321,12 @@ namespace cmdr {
                        cmdr::terminal::colors::colorize &c, opt::cmd *cc,
                        std::string const &app_name, std::string const &exe_name);
 
-        static int print_debug_info_screen(parsing_context &pc, int argc, char *argv[]);
+        int print_debug_info_screen(parsing_context &pc, int argc, char *argv[]);
         static int print_manual_screen(parsing_context &pc, int argc, char *argv[]);
         int print_tree_screen(parsing_context &pc, int argc, char *argv[]);
-        
+
         int on_invoking_print_cmd(opt::cmd const &hit, string_array const &remain_args);
-        
+
     public:
         // app &operator+(const opt::opt &a) override;
         // app &operator+=(const opt::opt &a) override;
@@ -337,9 +338,81 @@ namespace cmdr {
         // app &operator+(opt::cmd const &a) override;
         // app &operator+=(opt::cmd const &a) override;
 
+
+        opt::arg &operator[](const_chars long_title) {
+            std::stringstream st;
+            if (!_long.empty())
+                st << _long << '.';
+            st << long_title;
+            return find_flag(st.str().c_str());
+        }
+        const opt::arg &operator[](const_chars long_title) const {
+            std::stringstream st;
+            if (!_long.empty())
+                st << _long << '.';
+            st << long_title;
+            return const_cast<app *>(this)->find_flag(st.str().c_str());
+        }
+
+        opt::arg &operator[](const std::string &long_title) {
+            std::stringstream st;
+            if (!_long.empty())
+                st << _long << '.';
+            st << long_title;
+            return find_flag(st.str().c_str());
+        }
+        const opt::arg &operator[](const std::string &long_title) const {
+            std::stringstream st;
+            if (!_long.empty())
+                st << _long << '.';
+            st << long_title;
+            return const_cast<app *>(this)->find_flag(st.str().c_str());
+        }
+
+
+        opt::cmd &operator()(const_chars long_title, bool extensive = false) {
+            std::stringstream st;
+            //if (!_long.empty())
+            //    st << _long << '.';
+            st << long_title;
+            return find_command(st.str().c_str(), extensive);
+        }
+        const opt::cmd &operator()(const_chars long_title, bool extensive = false) const {
+            std::stringstream st;
+            // if (!_long.empty())
+            //     st << _long << '.';
+            st << long_title;
+            return const_cast<app *>(this)->find_command(st.str().c_str(), extensive);
+        }
+
+        opt::cmd &operator()(const std::string &long_title, bool extensive = false) {
+            std::stringstream st;
+            // if (!_long.empty())
+            //     st << _long << '.';
+            st << long_title;
+            return find_command(st.str().c_str(), extensive);
+        }
+        const opt::cmd &operator()(const std::string &long_title, bool extensive = false) const {
+            std::stringstream st;
+            // if (!_long.empty())
+            //     st << _long << '.';
+            st << long_title;
+            return const_cast<app *>(this)->find_command(st.str().c_str(), extensive);
+        }
+
         cmdr::terminal::colors::colorize::Colors256 _dim_text_fg{cmdr::terminal::colors::colorize::Grey50};
         bool _dim_text_dim{false};
-        
+
+        vars::variable const &get(char const *key) const { return _store.get_raw_p(_store_prefix.c_str(), key); }
+        vars::variable &get(char const *key) { return _store.get_raw_p(_store_prefix.c_str(), key); }
+        [[nodiscard]] vars::variable const &get(std::string const &key) const { return _store.get_raw_p(_store_prefix, key); }
+        [[nodiscard]] vars::variable &get(std::string const &key) { return _store.get_raw_p(_store_prefix, key); }
+
+        vars::variable const &get_for_cli(char const *key) const { return _store.get_raw_p(_long.c_str(), key); }
+        vars::variable &get_for_cli(char const *key) { return _store.get_raw_p(_long.c_str(), key); }
+        [[nodiscard]] vars::variable const &get_for_cli(std::string const &key) const { return _store.get_raw_p(_long, key); }
+        [[nodiscard]] vars::variable &get_for_cli(std::string const &key) { return _store.get_raw_p(_long, key); }
+
     private:
         std::string _name;
         std::string _version;
@@ -352,6 +425,7 @@ namespace cmdr {
 
         //
         cmdr::vars::store _store;
+        std::string _store_prefix{DEFAULT_KEY_PREFIX};
 
         // static colorize &colorizer() {...}
 

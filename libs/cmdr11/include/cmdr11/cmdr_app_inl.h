@@ -51,13 +51,13 @@ namespace cmdr {
     }
 
     inline void app::initialize_internal_commands() {
-        _long = DEFAULT_KEY_PREFIX;
+        _long = DEFAULT_CLI_KEY_PREFIX;
         register_actions();
         add_global_options(*this);
         add_generator_menu(*this);
         _on_command_not_hooked = [&](opt::cmd const &c, string_array const &remain_args) {
             std::cout << "INVOKING: " << std::quoted(c.title()) << ", remains: " << string::join(remain_args, ',') << ".\n";
-            on_invoking_print_cmd(c,remain_args);
+            on_invoking_print_cmd(c, remain_args);
             return 0;
         };
     }
@@ -114,9 +114,13 @@ namespace cmdr {
                     << ts.str() << std::endl;
             return 0;
         });
-        _internal_actions.emplace(opt::RequestTreeScreen, [this](parsing_context &pc, int argc, char *argv[]) -> int { return print_tree_screen(pc, argc, argv); });
+        _internal_actions.emplace(opt::RequestTreeScreen,
+                                  [this](parsing_context &pc, int argc, char *argv[]) -> int { return print_tree_screen(pc, argc, argv); });
         _internal_actions.emplace(opt::RequestManualScreen, print_manual_screen);
-        _internal_actions.emplace(opt::RequestDebugInfoScreen, print_debug_info_screen);
+        _internal_actions.emplace(opt::RequestDebugInfoScreen,
+                                  [=](parsing_context &pc, int argc, char *argv[]) -> int {
+                                      return print_debug_info_screen(pc, argc, argv);
+                                  });
 #pragma clang diagnostic pop
     }
 
@@ -150,10 +154,11 @@ namespace cmdr {
         unused(pc);
         unused(argc);
         unused(argv);
-#if defined(_DEBUG) || 1
+
         // auto &store = cli.store();
         auto &store = cmdr::get_store();
 
+#if defined(_DEBUG) && 0
         using namespace std::chrono_literals;
 
         store.set("app.server.tls.enabled", true);
@@ -165,37 +170,46 @@ namespace cmdr {
         store.set("app.server.tls.handshake.max-idle-time", 45min);
         store.set("app.server.tls.domains", std::vector{"example.com", "example.org"});
         // store.set("app.server.tls.fixed-list", std::array{"item1", "item2"});
-
-#if defined(_DEBUG) || 1
-        store.dump_full_keys(std::cout);
-        store.dump_tree(std::cout);
 #endif
 
-        auto vv = store.get("server.tls.handshake.max-idle-time");
-        (void) (vv);
-        // std::cout << "max-idle-time: " << vv << '\n';
-        //if (vv.as_string() != "45m")
-        //    fatal_exit("  ^-- ERR: expect '45m'.");
-#endif
+        auto tilde_debug = (*pc._root)["debug"];
+        if (tilde_debug.valid()) {
 
-#if defined(_DEBUG) || 1
-        using namespace cmdr::terminal::colors;
-        // auto &c = colorize::instance();
-        auto c = colorize::create();
-        std::cout << c.fg(c.Purple3).bg(c.Default).underline().bold().s("some text") << '\n';
-        std::cout << c.dim().s("dim text") << '\n';
-        std::cout << c.Purple3 << " << want 56\n";
-        std::cout << c.MediumTurquoise << " << want 80\n";
-        std::cout << c.Grey93 << " << want 255\n";
+            auto &cli = get_app();
 
-        using cmdr::terminal::colors::colorize;
-        std::cout << colorize::style::underline << colorize::fg::red << "Hello, Colorful World!" << std::endl;
-        std::cout << colorize::reset::all << "Here I'm!" << std::endl;
-        std::cout << "END.\n\n";
+            if (tilde_debug.hit_count() > 1) {
+                store.dump_full_keys(cli._dim_text_fg, cli._dim_text_dim, std::cout);
+                store.dump_tree(cli._dim_text_fg, cli._dim_text_dim, std::cout);
+            }
 
-        std::cout << "How many colors: " << cmdr::terminal::terminfo::support_colors() << '\n';
-        std::cout << "Terminal: " << cmdr::terminal::terminfo::term() << '\n';
-#endif
+            if (tilde_debug.hit_count() > 2) {
+
+                // auto vv = store.get("server.tls.handshake.max-idle-time");
+                // (void) (vv);
+                // std::cout << "max-idle-time: " << vv << '\n';
+                // if (vv.as_string() != "45m")
+                //    fatal_exit("  ^-- ERR: expect '45m'.");
+
+                using namespace cmdr::terminal::colors;
+                // auto &c = colorize::instance();
+                auto c = colorize::create();
+                std::cout << c.fg(c.Purple3).bg(c.Default).underline().bold().s("some text") << '\n';
+                std::cout << c.dim().s("dim text") << '\n';
+                std::cout << c.Purple3 << " << want 56\n";
+                std::cout << c.MediumTurquoise << " << want 80\n";
+                std::cout << c.Grey93 << " << want 255\n";
+
+                using cmdr::terminal::colors::colorize;
+                std::cout << colorize::style::underline << colorize::fg::red << "Hello, Colorful World!" << std::endl;
+                std::cout << colorize::reset::all << "Here I'm!" << std::endl;
+                std::cout << "END.\n\n";
+
+                std::cout << "How many colors: " << cmdr::terminal::terminfo::support_colors() << '\n';
+                std::cout << "Terminal: " << cmdr::terminal::terminfo::term() << '\n';
+            }
+        }
+
+        on_invoking_print_cmd(pc.curr_command(), pc.remain_args());
         return 0;
     }
 
@@ -343,12 +357,12 @@ namespace cmdr {
                            return opt::OK;
                        });
 
-        cli += cmdr::opt::opt{}("short")
-                       .description("enable shorter ~~debug")
-                       .special()
-                       .no_non_special()
-                       .hidden()
-                       .group(SYS_MGMT_GROUP);
+        // cli += cmdr::opt::opt{}("short")
+        //                .description("enable shorter ~~debug")
+        //                .special()
+        //                .no_non_special()
+        //                .hidden()
+        //                .group(SYS_MGMT_GROUP);
 
         cli += cmdr::opt::opt{}("trace", "tr", "trace-mode")
                        .description("enable tracing mode for developer perspective")

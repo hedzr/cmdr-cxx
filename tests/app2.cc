@@ -2,14 +2,60 @@
 //
 //
 
+#include "./addons/loaders/yaml_loader.hh"
 #include "version.h"
 #include <cmdr-cxx.hh>
-#include "./addons/loaders/yaml_loader.hh"
 
 #include <cmath>
 #include <complex>
 #include <fstream>
 
+#include <exception>
+#include <iostream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+
+// this function will re-throw the current exception, nested inside a
+// new one. If the std::current_exception is derived from logic_error,
+// this function will throw a logic_error. Otherwise it will throw a
+// runtime_error
+// The message of the exception will be composed of the arguments
+// context and the variadic arguments args... which may be empty.
+// The current exception will be nested inside the new one
+// @pre context and args... must support ostream operator <<
+template<class Context, class... Args>
+void rethrow(Context &&context, Args &&...args) {
+    // build an error message
+    std::ostringstream ss;
+    ss << context;
+    auto sep = " : ";
+    using expand = int[];
+    void(expand{0, ((ss << sep << args), sep = ", ", 0)...});
+    // figure out what kind of exception is active
+    try {
+        std::rethrow_exception(std::current_exception());
+    } catch (const std::invalid_argument &e) {
+        std::throw_with_nested(std::invalid_argument(ss.str()));
+    } catch (const std::logic_error &e) {
+        std::throw_with_nested(std::logic_error(ss.str()));
+    }
+    // etc - default to a runtime_error
+    catch (...) {
+        std::throw_with_nested(std::runtime_error(ss.str()));
+    }
+}
+
+// unwrap nested exceptions, printing each nested exception to
+// std::cerr
+void print_exception(const std::exception &e, std::size_t depth = 0) {
+    std::cerr << "exception: " << std::string(depth, ' ') << e.what() << '\n';
+    try {
+        std::rethrow_if_nested(e);
+    } catch (const std::exception &nested) {
+        print_exception(nested, depth + 1);
+    }
+}
 
 
 void fatal_exit(const std::string &msg) {
@@ -26,21 +72,25 @@ void add_sub1_menu(cmdr::app &cli, cmdr::opt::cmd &t1, const_chars title) {
 
     auto &ct1 = t1(title);
     {
-        ct1 += opt{10}("retry", "r")
+        std::string prefix(title);
+        std::string ps(prefix.substr(0, 1));
+        ps += prefix.substr(prefix.length() - 1);
+        prefix += "-";
+        ct1 += opt{10}(prefix + "retry", ps + "r")
                        .description("set the retry times");
-        ct1 += opt{9}("retry1", "r1")
+        ct1 += opt{9}(prefix + "retry1", ps + "r1")
                        .description("set the retry times");
-        ct1 += opt{"saved-bash"}("shell-name", "sn")
+        ct1 += opt{"saved-bash"}(prefix + "shell-name", ps + "sn")
                        .description("flag a");
-        ct1 += opt{}("arch", "a")
+        ct1 += opt{}(prefix + "arch", ps + "a")
                        .description("flag a");
-        ct1 += opt{}("bech", "b")
+        ct1 += opt{}(prefix + "bech", ps + "b")
                        .description("flag b");
-        ct1 += opt{}("coach", "c")
+        ct1 += opt{}(prefix + "coach", ps + "c")
                        .description("flag c");
-        ct1 += opt{}("dent", "d")
+        ct1 += opt{}(prefix + "dent", ps + "d")
                        .description("flag d");
-        ct1 += opt{}("etch", "e")
+        ct1 += opt{}(prefix + "etch", ps + "e")
                        .description("flag e");
     }
 }
@@ -82,14 +132,14 @@ void add_test_menu(cmdr::app &cli) {
         add_sub1_menu(cli, t1, "sub4");
 
         auto &t2 = t1("sub2");
-        add_sub1_menu(cli, t2, "sub-sub1");
-        add_sub1_menu(cli, t2, "sub-sub2");
-        add_sub1_menu(cli, t2, "sub-sub3");
+        add_sub1_menu(cli, t2, "mem-sub1");
+        add_sub1_menu(cli, t2, "mem-sub2");
+        add_sub1_menu(cli, t2, "mem-sub3");
 
         auto &t3 = t1("sub3");
-        add_sub1_menu(cli, t3, "sub-bug1");
-        add_sub1_menu(cli, t3, "sub-bug2");
-        add_sub1_menu(cli, t3, "sub-bug3");
+        add_sub1_menu(cli, t3, "wow-bug1");
+        add_sub1_menu(cli, t3, "wow-bug2");
+        add_sub1_menu(cli, t3, "wow-bug3");
 
         auto &t4 = t1("sub4");
         add_sub1_menu(cli, t4, "bug-bug1");
@@ -189,11 +239,27 @@ int main(int argc, char *argv[]) {
         add_test_menu(cli);
 
         auto &cc = cli("server");
+        assert(cc.valid());
         assert(cc["count"].valid());
         assert(cc["host"].valid());
         assert(cc("status").valid());
         assert(cc("start").valid());
         assert(cc("run", true).valid());
+#endif
+
+#if 1
+
+        cli += sub_cmd{}("dup", "dup")
+                       .description("dup command/flag for testing")
+                       .group("Test");
+        {
+            auto &t1 = *cli.last_added_command();
+
+            t1 += opt{10}("int", "i")
+                          .description("set the int-value");
+            t1 += opt{""}("string", "str")
+                          .description("set the string-value");
+        }
 #endif
 
 #if 0
@@ -215,6 +281,7 @@ int main(int argc, char *argv[]) {
 
     } catch (std::exception &e) {
         std::cerr << "Exception caught : " << e.what() << std::endl;
+        print_exception(e);
 
     } catch (...) {
         cmdr::get_app().post_run(); // optional to post_run(), for the rare exception post processing if necessary

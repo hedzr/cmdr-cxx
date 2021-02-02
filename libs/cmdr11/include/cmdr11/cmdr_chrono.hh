@@ -190,8 +190,8 @@ namespace cmdr::chrono {
     template<class Duration,
              std::enable_if_t<is_duration<Duration>::value, bool> = true>
     static bool parse_duration(std::istream &is, Duration &d) {
-        (void)(is);
-        (void)(d);
+        (void) (is);
+        (void) (d);
         return true;
     }
 

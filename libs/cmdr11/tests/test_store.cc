@@ -13,6 +13,7 @@
 // #include "cmdr11/cmdr_defs.hh"
 #include "cmdr11/cmdr_var_t.hh"
 
+
 void fatal_exit(const std::string &msg) {
     std::cerr << msg << '\n';
     exit(-1);
@@ -35,11 +36,11 @@ void test_store_1() {
     store.set("app.server.tls.fixed-list", std::array{"item1", "item2"});
 
 #if defined(_DEBUG)
-    store.dump_full_keys(std::cout);
-    store.dump_tree(std::cout);
+    store.dump_full_keys(store.dim_text_fg, store.dim_text_dim, std::cout);
+    store.dump_tree(store.dim_text_fg, store.dim_text_dim, std::cout);
 #endif
 
-    auto vv = store.get("server.tls.handshake.max-idle-time");
+    auto vv = store.get_raw("app.server.tls.handshake.max-idle-time");
     std::cout << "max-idle-time: " << vv << '\n';
     if (vv.as_string() != "45m")
         fatal_exit("  ^-- ERR: expect '45m'.");

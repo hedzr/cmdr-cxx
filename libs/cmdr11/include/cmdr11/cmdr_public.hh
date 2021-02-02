@@ -23,14 +23,53 @@ namespace cmdr {
         return app::create(name, version, author, copyright, description, examples);
     }
 
-    inline bool is_debug() { return get_store().get("debug").cast_as<bool>(); }
-    inline bool is_trace() { return get_store().get("trace").cast_as<bool>(); }
-    inline bool is_verbose() { return get_store().get("verbose").cast_as<bool>(); }
-    inline bool is_quiet() { return get_store().get("quiet").cast_as<bool>(); }
+    /**
+     * @brief retrieve the config item value from store
+     * @tparam T 
+     * @param key 
+     * @return 
+     */
+    template<class T>
+    inline T get(char const *key) { return get_app().get(key).cast_as<T>(); }
+    /**
+     * @brief retrieve the config item value from store
+     * @tparam T 
+     * @param key 
+     * @return 
+     */
+    template<class T>
+    inline T get(std::string const &key) { return get_app().get(key).cast_as<T>(); }
+    /**
+     * @brief retrieve the cli-app args/flags value item from store
+     * @tparam T 
+     * @param key 
+     * @return 
+     */
+    template<class T>
+    inline T get_for_cli(char const *key) { return get_app().get_for_cli(key).cast_as<T>(); }
+    /**
+     * @brief retrieve the cli-app args/flags value item from store
+     * @tparam T 
+     * @param key 
+     * @return 
+     */
+    template<class T>
+    inline T get_for_cli(std::string const &key) { return get_app().get_for_cli(key).cast_as<T>(); }
 
+
+    inline bool is_debug() { return get_for_cli<bool>("debug"); }
+    inline bool is_trace() { return get_for_cli<bool>("trace"); }
+    inline bool is_verbose() { return get_for_cli<bool>("verbose"); }
+    inline bool is_quiet() { return get_for_cli<bool>("quiet"); }
+
+    /**
+     * @brief retrieve the verbose level from the hit data of a flag named as "verbose".
+     * see also the initializations of the internal commands and flags.
+     * @return 
+     */
     inline int get_verbose_level() { return get_app()["verbose"].hit_count(); }
-    inline bool is_help_hit() { return get_app()["help"].hit_count() > 0 && get_store().get("help").cast_as<bool>(); }
+    inline bool is_help_hit() { return get_app()["help"].hit_count() > 0 && get_for_cli<bool>("help"); }
 
-}
+} // namespace cmdr
 
 #endif //CMDR_CXX11_CMDR_PUBLIC_HH

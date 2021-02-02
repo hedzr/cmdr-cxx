@@ -29,12 +29,13 @@
 #include <complex>
 
 
-#include "cmdr_chrono.hh"
 #include "cmdr_defs.hh"
-#include "cmdr_string.hh"
-#include "cmdr_terminal.hh"
 #include "cmdr_types.hh"
 #include "cmdr_types_check.hh"
+
+#include "cmdr_chrono.hh"
+#include "cmdr_string.hh"
+#include "cmdr_terminal.hh"
 
 
 namespace cmdr::vars {
@@ -133,6 +134,11 @@ namespace cmdr::vars {
             std::stringstream os;
             os << (*this);
             return os.str();
+        }
+
+        template<class T>
+        T as() const {
+            return std::any_cast<T>(_value);
         }
 
         template<class T>
@@ -599,6 +605,7 @@ namespace cmdr::vars {
             : T(std::forward<A>(a)) {}
         ~nodeT() override = default;
 
+    public:
     private:
         node_map _children{};
         node_idx _indexes{};
@@ -716,19 +723,29 @@ namespace cmdr::vars {
         }
 
     public:
-        T const &get(char const *key) const { return _get(key); }
-        T &get(char const *key) { return _get(key); }
-        [[nodiscard]] T const &get(std::string const &key) const { return _get(key); }
-        T &get(std::string const &key) { return _get(key); }
+        // T const &get(char const *key) const { return _get(key); }
+        // T &get(char const *key) { return _get(key); }
+        // [[nodiscard]] T const &get(std::string const &key) const { return _get(key); }
+        // T &get(std::string const &key) { return _get(key); }
 
         T const &get_raw(char const *key) const { return _get_raw(key); }
         T &get_raw(char const *key) { return _get_raw(key); }
         [[nodiscard]] T const &get_raw(std::string const &key) const { return _get_raw(key); }
         T &get_raw(std::string const &key) { return _get_raw(key); }
 
+        T const &get_raw_p(char const *prefix, char const *key) const { return _get_raw_p(prefix, key); }
+        T &get_raw_p(char const *prefix, char const *key) { return _get_raw_p(prefix, key); }
+        [[nodiscard]] T const &get_raw_p(std::string const &prefix, std::string const &key) const { return _get_raw_p(prefix, key); }
+        T &get_raw_p(std::string const &prefix, std::string const &key) { return _get_raw_p(prefix, key); }
+
     private:
-        T &_get(std::string const &key);
+        // T &_get(std::string const &key);
         T &_get_raw(std::string const &key);
+        T const &_get_raw(std::string const &key) const;
+        T &_get_raw_p(std::string const &prefix, std::string const &key);
+        T const &_get_raw_p(std::string const &prefix, std::string const &key) const;
+        T &_get_raw_p(char const *prefix, char const *key);
+        T const &_get_raw_p(char const *prefix, char const *key) const;
 
     public:
         static T &null_element() {
@@ -737,8 +754,12 @@ namespace cmdr::vars {
         }
 
     private:
-        void dump_tree(std::ostream &os, cmdr::terminal::colors::colorize *c, int level) const;
-        void dump_full_keys(std::ostream &os, cmdr::terminal::colors::colorize *c, int level = 0) const;
+        void dump_tree(std::ostream &os, cmdr::terminal::colors::colorize *c,
+                       cmdr::terminal::colors::colorize::Colors256 dim_text_fg,
+                       bool dim_text_dim, int level) const;
+        void dump_full_keys(std::ostream &os, cmdr::terminal::colors::colorize *c,
+                            cmdr::terminal::colors::colorize::Colors256 dim_text_fg,
+                            bool dim_text_dim, int level = 0) const;
 
         template<class K, class V>
         void walk_by_full_keys(std::function<void(std::pair<K, V> const &val)> const &cb) {
@@ -752,7 +773,9 @@ namespace cmdr::vars {
             cmdr::terminal::colors::colorize::Colors256 fg;
             bool dim;
 
-            explicit map_streamer(std::ostream &os, cmdr::terminal::colors::colorize *c);
+            explicit map_streamer(std::ostream &os, cmdr::terminal::colors::colorize *c,
+                                  cmdr::terminal::colors::colorize::Colors256 dim_text_fg,
+                                  bool dim_text_dim);
 
             template<class K, class V>
             void operator()(std::pair<K, V> const &val) {
@@ -769,9 +792,13 @@ namespace cmdr::vars {
         };
 
         template<class K, class V, class Comp = std::less<K>>
-        inline void print_sorted(std::ostream &os, cmdr::terminal::colors::colorize *c, std::unordered_map<K, V> const &um, Comp pred = Comp()) const {
+        inline void print_sorted(std::ostream &os,
+                                 cmdr::terminal::colors::colorize *c,
+                                 cmdr::terminal::colors::colorize::Colors256 dim_text_fg,
+                                 bool dim_text_dim,
+                                 std::unordered_map<K, V> const &um, Comp pred = Comp()) const {
             std::map<K, V> m(um.begin(), um.end(), pred);
-            std::for_each(m.begin(), m.end(), map_streamer(os, c));
+            std::for_each(m.begin(), m.end(), map_streamer(os, c, dim_text_fg, dim_text_dim));
         }
 
         template<class K, class V, class Comp = std::less<K>>
@@ -814,34 +841,44 @@ namespace cmdr::vars {
         void set(char const *key, vars::variable &&a) { _root.set(key, a.value_any()); }
         void set(char const *key, vars::variable const &a) { _root.set(key, a.value_any()); }
 
-        T const &get(char const *key) const { return _root.get(key); }
-        T &get(char const *key) { return _root.get(key); }
-        [[nodiscard]] T const &get(std::string const &key) const { return _root.get(key); }
-        [[nodiscard]] T &get(std::string const &key) { return _root.get(key); }
+    public:
+        // T const &get(char const *key) const { return _root.get(key); }
+        // T &get(char const *key) { return _root.get(key); }
+        // [[nodiscard]] T const &get(std::string const &key) const { return _root.get(key); }
+        // [[nodiscard]] T &get(std::string const &key) { return _root.get(key); }
 
         T const &get_raw(char const *key) const { return _root.get_raw(key); }
         T &get_raw(char const *key) { return _root.get_raw(key); }
         [[nodiscard]] T const &get_raw(std::string const &key) const { return _root.get_raw(key); }
         T &get_raw(std::string const &key) { return _root.get_raw(key); }
 
+        T const &get_raw_p(char const *prefix, char const *key) const { return _root.get_raw_p(prefix, key); }
+        T &get_raw_p(char const *prefix, char const *key) { return _root.get_raw_p(prefix, key); }
+        [[nodiscard]] T const &get_raw_p(std::string const &prefix, std::string const &key) const { return _root.get_raw_p(prefix, key); }
+        T &get_raw_p(std::string const &prefix, std::string const &key) { return _root.get_raw_p(prefix, key); }
+
     public:
-        void dump_tree(std::ostream &os, const_chars leading_title = nullptr, node *start = nullptr) const {
+        void dump_tree(cmdr::terminal::colors::colorize::Colors256 dim_text_fg,
+                       bool dim_text_dim, std::ostream &os,
+                       const_chars leading_title = nullptr, node *start = nullptr) const {
             auto c = cmdr::terminal::colors::colorize::create();
             if (leading_title)
                 os << leading_title;
             else
                 os << "Dumping for var_t as Tree ...";
             os << std::endl;
-            (start ? start : &_root)->dump_tree(os, &c, 0);
+            (start ? start : &_root)->dump_tree(os, &c, dim_text_fg, dim_text_dim, 0);
         }
-        void dump_full_keys(std::ostream &os, const_chars leading_title = nullptr, node *start = nullptr) const {
+        void dump_full_keys(cmdr::terminal::colors::colorize::Colors256 dim_text_fg,
+                            bool dim_text_dim, std::ostream &os,
+                            const_chars leading_title = nullptr, node *start = nullptr) const {
             auto c = cmdr::terminal::colors::colorize::create();
             if (leading_title)
                 os << leading_title;
             else
                 os << "Dumping for var_t ...";
             os << std::endl;
-            (start ? start : &_root)->dump_full_keys(os, &c, 0);
+            (start ? start : &_root)->dump_full_keys(os, &c, dim_text_fg, dim_text_dim, 0);
         }
 
         void walk_by_full_keys(std::function<void(std::pair<small_string, node_pointer> const &val)> const &cb, node *start = nullptr) {
@@ -1305,13 +1342,18 @@ namespace cmdr::vars {
         store() = default;
         ~store() = default;
 
+        cmdr::terminal::colors::colorize::Colors256 dim_text_fg{cmdr::terminal::colors::colorize::Colors256::Grey50};
+        bool dim_text_dim{false};
+
         friend std::ostream &operator<<(std::ostream &os, store const &o) {
-            o.dump_tree(os);
+            o.dump_tree(o.dim_text_fg, o.dim_text_dim, os);
             return os;
         }
     }; // class store
 
 
 } // namespace cmdr::vars
+
+#include "cmdr_var_t_inl.h"
 
 #endif //CMDR_CXX11_CMDR_VAR_T_HH

@@ -17,11 +17,13 @@
 #endif
 
 #ifndef unused
-#define unused(x) (void) (x)
+#define unused(x) \
+    do { (void) (x); } while (0)
 #endif
 
 #ifndef UNUSED
-#define UNUSED(x) do { (void)(expr); } while (0)
+#define UNUSED(x) \
+    do { (void) (x); } while (0)
 #endif
 
 #ifndef __COPY
@@ -104,7 +106,8 @@ typedef const char *const_chars;
 typedef std::vector<std::string> string_array;
 
 
-const char *const DEFAULT_KEY_PREFIX = "app.cli";
+const char *const DEFAULT_KEY_PREFIX = "app";
+const char *const DEFAULT_CLI_KEY_PREFIX = "app.cli";
 
 
 const char *const UNSORTED_GROUP = "1230.Unsorted";

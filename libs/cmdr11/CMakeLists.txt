@@ -138,10 +138,10 @@ target_compile_definitions(${PROJECT_NAME} INTERFACE
 #target_link_libraries(${PROJECT_NAME} PRIVATE libs::sm-lib)
 #target_link_libraries(${PROJECT_NAME} INTERFACE fmt::fmt-header-only)
 if (CMDR_ENABLE_VERBOSE_LOG)
-#    target_link_libraries(${PROJECT_NAME} INTERFACE spdlog::spdlog)
+    #    target_link_libraries(${PROJECT_NAME} INTERFACE spdlog::spdlog)
     #target_link_libraries(${PROJECT_NAME} INTERFACE spdlog::spdlog)
     #add_dependencies(${PROJECT_NAME} spdlog)
-endif()
+endif ()
 
 if (MSVC)
     target_compile_options(${PROJECT_NAME} INTERFACE /wd4800) # truncation to bool warning
@@ -167,7 +167,7 @@ write_basic_package_version_file(
         COMPATIBILITY SameMajorVersion
 )
 
-install(TARGETS ${PROJECT_NAME} 
+install(TARGETS ${PROJECT_NAME}
         EXPORT ${PROJECT_NAME}Targets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

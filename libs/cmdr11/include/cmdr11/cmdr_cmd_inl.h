@@ -281,6 +281,7 @@ namespace cmdr::opt {
         unused(level);
         auto fg = get_app()._dim_text_fg;
         auto dim = get_app()._dim_text_dim;
+        auto [th, tw] = terminal::terminfo::get_win_size();
 
         std::set<std::string> keys;
         std::map<std::string, std::string> dotted_key_on_keys;
@@ -412,10 +413,23 @@ namespace cmdr::opt {
                 w = wf + 2 + ws + 2 + wa;
                 ss << std::setw(wt - w - (level >= 0 ? level : 0)) << ' ';
 
-                ss // << wt << ',' << level << ','
-                        << c.fg(fg).dim(dim).s(x->descriptions())
-                        // << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa
-                        << std::endl;
+                auto d = x->descriptions();
+                auto rw = (std::size_t)((tw <= 0 ? 1000 : tw) - wt - 2);
+                w = 0;
+                do {
+                    if (w++ != 0)
+                        ss << std::string(wt + 2, ' ');
+                    auto t = std::min(rw, d.length());
+                    ss << c.fg(fg).dim(dim).s(d.substr(0, t));
+                    d = d.substr(t);
+                } while (!d.empty());
+
+                // ss // << wt << ',' << level << ','
+                //         << c.fg(fg).dim(dim).s(x->descriptions())
+                //         // << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa
+                //         << std::endl;
+
+                ss << '\n';
 
                 count_all++;
 
@@ -436,6 +450,7 @@ namespace cmdr::opt {
         unused(level);
         auto fg = get_app()._dim_text_fg;
         auto dim = get_app()._dim_text_dim;
+        auto [th, tw] = terminal::terminfo::get_win_size();
 
         std::set<std::string> keys;
         std::map<std::string, std::string> dotted_key_on_keys;
@@ -566,9 +581,7 @@ namespace cmdr::opt {
                 w = wf + 2 + ws + 2 + wa;
                 ss << std::setw(wt - w - (level >= 0 ? level * 2 : 0)) << ' ';
 
-                ss // << w << ',' << wt << ','
-                        << c.fg(fg).dim(dim).s(x->descriptions());
-
+                auto d = x->descriptions();
                 auto se = x->env_vars_get();
                 if (!se.empty()) {
                     w = 0;
@@ -583,16 +596,46 @@ namespace cmdr::opt {
                     }
                     tmp << ")";
                     if (w > 0)
-                        ss << c.fg(fg).dim(dim).s(tmp.str());
+                        d += tmp.str();
                 }
-
                 auto sd = x->defaults();
                 if (!sd.empty())
-                    ss << c.fg(fg).dim(dim).s(sd);
+                    d += sd;
+                auto rw = (std::size_t)((tw <= 0 ? 1000 : tw) - wt - 2);
+                w = 0;
+                do {
+                    if (w++ != 0)
+                        ss << std::string(wt + 2, ' ');
+                    auto t = std::min(rw, d.length());
+                    ss << c.fg(fg).dim(dim).s(d.substr(0, t));
+                    d = d.substr(t);
+                } while (!d.empty());
+                // ss // << w << ',' << wt << ',' << c.fg(fg).dim(dim).s(x->descriptions());
+                //
+                // auto se = x->env_vars_get();
+                // if (!se.empty()) {
+                //     w = 0;
+                //     std::stringstream tmp;
+                //     tmp << " (ENV: ";
+                //     for (auto const &t : se) {
+                //         if (w > 0) {
+                //             tmp << ',';
+                //         } else
+                //             w++;
+                //         tmp << t;
+                //     }
+                //     tmp << ")";
+                //     if (w > 0)
+                //         ss << c.fg(fg).dim(dim).s(tmp.str());
+                // }
+                //
+                // auto sd = x->defaults();
+                // if (!sd.empty())
+                //     ss << c.fg(fg).dim(dim).s(sd);
 
                 // ss << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa;
 
-                ss << std::endl;
+                ss << '\n';
 
                 count_all++;
             }

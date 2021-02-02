@@ -59,7 +59,7 @@ namespace cmdr::vars {
     template<class T, class small_string>
     inline T &nodeT<T, small_string>::_get_raw_p(char const *prefix, char const *key) {
         std::stringstream sk;
-        if (!prefix && prefix[0 != 0]) sk << prefix << '.';
+        if (prefix && prefix[0] != 0) sk << prefix << '.';
         sk << key;
         return _get_raw(sk.str());
     }
@@ -67,7 +67,7 @@ namespace cmdr::vars {
     template<class T, class small_string>
     inline T const &nodeT<T, small_string>::_get_raw_p(char const *prefix, char const *key) const {
         std::stringstream sk;
-        if (!prefix && prefix[0 != 0]) sk << prefix << '.';
+        if (prefix && prefix[0] != 0) sk << prefix << '.';
         sk << key;
         return _get_raw(sk.str());
     }

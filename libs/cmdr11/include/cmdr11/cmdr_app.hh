@@ -352,30 +352,30 @@ namespace cmdr {
 
         opt::arg &operator[](const_chars long_title) override {
             std::stringstream st;
-            if (!_long.empty())
-                st << _long << '.';
+            // if (!_long.empty())
+            //     st << _long << '.';
             st << long_title;
             return find_flag(st.str().c_str());
         }
         const opt::arg &operator[](const_chars long_title) const override {
             std::stringstream st;
-            if (!_long.empty())
-                st << _long << '.';
+            // if (!_long.empty())
+            //     st << _long << '.';
             st << long_title;
             return const_cast<app *>(this)->find_flag(st.str().c_str());
         }
 
         opt::arg &operator[](const std::string &long_title) {
             std::stringstream st;
-            if (!_long.empty())
-                st << _long << '.';
+            // if (!_long.empty())
+            //     st << _long << '.';
             st << long_title;
             return find_flag(st.str().c_str());
         }
         const opt::arg &operator[](const std::string &long_title) const {
             std::stringstream st;
-            if (!_long.empty())
-                st << _long << '.';
+            // if (!_long.empty())
+            //     st << _long << '.';
             st << long_title;
             return const_cast<app *>(this)->find_flag(st.str().c_str());
         }

@@ -88,7 +88,7 @@ namespace cmdr {
             // std::cout << " - " << amr.matched_str << ' ' << '(' << amr.obj->dotted_key() << ')';
             verbose_debug(" - %s (%s)", amr.matched_str.c_str(), amr.obj->dotted_key().c_str());
 
-            amr.obj->hit_title(pc.title.c_str());
+            amr.obj->hit_title(amr.matched_str.c_str()); // pc.title.c_str());
 
             if (auto &typ = amr.obj->default_value().type();
                 typ != typeid(bool) && typ != typeid(void)) {
@@ -217,12 +217,16 @@ namespace cmdr {
                             amr.matched = true;
                             amr.matched_length = itz.first.length();
                             amr.matched_str = itz.first;
+                            is_long |= itz.second->hit_long();
+                            is_special |= itz.second->hit_special();
                             amr.obj = (cmdr::opt::arg *) &(itz.second->update_hit_count(title.substr(0, itz.first.length()), 1, is_long, is_special));
                         }
                     } else {
                         amr.matched = true;
                         amr.matched_length = itz.first.length();
                         amr.matched_str = itz.first;
+                        is_long |= itz.second->hit_long();
+                        is_special |= itz.second->hit_special();
                         amr.obj = (cmdr::opt::arg *) &(itz.second->update_hit_count(title.substr(0, itz.first.length()), 1, is_long, is_special));
                         break;
                     }
@@ -530,8 +534,8 @@ namespace cmdr {
             }
 
             return after_run(rc, pc, argc, argv);
-            
-        } catch (std::exception &e) {
+
+        } catch (std::exception const &e) {
             std::cerr << "Exception caught : " << e.what() << std::endl;
             cmdr::dump_stack_trace(e);
 

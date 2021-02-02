@@ -787,7 +787,7 @@ namespace cmdr::vars {
                     _os << c->fg(fg).dim(dim).s(ss.str());
                 else
                     _os << ss.str();
-                _os << "\n";
+                _os << '\n';
             }
         };
 
@@ -1174,7 +1174,7 @@ namespace cmdr::vars {
             template<class K, class V>
             void operator()(std::pair<K, V> const &val) {
                 // .first is your key, .second is your value
-                _os << " - " << val.first << " : " << (*val.second) << "\n";
+                _os << " - " << val.first << " : " << (*val.second) << '\n';
             }
         };
 

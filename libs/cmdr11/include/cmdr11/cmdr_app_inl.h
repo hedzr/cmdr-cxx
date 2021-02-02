@@ -172,7 +172,7 @@ namespace cmdr {
         // store.set("app.server.tls.fixed-list", std::array{"item1", "item2"});
 #endif
 
-        auto tilde_debug = (*pc._root)["debug"];
+        auto tilde_debug = pc._root->operator[]("debug");
         if (tilde_debug.valid()) {
 
             auto &cli = get_app();
@@ -195,17 +195,19 @@ namespace cmdr {
                 auto c = colorize::create();
                 std::cout << c.fg(c.Purple3).bg(c.Default).underline().bold().s("some text") << '\n';
                 std::cout << c.dim().s("dim text") << '\n';
-                std::cout << c.Purple3 << " << want 56\n";
-                std::cout << c.MediumTurquoise << " << want 80\n";
-                std::cout << c.Grey93 << " << want 255\n";
+                std::cout << c.Purple3 << " << want 56" << '\n';
+                std::cout << c.MediumTurquoise << " << want 80" << '\n';
+                std::cout << c.Grey93 << " << want 255" << '\n';
 
                 using cmdr::terminal::colors::colorize;
                 std::cout << colorize::style::underline << colorize::fg::red << "Hello, Colorful World!" << std::endl;
                 std::cout << colorize::reset::all << "Here I'm!" << std::endl;
-                std::cout << "END.\n\n";
+                std::cout << "END." << '\n'
+                          << '\n';
 
                 std::cout << "How many colors: " << cmdr::terminal::terminfo::support_colors() << '\n';
-                std::cout << "Terminal: " << cmdr::terminal::terminfo::term() << '\n';
+                std::cout << "Terminal: " << cmdr::terminal::terminfo::term() << '\n'
+                          << '\n';
             }
         }
 

@@ -23,16 +23,16 @@ static void test1() {
 
 static void ingest_any(const std::any &any) {
     try {
-        std::cout << std::any_cast<std::string>(any) << "\n";
+        std::cout << std::any_cast<std::string>(any) << '\n';
     } catch (std::bad_any_cast const &) {}
 
     if (std::string *str = std::any_cast<std::string>(&any)) {
-        std::cout << *str << "\n";
+        std::cout << *str << '\n';
     }
 
     if (std::type_index{typeid(std::string)} == any.type()) {
         //  Known not to throw, as previously checked.
-        std::cout << std::any_cast<std::string>(any) << "\n";
+        std::cout << std::any_cast<std::string>(any) << '\n';
     }
 }
 

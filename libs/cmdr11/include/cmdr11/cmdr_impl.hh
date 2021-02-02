@@ -405,6 +405,9 @@ namespace cmdr {
         std::string exe_name = path::executable_name();
         auto c = cmdr::terminal::colors::colorize::create();
 
+        if (is_no_color())
+            c.enable(false);
+        
         std::stringstream ss;
         ss << _name << ' ' << 'v' << _version;
         if (_header.empty())

@@ -338,6 +338,12 @@ namespace cmdr {
                 // .on_invoke(cli.on_invoking_print_cmd)
                 ;
 
+        cli += cmdr::opt::opt{}("no-color")
+                       .description("disable color text in terminal")
+                       .group(SYS_MGMT_GROUP)
+                       .hidden()
+                       .env_vars("PLAIN", "NO_COLOR");
+
         cli += cmdr::opt::opt{}("tree")
                        .description("print all commands as a tree")
                        .hidden()

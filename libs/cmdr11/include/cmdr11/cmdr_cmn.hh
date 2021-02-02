@@ -16,7 +16,7 @@ namespace cmdr {
         class cmd;
     } // namespace opt
 
-    namespace details {
+    namespace types {
         using on_arg_added = std::function<void(opt::arg *)>;
         using on_cmd_added = std::function<void(opt::cmd *)>;
         using on_arg_matched = std::function<void(opt::arg *)>;
@@ -24,7 +24,7 @@ namespace cmdr {
 
         // using exceptions if loading failed...
         using on_loading_externals = std::function<void(app &cli)>;
-    } // namespace details
+    } // namespace types
 };    // namespace cmdr
 
 // namespace cmdr::opt::vars {
@@ -39,22 +39,22 @@ namespace cmdr::opt {
 
     class arg;
 
-    namespace details {
+    namespace types {
         using arg_list = std::list<arg>;
         using arg_pointers = std::list<arg *>;
         using grouped_arg_list = std::unordered_map<std::string, arg_pointers>; // key: group-name
         using indexed_args = std::unordered_map<std::string, arg *>;            // key: long-title
-    }                                                                           // namespace details
+    }                                                                           // namespace types
 
     class cmd;
 
-    namespace details {
+    namespace types {
         using cmd_list = std::list<cmd>;
         using cmd_pointers = std::list<cmd *>;
         using grouped_cmd_list = std::unordered_map<std::string, cmd_pointers>; // key: group-name
         using indexed_commands = std::unordered_map<std::string, cmd *>;        // key: long-title
         using option = std::function<void(cmd &)>;                              // void (*option)(app &a);
-    }                                                                           // namespace details
+    }                                                                           // namespace types
 
 } // namespace cmdr::opt
 
@@ -100,7 +100,7 @@ namespace cmdr::opt {
         RunDefaultAction,
     };
 
-    namespace details {
+    namespace types {
 
         using on_unknown_argument_found =
                 std::function<Action(
@@ -165,7 +165,7 @@ namespace cmdr::opt {
                 std::function<int(cmdr::opt::cmd const &c,
                                   string_array const &remain_args)>; // callback handler
 
-    } // namespace details
+    } // namespace types
 
 } // namespace cmdr::opt
 

@@ -20,24 +20,24 @@ namespace cmdr::opt {
     protected:
         friend class cmdr::app;
 
-        details::arg_list _all_args{};
-        details::grouped_arg_list _grouped_args{{UNSORTED_GROUP, details::arg_pointers{}}};
-        details::indexed_args _indexed_args{}; // just long-titles
-        details::indexed_args _short_args{};
-        details::indexed_args _long_args{};
-        details::cmd_list _all_commands{};
-        details::grouped_cmd_list _grouped_commands{{UNSORTED_GROUP, details::cmd_pointers{}}};
-        details::indexed_commands _indexed_commands{}; // just long-titles
-        details::indexed_commands _short_commands{};
-        details::indexed_commands _long_commands{};
+        types::arg_list _all_args{};
+        types::grouped_arg_list _grouped_args{{UNSORTED_GROUP, types::arg_pointers{}}};
+        types::indexed_args _indexed_args{}; // just long-titles
+        types::indexed_args _short_args{};
+        types::indexed_args _long_args{};
+        types::cmd_list _all_commands{};
+        types::grouped_cmd_list _grouped_commands{{UNSORTED_GROUP, types::cmd_pointers{}}};
+        types::indexed_commands _indexed_commands{}; // just long-titles
+        types::indexed_commands _short_commands{};
+        types::indexed_commands _long_commands{};
 
         cmd *_last_added_command{};
         arg *_last_added_arg{};
 
-        details::on_command_hit _on_command_hit;
-        details::on_pre_invoke _on_pre_invoke;
-        details::on_invoke _on_invoke;
-        details::on_post_invoke _on_post_invoke;
+        types::on_command_hit _on_command_hit;
+        types::on_pre_invoke _on_pre_invoke;
+        types::on_invoke _on_invoke;
+        types::on_post_invoke _on_post_invoke;
         // std::string _hit_title;
 
     public:
@@ -101,10 +101,10 @@ namespace cmdr::opt {
     }                       \
     typ const &mn() const { return _##mn; }
 
-        PROP_SET3(on_command_hit, details::on_command_hit)
-        PROP_SET3(on_pre_invoke, details::on_pre_invoke)
-        PROP_SET3(on_invoke, details::on_invoke)
-        PROP_SET3(on_post_invoke, details::on_post_invoke)
+        PROP_SET3(on_command_hit, types::on_command_hit)
+        PROP_SET3(on_pre_invoke, types::on_pre_invoke)
+        PROP_SET3(on_invoke, types::on_invoke)
+        PROP_SET3(on_post_invoke, types::on_post_invoke)
         // PROP_SET(hit_title)
 
 #undef PROP_SET
@@ -180,11 +180,11 @@ namespace cmdr::opt {
         cmd &find_command(const_chars long_title, bool extensive = false);
 
     public:
-        virtual cmd &opt(const details::option &opt_) {
+        virtual cmd &opt(const types::option &opt_) {
             opt_(*this);
             return (*this);
         }
-        virtual cmd &option(const details::option &opt_) {
+        virtual cmd &option(const types::option &opt_) {
             opt_(*this);
             return (*this);
         }

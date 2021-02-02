@@ -70,7 +70,7 @@ namespace cmdr::addons::loaders {
      */
     class yaml_loader {
     public:
-        cmdr::details::on_loading_externals operator()() const {
+        cmdr::types::on_loading_externals operator()() const {
             return [=](cmdr::app &c) {
                 unused(c);
                 std::vector searches = {

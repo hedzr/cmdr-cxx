@@ -80,7 +80,7 @@ namespace cmdr::opt {
             auto ptr = &_all_args.back();
 
             if (_grouped_args.find(gn) == _grouped_args.end())
-                _grouped_args.emplace(gn, details::arg_pointers{});
+                _grouped_args.emplace(gn, types::arg_pointers{});
             // auto ptr = &_all_args.back();
             // auto it = _grouped_args.find(gn);
             // (*it).second.push_back(ptr);
@@ -134,7 +134,7 @@ namespace cmdr::opt {
             auto ptr = &_all_commands.back();
 
             if (_grouped_commands.find(gn) == _grouped_commands.end())
-                _grouped_commands.emplace(gn, details::cmd_pointers{});
+                _grouped_commands.emplace(gn, types::cmd_pointers{});
             auto &list = _grouped_commands[gn];
             auto size = list.size();
             list.push_back(ptr);

@@ -19,7 +19,7 @@ namespace cmdr::opt {
         sub_cmd() = default;
         ~sub_cmd() = default;
 
-        details::option get() {
+        types::option get() {
             return [=](cmd &c) {
                 c += _cmd;
             };
@@ -67,22 +67,22 @@ namespace cmdr::opt {
             return (*this);
         }
 
-        sub_cmd &on_hit(details::on_command_hit cb) {
+        sub_cmd &on_hit(types::on_command_hit cb) {
             _cmd.on_command_hit(cb);
             return (*this);
         }
 
-        sub_cmd &on_pre_invoke(details::on_pre_invoke cb) {
+        sub_cmd &on_pre_invoke(types::on_pre_invoke cb) {
             _cmd.on_pre_invoke(cb);
             return (*this);
         }
 
-        sub_cmd &on_post_invoke(details::on_post_invoke cb) {
+        sub_cmd &on_post_invoke(types::on_post_invoke cb) {
             _cmd.on_post_invoke(cb);
             return (*this);
         }
 
-        sub_cmd &on_invoke(details::on_invoke cb) {
+        sub_cmd &on_invoke(types::on_invoke cb) {
             _cmd.on_invoke(cb);
             return (*this);
         }
@@ -121,7 +121,7 @@ namespace cmdr::opt {
 #endif
         ~opt() = default;
 
-        details::option get() {
+        types::option get() {
             return [=](cmd &c) {
                 c += _arg;
             };
@@ -185,7 +185,7 @@ namespace cmdr::opt {
             return (*this);
         }
 
-        opt &on_hit(details::on_flag_hit cb) {
+        opt &on_hit(types::on_flag_hit cb) {
             _arg.on_flag_hit(cb);
             return (*this);
         }

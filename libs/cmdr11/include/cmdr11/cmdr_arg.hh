@@ -297,7 +297,7 @@ namespace cmdr::opt {
         std::string _placeholder;
         std::string _toggle_group;
 
-        details::on_flag_hit _on_flag_hit;
+        types::on_flag_hit _on_flag_hit;
 
     public:
         arg()
@@ -375,7 +375,7 @@ namespace cmdr::opt {
 #undef PROP_SET2
 #undef PROP_SET3
 
-        arg &on_flag_hit(details::on_flag_hit const &h) {
+        arg &on_flag_hit(types::on_flag_hit const &h) {
             _on_flag_hit = h;
             return (*this);
         }

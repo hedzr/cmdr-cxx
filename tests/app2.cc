@@ -242,6 +242,6 @@ int main(int argc, char *argv[]) {
         std::cerr << "Exception caught for testing (NOT BUG) : " << e.what() << std::endl;
         CMDR_DUMP_STACK_TRACE(e);
     }
-    
+
     return cli.run(argc, argv);
 }

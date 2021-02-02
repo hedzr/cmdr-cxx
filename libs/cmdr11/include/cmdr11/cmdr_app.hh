@@ -103,11 +103,11 @@ namespace cmdr {
         }
 
     public:
-        app &set_global_pre_invoke_handler(opt::details::on_pre_invoke &&cb) {
+        app &set_global_pre_invoke_handler(opt::types::on_pre_invoke &&cb) {
             _global_on_pre_invoke = std::move(cb);
             return (*this);
         }
-        app &set_global_post_invoke_handler(opt::details::on_post_invoke &&cb) {
+        app &set_global_post_invoke_handler(opt::types::on_post_invoke &&cb) {
             _global_on_post_invoke = std::move(cb);
             return (*this);
         }
@@ -120,28 +120,28 @@ namespace cmdr {
             return (*this);
         }
 
-        app &set_global_on_arg_added(details::on_arg_added &&cb) {
+        app &set_global_on_arg_added(types::on_arg_added &&cb) {
             _on_arg_added.push_back(cb);
             return (*this);
         }
-        app &set_global_on_cmd_added(details::on_cmd_added &&cb) {
+        app &set_global_on_cmd_added(types::on_cmd_added &&cb) {
             _on_cmd_added.push_back(cb);
             return (*this);
         }
-        app &set_global_on_arg_matched(details::on_arg_matched &&cb) {
+        app &set_global_on_arg_matched(types::on_arg_matched &&cb) {
             _on_arg_matched.push_back(cb);
             return (*this);
         }
-        app &set_global_on_cmd_matched(details::on_cmd_matched &&cb) {
+        app &set_global_on_cmd_matched(types::on_cmd_matched &&cb) {
             _on_cmd_matched.push_back(cb);
             return (*this);
         }
-        app &set_global_on_loading_externals(details::on_loading_externals &&cb) {
+        app &set_global_on_loading_externals(types::on_loading_externals &&cb) {
             _on_loading_externals.push_back(cb);
             return (*this);
         }
 
-        app &set_global_on_command_not_hooked(opt::details::on_invoke cb) {
+        app &set_global_on_command_not_hooked(opt::types::on_invoke cb) {
             _on_command_not_hooked = cb;
             return (*this);
         }
@@ -207,8 +207,8 @@ namespace cmdr {
                 : _root(a) {}
 
         private:
-            opt::details::arg_pointers matched_flags{};
-            opt::details::cmd_pointers _matched_commands{};
+            opt::types::arg_pointers matched_flags{};
+            opt::types::cmd_pointers _matched_commands{};
             string_array unknown_flags{};
             string_array unknown_commands{};
             string_array non_commands{};
@@ -277,7 +277,7 @@ namespace cmdr {
         static arg_matching_result matching_short_flag(parsing_context &pc);
         static arg_matching_result matching_flag_on(parsing_context &pc,
                                                     bool is_long, bool is_special,
-                                                    std::function<opt::details::indexed_args const &(opt::cmd *)> li);
+                                                    std::function<opt::types::indexed_args const &(opt::cmd *)> li);
 
         opt::Action unknown_command_found(parsing_context &pc, cmd_matching_result &cmr);
         opt::Action unknown_long_flag_found(parsing_context &pc, arg_matching_result &amr);
@@ -440,11 +440,11 @@ namespace cmdr {
 
         // static colorize &colorizer() {...}
 
-        opt::details::on_pre_invoke _global_on_pre_invoke;
-        opt::details::on_post_invoke _global_on_post_invoke;
+        opt::types::on_pre_invoke _global_on_pre_invoke;
+        opt::types::on_post_invoke _global_on_post_invoke;
         bool _treat_unknown_input_command_as_error = true;
         bool _treat_unknown_input_flag_as_error = true;
-        opt::details::on_unknown_argument_found _on_unknown_argument_found;
+        opt::types::on_unknown_argument_found _on_unknown_argument_found;
 
         //int _help_hit{};
         //cmd *_cmd_hit{};
@@ -455,12 +455,12 @@ namespace cmdr {
         int _minimal_tab_width{43};
         static bool _longest_first;
 
-        std::vector<details::on_arg_added> _on_arg_added;
-        std::vector<details::on_cmd_added> _on_cmd_added;
-        std::vector<details::on_arg_matched> _on_arg_matched;
-        std::vector<details::on_cmd_matched> _on_cmd_matched;
-        std::vector<details::on_loading_externals> _on_loading_externals;
-        opt::details::on_invoke _on_command_not_hooked;
+        std::vector<types::on_arg_added> _on_arg_added;
+        std::vector<types::on_cmd_added> _on_cmd_added;
+        std::vector<types::on_arg_matched> _on_arg_matched;
+        std::vector<types::on_cmd_matched> _on_cmd_matched;
+        std::vector<types::on_loading_externals> _on_loading_externals;
+        opt::types::on_invoke _on_command_not_hooked;
         std::function<void(const std::exception_ptr &eptr)> _on_handle_exception_ptr;
     };
 

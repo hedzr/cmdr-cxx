@@ -180,7 +180,7 @@ namespace cmdr {
     inline typename app::cmd_matching_result app::matching_command(parsing_context &pc) {
         cmd_matching_result cmr;
         auto &c = pc.curr_command();
-        opt::details::indexed_commands &li = c._long_commands;
+        opt::types::indexed_commands &li = c._long_commands;
         if (auto const &it = li.find(pc.title); it != li.end()) {
             cmr.matched = true;
             auto p2 = it->second;
@@ -200,7 +200,7 @@ namespace cmdr {
     inline typename app::arg_matching_result
     app::matching_flag_on(parsing_context &pc,
                           bool is_long, bool is_special,
-                          std::function<opt::details::indexed_args const &(opt::cmd *)> li) {
+                          std::function<opt::types::indexed_args const &(opt::cmd *)> li) {
         arg_matching_result amr;
         auto &mc = pc.matched_commands();
 
@@ -243,21 +243,21 @@ namespace cmdr {
 
     inline typename app::arg_matching_result
     app::matching_special_flag(parsing_context &pc) {
-        return matching_flag_on(pc, true, true, [](opt::cmd *c) -> opt::details::indexed_args const & {
+        return matching_flag_on(pc, true, true, [](opt::cmd *c) -> opt::types::indexed_args const & {
             return c->_long_args;
         });
     }
 
     inline typename app::arg_matching_result
     app::matching_long_flag(parsing_context &pc) {
-        return matching_flag_on(pc, true, false, [](opt::cmd *c) -> opt::details::indexed_args const & {
+        return matching_flag_on(pc, true, false, [](opt::cmd *c) -> opt::types::indexed_args const & {
             return c->_long_args;
         });
     }
 
     inline typename app::arg_matching_result
     app::matching_short_flag(parsing_context &pc) {
-        return matching_flag_on(pc, false, false, [](opt::cmd *c) -> opt::details::indexed_args const & {
+        return matching_flag_on(pc, false, false, [](opt::cmd *c) -> opt::types::indexed_args const & {
             return c->_short_args;
         });
     }

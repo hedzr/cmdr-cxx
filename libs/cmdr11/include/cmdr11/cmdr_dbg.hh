@@ -18,6 +18,12 @@
 #include <memory>
 #endif
 
+#ifdef __GNUG__
+#include <signal.h>
+#include <unistd.h>
+#endif
+
+
 namespace cmdr::debug {
 
 #if __cplusplus < 201402
@@ -352,7 +358,7 @@ namespace cmdr::exception {
         [[nodiscard]] const char *what() const noexcept override {
             return msg.c_str();
         }
-        std::vector<std::string> const &stacktrace() const { return st; }
+        [[nodiscard]] std::vector<std::string> const &stacktrace() const { return st; }
     };
 #define cmdr_throw_line(arg) throw cmdr::exception::cmdr_exception(arg, __FILE__, __LINE__);
 } // namespace cmdr::exception
@@ -381,4 +387,60 @@ namespace cmdr::debug {
 #define CMDR_DUMP_STACK_TRACE(e) cmdr::debug::dump_stacktrace(__FILE__, __LINE__, e)
 
 } // namespace cmdr::debug
+
+//
+// SIGSEGV handler
+//
+
+namespace cmdr::debug {
+
+    /**
+     * @brief a SIGSEGV handler Installer once only. Simple and not thread-safe but it's not point, right? You're crashing here after all.
+     */
+    class SigSegVInstaller {
+        std::function<void(int sig)> _f{};
+        static SigSegVInstaller *_this;
+
+    public:
+        SigSegVInstaller() {
+            signal(SIGSEGV, handler);
+            _this = this;
+        }
+        SigSegVInstaller(std::function<void(int sig)> const &f)
+            : _f(f) {
+            signal(SIGSEGV, handler);
+            _this = this;
+        }
+        ~SigSegVInstaller() = default;
+
+        static void handler(int sig) {
+#if 0
+            void *array[10];
+            size_t size;
+
+            // get void*'s for all entries on the stack
+            size = backtrace(array, 10);
+
+            // print out all the frames to stderr
+            fprintf(stderr, "Error: signal %d:\n", sig);
+            backtrace_symbols_fd(array, size, STDERR_FILENO);
+#else
+            fprintf(stderr, "Error: signal %d:\n", sig);
+            print_stacktrace(stderr, 0);
+            if (_this->_f)
+                _this->_f(sig);
+#endif
+            exit(1);
+        }
+
+        void baz() {
+            int *foo = (int *) -1; // make a bad pointer
+            printf("%d\n", *foo);  // causes segfault
+        }
+    }; // class SigSegVInstaller
+
+    inline SigSegVInstaller* SigSegVInstaller::_this{nullptr};
+    
+} // namespace cmdr::debug
+
 #endif //CMDR_CXX11_CMDR_DBG_HH

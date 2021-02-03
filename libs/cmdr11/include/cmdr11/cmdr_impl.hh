@@ -491,6 +491,9 @@ namespace cmdr {
     }
 
     inline int app::run(int argc, char *argv[]) {
+        // debug::SigSegVInstaller _sigsegv_installer;
+        // _sigsegv_installer.baz();
+
         // std::cout << "Hello, World!" << std::endl;
         try {
             prepare();

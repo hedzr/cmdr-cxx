@@ -84,6 +84,7 @@ set(header_files
         ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_cmd.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_cmd_inl.h
         ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_cmn.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_dbg.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_defs.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_if.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_imp1.hh
@@ -101,6 +102,7 @@ set(header_files
         ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_types_check.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_utils.hh
         ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_var_t.hh
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_var_t_inl.h
         )
 
 ## TARGETS ######################################
@@ -158,6 +160,7 @@ endif ()
 
 ## INSTALLING ######################################
 
+include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 set(CONFIG_PACKAGE_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 

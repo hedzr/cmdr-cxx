@@ -573,11 +573,15 @@ namespace cmdr::vars {
     //
 
 
-    template<class T, typename small_string = std::string>
+    // forward
+
+    template<class T = variable, typename small_string = std::string>
     class treeT;
 
-    template<class T, class small_string = std::string>
+    template<class T = variable, class small_string = std::string>
     class nodeT;
+
+    using tcolorize = cmdr::terminal::colors::colorize;
 
 
     template<class T, class small_string>
@@ -587,6 +591,7 @@ namespace cmdr::vars {
         typedef nodeT<T, small_string> self_type;
         using node_vec = std::list<self_type>;
         using node_pointer = self_type *;
+        using key_type = small_string;
         using node_map = std::unordered_map<small_string, self_type>;
         using node_idx = std::unordered_map<small_string, node_pointer>;
 
@@ -743,9 +748,9 @@ namespace cmdr::vars {
     private:
         // T &_get(std::string const &key);
         T &_get_raw(std::string const &key);
-        T const &_get_raw(std::string const &key) const;
+        [[nodiscard]] T const &_get_raw(std::string const &key) const;
         T &_get_raw_p(std::string const &prefix, std::string const &key);
-        T const &_get_raw_p(std::string const &prefix, std::string const &key) const;
+        [[nodiscard]] T const &_get_raw_p(std::string const &prefix, std::string const &key) const;
         T &_get_raw_p(char const *prefix, char const *key);
         T const &_get_raw_p(char const *prefix, char const *key) const;
 
@@ -756,12 +761,31 @@ namespace cmdr::vars {
         }
 
     private:
-        void dump_tree(std::ostream &os, cmdr::terminal::colors::colorize *c,
-                       cmdr::terminal::colors::colorize::Colors256 dim_text_fg,
-                       bool dim_text_dim, int level) const;
-        void dump_full_keys(std::ostream &os, cmdr::terminal::colors::colorize *c,
-                            cmdr::terminal::colors::colorize::Colors256 dim_text_fg,
-                            bool dim_text_dim, int level = 0) const;
+        void dump_tree(std::ostream &os,
+                       tcolorize *c,
+                       tcolorize::Colors256 dim_text_fg,
+                       bool dim_text_dim,
+                       int level = 0) const;
+        // template<class K, class V>
+        void dump_tree_f(std::ostream &os,
+                         tcolorize *c,
+                         tcolorize::Colors256 dim_text_fg,
+                         bool dim_text_dim,
+                         std::function<bool(std::pair<key_type, node_pointer> const &)> const &on_filter,
+                         int level = 0) const;
+
+        void dump_full_keys(std::ostream &os,
+                            tcolorize *c,
+                            tcolorize::Colors256 dim_text_fg,
+                            bool dim_text_dim,
+                            int level = 0) const;
+        template<class K, class V, class Comp = std::less<K>>
+        void dump_full_keys_f(std::ostream &os,
+                              tcolorize *c,
+                              tcolorize::Colors256 dim_text_fg,
+                              bool dim_text_dim,
+                              std::function<bool(std::pair<K, V> const &)> const &on_filter,
+                              int level = 0) const;
 
         template<class K, class V>
         void walk_by_full_keys(std::function<void(std::pair<K, V> const &val)> const &cb) {
@@ -769,54 +793,49 @@ namespace cmdr::vars {
         }
 
     private:
-        struct map_streamer {
+        template<class K, class V>
+        class map_streamer {
             std::ostream &_os;
-            cmdr::terminal::colors::colorize *c;
-            cmdr::terminal::colors::colorize::Colors256 fg;
+            tcolorize *c;
+            tcolorize::Colors256 fg;
             bool dim;
+            std::function<bool(std::pair<K, V> const &val)> on_filter;
 
-            explicit map_streamer(std::ostream &os, cmdr::terminal::colors::colorize *c,
-                                  cmdr::terminal::colors::colorize::Colors256 dim_text_fg,
-                                  bool dim_text_dim);
+        public:
+            map_streamer() = default;
 
-            template<class K, class V>
-            void operator()(std::pair<K, V> const &val) {
-                // .first is your key, .second is your value
-                _os << " - " << val.first << " : ";
-                std::stringstream ss;
-                ss << (*val.second);
-                if (c)
-                    _os << c->fg(fg).dim(dim).s(ss.str());
-                else
-                    _os << ss.str();
-                _os << '\n';
-            }
+            explicit map_streamer(std::ostream &os,
+                                  tcolorize *c,
+                                  tcolorize::Colors256 dim_text_fg,
+                                  bool dim_text_dim,
+                                  std::function<bool(std::pair<K, V> const &val)> const &on_filter = nullptr);
+
+            // template<class K, class V>
+            void operator()(std::pair<K, V> const &val);
         };
 
         template<class K, class V, class Comp = std::less<K>>
-        inline void print_sorted(std::ostream &os,
-                                 cmdr::terminal::colors::colorize *c,
-                                 cmdr::terminal::colors::colorize::Colors256 dim_text_fg,
-                                 bool dim_text_dim,
-                                 std::unordered_map<K, V> const &um, Comp pred = Comp()) const {
-            std::map<K, V> m(um.begin(), um.end(), pred);
-            std::for_each(m.begin(), m.end(), map_streamer(os, c, dim_text_fg, dim_text_dim));
-        }
+        void print_sorted(std::ostream &os,
+                          tcolorize *c,
+                          tcolorize::Colors256 dim_text_fg,
+                          bool dim_text_dim,
+                          std::unordered_map<K, V> const &um,
+                          std::function<bool(std::pair<K, V> const &val)> const &on_filter = nullptr,
+                          Comp pred = Comp()) const;
 
         template<class K, class V, class Comp = std::less<K>>
-        inline void walk_sorted(std::unordered_map<K, V> const &um,
-                                std::function<void(std::pair<K, V> const &val)> const &cb,
-                                Comp pred = Comp()) const {
-            std::map<K, V> m(um.begin(), um.end(), pred);
-            std::for_each(m.begin(), m.end(), cb);
-        }
+        void walk_sorted(std::unordered_map<K, V> const &um,
+                         std::function<void(std::pair<K, V> const &val)> const &cb,
+                         Comp pred = Comp()) const;
 
-    }; // class nodeT<T>
+    }; // class nodeT<T, small_string>
+
 
     template<class T, typename small_string>
     class treeT {
     public:
         using self_type = treeT<T, small_string>;
+        using key_type = small_string;
         using node = nodeT<T, small_string>;
         using node_pointer = node *;
         using node_vec = std::list<node>;
@@ -860,10 +879,11 @@ namespace cmdr::vars {
         T &get_raw_p(std::string const &prefix, std::string const &key) { return _root.get_raw_p(prefix, key); }
 
     public:
-        void dump_tree(cmdr::terminal::colors::colorize::Colors256 dim_text_fg,
-                       bool dim_text_dim, std::ostream &os,
-                       const_chars leading_title = nullptr, node *start = nullptr) const {
-            auto c = cmdr::terminal::colors::colorize::create();
+        void dump_tree(tcolorize &c, tcolorize::Colors256 dim_text_fg, bool dim_text_dim,
+                       std::ostream &os,
+                       const_chars leading_title = nullptr,
+                       node *start = nullptr) const {
+            // auto c = tcolorize::create();
             if (leading_title)
                 os << leading_title;
             else
@@ -871,16 +891,45 @@ namespace cmdr::vars {
             os << std::endl;
             (start ? start : &_root)->dump_tree(os, &c, dim_text_fg, dim_text_dim, 0);
         }
-        void dump_full_keys(cmdr::terminal::colors::colorize::Colors256 dim_text_fg,
-                            bool dim_text_dim, std::ostream &os,
-                            const_chars leading_title = nullptr, node *start = nullptr) const {
-            auto c = cmdr::terminal::colors::colorize::create();
+        // template<class K, class V, class Comp = std::less<K>>
+        void dump_tree_f(tcolorize &c, tcolorize::Colors256 dim_text_fg, bool dim_text_dim,
+                         std::ostream &os,
+                         std::function<bool(std::pair<key_type, node_pointer> const &)> const &on_filter,
+                         const_chars leading_title = nullptr,
+                         node *start = nullptr) const {
+            // auto c = tcolorize::create();
+            if (leading_title)
+                os << leading_title;
+            else
+                os << "Dumping for var_t as Tree ...";
+            os << std::endl;
+            (start ? start : &_root)->dump_tree_f(os, &c, dim_text_fg, dim_text_dim, on_filter, 0);
+        }
+        void dump_full_keys(tcolorize &c, tcolorize::Colors256 dim_text_fg, bool dim_text_dim,
+                            std::ostream &os,
+                            const_chars leading_title = nullptr,
+                            node *start = nullptr) const {
+            // auto c = tcolorize::create();
             if (leading_title)
                 os << leading_title;
             else
                 os << "Dumping for var_t ...";
             os << std::endl;
             (start ? start : &_root)->dump_full_keys(os, &c, dim_text_fg, dim_text_dim, 0);
+        }
+        template<class K, class V, class Comp = std::less<K>>
+        void dump_full_keys_f(tcolorize &c, tcolorize::Colors256 dim_text_fg, bool dim_text_dim,
+                              std::ostream &os,
+                              std::function<bool(std::pair<K, V> const &)> const &on_filter,
+                              const_chars leading_title = nullptr,
+                              node *start = nullptr) const {
+            // auto c = tcolorize::create();
+            if (leading_title)
+                os << leading_title;
+            else
+                os << "Dumping for var_t ...";
+            os << std::endl;
+            (start ? start : &_root)->dump_full_keys_f(os, &c, dim_text_fg, dim_text_dim, on_filter, 0);
         }
 
         void walk_by_full_keys(std::function<void(std::pair<small_string, node_pointer> const &val)> const &cb, node *start = nullptr) {
@@ -889,7 +938,7 @@ namespace cmdr::vars {
 
     private:
         node _root;
-    }; // class treeT<T>
+    }; // class treeT<T, small_string>
 
 
 #if 0
@@ -1339,19 +1388,24 @@ namespace cmdr::vars {
 #endif
 
 
-    class store : public treeT<variable> {
+    class store : public treeT<variable, std::string> {
     public:
         store() = default;
         ~store() = default;
 
-        cmdr::terminal::colors::colorize::Colors256 dim_text_fg{cmdr::terminal::colors::colorize::Colors256::Grey50};
-        bool dim_text_dim{false};
+        static tcolorize _c;
+        static tcolorize::Colors256 _dim_text_fg;
+        static bool _dim_text_dim;
 
         friend std::ostream &operator<<(std::ostream &os, store const &o) {
-            o.dump_tree(o.dim_text_fg, o.dim_text_dim, os);
+            o.dump_tree(store::_c, store::_dim_text_fg, store::_dim_text_dim, os);
             return os;
         }
     }; // class store
+
+    inline tcolorize store::_c{tcolorize::create()};
+    inline tcolorize::Colors256 store::_dim_text_fg{tcolorize::Colors256::Grey50};
+    inline bool store::_dim_text_dim{false};
 
 
 } // namespace cmdr::vars

@@ -50,6 +50,9 @@ namespace cmdr {
         // PROP_SET(examples)
         PROP_SET(store_prefix)
 
+        [[nodiscard]] std::string const &cli_prefix() const { return _long; }
+        void cli_prefix(std::string const &s) { _long = s; }
+
 #undef PROP_SET
 
     public:
@@ -423,6 +426,24 @@ namespace cmdr {
         vars::variable &get_for_cli(char const *key) { return _store.get_raw_p(_long.c_str(), key); }
         [[nodiscard]] vars::variable const &get_for_cli(std::string const &key) const { return _store.get_raw_p(_long, key); }
         [[nodiscard]] vars::variable &get_for_cli(std::string const &key) { return _store.get_raw_p(_long, key); }
+
+        // template<class K = std::string,
+        //          class V = vars::nodeT<vars::variable, K>,
+        //          class Comp = std::less<K>>
+        void dump_tree_f(std::ostream &os = std::cout,
+                         std::function<bool(std::pair<vars::store::key_type, vars::store::node_pointer> const &)> const &on_filter = nullptr,
+                         const_chars leading_title = nullptr,
+                         vars::store::node *start = nullptr) const {
+            auto c = cmdr::terminal::colors::colorize::create();
+            _store.dump_tree_f(c, _dim_text_fg, _dim_text_dim, os, on_filter, leading_title, start);
+        }
+        void dump_full_keys_f(std::ostream &os = std::cout,
+                              std::function<bool(std::pair<vars::store::key_type, vars::store::node_pointer> const &)> const &on_filter = nullptr,
+                              const_chars leading_title = nullptr,
+                              vars::store::node *start = nullptr) const {
+            auto c = cmdr::terminal::colors::colorize::create();
+            _store.dump_full_keys_f(c, _dim_text_fg, _dim_text_dim, os, on_filter, leading_title, start);
+        }
 
     private:
         std::string _name;

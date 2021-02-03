@@ -164,33 +164,52 @@ namespace cmdr {
         unused(argv);
 
         // auto &store = cli.store();
-        auto &store = cmdr::get_store();
+        // auto &store = cmdr::get_store();
 
 #if defined(_DEBUG) && 0
         using namespace std::chrono_literals;
 
-        store.set("app.server.tls.enabled", true);
-        store.set("app.server.tls.ca.cert", "ca.cer");
-        store.set("app.server.tls.server.cert", "server.cer");
-        store.set("app.server.tls.server.key", "server.key");
-        store.set("app.server.tls.client-auth", true);
-        store.set("app.server.tls.handshake.timeout", 10s);
-        store.set("app.server.tls.handshake.max-idle-time", 45min);
-        store.set("app.server.tls.domains", std::vector{"example.com", "example.org"});
-        // store.set("app.server.tls.fixed-list", std::array{"item1", "item2"});
+        _store.set("app.server.tls.enabled", true);
+        _store.set("app.server.tls.ca.cert", "ca.cer");
+        _store.set("app.server.tls.server.cert", "server.cer");
+        _store.set("app.server.tls.server.key", "server.key");
+        _store.set("app.server.tls.client-auth", true);
+        _store.set("app.server.tls.handshake.timeout", 10s);
+        _store.set("app.server.tls.handshake.max-idle-time", 45min);
+        _store.set("app.server.tls.domains", std::vector{"example.com", "example.org"});
+        // _store.set("app.server.tls.fixed-list", std::array{"item1", "item2"});
 #endif
 
         auto tilde_debug = pc._root->operator[]("debug");
         if (tilde_debug.valid()) {
 
-            auto &cli = get_app();
+            auto &cli = (*this); // get_app();
+
+            bool allow_cli_subkey = cli.get_for_cli("cli").as<bool>();
+            auto const &cli_prefix = cli.cli_prefix();
+            std::function<bool(std::pair<vars::store::key_type, vars::store::node_pointer> const &)>
+                    filter{};
+            if (!allow_cli_subkey) filter = [&](std::pair<vars::store::key_type, vars::store::node_pointer> const &p) -> bool {
+                return !string::has_prefix(p.first, cli_prefix);
+            };
 
             if (tilde_debug.hit_count() > 1) {
-                store.dump_full_keys(cli._dim_text_fg, cli._dim_text_dim, std::cout);
-                store.dump_tree(cli._dim_text_fg, cli._dim_text_dim, std::cout);
+                dump_full_keys_f(std::cout, filter);
+                // store.dump_full_keys_f(cli._dim_text_fg, cli._dim_text_dim, std::cout,
+                //                        [](std::pair<vars::store::key_type, vars::store::node_pointer> const &) -> bool {
+                //                            return false;
+                //                        });
             }
 
             if (tilde_debug.hit_count() > 2) {
+                dump_tree_f(std::cout, filter);
+                // dump_tree_f(std::cout, [](std::pair<vars::store::key_type, vars::store::node_pointer> const &) -> bool {
+                //     return false;
+                // });
+                // dump_tree_f();
+            }
+
+            if (tilde_debug.hit_count() > 5) {
 
                 // auto vv = store.get("server.tls.handshake.max-idle-time");
                 // (void) (vv);
@@ -373,12 +392,12 @@ namespace cmdr {
                            return opt::OK;
                        });
 
-        // cli += cmdr::opt::opt{}("short")
-        //                .description("enable shorter ~~debug")
-        //                .special()
-        //                .no_non_special()
-        //                .hidden()
-        //                .group(SYS_MGMT_GROUP);
+        cli += cmdr::opt::opt{}("cli")
+                       .description("enable 'app.cli.xxx' in ~~debug output")
+                       .special()
+                       .no_non_special()
+                       .hidden()
+                       .group(SYS_MGMT_GROUP);
 
         cli += cmdr::opt::opt{}("trace", "tr", "trace-mode")
                        .description("enable tracing mode for developer perspective")

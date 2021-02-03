@@ -98,7 +98,6 @@ namespace cmdr::vars {
 
             v.dump_tree(os, c, dim_text_fg, dim_text_dim, level + 1);
         }
-        unused(level);
     }
 
     template<class T, class small_string>
@@ -108,14 +107,19 @@ namespace cmdr::vars {
                         cmdr::terminal::colors::colorize *c,
                         cmdr::terminal::colors::colorize::Colors256 dim_text_fg,
                         bool dim_text_dim,
+                        std::string const &key_prefix,
                         std::function<bool(std::pair<key_type, node_pointer> const &)> const &on_filter,
                         int level) const {
         // auto fg = get_app()._dim_text_fg;
         // auto dim = get_app()._dim_text_dim;
 
         for (auto &[k, v] : _children) {
+            std::ostringstream dotted_key;
+            if (!key_prefix.empty())
+                dotted_key << key_prefix << ".";
+            dotted_key << k;
             if (on_filter) {
-                auto p = std::pair<key_type, node_pointer>(k, const_cast<node_pointer>(&v));
+                auto p = std::pair<key_type, node_pointer>(dotted_key.str(), const_cast<node_pointer>(&v));
                 if (!on_filter(p))
                     continue;
             }
@@ -131,9 +135,8 @@ namespace cmdr::vars {
                 os << ss.str();
             os << std::endl;
 
-            v.dump_tree_f(os, c, dim_text_fg, dim_text_dim, on_filter, level + 1);
+            v.dump_tree_f(os, c, dim_text_fg, dim_text_dim, dotted_key.str(), on_filter, level + 1);
         }
-        unused(level);
     }
 
     template<class T, class small_string>

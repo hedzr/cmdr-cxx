@@ -64,7 +64,7 @@ namespace cmdr {
         };
 
         if (auto p = std::getenv("CMDR_DIM"); p && p[0] == '1') {
-            _dim_text_dim = true;
+            vars::store::_dim_text_dim = true;
         }
     }
 
@@ -180,11 +180,12 @@ namespace cmdr {
         // _store.set("app.server.tls.fixed-list", std::array{"item1", "item2"});
 #endif
 
-        auto tilde_debug = pc._root->operator[]("debug");
-        if (tilde_debug.valid()) {
+        // auto tilde_debug_arg = pc._root->operator[]("debug");
+        auto tilde_debug_arg = (*pc._root)["debug"];
+        if (tilde_debug_arg.valid()) {
 
             auto &cli = (*this); // get_app();
-
+            int tilde_debug_hit_count = tilde_debug_arg.hit_count();
             bool allow_cli_subkey = cli.get_for_cli("cli").as<bool>();
             auto const &cli_prefix = cli.cli_prefix();
             std::function<bool(std::pair<vars::store::key_type, vars::store::node_pointer> const &)>
@@ -193,7 +194,7 @@ namespace cmdr {
                 return !string::has_prefix(p.first, cli_prefix);
             };
 
-            if (tilde_debug.hit_count() > 1) {
+            if (tilde_debug_hit_count > 1) {
                 dump_full_keys_f(std::cout, filter);
                 // store.dump_full_keys_f(cli._dim_text_fg, cli._dim_text_dim, std::cout,
                 //                        [](std::pair<vars::store::key_type, vars::store::node_pointer> const &) -> bool {
@@ -201,7 +202,7 @@ namespace cmdr {
                 //                        });
             }
 
-            if (tilde_debug.hit_count() > 2) {
+            if (tilde_debug_hit_count > 2) {
                 dump_tree_f(std::cout, filter);
                 // dump_tree_f(std::cout, [](std::pair<vars::store::key_type, vars::store::node_pointer> const &) -> bool {
                 //     return false;
@@ -209,7 +210,7 @@ namespace cmdr {
                 // dump_tree_f();
             }
 
-            if (tilde_debug.hit_count() > 5) {
+            if (tilde_debug_hit_count > 5) {
 
                 // auto vv = store.get("server.tls.handshake.max-idle-time");
                 // (void) (vv);

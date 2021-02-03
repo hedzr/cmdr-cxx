@@ -771,6 +771,7 @@ namespace cmdr::vars {
                          tcolorize *c,
                          tcolorize::Colors256 dim_text_fg,
                          bool dim_text_dim,
+                         std::string const &key_prefix,
                          std::function<bool(std::pair<key_type, node_pointer> const &)> const &on_filter,
                          int level = 0) const;
 
@@ -848,7 +849,7 @@ namespace cmdr::vars {
                                  !std::is_same<std::decay_t<A>, vars::variable>::value &&
                                  !std::is_same<std::decay_t<A>, self_type>::value,
                          int> = 0>
-        void set(char const *key, A &&a0, Args &&...args) {
+        void set_raw(char const *key, A &&a0, Args &&...args) {
             _root.template set(key, a0, args...);
         }
         template<class A,
@@ -856,11 +857,48 @@ namespace cmdr::vars {
                                           !std::is_same<std::decay_t<A>, vars::variable>::value &&
                                           !std::is_same<std::decay_t<A>, self_type>::value,
                                   int> = 0>
-        void set(char const *key, A &&a) {
+        void set_raw(char const *key, A &&a) {
             _root.template set(key, a);
         }
-        void set(char const *key, vars::variable &&a) { _root.set(key, a.value_any()); }
-        void set(char const *key, vars::variable const &a) { _root.set(key, a.value_any()); }
+        void set_raw(char const *key, vars::variable &&a) { _root.set(key, a.value_any()); }
+        void set_raw(char const *key, vars::variable const &a) { _root.set(key, a.value_any()); }
+
+    public:
+        template<class A, typename... Args,
+                 std::enable_if_t<
+                         std::is_constructible<T, A, Args...>::value &&
+                                 !std::is_same<std::decay_t<A>, vars::variable>::value &&
+                                 !std::is_same<std::decay_t<A>, self_type>::value,
+                         int> = 0>
+        void set_raw_p(char const *prefix, char const *key, A &&a0, Args &&...args) {
+            std::ostringstream os;
+            if (prefix && prefix[0] != 0) os << prefix << '.';
+            os << key;
+            _root.template set(os.str().c_str(), a0, args...);
+        }
+        template<class A,
+                 std::enable_if_t<std::is_constructible<T, A>::value &&
+                                          !std::is_same<std::decay_t<A>, vars::variable>::value &&
+                                          !std::is_same<std::decay_t<A>, self_type>::value,
+                                  int> = 0>
+        void set_raw_p(char const *prefix, char const *key, A &&a) {
+            std::ostringstream os;
+            if (prefix && prefix[0] != 0) os << prefix << '.';
+            os << key;
+            _root.template set(os.str().c_str(), a);
+        }
+        void set_raw_p(char const *prefix, char const *key, vars::variable &&a) {
+            std::ostringstream os;
+            if (prefix && prefix[0] != 0) os << prefix << '.';
+            os << key;
+            _root.set(os.str().c_str(), a.value_any());
+        }
+        void set_raw_p(char const *prefix, char const *key, vars::variable const &a) {
+            std::ostringstream os;
+            if (prefix && prefix[0] != 0) os << prefix << '.';
+            os << key;
+            _root.set(os.str().c_str(), a.value_any());
+        }
 
     public:
         // T const &get(char const *key) const { return _root.get(key); }
@@ -894,6 +932,7 @@ namespace cmdr::vars {
         // template<class K, class V, class Comp = std::less<K>>
         void dump_tree_f(tcolorize &c, tcolorize::Colors256 dim_text_fg, bool dim_text_dim,
                          std::ostream &os,
+                         std::string const &key_prefix,
                          std::function<bool(std::pair<key_type, node_pointer> const &)> const &on_filter,
                          const_chars leading_title = nullptr,
                          node *start = nullptr) const {
@@ -903,7 +942,8 @@ namespace cmdr::vars {
             else
                 os << "Dumping for var_t as Tree ...";
             os << std::endl;
-            (start ? start : &_root)->dump_tree_f(os, &c, dim_text_fg, dim_text_dim, on_filter, 0);
+            auto ptr = (start ? start : &_root);
+            ptr->dump_tree_f(os, &c, dim_text_fg, dim_text_dim, key_prefix, on_filter, 0);
         }
         void dump_full_keys(tcolorize &c, tcolorize::Colors256 dim_text_fg, bool dim_text_dim,
                             std::ostream &os,
@@ -1393,14 +1433,46 @@ namespace cmdr::vars {
         store() = default;
         ~store() = default;
 
+        using parent_type = treeT<variable,std::string>;
+        
         static tcolorize _c;
         static tcolorize::Colors256 _dim_text_fg;
         static bool _dim_text_dim;
 
         friend std::ostream &operator<<(std::ostream &os, store const &o) {
-            o.dump_tree(store::_c, store::_dim_text_fg, store::_dim_text_dim, os);
+            o.dump_tree(os);
             return os;
         }
+
+
+        void dump_tree_f(std::ostream &os = std::cout,
+                         std::function<bool(std::pair<vars::store::key_type, vars::store::node_pointer> const &)> const &on_filter = nullptr,
+                         const_chars leading_title = nullptr,
+                         vars::store::node *start = nullptr) const {
+            parent_type::dump_tree_f(_c, _dim_text_fg, _dim_text_dim, 
+                                     os, "", on_filter, leading_title, start);
+        }
+        void dump_full_keys_f(std::ostream &os = std::cout,
+                              std::function<bool(std::pair<vars::store::key_type, vars::store::node_pointer> const &)> const &on_filter = nullptr,
+                              const_chars leading_title = nullptr,
+                              vars::store::node *start = nullptr) const {
+            parent_type::dump_full_keys_f(_c, _dim_text_fg, _dim_text_dim, 
+                                          os, on_filter, leading_title, start);
+        }
+
+        void dump_tree(std::ostream &os = std::cout,
+                       const_chars leading_title = nullptr,
+                       vars::store::node *start = nullptr) const {
+            parent_type::dump_tree(_c, _dim_text_fg, _dim_text_dim, 
+                                   os, leading_title, start);
+        }
+        void dump_full_keys(std::ostream &os = std::cout,
+                            const_chars leading_title = nullptr,
+                            vars::store::node *start = nullptr) const {
+            parent_type::dump_full_keys(_c, _dim_text_fg, _dim_text_dim, 
+                                        os, leading_title, start);
+        }
+
     }; // class store
 
     inline tcolorize store::_c{tcolorize::create()};

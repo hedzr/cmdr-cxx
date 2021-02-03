@@ -25,19 +25,19 @@ void test_store_1() {
     std::cout << "\nstore testing... \n\n";
 
     cmdr::vars::store store;
-    store.set("app.server.tls.enabled", true);
-    store.set("app.server.tls.ca.cert", "ca.cer");
-    store.set("app.server.tls.server.cert", "server.cer");
-    store.set("app.server.tls.server.key", "server.key");
-    store.set("app.server.tls.client-auth", true);
-    store.set("app.server.tls.handshake.timeout", 10s);
-    store.set("app.server.tls.handshake.max-idle-time", 45min);
-    store.set("app.server.tls.domains", std::vector{"example.com", "example.org"});
-    store.set("app.server.tls.fixed-list", std::array{"item1", "item2"});
+    store.set_raw("app.server.tls.enabled", true);
+    store.set_raw("app.server.tls.ca.cert", "ca.cer");
+    store.set_raw("app.server.tls.server.cert", "server.cer");
+    store.set_raw("app.server.tls.server.key", "server.key");
+    store.set_raw("app.server.tls.client-auth", true);
+    store.set_raw("app.server.tls.handshake.timeout", 10s);
+    store.set_raw("app.server.tls.handshake.max-idle-time", 45min);
+    store.set_raw("app.server.tls.domains", std::vector{"example.com", "example.org"});
+    store.set_raw("app.server.tls.fixed-list", std::array{"item1", "item2"});
 
 #if defined(_DEBUG)
-    store.dump_full_keys(store.dim_text_fg, store.dim_text_dim, std::cout);
-    store.dump_tree(store.dim_text_fg, store.dim_text_dim, std::cout);
+    store.dump_full_keys(std::cout);
+    store.dump_tree(std::cout);
 #endif
 
     auto vv = store.get_raw("app.server.tls.handshake.max-idle-time");

@@ -279,8 +279,8 @@ namespace cmdr::opt {
     inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, int level) {
         unused(grouped);
         unused(level);
-        auto fg = get_app()._dim_text_fg;
-        auto dim = get_app()._dim_text_dim;
+        auto fg = vars::store::_dim_text_fg;
+        auto dim = vars::store::_dim_text_dim;
         auto [th, tw] = terminal::terminfo::get_win_size();
 
         std::set<std::string> keys;
@@ -448,8 +448,8 @@ namespace cmdr::opt {
     inline void cmd::print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, int level) {
         unused(grouped);
         unused(level);
-        auto fg = get_app()._dim_text_fg;
-        auto dim = get_app()._dim_text_dim;
+        auto fg = vars::store::_dim_text_fg;
+        auto dim = vars::store::_dim_text_dim;
         auto [th, tw] = terminal::terminfo::get_win_size();
 
         std::set<std::string> keys;

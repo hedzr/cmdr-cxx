@@ -124,14 +124,25 @@ namespace cmdr {
                 // std::cout << " -> " << val;
                 cmdr_verbose_debug("   -> value: %s", val.as_string().c_str());
 
+                get_app().on_arg_matched(amr.obj, val);
+
+            } else if (typ == typeid(bool)) {
+                pc.add_matched_arg(amr.obj);
+                value_parsed = true;
+                
+                vars::variable value{true};
+                get_app().on_arg_matched(amr.obj, value);
+
             } else {
                 pc.add_matched_arg(amr.obj);
                 value_parsed = true;
+                
+                vars::variable value{true};
+                get_app().on_arg_matched(amr.obj, value);
             }
 
             // std::cout << std::endl;
 
-            get_app().on_arg_matched(amr.obj);
             if (amr.obj->on_flag_hit()) {
                 rc = amr.obj->on_flag_hit()(
                         pc.last_matched_cmd(),
@@ -407,7 +418,7 @@ namespace cmdr {
 
         if (is_no_color())
             c.enable(false);
-        
+
         std::stringstream ss;
         ss << _name << ' ' << 'v' << _version;
         if (_header.empty())

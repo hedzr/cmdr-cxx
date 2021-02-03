@@ -30,6 +30,8 @@ namespace cmdr {
     public:
         ~app() override = default;
 
+        using tcolorize = cmdr::terminal::colors::colorize;
+
     public:
 #undef PROP_SET
 #define PROP_SET(mn)         \
@@ -159,7 +161,7 @@ namespace cmdr {
 
         void on_arg_added(opt::arg *a) {
             auto key = a->dotted_key();
-            _store.set(key.c_str(), a->default_value());
+            _store.set_raw(key.c_str(), a->default_value());
             for (auto &cb : _on_arg_added) {
                 if (cb)
                     cb(a);
@@ -173,9 +175,9 @@ namespace cmdr {
                     cb(a);
             }
         }
-        void on_arg_matched(opt::arg *a) {
+        void on_arg_matched(opt::arg *a, vars::variable &value) {
             auto key = a->dotted_key();
-            _store.set(key.c_str(), a->default_value());
+            _store.set_raw(key.c_str(), value);
             for (auto &cb : _on_arg_matched) {
                 if (cb)
                     cb(a);
@@ -332,7 +334,7 @@ namespace cmdr {
         }
 
         void print_cmd(std::ostream &ss,
-                       cmdr::terminal::colors::colorize &c, opt::cmd *cc,
+                       tcolorize &c, opt::cmd *cc,
                        std::string const &app_name, std::string const &exe_name);
 
         int print_debug_info_screen(parsing_context &pc, int argc, char *argv[]);
@@ -414,8 +416,8 @@ namespace cmdr {
             return const_cast<app *>(this)->find_command(st.str().c_str(), extensive);
         }
 
-        cmdr::terminal::colors::colorize::Colors256 _dim_text_fg{cmdr::terminal::colors::colorize::Grey50};
-        bool _dim_text_dim{false};
+        // tcolorize::Colors256 _dim_text_fg{tcolorize::Grey50};
+        // bool _dim_text_dim{false};
 
         vars::variable const &get(char const *key) const { return _store.get_raw_p(_store_prefix.c_str(), key); }
         vars::variable &get(char const *key) { return _store.get_raw_p(_store_prefix.c_str(), key); }
@@ -427,6 +429,32 @@ namespace cmdr {
         [[nodiscard]] vars::variable const &get_for_cli(std::string const &key) const { return _store.get_raw_p(_long, key); }
         [[nodiscard]] vars::variable &get_for_cli(std::string const &key) { return _store.get_raw_p(_long, key); }
 
+    public:
+        template<class A, typename... Args,
+                 std::enable_if_t<
+                         std::is_constructible<vars::variable, A, Args...>::value &&
+                                 !std::is_same<std::decay_t<A>, vars::variable>::value &&
+                                 !std::is_same<std::decay_t<A>, app>::value,
+                         int> = 0>
+        void set(char const *key, A &&a0, Args &&...args) {
+            _store.template set_raw_p(store_prefix().c_str(), key, a0, args...);
+        }
+        template<class A,
+                 std::enable_if_t<std::is_constructible<vars::variable, A>::value &&
+                                          !std::is_same<std::decay_t<A>, vars::variable>::value &&
+                                          !std::is_same<std::decay_t<A>, app>::value,
+                                  int> = 0>
+        void set(char const *key, A &&a) {
+            _store.template set_raw_p(store_prefix().c_str(), key, a);
+        }
+        void set(char const *key, vars::variable &&a) {
+            _store.set_raw_p(store_prefix().c_str(), key, a);
+        }
+        void set(char const *key, vars::variable const &a) {
+            _store.set_raw_p(store_prefix().c_str(), key, a);
+        }
+
+
         // template<class K = std::string,
         //          class V = vars::nodeT<vars::variable, K>,
         //          class Comp = std::less<K>>
@@ -434,15 +462,25 @@ namespace cmdr {
                          std::function<bool(std::pair<vars::store::key_type, vars::store::node_pointer> const &)> const &on_filter = nullptr,
                          const_chars leading_title = nullptr,
                          vars::store::node *start = nullptr) const {
-            auto c = cmdr::terminal::colors::colorize::create();
-            _store.dump_tree_f(c, _dim_text_fg, _dim_text_dim, os, on_filter, leading_title, start);
+            // auto c = tcolorize::create();
+            _store.dump_tree_f(os, on_filter, leading_title, start);
         }
         void dump_full_keys_f(std::ostream &os = std::cout,
                               std::function<bool(std::pair<vars::store::key_type, vars::store::node_pointer> const &)> const &on_filter = nullptr,
                               const_chars leading_title = nullptr,
                               vars::store::node *start = nullptr) const {
-            auto c = cmdr::terminal::colors::colorize::create();
-            _store.dump_full_keys_f(c, _dim_text_fg, _dim_text_dim, os, on_filter, leading_title, start);
+            _store.dump_full_keys_f(os, on_filter, leading_title, start);
+        }
+
+        void dump_tree(std::ostream &os = std::cout,
+                       const_chars leading_title = nullptr,
+                       vars::store::node *start = nullptr) const {
+            _store.dump_tree(os, leading_title, start);
+        }
+        void dump_full_keys(std::ostream &os = std::cout,
+                            const_chars leading_title = nullptr,
+                            vars::store::node *start = nullptr) const {
+            _store.dump_full_keys(os, leading_title, start);
         }
 
     private:

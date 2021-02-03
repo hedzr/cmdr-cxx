@@ -163,7 +163,7 @@ namespace cmdr::addons::loaders {
                         ks << key;
 
                         auto val = safe_get_value(it->second);
-                        c.store().set(ks.str().c_str(), val);
+                        c.store().set_raw(ks.str().c_str(), val);
                         break;
                     }
                     case YAML::NodeType::Sequence: // ...
@@ -180,10 +180,10 @@ namespace cmdr::addons::loaders {
 
                         if (!vec.empty()) {
                             cmdr::vars::variable val{vec};
-                            c.store().set(ks.str().c_str(), val);
+                            c.store().set_raw(ks.str().c_str(), val);
                         } else {
                             cmdr::vars::variable val{std::vector<std::string>{}};
-                            c.store().set(ks.str().c_str(), val);
+                            c.store().set_raw(ks.str().c_str(), val);
                         }
                         break;
                     }

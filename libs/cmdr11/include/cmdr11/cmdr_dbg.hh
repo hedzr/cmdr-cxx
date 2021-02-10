@@ -16,6 +16,7 @@
 #include <cstdlib>
 #include <cxxabi.h>
 #include <memory>
+#include <utility>
 #endif
 
 #ifdef __GNUG__
@@ -360,7 +361,7 @@ namespace cmdr::exception {
         }
         [[nodiscard]] std::vector<std::string> const &stacktrace() const { return st; }
     };
-#define cmdr_throw_line(arg) throw cmdr::exception::cmdr_exception(arg, __FILE__, __LINE__);
+#define cmdr_throw_line(arg) throw cmdr::exception::cmdr_exception(arg, __FILE__, __LINE__)
 } // namespace cmdr::exception
 
 namespace cmdr::debug {
@@ -394,10 +395,48 @@ namespace cmdr::debug {
 
 namespace cmdr::debug {
 
+    class UnhandledExceptionHookInstaller final {
+        std::function<void()> _f{};
+        static UnhandledExceptionHookInstaller *_this;
+
+    public:
+        UnhandledExceptionHookInstaller() {
+            std::set_terminate(handler);
+            _this = this;
+        }
+        explicit UnhandledExceptionHookInstaller(std::function<void()> f)
+            : _f(std::move(f)) {
+            std::set_terminate(handler);
+            _this = this;
+        }
+        ~UnhandledExceptionHookInstaller() = default;
+
+        static void handler() {
+#if 1
+            fprintf(stderr, "Unhandled Exception: ...\n");
+            void *trace_elems[20];
+            int trace_elem_count(backtrace(trace_elems, 20));
+            char **stack_syms(backtrace_symbols(trace_elems, trace_elem_count));
+            for (int i = 0; i < trace_elem_count; ++i) {
+                std::cout << stack_syms[i] << "\n";
+            }
+            free(stack_syms);
+#else
+            print_stacktrace(stderr, 0);
+#endif
+            if (_this->_f)
+                _this->_f();
+            exit(1);
+        }
+    };
+
+    inline UnhandledExceptionHookInstaller *UnhandledExceptionHookInstaller::_this{nullptr};
+
+
     /**
      * @brief a SIGSEGV handler Installer once only. Simple and not thread-safe but it's not point, right? You're crashing here after all.
      */
-    class SigSegVInstaller {
+    class SigSegVInstaller final {
         std::function<void(int sig)> _f{};
         static SigSegVInstaller *_this;
 
@@ -406,8 +445,8 @@ namespace cmdr::debug {
             signal(SIGSEGV, handler);
             _this = this;
         }
-        SigSegVInstaller(std::function<void(int sig)> const &f)
-            : _f(f) {
+        explicit SigSegVInstaller(std::function<void(int sig)> f)
+            : _f(std::move(f)) {
             signal(SIGSEGV, handler);
             _this = this;
         }
@@ -439,8 +478,8 @@ namespace cmdr::debug {
         }
     }; // class SigSegVInstaller
 
-    inline SigSegVInstaller* SigSegVInstaller::_this{nullptr};
-    
+    inline SigSegVInstaller *SigSegVInstaller::_this{nullptr};
+
 } // namespace cmdr::debug
 
 #endif //CMDR_CXX11_CMDR_DBG_HH

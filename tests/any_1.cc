@@ -228,8 +228,12 @@ namespace fold {
 } // namespace fold
 
 void test_fold() {
-    bool b = fold::all(true, true, true, false);
-    assert(!b);
+#if defined(_DEBUG)
+    {
+        bool b = fold::all(true, true, true, false);
+        CMDR_ASSERT(!b);
+    }
+#endif
 
     fold::printer(1, 2, 3, "abc");
 

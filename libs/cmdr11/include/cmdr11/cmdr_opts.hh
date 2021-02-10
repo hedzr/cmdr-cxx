@@ -5,10 +5,12 @@
 #ifndef CMDR_CXX11_CMDR_OPT_HH
 #define CMDR_CXX11_CMDR_OPT_HH
 
+#include "cmdr_var_t.hh"
+
+#include "cmdr_cmn.hh"
+
 #include "cmdr_arg.hh"
 #include "cmdr_cmd.hh"
-#include "cmdr_cmn.hh"
-#include "cmdr_var_t.hh"
 
 
 namespace cmdr::opt {
@@ -67,22 +69,22 @@ namespace cmdr::opt {
             return (*this);
         }
 
-        sub_cmd &on_hit(types::on_command_hit cb) {
+        sub_cmd &on_hit(types::on_command_hit const &cb) {
             _cmd.on_command_hit(cb);
             return (*this);
         }
 
-        sub_cmd &on_pre_invoke(types::on_pre_invoke cb) {
+        sub_cmd &on_pre_invoke(types::on_pre_invoke const &cb) {
             _cmd.on_pre_invoke(cb);
             return (*this);
         }
 
-        sub_cmd &on_post_invoke(types::on_post_invoke cb) {
+        sub_cmd &on_post_invoke(types::on_post_invoke const &cb) {
             _cmd.on_post_invoke(cb);
             return (*this);
         }
 
-        sub_cmd &on_invoke(types::on_invoke cb) {
+        sub_cmd &on_invoke(types::on_invoke const &cb) {
             _cmd.on_invoke(cb);
             return (*this);
         }
@@ -185,7 +187,7 @@ namespace cmdr::opt {
             return (*this);
         }
 
-        opt &on_hit(types::on_flag_hit cb) {
+        opt &on_hit(types::on_flag_hit const &cb) {
             _arg.on_flag_hit(cb);
             return (*this);
         }

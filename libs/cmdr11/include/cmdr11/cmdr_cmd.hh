@@ -5,8 +5,10 @@
 #ifndef CMDR_CXX11_CMDR_CMD_HH
 #define CMDR_CXX11_CMDR_CMD_HH
 
-#include "cmdr_arg.hh"
 #include "cmdr_cmn.hh"
+
+#include "cmdr_arg.hh"
+
 #include "cmdr_terminal.hh"
 
 
@@ -121,6 +123,8 @@ namespace cmdr::opt {
         [[nodiscard]] bool no_sub_commands() const { return _all_commands.empty(); }
 
     public:
+        void add(arg const &a);
+        void add(cmd const &a);
         virtual cmd &operator+(arg const &a);
         virtual cmd &operator+=(arg const &a);
         virtual cmd &operator+(cmd const &a);
@@ -131,10 +135,10 @@ namespace cmdr::opt {
         // friend cmd &operator+(cmd &lhs, const opts::opt_base &rhs);
         // friend cmd &operator+=(cmd &lhs, const opts::opt_base &rhs);
 
-        friend cmd &operator+(cmd &lhs, const sub_cmd &rhs);
-        friend cmd &operator+=(cmd &lhs, const sub_cmd &rhs);
-        friend cmd &operator+(cmd &lhs, const opt &rhs);
-        friend cmd &operator+=(cmd &lhs, const opt &rhs);
+        virtual cmd &operator+(const sub_cmd &rhs);
+        virtual cmd &operator+=(const sub_cmd &rhs);
+        virtual cmd &operator+(const opt &rhs);
+        virtual cmd &operator+=(const opt &rhs);
 
         /**
          * @brief return the matched arg/flag object or null_arg if not found.
@@ -175,7 +179,7 @@ namespace cmdr::opt {
             return c;
         }
 
-    private:
+    protected:
         arg &find_flag(const_chars long_title, bool extensive = false);
         cmd &find_command(const_chars long_title, bool extensive = false);
 

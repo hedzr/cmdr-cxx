@@ -88,7 +88,7 @@ namespace cmdr::path {
 
     inline std::string get_executable_path() {
         char rawPathName[PATH_MAX];
-        char * p = realpath(PROC_SELF_EXE, rawPathName);
+        char *p = realpath(PROC_SELF_EXE, rawPathName);
         return std::string(p ? p : rawPathName);
     }
 

@@ -46,9 +46,9 @@ void test_streamer_any() {
     os.process(std::cout, std::any(0xFULL)); //< Unregistered type "y" (unsigned long long)
     std::cout << '\n';
 
-    os.register_any_visitor<unsigned long long>([](std::ostream &os, auto x) {
-        cmdr::io::ios_state_saver _saver(os);
-        os << std::hex << std::showbase << x;
+    os.register_any_visitor<unsigned long long>([](std::ostream &os1, auto x) {
+        cmdr::io::ios_state_saver _saver(os1);
+        os1 << std::hex << std::showbase << x;
     });
 
     std::cout << std::dec << 13 << '\n';

@@ -149,7 +149,7 @@ namespace cmdr::terminal::colors {
 
                 bool _auto_reset_invoked : 1;
             } _individual;
-            uint _i{};
+            unsigned int _i{};
         } _st;
 
         bool _auto_reset{true};
@@ -168,12 +168,12 @@ namespace cmdr::terminal::colors {
                 if (!_colorful) {
                     _colorful = true;
                     _colors = 256;
-#endif
                 }
+#endif
             }
         }
 
-        [[nodiscard]] std::string modifiers() const {
+        std::string modifiers() const {
 #if 0
             std::stringstream ss;
             if (_st._individual._reset_all) ss << "0;";
@@ -197,7 +197,7 @@ namespace cmdr::terminal::colors {
             if (_st._individual._crossed) ss << "9;";
             return ss.str();
 #else
-        return _stocked_ss.str();
+            return _stocked_ss.str();
 #endif
         }
 
@@ -549,24 +549,24 @@ namespace cmdr::terminal::colors {
         };
 
         colorize &fg(int r, int g, int b) {
-            // assert(c >= 0 && c <= 256);
+            // CMDR_ASSERT(c >= 0 && c <= 256);
             _fg = (r << 16) | (g << 8) | b;
             _true_color_enabled = true;
             return (*this);
         }
         colorize &fg(Colors256 color256) {
-            // assert(color256 >= 0 && color256 <= 256);
+            // CMDR_ASSERT(color256 >= 0 && color256 <= 256);
             _fg = color256;
             _true_color_enabled = false;
             return (*this);
         }
         colorize &bg(int r, int g, int b) {
-            // assert(c >= 0 && c <= 256);
+            // CMDR_ASSERT(c >= 0 && c <= 256);
             _bg = (r << 16) | (g << 8) | b;
             return (*this);
         }
         colorize &bg(Colors256 color256) {
-            // assert(color256 >= 0 && color256 <= 256);
+            // CMDR_ASSERT(color256 >= 0 && color256 <= 256);
             _bg = color256;
             return (*this);
         }
@@ -691,7 +691,7 @@ namespace cmdr::terminal::colors {
         //
         //  The two modes above can be used at the same time.
         //
-        static colorize create() {
+        static colorize create() noexcept {
             return colorize{};
         }
         static colorize new_colorizer() {

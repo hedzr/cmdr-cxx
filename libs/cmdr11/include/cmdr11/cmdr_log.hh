@@ -7,6 +7,7 @@
 
 #include "cmdr_terminal.hh"
 #include "cmdr_utils.hh"
+
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
@@ -132,6 +133,20 @@ namespace cmdr::log {
     // Logger log;
 } // namespace cmdr::log
 
+#if defined(_DEBUG)
+#if defined(_MSC_VER)
+#define cmdr_debug(...) cmdr::log::holder(__FILE__, __LINE__, __FUNCSIG__)(__VA_ARGS__)
+#else
+#define cmdr_debug(...) cmdr::log::holder(__FILE__, __LINE__, __PRETTY_FUNCTION__)(__VA_ARGS__)
+#endif
+#else
+#define cmdr_debug(...)                                                                       \
+    _Pragma("GCC diagnostic push")                                                            \
+            _Pragma("GCC diagnostic ignored \"-Wunused-value\"") do { (void) (__VA_ARGS__); } \
+    while (0)                                                                                 \
+    _Pragma("GCC diagnostic pop")
+#endif
+
 #if CMDR_ENABLE_VERBOSE_LOG
 // inline void debug(char const *fmt, ...) {
 //     va_list va;
@@ -145,25 +160,16 @@ namespace cmdr::log {
 #define cmdr_verbose_debug(..) cmdr::log::holder(__FILE__, __LINE__, __PRETTY_FUNCTION__)(__VA_ARGS__)
 #endif
 #else
-#define cmdr_verbose_debug(...)                                                               \
-    _Pragma("GCC diagnostic push")                                                            \
-            _Pragma("GCC diagnostic ignored \"-Wunused-value\"") do { (void) (__VA_ARGS__); } \
-    while (0)                                                                                 \
-    _Pragma("GCC diagnostic pop")
-#endif
+// #define cmdr_verbose_debug(...)
+//     _Pragma("GCC diagnostic push")
+//             _Pragma("GCC diagnostic ignored \"-Wunused-value\"") do { (void) (__VA_ARGS__); }
+//     while (0)
+//     _Pragma("GCC diagnostic pop")
 
-#if defined(_DEBUG)
-#if defined(_MSC_VER)
-#define cmdr_debug(...) cmdr::log::holder(__FILE__, __LINE__, __FUNCSIG__)(__VA_ARGS__)
-#else
-#define cmdr_debug(...) cmdr::log::holder(__FILE__, __LINE__, __PRETTY_FUNCTION__)(__VA_ARGS__)
-#endif
-#else
-#define debug(...)                                                                            \
-    _Pragma("GCC diagnostic push")                                                            \
-            _Pragma("GCC diagnostic ignored \"-Wunused-value\"") do { (void) (__VA_ARGS__); } \
-    while (0)                                                                                 \
-    _Pragma("GCC diagnostic pop")
+//#define cmdr_verbose_debug(...) (void)(__VA_ARGS__)
+
+template<typename... Args>
+void cmdr_verbose_debug(Args &&...args) { (void) (sizeof...(args)); }
 #endif
 
 #endif //CMDR_CXX11_CMDR_LOG_HH

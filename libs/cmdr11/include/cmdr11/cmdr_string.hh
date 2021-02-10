@@ -256,7 +256,7 @@ namespace cmdr::string {
     }
 
 
-    inline bool has_prefix(const std::string str, const_chars prefix) {
+    inline bool has_prefix(const std::string &str, const_chars prefix) {
         int sl = std::strlen(prefix), ml = str.length();
         if (ml >= sl) {
             if (str.compare(0, sl, prefix) == 0)

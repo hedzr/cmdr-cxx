@@ -25,7 +25,7 @@ namespace cmdr {
         // using exceptions if loading failed...
         using on_loading_externals = std::function<void(app &cli)>;
     } // namespace types
-};    // namespace cmdr
+} // namespace cmdr
 
 // namespace cmdr::opt::vars {
 //     template<class V = support_types>

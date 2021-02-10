@@ -159,9 +159,9 @@ void add_server_menu(cmdr::app &cli) {
         auto &dv1 = t1.last_added_arg()->default_value();
         // std::cout << dv1.as_string() << ". type: " << dv1.type().name() << '\n';
 #if defined(CAST_CONST_CHARS_AS_STD_STRING)
-        auto dv2 = dv1.cast_as<std::string>();
+        auto dv2 = dv1->cast_as<std::string>();
 #else
-        auto dv2 = dv1.cast_as<char const *>();
+        auto dv2 = dv1->cast_as<char const *>();
 #endif
         assert(std::string(dv2) == "localhost");
         // std::cout << "test: " << dv1 << v1e << '\n';

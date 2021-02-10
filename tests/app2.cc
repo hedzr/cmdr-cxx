@@ -2,7 +2,7 @@
 //
 //
 
-#include "./addons/loaders/yaml_loader.hh"
+// #include "./addons/loaders/yaml_loader.hh"
 #include "version.h"
 #include <cmdr-cxx.hh>
 
@@ -24,7 +24,7 @@ void fatal_exit(const std::string &msg) {
 
 void add_sub1_menu(cmdr::app &cli, cmdr::opt::cmd &t1, const_chars title) {
     using namespace cmdr::opt;
-    unused(cli);
+    UNUSED(cli, t1);
 
     t1 += sub_cmd{}(title)
                   .description((std::string(title) + " command").c_str());
@@ -55,6 +55,39 @@ void add_sub1_menu(cmdr::app &cli, cmdr::opt::cmd &t1, const_chars title) {
 }
 
 void add_test_menu(cmdr::app &cli) {
+    using namespace cmdr::opt;
+
+    cli += sub_cmd{}("test", "t", "test-command")
+                   .description("main tests commands for testing")
+                   .group("Test");
+    {
+        auto &t1 = *(cli.last_added_command());
+        t1 += sub_cmd{}("ueh", "ueh")
+                      .description("causes a segfault and hook it via std c++11 way")
+                      .group("Test")
+                      .on_invoke([](cmd const, string_array const &) -> int {
+                          //
+                          // no effects because we try and catch all c++ exceptions in app::run()
+                          //
+                          cmdr::debug::UnhandledExceptionHookInstaller _ueh{};
+
+                          throw std::runtime_error("hello");
+                          return 0;
+                      });
+        t1 += sub_cmd{}("ssi", "ssi")
+                      .description("causes a segfault and hook it via linux signal()")
+                      .group("Test")
+                      .on_invoke([](cmd const, string_array const &) -> int {
+                          // cmdr::debug::UnhandledExceptionHookInstaller _ueh{};
+                          cmdr::debug::SigSegVInstaller _ssi{};
+                          int *foo = (int *) -1; // make a bad pointer
+                          printf("%d\n", *foo);  // causes segfault
+                          return 0;
+                      });
+    }
+}
+
+void add_main_menu(cmdr::app &cli) {
     using namespace cmdr::opt;
 
     cli += sub_cmd{}("main", "m", "main-command")
@@ -136,18 +169,20 @@ void add_server_menu(cmdr::app &cli) {
                       .placeholder("HOST[:IP]")
                       .env_vars("HOST");
 
+#if defined(_DEBUG)
+        // std::cout << dv1.as_string() << ". type: " << dv1.type().name() << '\n';
         // std::cout << "test" << '\n';
         // std::any v1 = "lolo";
         // auto v1e = std::any_cast<char const *>(v1);
         auto &dv1 = t1.last_added_arg()->default_value();
-        // std::cout << dv1.as_string() << ". type: " << dv1.type().name() << '\n';
 #if defined(CAST_CONST_CHARS_AS_STD_STRING)
-        auto dv2 = dv1.cast_as<std::string>();
+        auto dv2 = dv1->cast_as<std::string>();
 #else
-        auto dv2 = dv1.cast_as<char const *>();
+        auto dv2 = dv1->cast_as<char const *>();
 #endif
-        assert(std::string(dv2) == "localhost");
+        CMDR_ASSERT(std::string(dv2) == "localhost");
         // std::cout << "test: " << dv1 << v1e << '\n';
+#endif
 
         t1 += opt{(int16_t) 4567}("port", "p")
                       .description("listening port number")
@@ -159,8 +194,7 @@ void add_server_menu(cmdr::app &cli) {
                       .description("start the server as a daemon service, or run it at foreground")
                       // .group("")
                       .on_invoke([](cmdr::opt::cmd const &c, string_array const &remain_args) -> int {
-                          unused(c);
-                          unused(remain_args);
+                          UNUSED(c, remain_args);
                           std::cout << c.title() << " invoked.\n";
                           return 0;
                       });
@@ -193,17 +227,18 @@ int main(int argc, char *argv[]) {
 
         // cli.opt(opt_dummy<support_types>{}());
 
-#if 1
         add_server_menu(cli);
         add_test_menu(cli);
+        add_main_menu(cli);
 
+#if defined(_DEBUG)
         auto &cc = cli("server");
-        assert(cc.valid());
-        assert(cc["count"].valid());
-        assert(cc["host"].valid());
-        assert(cc("status").valid());
-        assert(cc("start").valid());
-        assert(cc("run", true).valid());
+        CMDR_ASSERT(cc.valid());
+        CMDR_ASSERT(cc["count"].valid());
+        CMDR_ASSERT(cc["host"].valid());
+        CMDR_ASSERT(cc("status").valid());
+        CMDR_ASSERT(cc("start").valid());
+        CMDR_ASSERT(cc("run", true).valid());
 #endif
 
 #if CMDR_TEST_ON_COMMAND_NOT_HOOKED
@@ -214,27 +249,26 @@ int main(int argc, char *argv[]) {
         });
 #endif
 
-#if 1
+#if 0
         {
             using namespace cmdr::addons::loaders;
             cli.set_global_on_loading_externals(yaml_loader{}());
         }
 #endif
 
-#if 1
-
+#if 0
         cli += sub_cmd{}("dup", "dup")
-                .description("dup command/flag for testing")
-                .group("Test");
+                       .description("dup command/flag for testing")
+                       .group("Test");
         {
             auto &t1 = *cli.last_added_command();
 
             t1 += opt{10}("int", "i")
-                    .description("set the int-value");
+                          .description("set the int-value");
             t1 += opt{10}("int", "i")
-                    .description("set the int-value");
+                          .description("set the int-value");
             t1 += opt{""}("string", "str")
-                    .description("set the string-value");
+                          .description("set the string-value");
         }
 #endif
 
@@ -243,5 +277,7 @@ int main(int argc, char *argv[]) {
         CMDR_DUMP_STACK_TRACE(e);
     }
 
+    // cmdr::debug::UnhandledExceptionHookInstaller _ueh{};
+    // cmdr::debug::SigSegVInstaller _ssi{};
     return cli.run(argc, argv);
 }

@@ -37,11 +37,11 @@ namespace cmdr {
     // old cmdr,
     using support_types = std::variant<std::monostate,
                                        bool, char,
-                                       int, uint, int8_t, int16_t,
+                                       int, unsigned int, int8_t, int16_t,
                                        //int32_t, int64_t,
                                        uint8_t, uint16_t,
                                        //uint32_t, uint64_t,
-                                       long, long long, u_long, unsigned long long,
+                                       long, long long, unsigned long, unsigned long long,
                                        float, double,
                                        std::chrono::nanoseconds,
                                        std::chrono::microseconds,
@@ -121,7 +121,7 @@ namespace cmdr {
                 ss << arg;
             else if constexpr (std::is_same_v<T, int64_t>)
                 ss << arg;
-            else if constexpr (std::is_same_v<T, uint>)
+            else if constexpr (std::is_same_v<T, unsigned int>)
                 ss << arg;
             else if constexpr (std::is_same_v<T, uint8_t>)
                 ss << arg;
@@ -135,7 +135,7 @@ namespace cmdr {
                 ss << arg;
             else if constexpr (std::is_same_v<T, long long>)
                 ss << arg;
-            else if constexpr (std::is_same_v<T, u_long>)
+            else if constexpr (std::is_same_v<T, unsigned long>)
                 ss << arg;
             else if constexpr (std::is_same_v<T, unsigned long long>)
                 ss << arg;

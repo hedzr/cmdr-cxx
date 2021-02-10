@@ -72,7 +72,7 @@ namespace cmdr::addons::loaders {
     public:
         cmdr::types::on_loading_externals operator()() const {
             return [=](cmdr::app &c) {
-                unused(c);
+              UNUSED(c);
 
                 static std::vector searches = {
                     "", // for --config
@@ -95,9 +95,7 @@ namespace cmdr::addons::loaders {
                              .placeholder("CONFIG_FILE")
                              .env_vars(env_var)
                              .on_hit([&](opt::cmd const &hit, opt::arg const &hit_flag, string_array const &remain_args) -> opt::Action {
-                                 unused(hit);
-                                 unused(hit_flag);
-                                 unused(remain_args);
+                               UNUSED(hit,hit_flag,remain_args);
                                  if (hit_flag.hit_count()) {
                                      auto file = cmdr::get_for_cli<std::string>("config");
                                      load_config_file_or_dir(file, c);

@@ -1,12 +1,18 @@
-find_package(Doxygen)
 
 set(OPT_VAL_FOR_BUILD_DOC ${DOXYGEN_FOUND})
-if (DEBUG)
-    set(OPT_VAL_FOR_BUILD_DOC OFF)
-endif ()
+#if (DEBUG)
+#    set(OPT_VAL_FOR_BUILD_DOC OFF)
+#endif ()
+set(OPT_VAL_FOR_BUILD_DOC OFF)
 option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${OPT_VAL_FOR_BUILD_DOC})
 
 if (BUILD_DOCUMENTATION)
+    find_package(Doxygen)
+
+    if (!DOXYGEN_FOUND)
+        #
+    endif ()
+
     if (NOT DOXYGEN_FOUND)
         message(FATAL_ERROR "Doxygen is needed to build the documentation.")
     else ()
@@ -32,14 +38,14 @@ if (BUILD_DOCUMENTATION)
 
     file(MAKE_DIRECTORY ${DOXYGEN_OUTPUT_DIR}) #Doxygen won't create this for us
     add_custom_command(OUTPUT ${DOXYGEN_INDEX_FILE}
-            DEPENDS ${MY_PUBLIC_HEADERS}
-            COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
-            #COMMAND
-            #  $<$<CONFIG:Release>:${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}>
-            #  $<$<NOT:$<CONFIG:Release>>:${CMAKE_COMMAND} -E "echo 'Only done in Release builds'">
-            MAIN_DEPENDENCY ${DOXYFILE_OUT} ${DOXYFILE_IN}
-            COMMENT "Generating docs"
-            VERBATIM)
+                       DEPENDS ${MY_PUBLIC_HEADERS}
+                       COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
+                       #COMMAND
+                       #  $<$<CONFIG:Release>:${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}>
+                       #  $<$<NOT:$<CONFIG:Release>>:${CMAKE_COMMAND} -E "echo 'Only done in Release builds'">
+                       MAIN_DEPENDENCY ${DOXYFILE_OUT} ${DOXYFILE_IN}
+                       COMMENT "Generating docs"
+                       VERBATIM)
 
     add_custom_target(Doxygen ALL DEPENDS ${DOXYGEN_INDEX_FILE})
 

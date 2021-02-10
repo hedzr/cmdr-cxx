@@ -73,37 +73,37 @@ endif ()
 #debug_print_hbar_long()
 
 set(detail_header_files
-        )
+    )
 set(header_files
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/cmdr-cxx.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr11.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_app.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_app_inl.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_arg.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_chrono.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_cmd.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_cmd_inl.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_cmn.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_dbg.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_defs.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_if.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_imp1.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_impl.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_internals.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_ios.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_log.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_opts.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_path.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_public.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_small_string.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_string.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_terminal.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_types.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_types_check.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_utils.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_var_t.hh
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_var_t_inl.h
-        )
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/cmdr-cxx.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr11.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_app.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_app_inl.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_arg.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_chrono.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_cmd.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_cmd_inl.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_cmn.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_dbg.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_defs.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_if.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_imp1.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_impl.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_internals.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_ios.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_log.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_opts.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_path.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_public.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_small_string.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_string.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_terminal.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_types.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_types_check.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_utils.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_var_t.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_var_t_inl.h
+    )
 
 ## TARGETS ######################################
 
@@ -121,20 +121,20 @@ target_sources(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${detail_header_file
 #        SOURCES src/${PROJECT_NAME}.cc
 #        )
 target_include_directories(${PROJECT_NAME}
-        INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        #$<INSTALL_INTERFACE:include>
-        #PRIVATE
-        #${ZLIB_INCLUDE_DIRS}
-        #${spdlog_SOURCE_DIR}/include
-        )
+                           INTERFACE
+                           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+                           #$<INSTALL_INTERFACE:include>
+                           #PRIVATE
+                           #${ZLIB_INCLUDE_DIRS}
+                           #${spdlog_SOURCE_DIR}/include
+                           )
 target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>)
 
 target_compile_definitions(${PROJECT_NAME} INTERFACE
-        CMDR_ENABLE_ASSERTIONS=${_cmdr_enable_assertions}
-        CMDR_ENABLE_PRECONDITION_CHECKS=${_cmdr_enable_precondition_checks}
-        CMDR_ENABLE_WRAPPER=${_cmdr_enable_wrapper}
-        CMDR_ENABLE_VERBOSE_LOG=${_cmdr_enable_verbose_log})
+                           CMDR_ENABLE_ASSERTIONS=${_cmdr_enable_assertions}
+                           CMDR_ENABLE_PRECONDITION_CHECKS=${_cmdr_enable_precondition_checks}
+                           CMDR_ENABLE_WRAPPER=${_cmdr_enable_wrapper}
+                           CMDR_ENABLE_VERBOSE_LOG=${_cmdr_enable_verbose_log})
 #target_link_libraries(${PROJECT_NAME} INTERFACE debug_assert)
 #target_link_libraries(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARIES})
 #target_link_libraries(${PROJECT_NAME} PRIVATE libs::sm-lib)

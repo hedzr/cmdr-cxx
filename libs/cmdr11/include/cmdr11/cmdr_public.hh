@@ -63,7 +63,7 @@ namespace cmdr {
     inline bool is_quiet() { return get_for_cli<bool>("quiet"); }
     inline bool is_no_color() { return get_for_cli<bool>("no-color"); }
 
-    
+
     /**
      * @brief retrieve the verbose level from the hit data of a flag named as "verbose".
      * see also the initializations of the internal commands and flags.

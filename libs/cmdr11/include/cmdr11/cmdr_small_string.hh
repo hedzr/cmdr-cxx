@@ -25,7 +25,7 @@ namespace cmdr::string {
             size_type _capacity;           // 4b/8b
         } heap;
         union {
-            struct heap _heap;
+            heap _heap;
             std::array<char, sizeof(_heap)> _sso{};
         };
     };

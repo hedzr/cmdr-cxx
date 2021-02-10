@@ -326,7 +326,8 @@ namespace cmdr {
 
     inline void app::on_arg_added(opt::arg *a) {
         auto key = a->dotted_key();
-        _store.set_raw(key.c_str(), a->default_value());
+        auto val = a->default_value().get();
+        _store.set_raw(key.c_str(), *val);
         for (auto &cb : _on_arg_added) {
             if (cb)
                 cb(a);
@@ -344,7 +345,8 @@ namespace cmdr {
 
     inline void app::on_arg_matched(opt::arg *a, opt::arg::var_type &value) {
         auto key = a->dotted_key();
-        _store.set_raw(key.c_str(), value);
+        auto val = value.get();
+        _store.set_raw(key.c_str(), *val);
         for (auto &cb : _on_arg_matched) {
             if (cb)
                 cb(a);
@@ -632,7 +634,8 @@ namespace cmdr {
         if (rc > opt::OK && rc < opt::Continue)
             return internal_action(rc, pc, argc, argv);
 
-        if (store().get_raw_p(_long, "help").cast_as<bool>()) {
+        auto help_arg = store().get_raw_p(_long, "help");
+        if (help_arg.cast_as<bool>()) {
             print_usages(&pc.curr_command());
             return true;
         }

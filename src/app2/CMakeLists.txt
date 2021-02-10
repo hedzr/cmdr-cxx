@@ -19,16 +19,16 @@ add_executable(${PROJECT_NAME} main.cc)
 #cxx_set_ipo(${PROJECT_NAME})
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME} PRIVATE
-        $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
-        )
+                           $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
+                           )
 target_link_libraries(${PROJECT_NAME}
-        PRIVATE
-        libs::cmdr11)
+                      PRIVATE
+                      libs::cmdr11)
 set_target_properties(${PROJECT_NAME} PROPERTIES
-        CXX_STANDARD 17
-        CXX_STANDARD_REQUIRED ON
-        CXX_EXTENSIONS ON
-        )
+                      CXX_STANDARD 17
+                      CXX_STANDARD_REQUIRED ON
+                      CXX_EXTENSIONS ON
+                      )
 
 if (BUILD_TESTING)
     add_unit_test(${PROJECT_NAME} tests ${PROJECT_NAME}_tests)

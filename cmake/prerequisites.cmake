@@ -20,10 +20,10 @@ endif ()
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
   set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
-          STRING "Choose the type of build." FORCE)
+      STRING "Choose the type of build." FORCE)
   # Set the possible values of build type for cmake-gui
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-          "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+               "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif ()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT WIN32)
@@ -53,16 +53,22 @@ endif ()
 set(ENV{CTEST_OUTPUT_ON_FAILURE} 1)
 set_property(GLOBAL PROPERTY UNIT_TEST_TARGETS)
 mark_as_advanced(UNIT_TEST_TARGETS)
-enable_testing()
-# # option(BUILD_TESTING "Build the testing tree." OFF)
-# include(CTest)  # please include CTest in each project
-
+#
+option(ENABLE_TESTS "Enable tests" ON)
+option(ENABLE_AUTOMATE_TESTS "Enable automated tests at local" ON)
+if ($ENV{CI_RUNNING})
+  set(ENABLE_AUTOMATE_TESTS OFF)
+endif ()
+if (${ENABLE_TESTS})
+  enable_testing()
+  #include(CTest) # note: this adds a BUILD_TESTING which defaults to ON
+endif()
 
 # for installing
 #include(GNUInstallDirs)
 
 
-if ((CMAKE_VERBOSE_DEBUG AND DEBUG) OR (ENV{CI_RUNNING}))
+if ((CMAKE_VERBOSE_DEBUG AND DEBUG) OR ($ENV{CI_RUNNING}))
   # Enable verbose output from Makefile builds.
   # This variable is a cache entry initialized (to FALSE) by the project() command.
   # Users may enable the option in their local build tree to get more verbose

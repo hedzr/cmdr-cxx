@@ -238,42 +238,46 @@ endmacro(prepare_cpack)
 
 macro(add_unit_test target target_dirname target_test)
   # set(UNIT_TEST_TARGETS ${UNIT_TEST_TARGETS} ${target_test} PARENT_SCOPE)
-  if (NOT CI_RUNNING)
+  #if (${ENABLE_AUTOMATE_TESTS})                #  if (NOT $ENV{CI_RUNNING} AND NOT GCC)
 
-    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${target_dirname})
+  if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${target_dirname})
 
+    if (${ENABLE_AUTOMATE_TESTS})
       get_property(tmp GLOBAL PROPERTY UNIT_TEST_TARGETS)
       #set(tmp ${UNIT_TEST_TARGETS} ${CMAKE_CURRENT_BINARY_DIR}/${target_dirname})
       set(tmp ${UNIT_TEST_TARGETS} ${target_test})
       set_property(GLOBAL PROPERTY UNIT_TEST_TARGETS "${tmp}")
-
-      message(">> tests enabled for ${target}: adding subdir '${target_dirname}' as target '${target_test}' ")
-      add_subdirectory(${target_dirname})
-      # add_test(target ${CMAKE_CURRENT_BINARY_DIR}/${target_test})
-      add_test(NAME ${target_test} COMMAND $<TARGET_FILE:${target_test}>)
-      set_property(TARGET ${target_test} PROPERTY FOLDER "Test-projects")
-      message(">> add_test(${target_test} -> ${target})")
-
     endif ()
+
+    message(">> tests enabled for ${target}: adding subdir '${target_dirname}' as target '${target_test}' ")
+    add_subdirectory(${target_dirname})
+    # add_test(target ${CMAKE_CURRENT_BINARY_DIR}/${target_test})
+    add_test(NAME ${target_test} COMMAND $<TARGET_FILE:${target_test}>)
+    set_property(TARGET ${target_test} PROPERTY FOLDER "Test-projects")
+    message(">> add_test(${target_test} -> ${target})")
+
   endif ()
+  #endif ()
 endmacro(add_unit_test)
 
 macro(apply_all_unit_tests tests_name)
-  if (NOT CI_RUNNING)
+  if (${ENABLE_AUTOMATE_TESTS})               #  if (NOT $ENV{CI_RUNNING} AND NOT GCC)
     get_property(tmp GLOBAL PROPERTY UNIT_TEST_TARGETS)
     # message("UNIT_TEST_TARGETS: ${tmp}")
     add_custom_target(${tests_name} ALL
-            DEPENDS ${tmp}
-            )
+                      DEPENDS ${tmp}
+                      )
     add_custom_command(TARGET ${tests_name}
-            POST_BUILD COMMAND echo ARGS "   CONFIG = $<CONFIG> "
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            )
+                       POST_BUILD COMMAND echo ARGS "   CONFIG = $<CONFIG>, CI_RUNNING = $ENV{CI_RUNNING}, ENABLE_AUTOMATE_TESTS = ${ENABLE_AUTOMATE_TESTS}"
+                       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                       )
     add_custom_command(TARGET ${tests_name}
-            COMMENT ">> Run tests for: ${tmp} ..."
-            POST_BUILD COMMAND ctest ARGS --output-on-failure
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            )
+                       COMMENT ">> Run tests for: ${tmp} ..."
+                       POST_BUILD COMMAND ctest ARGS --output-on-failure --extra-verbose
+                       WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+                       )
+  else ()
+    message(STATUS "* ENABLE_AUTOMATE_TESTS = ${ENABLE_AUTOMATE_TESTS}, automated tests disabled *")
   endif ()
 endmacro()
 
@@ -326,19 +330,19 @@ macro(with_flex_bison libName prefixName outputDir)
   if (BISON_FOUND)
     message(STATUS "BISON ${BISON_VERSION} FOUND: " ${BISON_EXECUTABLE})
     bison_target(${prefixName}Parser
-            ${CMAKE_CURRENT_SOURCE_DIR}/parser.yy
-            ${TARGET_DIR}/${prefixName}.parser.cc
-            COMPILE_FLAGS "--xml"
-            DEFINES_FILE ${TARGET_DIR}/${prefixName}.parser.hh
-            VERBOSE ${TARGET_DIR}/${prefixName}.parser.grammer.txt
-            REPORT_FILE ${TARGET_DIR}/${prefixName}.parser.grammer.rpt
-            )
+                 ${CMAKE_CURRENT_SOURCE_DIR}/parser.yy
+                 ${TARGET_DIR}/${prefixName}.parser.cc
+                 COMPILE_FLAGS "--xml"
+                 DEFINES_FILE ${TARGET_DIR}/${prefixName}.parser.hh
+                 VERBOSE ${TARGET_DIR}/${prefixName}.parser.grammer.txt
+                 REPORT_FILE ${TARGET_DIR}/${prefixName}.parser.grammer.rpt
+                 )
     if (FLEX_FOUND)
       message(STATUS "FLEX ${FLEX_VERSION} FOUND: " ${FLEX_EXECUTABLE} ", INC: " ${FLEX_INCLUDE_DIRS} "|" ${FLEX_INCLUDE_DIR}", LIBS: " ${FLEX_LIBRARIES})
       # message(STATUS "FLEX ${FLEX_VERSION} FOUND: " ${FLEX_EXECUTABLE} ". LIBS: " ${FLEX_LIBRARIES})
       flex_target(${prefixName}Scanner
-              ${CMAKE_CURRENT_SOURCE_DIR}/scanner.ll
-              ${TARGET_DIR}/${prefixName}.scanner.cc)
+                  ${CMAKE_CURRENT_SOURCE_DIR}/scanner.ll
+                  ${TARGET_DIR}/${prefixName}.scanner.cc)
       add_flex_bison_dependency(${prefixName}Scanner ${prefixName}Parser)
       set_source_files_properties(${prefixName}.scanner.cc PROPERTIES COMPILE_FLAGS "-Wno-error=conversion -Wno-conversion -Wno-sign-conversion -Wno-sign-compare")  # -Wno-int-conversion
     endif ()
@@ -349,15 +353,15 @@ macro(with_flex_bison libName prefixName outputDir)
   ####################################
 
   add_library(${libName} STATIC
-          #${THELIB_SRCS}
-          ${BISON_${prefixName}Parser_OUTPUTS}
-          ${FLEX_${prefixName}Scanner_OUTPUTS}
-          )
+              #${THELIB_SRCS}
+              ${BISON_${prefixName}Parser_OUTPUTS}
+              ${FLEX_${prefixName}Scanner_OUTPUTS}
+              )
   target_link_libraries(${libName}
-          #${THELIB_LIBS}
-          #pthread
-          #${FLEX_LIBRARIES}
-          )
+                        #${THELIB_LIBS}
+                        #pthread
+                        #${FLEX_LIBRARIES}
+                        )
 
 endmacro()
 
@@ -494,8 +498,8 @@ function(find_multi_configuration_library VAR NAME)
     endif ()
   else (CMAKE_CONFIGURATION_TYPES OR CMAKE_BUILD_TYPE)
     find_library(${VAR}_LIBRARY ${NAME}
-            PATHS ${ARGN}
-            )
+                 PATHS ${ARGN}
+                 )
   endif (CMAKE_CONFIGURATION_TYPES OR CMAKE_BUILD_TYPE)
 endfunction()
 
@@ -579,7 +583,7 @@ function(vg_target_include_directories TARGET)
   endforeach ()
   if (_changed)
     set(${TARGET}_INCLUDE_DIRS "${${TARGET}_INCLUDE_DIRS}"
-            CACHE INTERNAL "SDK include directories for ${TARGET}")
+        CACHE INTERNAL "SDK include directories for ${TARGET}")
   endif ()
 endfunction()
 
@@ -646,7 +650,7 @@ function(copy_files_target TARGET DESTINATION)
     get_filename_component(_out "${file}" NAME)
     set(_out "${DESTINATION}/${_out}")
     add_custom_command(OUTPUT "${_out}" DEPENDS "${_in}"
-            COMMAND ${CMAKE_COMMAND} -E copy "${_in}" "${_out}")
+                       COMMAND ${CMAKE_COMMAND} -E copy "${_in}" "${_out}")
     list(APPEND _target_depends "${_out}")
   endforeach ()
   add_custom_target(${TARGET} ALL DEPENDS ${_target_depends})
@@ -729,28 +733,28 @@ function(vg_add_qt_plugin NAME)
   get_target_property(_type ${NAME} TYPE)
   add_targets_definitions(${NAME} SYMBOLS QT_PLUGIN QT_SHARED)
   set_target_properties(${NAME} PROPERTIES
-          LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
-          RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
-          )
+                        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
+                        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
+                        )
   foreach (config ${CMAKE_CONFIGURATION_TYPES})
     string(TOUPPER "${config}" config_upper)
     set_target_properties(${NAME} PROPERTIES
-            LIBRARY_OUTPUT_DIRECTORY_${config_upper}
-            ${CMAKE_BINARY_DIR}/${config}/plugins
-            RUNTIME_OUTPUT_DIRECTORY_${config_upper}
-            ${CMAKE_BINARY_DIR}/${config}/plugins
-            )
+                          LIBRARY_OUTPUT_DIRECTORY_${config_upper}
+                          ${CMAKE_BINARY_DIR}/${config}/plugins
+                          RUNTIME_OUTPUT_DIRECTORY_${config_upper}
+                          ${CMAKE_BINARY_DIR}/${config}/plugins
+                          )
   endforeach ()
 endfunction()
 
 # Function to install files with (optionally) their respective path prefixes
 function(vg_install_files_with_prefix)
   cmake_parse_arguments(_install
-          "STRIP_PATH"
-          "SOURCE;TARGET;DESTINATION"
-          "FILES"
-          ${ARGN}
-          )
+                        "STRIP_PATH"
+                        "SOURCE;TARGET;DESTINATION"
+                        "FILES"
+                        ${ARGN}
+                        )
   list(APPEND _install_FILES ${_install_UNPARSED_ARGUMENTS})
 
   set(_path)
@@ -769,7 +773,7 @@ function(vg_install_files_with_prefix)
     set(_out "${visGUI_BINARY_DIR}/${_install_DESTINATION}/${_path}/${_name}")
 
     add_custom_command(OUTPUT "${_out}" DEPENDS "${_in}"
-            COMMAND ${CMAKE_COMMAND} -E copy "${_in}" "${_out}")
+                       COMMAND ${CMAKE_COMMAND} -E copy "${_in}" "${_out}")
     list(APPEND _target_depends "${_out}")
 
     install(FILES "${_in_prefix}${file}"
@@ -895,8 +899,8 @@ endfunction()
 function(cmake_subdir_list result curdir)
   # message("curdir = ${curdir}")
   file(GLOB children
-          LIST_DIRECTORIES true
-          RELATIVE ${curdir} ${curdir}/*)
+       LIST_DIRECTORIES true
+       RELATIVE ${curdir} ${curdir}/*)
   set(dirlist "")
   foreach (child ${children})
     if (EXISTS ${curdir}/${child}/CMakeLists.txt)

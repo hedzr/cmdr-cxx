@@ -59,6 +59,7 @@ void test_literals() {
     //         << int(65578y) << '\n';  // 未指定
 }
 
+#if FMT_ENABLED
 #include <fmt/chrono.h>
 
 void test_fmt() {
@@ -66,6 +67,12 @@ void test_fmt() {
     fmt::print("Default format: {} {}\n", 42s, 100ms);
     fmt::print("strftime-like format: {:%H:%M:%S}\n", 3h + 15min + 30s);
 }
+
+#else
+
+void test_fmt() {}
+
+#endif
 
 int main() {
     test_literals();

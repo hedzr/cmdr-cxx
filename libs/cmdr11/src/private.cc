@@ -11,7 +11,7 @@
 
 static void test1() {
     cmdr::Nullable<int> ii;
-    assert(ii.is_null());
+    CMDR_ASSERT(ii.is_null());
     ii.val(9);
 
     cmdr::Nullable<std::string> ss;

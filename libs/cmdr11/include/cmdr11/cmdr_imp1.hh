@@ -31,16 +31,25 @@ namespace cmdr::opt {
     inline arg::var_type &arg::default_value() { return _default; }
 
     inline arg &arg::default_value(const vars::variable &v) {
-        _default->emplace(v);
+        if (_default.get() == nullptr)
+            _default = std::make_shared<vars::variable>(v);
+        else
+            _default->emplace(v);
         return (*this);
     }
     inline arg &arg::default_value(const_chars v) {
-        _default->emplace(std::string(v));
+        if (_default.get() == nullptr)
+            _default = std::make_shared<vars::variable>(std::string(v));
+        else
+            _default->emplace(std::string(v));
         return (*this);
     }
     template<class T>
     inline arg &arg::default_value(T const &v) {
-        _default->template emplace(v);
+        if (_default.get() == nullptr)
+            _default = std::make_shared<vars::variable>(v);
+        else
+            _default->template emplace(v);
         return (*this);
     }
 

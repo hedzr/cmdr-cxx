@@ -167,12 +167,12 @@ namespace cmdr::util {
         [[nodiscard]] size_type size() const { return _size; }
 
         T &operator[](size_type index) {
-            assert(index < _size);
+            CMDR_ASSERT(index < _size);
             return _data[index];
         }
 
         const T &operator[](size_type index) const {
-            assert(index < _size);
+            CMDR_ASSERT(index < _size);
             return _data[index];
         }
 

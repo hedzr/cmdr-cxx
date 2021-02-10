@@ -22,8 +22,9 @@ if (MSVC)
 else ()
   # lots of warnings and all warnings as errors
   add_compile_options(-Wall -Wextra -pedantic -Werror
-          -Wno-unknown-pragmas
-          )
+                      -Wno-unknown-pragmas
+                      # -Weffc++     # warning: ‘operator=’ should return a reference to ‘*this’
+                      )
 endif ()
 
 if (DEBUG AND MINGW)

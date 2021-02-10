@@ -86,7 +86,7 @@ namespace cmdr::vars {
         template<class A, typename... Args,
                  std::enable_if_t<
                          std::is_constructible<target_type, A, Args...>::value &&
-                                 !std::is_same<std::decay_t<A>, variable>::value &&
+                                 //!std::is_same<std::decay_t<A>, variable>::value &&
                                  !std::is_same<std::decay_t<A>, std::any>::value &&
                                  !std::is_same<std::decay_t<A>, self_type>::value,
                          int> = 0>
@@ -95,7 +95,7 @@ namespace cmdr::vars {
         template<class A,
                  std::enable_if_t<
                          std::is_constructible<target_type, A>::value &&
-                                 !std::is_same<std::decay_t<A>, variable>::value &&
+                                 //!std::is_same<std::decay_t<A>, variable>::value &&
                                  !std::is_same<std::decay_t<A>, std::any>::value &&
                                  !std::is_same<std::decay_t<A>, self_type>::value,
                          int> = 0>
@@ -374,69 +374,69 @@ namespace cmdr::vars {
     private:
         typedef std::unordered_map<std::type_index, std::function<void(std::istream &is, std::any &)>> I;
         static I &any_parsers() {
-            static I _registry{
-                    detail::from_any_visitor<void>([](std::istream &is) { parse_void(is); }),
-                    detail::from_any_visitor<bool>([](std::istream &is, bool &x) { parse_bool(is, x); }),
-                    detail::from_any_visitor<int>([](std::istream &is, int &x) { is >> x; }),
-                    detail::from_any_visitor<int8_t>([](std::istream &is, int8_t &x) { is >> x; }),
-                    detail::from_any_visitor<int16_t>([](std::istream &is, int16_t &x) { is >> x; }),
-                    detail::from_any_visitor<int32_t>([](std::istream &is, int32_t &x) { is >> x; }),
-                    detail::from_any_visitor<int64_t>([](std::istream &is, int64_t &x) { is >> x; }),
-                    detail::from_any_visitor<unsigned>([](std::istream &is, unsigned &x) { is >> x; }),
-                    detail::from_any_visitor<uint8_t>([](std::istream &is, uint8_t &x) { is >> x; }),
-                    detail::from_any_visitor<uint16_t>([](std::istream &is, uint16_t &x) { is >> x; }),
-                    detail::from_any_visitor<uint32_t>([](std::istream &is, uint32_t &x) { is >> x; }),
-                    detail::from_any_visitor<uint64_t>([](std::istream &is, uint64_t &x) { is >> x; }),
-                    detail::from_any_visitor<long>([](std::istream &is, long &x) { is >> x; }),
-                    detail::from_any_visitor<unsigned long>([](std::istream &is, unsigned long &x) { is >> x; }),
-                    detail::from_any_visitor<long long>([](std::istream &is, long long &x) { is >> x; }),
-                    detail::from_any_visitor<unsigned long long>([](std::istream &is, unsigned long long &x) { is >> x; }),
-                    detail::from_any_visitor<float>([](std::istream &is, float &x) { is >> x; }),
-                    detail::from_any_visitor<double>([](std::istream &is, double &x) { is >> x; }),
-                    detail::from_any_visitor<long double>([](std::istream &is, long double &x) { is >> x; }),
-                    detail::from_any_visitor<char const *>([](std::istream &is, std::any &a) { std::string s; string::strip_quotes(is, s); a=s; }),
-                    detail::from_any_visitor<std::string>([](std::istream &is, std::string &s) { string::strip_quotes(is, s); }),
+            static I _registry {
+                detail::from_any_visitor<void>([](std::istream &is) { parse_void(is); }),
+                        detail::from_any_visitor<bool>([](std::istream &is, bool &x) { parse_bool(is, x); }),
+                        detail::from_any_visitor<int>([](std::istream &is, int &x) { is >> x; }),
+                        detail::from_any_visitor<int8_t>([](std::istream &is, int8_t &x) { is >> x; }),
+                        detail::from_any_visitor<int16_t>([](std::istream &is, int16_t &x) { is >> x; }),
+                        detail::from_any_visitor<int32_t>([](std::istream &is, int32_t &x) { is >> x; }),
+                        detail::from_any_visitor<int64_t>([](std::istream &is, int64_t &x) { is >> x; }),
+                        detail::from_any_visitor<unsigned>([](std::istream &is, unsigned &x) { is >> x; }),
+                        detail::from_any_visitor<uint8_t>([](std::istream &is, uint8_t &x) { is >> x; }),
+                        detail::from_any_visitor<uint16_t>([](std::istream &is, uint16_t &x) { is >> x; }),
+                        detail::from_any_visitor<uint32_t>([](std::istream &is, uint32_t &x) { is >> x; }),
+                        detail::from_any_visitor<uint64_t>([](std::istream &is, uint64_t &x) { is >> x; }),
+                        detail::from_any_visitor<long>([](std::istream &is, long &x) { is >> x; }),
+                        detail::from_any_visitor<unsigned long>([](std::istream &is, unsigned long &x) { is >> x; }),
+                        detail::from_any_visitor<long long>([](std::istream &is, long long &x) { is >> x; }),
+                        detail::from_any_visitor<unsigned long long>([](std::istream &is, unsigned long long &x) { is >> x; }),
+                        detail::from_any_visitor<float>([](std::istream &is, float &x) { is >> x; }),
+                        detail::from_any_visitor<double>([](std::istream &is, double &x) { is >> x; }),
+                        detail::from_any_visitor<long double>([](std::istream &is, long double &x) { is >> x; }),
+                        detail::from_any_visitor<char const *>([](std::istream &is, std::any &a) { std::string s; string::strip_quotes(is, s); a=s; }),
+                        detail::from_any_visitor<std::string>([](std::istream &is, std::string &s) { string::strip_quotes(is, s); }),
 #if __clang__
-                    detail::from_any_visitor<variable>([](std::istream &is, variable &x) { is >> x; }),
+                        detail::from_any_visitor<variable>([](std::istream &is, variable &x) { is >> x; }),
 #endif
-                        
-                    detail::from_any_visitor<std::vector<char const *>>([](std::istream &is, std::any &a) { std::vector<std::string> vec; parse_array(is, vec);a=vec; }),
-                    detail::from_any_visitor<std::vector<std::string>>([](std::istream &is, std::vector<std::string> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<bool>>([](std::istream &is, std::vector<bool> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<int>>([](std::istream &is, std::vector<int> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<int8_t>>([](std::istream &is, std::vector<int8_t> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<int16_t>>([](std::istream &is, std::vector<int16_t> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<int32_t>>([](std::istream &is, std::vector<int32_t> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<int64_t>>([](std::istream &is, std::vector<int64_t> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<unsigned>>([](std::istream &is, std::vector<unsigned> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<uint8_t>>([](std::istream &is, std::vector<uint8_t> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<uint16_t>>([](std::istream &is, std::vector<uint16_t> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<uint32_t>>([](std::istream &is, std::vector<uint32_t> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<uint64_t>>([](std::istream &is, std::vector<uint64_t> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<long>>([](std::istream &is, std::vector<long> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<unsigned long>>([](std::istream &is, std::vector<unsigned long> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<long long>>([](std::istream &is, std::vector<long long> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<unsigned long long>>([](std::istream &is, std::vector<unsigned long long> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<float>>([](std::istream &is, std::vector<float> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<double>>([](std::istream &is, std::vector<double> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<long double>>([](std::istream &is, std::vector<long double> &a) { parse_array(is, a); }),
-                    detail::from_any_visitor<std::vector<variable>>([](std::istream &is, std::vector<variable> &a) { parse_array(is, a); }),
 
-                    detail::from_any_visitor<std::complex<float>>([](std::istream &is, std::complex<float> &a) { parse_complex(is, a); }),
-                    detail::from_any_visitor<std::complex<double>>([](std::istream &is, std::complex<double> &a) { parse_complex(is, a); }),
-                    detail::from_any_visitor<std::complex<long double>>([](std::istream &is, std::complex<long double> &a) { parse_complex(is, a); }),
+                        detail::from_any_visitor<std::vector<char const *>>([](std::istream &is, std::any &a) { std::vector<std::string> vec; parse_array(is, vec);a=vec; }),
+                        detail::from_any_visitor<std::vector<std::string>>([](std::istream &is, std::vector<std::string> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<bool>>([](std::istream &is, std::vector<bool> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<int>>([](std::istream &is, std::vector<int> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<int8_t>>([](std::istream &is, std::vector<int8_t> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<int16_t>>([](std::istream &is, std::vector<int16_t> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<int32_t>>([](std::istream &is, std::vector<int32_t> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<int64_t>>([](std::istream &is, std::vector<int64_t> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<unsigned>>([](std::istream &is, std::vector<unsigned> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<uint8_t>>([](std::istream &is, std::vector<uint8_t> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<uint16_t>>([](std::istream &is, std::vector<uint16_t> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<uint32_t>>([](std::istream &is, std::vector<uint32_t> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<uint64_t>>([](std::istream &is, std::vector<uint64_t> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<long>>([](std::istream &is, std::vector<long> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<unsigned long>>([](std::istream &is, std::vector<unsigned long> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<long long>>([](std::istream &is, std::vector<long long> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<unsigned long long>>([](std::istream &is, std::vector<unsigned long long> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<float>>([](std::istream &is, std::vector<float> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<double>>([](std::istream &is, std::vector<double> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<long double>>([](std::istream &is, std::vector<long double> &a) { parse_array(is, a); }),
+                        detail::from_any_visitor<std::vector<variable>>([](std::istream &is, std::vector<variable> &a) { parse_array(is, a); }),
 
-                    detail::from_any_visitor<std::chrono::nanoseconds>([](std::istream &is, std::chrono::nanoseconds &x) { cmdr::chrono::parse_duration(is, x); }),
-                    detail::from_any_visitor<std::chrono::microseconds>([](std::istream &is, std::chrono::microseconds &x) { cmdr::chrono::parse_duration(is, x); }),
-                    detail::from_any_visitor<std::chrono::milliseconds>([](std::istream &is, std::chrono::milliseconds &x) { cmdr::chrono::parse_duration(is, x); }),
-                    detail::from_any_visitor<std::chrono::seconds>([](std::istream &is, std::chrono::seconds &x) { cmdr::chrono::parse_duration(is, x); }),
-                    detail::from_any_visitor<std::chrono::minutes>([](std::istream &is, std::chrono::minutes &x) { cmdr::chrono::parse_duration(is, x); }),
-                    detail::from_any_visitor<std::chrono::hours>([](std::istream &is, std::chrono::hours &x) { cmdr::chrono::parse_duration(is, x); }),
-                    detail::from_any_visitor<std::chrono::duration<long double, std::ratio<1>>>([](std::istream &is, std::chrono::duration<long double, std::ratio<1>> &x) { cmdr::chrono::parse_duration(is, x); }),
-                    detail::from_any_visitor<std::chrono::duration<long double, std::ratio<60>>>([](std::istream &is, std::chrono::duration<long double, std::ratio<60>> &x) { cmdr::chrono::parse_duration(is, x); }),
-                    detail::from_any_visitor<std::chrono::duration<double, std::ratio<60>>>([](std::istream &is, std::chrono::duration<double, std::ratio<60>> &x) { cmdr::chrono::parse_duration(is, x); }),
-                    detail::from_any_visitor<std::chrono::duration<float, std::ratio<60>>>([](std::istream &is, std::chrono::duration<float, std::ratio<60>> &x) { cmdr::chrono::parse_duration(is, x); }),
-                    detail::from_any_visitor<std::chrono::duration<float, std::ratio<1>>>([](std::istream &is, std::chrono::duration<float, std::ratio<1>> &x) { cmdr::chrono::parse_duration(is, x); }),
+                        detail::from_any_visitor<std::complex<float>>([](std::istream &is, std::complex<float> &a) { parse_complex(is, a); }),
+                        detail::from_any_visitor<std::complex<double>>([](std::istream &is, std::complex<double> &a) { parse_complex(is, a); }),
+                        detail::from_any_visitor<std::complex<long double>>([](std::istream &is, std::complex<long double> &a) { parse_complex(is, a); }),
+
+                        detail::from_any_visitor<std::chrono::nanoseconds>([](std::istream &is, std::chrono::nanoseconds &x) { cmdr::chrono::parse_duration(is, x); }),
+                        detail::from_any_visitor<std::chrono::microseconds>([](std::istream &is, std::chrono::microseconds &x) { cmdr::chrono::parse_duration(is, x); }),
+                        detail::from_any_visitor<std::chrono::milliseconds>([](std::istream &is, std::chrono::milliseconds &x) { cmdr::chrono::parse_duration(is, x); }),
+                        detail::from_any_visitor<std::chrono::seconds>([](std::istream &is, std::chrono::seconds &x) { cmdr::chrono::parse_duration(is, x); }),
+                        detail::from_any_visitor<std::chrono::minutes>([](std::istream &is, std::chrono::minutes &x) { cmdr::chrono::parse_duration(is, x); }),
+                        detail::from_any_visitor<std::chrono::hours>([](std::istream &is, std::chrono::hours &x) { cmdr::chrono::parse_duration(is, x); }),
+                        detail::from_any_visitor<std::chrono::duration<long double, std::ratio<1>>>([](std::istream &is, std::chrono::duration<long double, std::ratio<1>> &x) { cmdr::chrono::parse_duration(is, x); }),
+                        detail::from_any_visitor<std::chrono::duration<long double, std::ratio<60>>>([](std::istream &is, std::chrono::duration<long double, std::ratio<60>> &x) { cmdr::chrono::parse_duration(is, x); }),
+                        detail::from_any_visitor<std::chrono::duration<double, std::ratio<60>>>([](std::istream &is, std::chrono::duration<double, std::ratio<60>> &x) { cmdr::chrono::parse_duration(is, x); }),
+                        detail::from_any_visitor<std::chrono::duration<float, std::ratio<60>>>([](std::istream &is, std::chrono::duration<float, std::ratio<60>> &x) { cmdr::chrono::parse_duration(is, x); }),
+                        detail::from_any_visitor<std::chrono::duration<float, std::ratio<1>>>([](std::istream &is, std::chrono::duration<float, std::ratio<1>> &x) { cmdr::chrono::parse_duration(is, x); }),
             };
             return _registry;
         }

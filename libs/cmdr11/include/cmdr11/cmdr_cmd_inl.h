@@ -14,10 +14,13 @@
 #include <stdexcept>
 
 
-#include "cmdr_app.hh"
+#include "cmdr_cmn.hh"
+
 #include "cmdr_arg.hh"
 #include "cmdr_cmd.hh"
-#include "cmdr_cmn.hh"
+
+#include "cmdr_app.hh"
+
 #include "cmdr_internals.hh"
 #include "cmdr_terminal.hh"
 
@@ -61,6 +64,23 @@ namespace cmdr::opt {
 
 
     inline cmd &cmd::operator+(arg const &a) {
+        add(a);
+        return (*this);
+    }
+    inline cmd &cmd::operator+=(arg const &a) {
+        add(a);
+        return (*this);
+    }
+    inline cmd &cmd::operator+(cmd const &a) {
+        add(a);
+        return (*this);
+    }
+    inline cmd &cmd::operator+=(cmd const &a) {
+        add(a);
+        return (*this);
+    }
+
+    inline void cmd::add(arg const &a) {
         if (a.valid()) {
             auto gn = a.group_name();
             if (gn.empty()) {
@@ -79,22 +99,24 @@ namespace cmdr::opt {
 
             auto ptr = &_all_args.back();
 
+            if (ptr->default_value().get() == nullptr)
+                ptr->default_value(vars::variable{false});
             if (_grouped_args.find(gn) == _grouped_args.end())
                 _grouped_args.emplace(gn, types::arg_pointers{});
-            // auto ptr = &_all_args.back();
-            // auto it = _grouped_args.find(gn);
-            // (*it).second.push_back(ptr);
             _grouped_args[gn].push_back(ptr);
 
             _indexed_args.insert({a.title_long(), ptr});
+
             if (!a.title_short().empty()) {
                 if (auto const &it = _short_args.find(a.title_short()); it != _short_args.end())
                     cmdr_throw_line(std::string("duplicated short flag found: -") + a.title_short());
                 _short_args.insert({a.title_short(), ptr});
             }
+
             if (auto const &it = _long_args.find(a.title_long()); it != _long_args.end())
                 cmdr_throw_line(std::string("duplicated long flag found: --") + a.title_long());
             _long_args.insert({a.title_long(), ptr});
+
             for (auto const &itz : a.title_aliases()) {
                 if (auto const &it = _long_args.find(itz); it != _long_args.end())
                     cmdr_throw_line(std::string("duplicated alias flag found: -") + itz);
@@ -109,15 +131,9 @@ namespace cmdr::opt {
 
             // std::cout << gn << ',' << _grouped_args[gn].size() << '\n';
         }
-        return *this;
     }
 
-    inline cmd &cmd::operator+=(arg const &a) {
-        this->operator+(a);
-        return *this;
-    }
-
-    inline cmd &cmd::operator+(cmd const &a) {
+    inline void cmd::add(cmd const &a) {
         if (a.valid()) {
             auto gn = a.group_name();
             if (gn.empty()) {
@@ -136,9 +152,13 @@ namespace cmdr::opt {
             if (_grouped_commands.find(gn) == _grouped_commands.end())
                 _grouped_commands.emplace(gn, types::cmd_pointers{});
             auto &list = _grouped_commands[gn];
+#if defined(_DEBUG)
             auto size = list.size();
+#endif
             list.push_back(ptr);
-            assert(list.size() == size + 1);
+#if defined(_DEBUG)
+            CMDR_ASSERT(list.size() == size + 1);
+#endif
 
             _indexed_commands.insert({a.title_long(), ptr});
             if (!a.title_short().empty()) {
@@ -160,13 +180,8 @@ namespace cmdr::opt {
 
             cmdr::get_app().on_cmd_added(ptr);
         }
-        return *this;
     }
 
-    inline cmd &cmd::operator+=(cmd const &a) {
-        this->operator+(a);
-        return *this;
-    }
 
     inline arg &cmd::operator[](const_chars long_title) { return find_flag(long_title); }
 
@@ -238,9 +253,9 @@ namespace cmdr::opt {
                     break;
                 }
             }
-            assert(found);
+            CMDR_ASSERT(found);
 #endif
-            return *((*it).second);
+            return *cc;
         }
         if (extensive) {
             for (const auto &itz : _indexed_commands) {
@@ -256,8 +271,7 @@ namespace cmdr::opt {
     }
 
     inline int cmd::run(int argc, char *argv[]) {
-        unused(argc);
-        unused(argv);
+        UNUSED(argc, argv);
         return 0;
     }
 
@@ -277,8 +291,7 @@ namespace cmdr::opt {
     }
 
     inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, int level) {
-        unused(grouped);
-        unused(level);
+        UNUSED(grouped, level);
         auto fg = vars::store::_dim_text_fg;
         auto dim = vars::store::_dim_text_dim;
         auto [th, tw] = terminal::terminfo::get_win_size();
@@ -446,8 +459,7 @@ namespace cmdr::opt {
 
 
     inline void cmd::print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, int level) {
-        unused(grouped);
-        unused(level);
+        UNUSED(grouped, level);
         auto fg = vars::store::_dim_text_fg;
         auto dim = vars::store::_dim_text_dim;
         auto [th, tw] = terminal::terminfo::get_win_size();

@@ -5,6 +5,7 @@
 #include <cmdr11/cmdr_defs.hh>
 #include <ostream>
 #include <streambuf>
+#include <tuple>
 
 
 template<class cT, class traits = std::char_traits<cT>>

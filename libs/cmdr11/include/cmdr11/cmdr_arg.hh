@@ -292,6 +292,7 @@ namespace cmdr::opt {
     class arg : public bas {
     public:
         typedef std::shared_ptr<vars::variable> var_type;
+
     protected:
         // support_types _default;
         var_type _default;
@@ -318,7 +319,7 @@ namespace cmdr::opt {
         arg(arg &&o) noexcept = default;
 #if 1
         template<typename... Args>
-        explicit arg(Args &&...args){
+        explicit arg(Args &&...args) {
             _default = std::make_shared<vars::variable>(args...);
         }
 #else
@@ -338,7 +339,7 @@ namespace cmdr::opt {
         // explicit arg(vars::streamable_any &&v)
         //     : _default(std::move(v)) {}
 #endif
-        
+
     protected:
         void _copy(const arg &o) {
             bas::_copy(o);
@@ -444,7 +445,7 @@ namespace cmdr::opt {
         arg &default_value(const_chars v);
         template<class T>
         arg &default_value(T const &v);
-        
+
         arg &toggle_group(const_chars s) {
             if (s) _toggle_group = s;
             if (!bas::_group.empty()) bas::_group = _toggle_group;

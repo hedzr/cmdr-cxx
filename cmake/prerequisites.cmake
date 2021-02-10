@@ -62,7 +62,7 @@ endif ()
 if (${ENABLE_TESTS})
   enable_testing()
   #include(CTest) # note: this adds a BUILD_TESTING which defaults to ON
-endif()
+endif ()
 
 # for installing
 #include(GNUInstallDirs)

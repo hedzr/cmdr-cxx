@@ -106,17 +106,17 @@ namespace cmdr::opt {
             _grouped_args[gn].push_back(ptr);
 
             _indexed_args.insert({a.title_long(), ptr});
-            
+
             if (!a.title_short().empty()) {
                 if (auto const &it = _short_args.find(a.title_short()); it != _short_args.end())
                     cmdr_throw_line(std::string("duplicated short flag found: -") + a.title_short());
                 _short_args.insert({a.title_short(), ptr});
             }
-            
+
             if (auto const &it = _long_args.find(a.title_long()); it != _long_args.end())
                 cmdr_throw_line(std::string("duplicated long flag found: --") + a.title_long());
             _long_args.insert({a.title_long(), ptr});
-            
+
             for (auto const &itz : a.title_aliases()) {
                 if (auto const &it = _long_args.find(itz); it != _long_args.end())
                     cmdr_throw_line(std::string("duplicated alias flag found: -") + itz);

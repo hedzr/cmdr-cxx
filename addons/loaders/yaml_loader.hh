@@ -72,7 +72,7 @@ namespace cmdr::addons::loaders {
     public:
         cmdr::types::on_loading_externals operator()() const {
             return [=](cmdr::app &c) {
-              UNUSED(c);
+                UNUSED(c);
 
                 static std::vector searches = {
                     "", // for --config
@@ -87,7 +87,7 @@ namespace cmdr::addons::loaders {
                     "$APP_NAME.yml",
                     ".$APP_NAME.yml",
                 };
-                
+
                 const char *const env_var = "CONFIG_FILE";
                 c += cmdr::opt::opt{""}("config")
                              .description("the directory or the full-path of the main config file")
@@ -95,7 +95,7 @@ namespace cmdr::addons::loaders {
                              .placeholder("CONFIG_FILE")
                              .env_vars(env_var)
                              .on_hit([&](opt::cmd const &hit, opt::arg const &hit_flag, string_array const &remain_args) -> opt::Action {
-                               UNUSED(hit,hit_flag,remain_args);
+                                 UNUSED(hit, hit_flag, remain_args);
                                  if (hit_flag.hit_count()) {
                                      auto file = cmdr::get_for_cli<std::string>("config");
                                      load_config_file_or_dir(file, c);
@@ -109,7 +109,7 @@ namespace cmdr::addons::loaders {
                     auto file = std::string(ptr);
                     load_config_file_or_dir(file, c);
                 }
-                
+
                 // scan the pre-defined locations
                 using namespace cmdr::string;
                 using namespace cmdr::path;

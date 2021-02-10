@@ -31,7 +31,7 @@ jobs:
           - {
             name: "Ubuntu Latest GCC", artifact: "Linux.7z",
             os: ubuntu-latest,
-            cc: "gcc", cxx: "g++"
+            cc: "gcc-10", cxx: "g++-10"
           }
           - {
             name: "macOS Latest Clang", artifact: "macOS.7z",
@@ -42,13 +42,16 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - name: Install gcc 9 for Ubuntu-18
+      - name: Install gcc 10+ for Ubuntu-18
         run: |
-          cat /etc/*-release 2>/dev/null || {
+          if [[ "$OSTYPE" == "linux-gnu"* ]]; then
             sudo add-apt-repository ppa:ubuntu-toolchain-r/test
             sudo apt update
-            sudo apt install gcc-9 g++-9
-          }
+            sudo apt install gcc-10 g++-10 libyaml-cpp-dev
+          fi
+          if [[ "$OSTYPE" == "darwin"* ]]; then
+            brew install yaml-cpp
+          fi
 
       - name: Download Ninja and CMake
         shell: cmake -P {0}
@@ -108,11 +111,10 @@ jobs:
           key: ${{ matrix.config.name }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
           restore-keys: |
             ${{ matrix.config.name }}-ccache-1-
-      - name: prepare tools (doxygen, ...)
-        id: building_tools
-        shell: cmake -P {0}
-        run: |
-          sudo apt-get install doxygen
+      # - name: prepare tools (doxygen, ...)
+      #   id: building_tools
+      #   run: |
+      #     sudo apt-get install doxygen
       - name: Configure
         shell: cmake -P {0}
         run: |

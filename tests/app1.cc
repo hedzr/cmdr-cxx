@@ -24,7 +24,7 @@ void fatal_exit(const std::string &msg) {
 
 void add_sub1_menu(cmdr::app &cli, cmdr::opt::cmd &t1, const_chars title) {
     using namespace cmdr::opt;
-    unused(cli);
+    UNUSED(cli);
 
     t1 += sub_cmd{}(title)
                   .description((std::string(title) + " command").c_str());
@@ -56,6 +56,22 @@ void add_sub1_menu(cmdr::app &cli, cmdr::opt::cmd &t1, const_chars title) {
 
 void add_test_menu(cmdr::app &cli) {
     using namespace cmdr::opt;
+
+    cli += sub_cmd{}("test", "t", "test-command")
+                   .description("main tests commands for testing")
+                   .group("Test");
+    {
+        auto &t1 = *cli.last_added_command();
+        t1 += sub_cmd{}("ueh", "ueh")
+                      .description("causes a segfault for testing")
+                      .group("Test")
+                      .on_invoke([](cmd const, string_array const &) -> int {
+                          int *foo = (int *) -1; // make a bad pointer
+                          printf("%d\n", *foo);  // causes segfault
+                          return 0;
+                      });
+    }
+
 
     cli += sub_cmd{}("main", "m", "main-command")
                    .description("main command for testing")
@@ -136,6 +152,7 @@ void add_server_menu(cmdr::app &cli) {
                       .placeholder("HOST[:IP]")
                       .env_vars("HOST");
 
+#if defined(_DEBUG)
         // std::cout << "test" << '\n';
         // std::any v1 = "lolo";
         // auto v1e = std::any_cast<char const *>(v1);
@@ -148,6 +165,7 @@ void add_server_menu(cmdr::app &cli) {
 #endif
         assert(std::string(dv2) == "localhost");
         // std::cout << "test: " << dv1 << v1e << '\n';
+#endif
 
         t1 += opt{(int16_t) 4567}("port", "p")
                       .description("listening port number")
@@ -159,8 +177,7 @@ void add_server_menu(cmdr::app &cli) {
                       .description("start the server as a daemon service, or run it at foreground")
                       // .group("")
                       .on_invoke([](cmdr::opt::cmd const &c, string_array const &remain_args) -> int {
-                          unused(c);
-                          unused(remain_args);
+                          UNUSED(c, remain_args);
                           std::cout << c.title() << " invoked.\n";
                           return 0;
                       });
@@ -183,7 +200,7 @@ void add_server_menu(cmdr::app &cli) {
 }
 
 int main(int argc, char *argv[]) {
-    auto cli = cmdr::cli("app2", xVERSION_STRING, "hedzr",
+    auto cli = cmdr::cli("app1", xVERSION_STRING, "hedzr",
                          "Copyright © 2021 by hedzr, All Rights Reserved.",
                          "A demo app for cmdr-c11 library.",
                          "$ ~ --help");
@@ -193,10 +210,10 @@ int main(int argc, char *argv[]) {
 
         // cli.opt(opt_dummy<support_types>{}());
 
-#if 1
         add_server_menu(cli);
         add_test_menu(cli);
 
+#if defined(_DEBUG)
         auto &cc = cli("server");
         assert(cc.valid());
         assert(cc["count"].valid());
@@ -222,19 +239,18 @@ int main(int argc, char *argv[]) {
 #endif
 
 #if 1
-
         cli += sub_cmd{}("dup", "dup")
-                .description("dup command/flag for testing")
-                .group("Test");
+                       .description("dup command/flag for testing")
+                       .group("Test");
         {
             auto &t1 = *cli.last_added_command();
 
             t1 += opt{10}("int", "i")
-                    .description("set the int-value");
+                          .description("set the int-value");
             t1 += opt{10}("int", "i")
-                    .description("set the int-value");
+                          .description("set the int-value");
             t1 += opt{""}("string", "str")
-                    .description("set the string-value");
+                          .description("set the string-value");
         }
 #endif
 
@@ -243,5 +259,6 @@ int main(int argc, char *argv[]) {
         CMDR_DUMP_STACK_TRACE(e);
     }
 
+    cmdr::debug::UnhandledExceptionHookInstaller _ueh{};
     return cli.run(argc, argv);
 }

@@ -103,8 +103,8 @@ namespace cmdr {
     //
     // Usages:
     //     std::cout << std::boolalpha;
-    //     std::cout << is_vector_v<std::vector<int>> << std::endl ;
-    //     std::cout << is_vector_v<int> << std::endl
+    //     std::cout << is_vector_v<std::vector<int>> << '\n' ;
+    //     std::cout << is_vector_v<int> << '\n'
     template<typename T>
     inline constexpr bool is_vector_v = is_vector<T>::value;
 

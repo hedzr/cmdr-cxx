@@ -187,7 +187,7 @@ namespace cmdr::string {
             ss << std::setfill(c) << std::setw(n + str.length()) << str;
         } else {
             for (auto l : vec) {
-                ss << std::setfill(c) << std::setw(n + l.length()) << l << std::endl;
+                ss << std::setfill(c) << std::setw(n + l.length()) << l << '\n';
             }
         }
         return ss.str();

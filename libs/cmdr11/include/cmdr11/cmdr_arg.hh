@@ -290,9 +290,11 @@ namespace cmdr::opt {
      * @brief A flag, such as: '--help', ....
      */
     class arg : public bas {
+    public:
+        typedef std::shared_ptr<vars::variable> var_type;
     protected:
         // support_types _default;
-        vars::variable _default;
+        var_type _default;
         string_array _env_vars;
         std::string _placeholder;
         std::string _toggle_group;
@@ -301,7 +303,7 @@ namespace cmdr::opt {
 
     public:
         arg()
-            : _default(false) {}
+            : _default() {}
         ~arg() override = default;
         arg(const arg &o)
             : bas(o) { _copy(o); }
@@ -314,6 +316,12 @@ namespace cmdr::opt {
         //arg(const arg &o) = delete;
         //arg &operator=(const arg &o) = delete;
         arg(arg &&o) noexcept = default;
+#if 1
+        template<typename... Args>
+        explicit arg(Args &&...args){
+            _default = std::make_shared<vars::variable>(args...);
+        }
+#else
         template<typename A, typename... Args,
                  std::enable_if_t<
                          std::is_constructible<vars::variable, A, Args...>::value &&
@@ -329,7 +337,8 @@ namespace cmdr::opt {
             : _default(std::forward<A>(v)) {}
         // explicit arg(vars::streamable_any &&v)
         //     : _default(std::move(v)) {}
-
+#endif
+        
     protected:
         void _copy(const arg &o) {
             bas::_copy(o);
@@ -337,7 +346,7 @@ namespace cmdr::opt {
             __COPY(_env_vars);
             __COPY(_toggle_group);
             __COPY(_placeholder);
-            __COPY(_default);
+            __COPY(_default); // TODO _default in duplicating in copy constructing
             __COPY(_on_flag_hit);
         }
 
@@ -420,19 +429,9 @@ namespace cmdr::opt {
         }
 
     public:
-        [[nodiscard]] virtual std::string defaults() const {
-            std::stringstream ss;
-            ss << ' ' << '[' << "DEFAULT";
-            if (!_placeholder.empty())
-                ss << ' ' << _placeholder;
-            ss << '=' << _default << ']';
-            // if (!std::holds_alternative<std::monostate>(_default)) {
-            //     ss << ' ' << '[' << "DEFAULT=" << variant_to_string(_default) << ']';
-            // }
-            return ss.str();
-        }
-        [[nodiscard]] const vars::variable &default_value() const { return _default; }
-        vars::variable &default_value() { return _default; }
+        [[nodiscard]] virtual std::string defaults() const;
+        [[nodiscard]] const var_type &default_value() const;
+        var_type &default_value();
 
         [[nodiscard]] virtual const std::string &toggle_group_name() const {
             return _toggle_group;
@@ -441,19 +440,11 @@ namespace cmdr::opt {
         [[nodiscard]] virtual bool is_toggleable() const { return !_toggle_group.empty(); }
 
     public:
-        arg &default_value(const vars::variable &v) {
-            _default.emplace(v);
-            return (*this);
-        }
-        arg &default_value(const_chars v) {
-            _default.emplace(std::string(v));
-            return (*this);
-        }
+        arg &default_value(const vars::variable &v);
+        arg &default_value(const_chars v);
         template<class T>
-        arg &default_value(T const &v) {
-            _default.template emplace(v);
-            return (*this);
-        }
+        arg &default_value(T const &v);
+        
         arg &toggle_group(const_chars s) {
             if (s) _toggle_group = s;
             if (!bas::_group.empty()) bas::_group = _toggle_group;

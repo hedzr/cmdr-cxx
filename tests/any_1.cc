@@ -38,7 +38,7 @@ public:
                      int> = 0>
     explicit X(A &&a0, Args &&...args)
         : _arg(std::forward<A>(a0), std::forward<Args>(args)...) {
-        std::cout << ".1." << a0 << std::endl;
+        std::cout << ".1." << a0 << '\n';
     }
 
     template<typename A,
@@ -47,7 +47,7 @@ public:
                               int> = 0>
     explicit X(A &&v)
         : _arg(std::forward<A>(v)) {
-        std::cout << ".2." << v << std::endl;
+        std::cout << ".2." << v << '\n';
     }
 
     friend std::ostream &operator<<(std::ostream &os, X const &a) {
@@ -72,11 +72,11 @@ void test_streamer_any() {
     streamable_any vo4{(int32_t) -7};
     streamable_any vo5{"a string"};
 
-    std::cout << vo1 << std::endl;
-    std::cout << vo2 << std::endl;
-    std::cout << vo3 << std::endl;
-    std::cout << vo4 << std::endl;
-    std::cout << vo5 << std::endl;
+    std::cout << vo1 << '\n';
+    std::cout << vo2 << '\n';
+    std::cout << vo3 << '\n';
+    std::cout << vo4 << '\n';
+    std::cout << vo5 << '\n';
 
     std::cout << '\n';
 #endif
@@ -111,7 +111,7 @@ void test_streamable_any() {
     std::cout << "test_streamable_any:" << '\n';
 
     for (auto &v : va) {
-        // std::cout << v << std::endl;
+        // std::cout << v << '\n';
         std::cout << ".1.";
         os.process(std::cout, v);
         std::cout << '\n';
@@ -278,7 +278,7 @@ void test_variant() {
 }
 
 int main() {
-    std::cout << std::boolalpha;
+    std::cout << "bool test: " << std::boolalpha << true << '\n';
 
     X x1{1};
     X x2{(int16_t) 2};
@@ -288,11 +288,11 @@ int main() {
     X x6{std::string("zed vvv string")};
 
     std::cout // << std::boolalpha
-            << x1 << x2 << x3 << x4 << x5 << std::endl
-            << std::any_cast<std::string>(x6._arg) << std::endl;
+            << x1 << x2 << x3 << x4 << x5 << '\n'
+            << std::any_cast<std::string>(x6._arg) << '\n';
 
     std::any a1{std::string("zed vvv string")};
-    std::cout << "any: " << std::any_cast<std::string>(a1) << std::endl;
+    std::cout << "any: " << std::any_cast<std::string>(a1) << '\n';
 
     test_streamer_any();
     test_streamable_any();

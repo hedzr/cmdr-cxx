@@ -10,17 +10,17 @@
 
 void test_any() {
     std::any o1{std::string("a string")};
-    std::cout << std::any_cast<std::string>(o1) << std::endl;
+    std::cout << std::any_cast<std::string>(o1) << '\n';
     // std::visit([](auto &&arg) { std::cout << arg; }, o1);
-    std::cout << std::endl;
+    std::cout << '\n';
 
     std::any any{-1LL};
     try {
         cmdr::util::visit_any_as<std::string, int, double, char>(any, [](auto const &x) {
-            std::cout << x << std::endl;
+            std::cout << x << '\n';
         });
     } catch (std::exception const &e) {
-        std::cout << e.what() << std::endl;
+        std::cout << e.what() << '\n';
     }
 }
 

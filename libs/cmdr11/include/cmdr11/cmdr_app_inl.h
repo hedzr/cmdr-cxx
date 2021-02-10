@@ -12,14 +12,19 @@
 #include <set>
 #include <sstream>
 #include <stdexcept>
+#include <version.h>
 
 
-#include "cmdr_app.hh"
+#include "cmdr_cmn.hh"
+
 #include "cmdr_arg.hh"
 #include "cmdr_cmd.hh"
-#include "cmdr_cmn.hh"
+
+#include "cmdr_app.hh"
+
 #include "cmdr_internals.hh"
 #include "cmdr_public.hh"
+
 #include "cmdr_terminal.hh"
 
 
@@ -27,7 +32,7 @@ namespace cmdr {
 
     inline app::app(const_chars name, const_chars version, const_chars author,
                     const_chars copyright, const_chars description_,
-                    const_chars examples)
+                    const_chars examples_)
         : _name(name)
         , _version(version)
         , _author(author)
@@ -35,8 +40,8 @@ namespace cmdr {
     // , _description(description)
     // , _examples(examples)
     {
-        this->description(description_);
-        this->examples(examples);
+        opt::bas::description(description_);
+        opt::bas::examples(examples_);
         app_holder::instance().put(this);
     }
 
@@ -69,17 +74,15 @@ namespace cmdr {
     }
 
     inline void app::register_actions() {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-parameter"
-        _internal_actions.emplace(opt::RequestHelpScreen, [=](parsing_context &pc, int argc, char *argv[]) -> int {
+        _internal_actions.emplace(opt::RequestHelpScreen, [=](parsing_context &pc, int, char *[]) -> int {
             print_usages(&pc.last_matched_cmd());
             return 0;
         });
-        _internal_actions.emplace(opt::RequestVersionsScreen, [=](parsing_context &pc, int argc, char *argv[]) -> int {
-            std::cout << this->_version << std::endl;
+        _internal_actions.emplace(opt::RequestVersionsScreen, [=](parsing_context &, int, char *[]) -> int {
+            std::cout << this->_version << '\n';
             return 0;
         });
-        _internal_actions.emplace(opt::RequestBuildInfoScreen, [=](parsing_context &pc, int argc, char *argv[]) -> int {
+        _internal_actions.emplace(opt::RequestBuildInfoScreen, [=](parsing_context &, int, char *[]) -> int {
             std::stringstream compiler;
             compiler <<
             // https://blog.kowalczyk.info/article/j/guide-to-predefined-macros-in-c-compilers-gcc-clang-msvc-etc..html
@@ -115,9 +118,13 @@ namespace cmdr {
 
             std::cout
                     << "Built by " << compiler.str()
-                    << " at " << ts.str() << std::endl
-                    << compiler.str() << std::endl
-                    << ts.str() << std::endl;
+                    << " at " << ts.str() << '\n'
+                    << compiler.str() << '\n'
+                    << ts.str() << '\n'
+                    << xPROJECT_NAME << '\n'
+                    << xARCHIVE_NAME << '\n'
+                    << xGIT_BRANCH << '\n'
+                    << xGIT_COMMIT_HASH << '\n';
             return 0;
         });
         _internal_actions.emplace(opt::RequestTreeScreen,
@@ -127,7 +134,6 @@ namespace cmdr {
                                   [=](parsing_context &pc, int argc, char *argv[]) -> int {
                                       return print_debug_info_screen(pc, argc, argv);
                                   });
-#pragma clang diagnostic pop
     }
 
     // inline void app::fatal_exit(std::string const &msg) {
@@ -141,8 +147,7 @@ namespace cmdr {
     // }
 
     inline int app::on_invoking_print_cmd(opt::cmd const &hit, string_array const &remain_args) {
-        unused(hit);
-        unused(remain_args);
+        UNUSED(hit, remain_args);
         std::cout << "command " << std::quoted(hit.title()) << " hit." << '\n';
         walk_args([=](opt::arg &a) {
             if (a.hit_count() > 0) {
@@ -159,9 +164,7 @@ namespace cmdr {
     }
 
     inline int app::print_debug_info_screen(parsing_context &pc, int argc, char *argv[]) {
-        unused(pc);
-        unused(argc);
-        unused(argv);
+        UNUSED(pc, argc, argv);
 
         // auto &store = cli.store();
         // auto &store = cmdr::get_store();
@@ -186,11 +189,11 @@ namespace cmdr {
 
             auto &cli = (*this); // get_app();
             int tilde_debug_hit_count = tilde_debug_arg.hit_count();
-            bool allow_cli_subkey = cli.get_for_cli("cli").as<bool>();
+            bool allow_cli_sub_key = cli.get_for_cli("cli").as<bool>();
             auto const &cli_prefix = cli.cli_prefix();
             std::function<bool(std::pair<vars::store::key_type, vars::store::node_pointer> const &)>
                     filter{};
-            if (!allow_cli_subkey) filter = [&](std::pair<vars::store::key_type, vars::store::node_pointer> const &p) -> bool {
+            if (!allow_cli_sub_key) filter = [&](std::pair<vars::store::key_type, vars::store::node_pointer> const &p) -> bool {
                 return !string::has_prefix(p.first, cli_prefix);
             };
 
@@ -228,8 +231,8 @@ namespace cmdr {
                 std::cout << c.Grey93 << " << want 255" << '\n';
 
                 using cmdr::terminal::colors::colorize;
-                std::cout << colorize::style::underline << colorize::fg::red << "Hello, Colorful World!" << std::endl;
-                std::cout << colorize::reset::all << "Here I'm!" << std::endl;
+                std::cout << colorize::style::underline << colorize::fg::red << "Hello, Colorful World!" << '\n';
+                std::cout << colorize::reset::all << "Here I'm!" << '\n';
                 std::cout << "END." << '\n'
                           << '\n';
 
@@ -244,9 +247,7 @@ namespace cmdr {
     }
 
     inline int app::print_manual_screen(parsing_context &pc, int argc, char *argv[]) {
-        unused(pc);
-        unused(argc);
-        unused(argv);
+        UNUSED(pc, argc, argv);
         // todo print_manual_screen
         return 0;
     }
@@ -254,9 +255,7 @@ namespace cmdr {
     // inline void _pr_tree(std::ostream &os, cmd *const cc) {}
 
     inline int app::print_tree_screen(parsing_context &pc, int argc, char *argv[]) {
-        unused(pc);
-        unused(argc);
-        unused(argv);
+        UNUSED(pc, argc, argv);
         std::cout << "All Commands:\n";
 
         // _pr_tree(std::cout, &pc.last_matched_cmd());
@@ -276,12 +275,11 @@ namespace cmdr {
                        .description("display this help screen")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
-                       .on_invoke([](opt::cmd const &hit, string_array const &remain_args) -> int {
-                           unused(hit);
-                           unused(remain_args);
+                       .on_invoke([](cmdr::opt::cmd const &hit, string_array const &remain_args) -> int {
+                           UNUSED(hit, remain_args);
                            cmdr::get_app().print_usages(nullptr);
                            std::cout << "help, !!!\n";
-                           std::cout << "args: " << cmdr::string::join(remain_args, ',', '[', ']') << std::endl;
+                           std::cout << "args: " << cmdr::string::join(remain_args, ',', '[', ']') << '\n';
                            // todo expand 'help ...' to a embedded help sub-system.
                            // print the help screen if remain_args is a valid command sequence.
                            // or enter an interactive question-and-answer system.
@@ -293,11 +291,9 @@ namespace cmdr {
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
                        .env_vars("HELP")
-                       .on_hit([](opt::cmd const &hit, opt::arg const &hit_flag, string_array const &remain_args) -> opt::Action {
-                           unused(hit);
-                           unused(hit_flag);
-                           unused(remain_args);
-                           return opt::RequestHelpScreen;
+                       .on_hit([](cmdr::opt::cmd const &hit, cmdr::opt::arg const &hit_flag, string_array const &remain_args) -> cmdr::opt::Action {
+                           UNUSED(hit, hit_flag, remain_args);
+                           return cmdr::opt::RequestHelpScreen;
                        });
 
         // version
@@ -306,10 +302,9 @@ namespace cmdr {
                        .description("display the version information")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
-                       .on_invoke([](opt::cmd const &hit, string_array const &remain_args) -> int {
-                           unused(hit);
-                           unused(remain_args);
-                           return opt::RequestVersionsScreen;
+                       .on_invoke([](cmdr::opt::cmd const &hit, string_array const &remain_args) -> int {
+                           UNUSED(hit, remain_args);
+                           return cmdr::opt::RequestVersionsScreen;
                        });
 
         cli += cmdr::opt::opt{}("version", "V", "versions", "ver")
@@ -317,11 +312,9 @@ namespace cmdr {
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
                        .env_vars("VERSIONS")
-                       .on_hit([](opt::cmd const &hit, opt::arg const &hit_flag, string_array const &remain_args) -> opt::Action {
-                           unused(hit);
-                           unused(hit_flag);
-                           unused(remain_args);
-                           return opt::RequestVersionsScreen;
+                       .on_hit([](cmdr::opt::cmd const &hit, cmdr::opt::arg const &hit_flag, string_array const &remain_args) -> cmdr::opt::Action {
+                           UNUSED(hit, hit_flag, remain_args);
+                           return cmdr::opt::RequestVersionsScreen;
                        });
 
         // build-info
@@ -330,11 +323,9 @@ namespace cmdr {
                        .description("display the building information")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
-                       .on_hit([](opt::cmd const &hit, opt::arg const &hit_flag, string_array const &remain_args) -> opt::Action {
-                           unused(hit);
-                           unused(hit_flag);
-                           unused(remain_args);
-                           return opt::RequestBuildInfoScreen;
+                       .on_hit([](cmdr::opt::cmd const &hit, cmdr::opt::arg const &hit_flag, string_array const &remain_args) -> cmdr::opt::Action {
+                           UNUSED(hit, hit_flag, remain_args);
+                           return cmdr::opt::RequestBuildInfoScreen;
                        });
 
         // more...
@@ -370,13 +361,11 @@ namespace cmdr {
                        .special()
                        .no_non_special()
                        .group(SYS_MGMT_GROUP)
-                       .on_hit([](opt::cmd const &hit, opt::arg const &hit_flag, string_array const &remain_args) -> opt::Action {
-                           unused(hit);
-                           unused(hit_flag);
-                           unused(remain_args);
+                       .on_hit([](cmdr::opt::cmd const &hit, cmdr::opt::arg const &hit_flag, string_array const &remain_args) -> cmdr::opt::Action {
+                           UNUSED(hit, hit_flag, remain_args);
                            if (hit_flag.hit_special())
-                               return opt::RequestTreeScreen;
-                           return opt::RequestTreeScreen;
+                               return cmdr::opt::RequestTreeScreen;
+                           return cmdr::opt::RequestTreeScreen;
                        });
 
         cli += cmdr::opt::opt{}("debug", "D", "debug-mode")
@@ -384,13 +373,11 @@ namespace cmdr {
                        .special()
                        .group(SYS_MGMT_GROUP)
                        .env_vars("DEBUG")
-                       .on_hit([](opt::cmd const &hit, opt::arg const &hit_flag, string_array const &remain_args) -> opt::Action {
-                           unused(hit);
-                           unused(hit_flag);
-                           unused(remain_args);
+                       .on_hit([](cmdr::opt::cmd const &hit, cmdr::opt::arg const &hit_flag, string_array const &remain_args) -> cmdr::opt::Action {
+                           UNUSED(hit, hit_flag, remain_args);
                            if (hit_flag.hit_special())
-                               return opt::RequestDebugInfoScreen;
-                           return opt::OK;
+                               return cmdr::opt::RequestDebugInfoScreen;
+                           return cmdr::opt::OK;
                        });
 
         cli += cmdr::opt::opt{}("cli")

@@ -29,7 +29,7 @@ int main() {
                 sizeof(s), allocated, s.capacity());
 
     // cmdr:::vars::var_t<std::string> vs;
-    // std::cout << "var_t: " << vs << std::endl;
+    // std::cout << "var_t: " << vs << '\n';
 
 
     using namespace std::chrono_literals;
@@ -45,7 +45,7 @@ int main() {
     store.set_raw("app.server.tls.domains", std::vector{"example.com", "example.org"});
     store.set_raw("app.server.tls.fixed-list", std::array{"item1", "item2"});
 
-    std::cout << "store: " << store << std::endl;
+    std::cout << "store: " << store << '\n';
 
 #if defined(_DEBUG)
     store.dump_full_keys(std::cout);
@@ -53,20 +53,20 @@ int main() {
 #endif
 
     std::cout << std::boolalpha;
-    std::cout << cmdr::is_vector_v<std::vector<int>> << std::endl;
-    std::cout << cmdr::is_vector_v<int> << std::endl;
-    std::cout << cmdr::is_container<std::string>::value << std::endl;
-    std::cout << cmdr::is_container<std::list<std::string>>::value << std::endl;
+    std::cout << cmdr::is_vector_v<std::vector<int>> << '\n';
+    std::cout << cmdr::is_vector_v<int> << '\n';
+    std::cout << cmdr::is_container<std::string>::value << '\n';
+    std::cout << cmdr::is_container<std::list<std::string>>::value << '\n';
 
     auto v1 = std::vector{"example.com", "example.org"};
-    std::cout << "cmdr::is_stl_container : " << cmdr::is_stl_container<decltype(v1)>::value << std::endl;
+    std::cout << "cmdr::is_stl_container : " << cmdr::is_stl_container<decltype(v1)>::value << '\n';
     auto v2 = 10s;
-    std::cout << "type " << typeid(v2).name() << ". check: " << cmdr::is_duration<decltype(v2)>::value << std::endl;
+    std::cout << "type " << typeid(v2).name() << ". check: " << cmdr::is_duration<decltype(v2)>::value << '\n';
 
-    std::cout << "cmdr::is_duration<std::chrono::seconds> : " << cmdr::is_duration<std::chrono::seconds>::value << std::endl;
-    std::cout << "cmdr::is_duration<std::chrono::hours> : " << cmdr::is_duration<std::chrono::hours>::value << std::endl;
-    std::cout << "cmdr::is_duration<std::chrono::microseconds> : " << cmdr::is_duration<std::chrono::microseconds>::value << std::endl;
-    std::cout << "cmdr::is_duration<std::chrono::nanoseconds> : " << cmdr::is_duration<std::chrono::nanoseconds>::value << std::endl;
-    std::cout << "cmdr::is_duration<long long> : " << cmdr::is_duration<decltype(0xfull)>::value << std::endl;
-    std::cout << "cmdr::is_duration<bool> : " << cmdr::is_duration<bool>::value << std::endl;
+    std::cout << "cmdr::is_duration<std::chrono::seconds> : " << cmdr::is_duration<std::chrono::seconds>::value << '\n';
+    std::cout << "cmdr::is_duration<std::chrono::hours> : " << cmdr::is_duration<std::chrono::hours>::value << '\n';
+    std::cout << "cmdr::is_duration<std::chrono::microseconds> : " << cmdr::is_duration<std::chrono::microseconds>::value << '\n';
+    std::cout << "cmdr::is_duration<std::chrono::nanoseconds> : " << cmdr::is_duration<std::chrono::nanoseconds>::value << '\n';
+    std::cout << "cmdr::is_duration<long long> : " << cmdr::is_duration<decltype(0xfull)>::value << '\n';
+    std::cout << "cmdr::is_duration<bool> : " << cmdr::is_duration<bool>::value << '\n';
 }

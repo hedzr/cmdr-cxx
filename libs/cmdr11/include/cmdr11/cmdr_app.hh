@@ -7,15 +7,25 @@
 
 #include <utility>
 
+#include "cmdr_dbg.hh"
+#include "cmdr_terminal.hh"
+
+#include "cmdr_var_t.hh"
+
+#include "cmdr_cmn.hh"
+
 #include "cmdr_arg.hh"
 #include "cmdr_cmd.hh"
-#include "cmdr_cmn.hh"
-#include "cmdr_dbg.hh"
 #include "cmdr_opts.hh"
-#include "cmdr_terminal.hh"
 
 namespace cmdr {
 
+    /**
+     * @brief an CLI application here.
+     * 
+     * An app holds all commands and sub-commands and its flags.
+     * 
+     */
     class app : public opt::cmd {
     private:
         app() = default;
@@ -94,8 +104,8 @@ namespace cmdr {
         //[[nodiscard]] bool help_hit() const { return _help_hit > 0; }
         //[[nodiscard]] cmd *command_hit() const { return _cmd_hit; }
 
-        [[nodiscard]] auto const &store() const { return _store; }
-        auto &store() { return _store; }
+        [[nodiscard]] vars::store const &store() const { return _store; }
+        vars::store &store() { return _store; }
 
         app &set_match_longest_first(bool b = true) {
             _longest_first = b;
@@ -146,57 +156,24 @@ namespace cmdr {
             return (*this);
         }
 
-        app &set_global_on_command_not_hooked(opt::types::on_invoke cb) {
+        app &set_global_on_command_not_hooked(opt::types::on_invoke const &cb) {
             _on_command_not_hooked = cb;
             return (*this);
         }
 
-        app &set_on_handle_exception_ptr(std::function<void(const std::exception_ptr &eptr)> cb) {
+        app &set_on_handle_exception_ptr(std::function<void(const std::exception_ptr &eptr)> const &cb) {
             _on_handle_exception_ptr = cb;
             return (*this);
         }
 
     protected:
-        friend class cmd;
+        friend class opt::cmd;
 
-        void on_arg_added(opt::arg *a) {
-            auto key = a->dotted_key();
-            _store.set_raw(key.c_str(), a->default_value());
-            for (auto &cb : _on_arg_added) {
-                if (cb)
-                    cb(a);
-            }
-        }
-        void on_cmd_added(opt::cmd *a) {
-            // auto key = a->dotted_key();
-            // _store.set(key, a->default_value());
-            for (auto &cb : _on_cmd_added) {
-                if (cb)
-                    cb(a);
-            }
-        }
-        void on_arg_matched(opt::arg *a, vars::variable &value) {
-            auto key = a->dotted_key();
-            _store.set_raw(key.c_str(), value);
-            for (auto &cb : _on_arg_matched) {
-                if (cb)
-                    cb(a);
-            }
-        }
-        void on_cmd_matched(opt::cmd *a) {
-            // auto key = a->dotted_key();
-            // _store.set(key, a->default_value());
-            for (auto &cb : _on_cmd_matched) {
-                if (cb)
-                    cb(a);
-            }
-        }
-        void on_loading_externals() {
-            for (auto &_on_loading_external : _on_loading_externals) {
-                if (_on_loading_external)
-                    _on_loading_external(*this);
-            }
-        }
+        void on_arg_added(opt::arg *a);
+        void on_cmd_added(opt::cmd *a);
+        void on_arg_matched(opt::arg *a, opt::arg::var_type &value);
+        void on_cmd_matched(opt::cmd *a);
+        void on_loading_externals();
 
     private:
         struct parsing_context {
@@ -208,7 +185,7 @@ namespace cmdr {
             int matching_flag_type{}; // short: 0, long: 1, special: 2, ...
             std::size_t pos{};        // start position of title
 
-            explicit parsing_context(app *a)
+            explicit parsing_context(opt::cmd *a)
                 : _root(a) {}
 
         private:
@@ -217,7 +194,7 @@ namespace cmdr {
             string_array unknown_flags{};
             string_array unknown_commands{};
             string_array non_commands{};
-            typedef std::unordered_map<opt::arg *, vars::variable> val_map;
+            typedef std::unordered_map<opt::arg *, opt::arg::var_type> val_map;
             val_map _values_map;
 
         public:
@@ -239,10 +216,7 @@ namespace cmdr {
 
             void add_matched_cmd(opt::cmd *obj) { _matched_commands.push_back(obj); }
             void add_matched_arg(opt::arg *obj) { matched_flags.push_back(obj); }
-            void add_matched_arg(opt::arg *obj, vars::variable const &v) {
-                matched_flags.push_back(obj);
-                _values_map.emplace(std::make_pair(obj, v));
-            }
+            void add_matched_arg(opt::arg *obj, opt::arg::var_type const &v);
             void add_unknown_cmd(std::string const &obj) { unknown_commands.push_back(obj); }
             void add_unknown_arg(std::string const &obj) { unknown_flags.push_back(obj); }
             void add_remain_arg(std::string const &arg) { non_commands.push_back(arg); }
@@ -282,7 +256,7 @@ namespace cmdr {
         static arg_matching_result matching_short_flag(parsing_context &pc);
         static arg_matching_result matching_flag_on(parsing_context &pc,
                                                     bool is_long, bool is_special,
-                                                    std::function<opt::types::indexed_args const &(opt::cmd *)> li);
+                                                    std::function<opt::types::indexed_args const &(opt::cmd *)> const &li);
 
         opt::Action unknown_command_found(parsing_context &pc, cmd_matching_result &cmr);
         opt::Action unknown_long_flag_found(parsing_context &pc, arg_matching_result &amr);
@@ -294,28 +268,15 @@ namespace cmdr {
         static void add_generator_menu(app &cli);
 
         void prepare();
+        void prepare_common_env();
         void prepare_env_vars();
         void load_externals();
         void apply_env_vars();
         int after_run(opt::Action rc, parsing_context &pc, int argc, char *argv[]);
         int internal_action(opt::Action rc, parsing_context &pc, int argc, char *argv[]);
-        int invoke_command(opt::cmd &cc, string_array remain_args, parsing_context &pc);
+        int invoke_command(opt::cmd &cc, string_array const &remain_args, parsing_context &pc);
 
-        void handle_eptr(const std::exception_ptr &eptr) const {
-            if (_on_handle_exception_ptr) {
-                _on_handle_exception_ptr(eptr);
-                return;
-            }
-
-            try {
-                if (eptr) {
-                    std::rethrow_exception(eptr);
-                }
-            } catch (const std::exception &e) {
-                std::cout << "Caught exception \"" << e.what() << "\"\n";
-                CMDR_DUMP_STACK_TRACE(e);
-            }
-        }
+        void handle_eptr(const std::exception_ptr &eptr) const;
 
         static void fatal_exit(const char *format) {
             std::cout << format << '\n';
@@ -344,86 +305,60 @@ namespace cmdr {
         int on_invoking_print_cmd(opt::cmd const &hit, string_array const &remain_args);
 
     public:
-        // app &operator+(const opt::opt &a) override;
-        // app &operator+=(const opt::opt &a) override;
-        // app &operator+(const opt::subcmd &a) override;
-        // app &operator+=(const opt::subcmd &a) override;
+        app &operator+(opt::arg const &a) override;
+        app &operator+=(opt::arg const &a) override;
+        app &operator+(opt::cmd const &a) override;
+        app &operator+=(opt::cmd const &a) override;
 
-        // app &operator+(opt::arg const &a) override;
-        // app &operator+=(opt::arg const &a) override;
-        // app &operator+(opt::cmd const &a) override;
-        // app &operator+=(opt::cmd const &a) override;
-
-
-        opt::arg &operator[](const_chars long_title) override {
-            std::stringstream st;
-            // if (!_long.empty())
-            //     st << _long << '.';
-            st << long_title;
-            return find_flag(st.str().c_str());
-        }
-        const opt::arg &operator[](const_chars long_title) const override {
-            std::stringstream st;
-            // if (!_long.empty())
-            //     st << _long << '.';
-            st << long_title;
-            return const_cast<app *>(this)->find_flag(st.str().c_str());
-        }
-
-        opt::arg &operator[](const std::string &long_title) {
-            std::stringstream st;
-            // if (!_long.empty())
-            //     st << _long << '.';
-            st << long_title;
-            return find_flag(st.str().c_str());
-        }
-        const opt::arg &operator[](const std::string &long_title) const {
-            std::stringstream st;
-            // if (!_long.empty())
-            //     st << _long << '.';
-            st << long_title;
-            return const_cast<app *>(this)->find_flag(st.str().c_str());
-        }
+        app &operator+(opt::sub_cmd const &a) override;
+        app &operator+=(opt::sub_cmd const &a) override;
+        app &operator+(opt::opt const &a) override;
+        app &operator+=(opt::opt const &a) override;
 
 
-        opt::cmd &operator()(const_chars long_title, bool extensive = false) override {
-            std::stringstream st;
-            //if (!_long.empty())
-            //    st << _long << '.';
-            st << long_title;
-            return find_command(st.str().c_str(), extensive);
-        }
-        const opt::cmd &operator()(const_chars long_title, bool extensive = false) const override {
-            std::stringstream st;
-            // if (!_long.empty())
-            //     st << _long << '.';
-            st << long_title;
-            return const_cast<app *>(this)->find_command(st.str().c_str(), extensive);
-        }
+        opt::arg &operator[](const_chars long_title) override { return find_flag(long_title); }
+        const opt::arg &operator[](const_chars long_title) const override { return const_cast<app *>(this)->find_flag(long_title); }
 
-        opt::cmd &operator()(const std::string &long_title, bool extensive = false) {
-            std::stringstream st;
-            // if (!_long.empty())
-            //     st << _long << '.';
-            st << long_title;
-            return find_command(st.str().c_str(), extensive);
-        }
-        const opt::cmd &operator()(const std::string &long_title, bool extensive = false) const {
-            std::stringstream st;
-            // if (!_long.empty())
-            //     st << _long << '.';
-            st << long_title;
-            return const_cast<app *>(this)->find_command(st.str().c_str(), extensive);
-        }
+        opt::arg &operator[](const std::string &long_title) { return find_flag(long_title.c_str()); }
+        const opt::arg &operator[](const std::string &long_title) const { return const_cast<app *>(this)->find_flag(long_title.c_str()); }
 
-        // tcolorize::Colors256 _dim_text_fg{tcolorize::Grey50};
-        // bool _dim_text_dim{false};
 
+        opt::cmd &operator()(const_chars long_title, bool extensive = false) override { return find_command(long_title, extensive); }
+        const opt::cmd &operator()(const_chars long_title, bool extensive = false) const override { return const_cast<app *>(this)->find_command(long_title, extensive); }
+
+        opt::cmd &operator()(const std::string &long_title, bool extensive = false) { return find_command(long_title.c_str(), extensive); }
+        const opt::cmd &operator()(const std::string &long_title, bool extensive = false) const { return const_cast<app *>(this)->find_command(long_title.c_str(), extensive); }
+
+
+        /**
+         * @brief get the value without store-prefix from Option Store.
+         * 
+         * The store-prefix can be get or set by store_prefix()/store_prefix(prefix).
+         * The default store-prefix is 'app'.
+         * 
+         * To retrieve a item value from Option Store directly, use 
+         * cmdr::get_store().get_raw()/get_raw_p(), which functions needs to pass a
+         * full key with any prefix.
+         * 
+         * For example, `get_raw("app.someone") == get("someone")`, in which store-prefix is 'app'..
+         * 
+         * @param key 
+         * @return 
+         */
         vars::variable const &get(char const *key) const { return _store.get_raw_p(_store_prefix.c_str(), key); }
         vars::variable &get(char const *key) { return _store.get_raw_p(_store_prefix.c_str(), key); }
         [[nodiscard]] vars::variable const &get(std::string const &key) const { return _store.get_raw_p(_store_prefix, key); }
         [[nodiscard]] vars::variable &get(std::string const &key) { return _store.get_raw_p(_store_prefix, key); }
 
+        /**
+         * @brief get the commands/flags' value from Option Store.
+         * 
+         * The value (or default-value) of a flag is been stored in Option Store with a prefix 'app.cli'.
+         * You can change the prefix by cli_prefix(prefix) and get it by cli_prefix().
+         * 
+         * @param key 
+         * @return 
+         */
         vars::variable const &get_for_cli(char const *key) const { return _store.get_raw_p(_long.c_str(), key); }
         vars::variable &get_for_cli(char const *key) { return _store.get_raw_p(_long.c_str(), key); }
         [[nodiscard]] vars::variable const &get_for_cli(std::string const &key) const { return _store.get_raw_p(_long, key); }
@@ -437,7 +372,7 @@ namespace cmdr {
                                  !std::is_same<std::decay_t<A>, app>::value,
                          int> = 0>
         void set(char const *key, A &&a0, Args &&...args) {
-            _store.template set_raw_p(store_prefix().c_str(), key, a0, args...);
+            _store.set_raw_p(store_prefix().c_str(), key, a0, args...);
         }
         template<class A,
                  std::enable_if_t<std::is_constructible<vars::variable, A>::value &&
@@ -445,24 +380,16 @@ namespace cmdr {
                                           !std::is_same<std::decay_t<A>, app>::value,
                                   int> = 0>
         void set(char const *key, A &&a) {
-            _store.template set_raw_p(store_prefix().c_str(), key, a);
-        }
-        void set(char const *key, vars::variable &&a) {
             _store.set_raw_p(store_prefix().c_str(), key, a);
         }
-        void set(char const *key, vars::variable const &a) {
-            _store.set_raw_p(store_prefix().c_str(), key, a);
-        }
+        void set(char const *key, vars::variable &&a);
+        void set(char const *key, vars::variable const &a);
 
 
-        // template<class K = std::string,
-        //          class V = vars::nodeT<vars::variable, K>,
-        //          class Comp = std::less<K>>
         void dump_tree_f(std::ostream &os = std::cout,
                          std::function<bool(std::pair<vars::store::key_type, vars::store::node_pointer> const &)> const &on_filter = nullptr,
                          const_chars leading_title = nullptr,
                          vars::store::node *start = nullptr) const {
-            // auto c = tcolorize::create();
             _store.dump_tree_f(os, on_filter, leading_title, start);
         }
         void dump_full_keys_f(std::ostream &os = std::cout,

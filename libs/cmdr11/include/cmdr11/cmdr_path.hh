@@ -34,8 +34,8 @@ namespace cmdr::path {
 
 #ifdef __APPLE__
 
+#include <climits>
 #include <libgen.h>
-#include <limits.h>
 #include <mach-o/dyld.h>
 #include <unistd.h>
 
@@ -88,8 +88,8 @@ namespace cmdr::path {
 
     inline std::string get_executable_path() {
         char rawPathName[PATH_MAX];
-        realpath(PROC_SELF_EXE, rawPathName);
-        return std::string(rawPathName);
+        char * p = realpath(PROC_SELF_EXE, rawPathName);
+        return std::string(p ? p : rawPathName);
     }
 
     inline std::string get_executable_dir() {
@@ -129,7 +129,7 @@ namespace cmdr::path {
         return std::string(executableDir);
     }
 
-    inline std::string merge(std::string pathA, std::string pathB) {
+    inline std::string merge(std::string const &pathA, std::string const &pathB) {
         return pathA + "/" + pathB;
     }
 

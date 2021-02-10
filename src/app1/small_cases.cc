@@ -38,24 +38,24 @@
 void small_cases() {
     cmdr::chrono::high_res_duration _timer;
 
-    std::cout << "small_cases ------------" << std::endl;
+    std::cout << "small_cases ------------" << '\n';
 
-    // std::cout << "test_literals ------------" << std::endl;
+    // std::cout << "test_literals ------------" << '\n';
     //
     // extern void test_literals();
     // test_literals();
     //
-    // std::cout << "test_null_stream ------------" << std::endl;
+    // std::cout << "test_null_stream ------------" << '\n';
     //
     // extern void test_null_stream();
     // test_null_stream();
     //
-    // std::cout << "test_inplace_and_emplace ------------" << std::endl;
+    // std::cout << "test_inplace_and_emplace ------------" << '\n';
     //
     // extern void test_inplace_and_emplace();
     // test_inplace_and_emplace();
 
-    std::cout << "others ------------" << std::endl;
+    std::cout << "others ------------" << '\n';
 
     // cmdr::vars::variable::test();
 

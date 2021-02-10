@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
         return cli.run(argc, argv);
 
     } catch (std::exception &e) {
-        std::cerr << "Exception caught : " << e.what() << std::endl;
+        std::cerr << "Exception caught : " << e.what() << '\n';
 
     } catch (...) {
         cmdr::get_app().post_run(); // optional to post_run(), for the rare exception post processing if necessary

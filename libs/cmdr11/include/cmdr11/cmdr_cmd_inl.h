@@ -107,7 +107,7 @@ namespace cmdr::opt {
             // auto dk = dotted_key();
             cmdr::get_app().on_arg_added(ptr);
 
-            // std::cout << gn << ',' << _grouped_args[gn].size() << std::endl;
+            // std::cout << gn << ',' << _grouped_args[gn].size() << '\n';
         }
         return *this;
     }
@@ -362,7 +362,7 @@ namespace cmdr::opt {
                         ss << ' ' << ' ';
                     std::stringstream tmp;
                     tmp << '[' << clean_key << ']';
-                    ss << c.fg(fg).dim(dim).s(tmp.str()) << std::endl;
+                    ss << c.fg(fg).dim(dim).s(tmp.str()) << '\n';
                     level_pad++;
                 }
             }
@@ -427,7 +427,7 @@ namespace cmdr::opt {
                 // ss // << wt << ',' << level << ','
                 //         << c.fg(fg).dim(dim).s(x->descriptions())
                 //         // << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa
-                //         << std::endl;
+                //         << '\n';
 
                 ss << '\n';
 
@@ -530,7 +530,7 @@ namespace cmdr::opt {
                     ss << ' ' << ' ';
                     std::stringstream tmp;
                     tmp << '[' << clean_key << ']';
-                    ss << c.fg(fg).dim(dim).s(tmp.str()) << std::endl;
+                    ss << c.fg(fg).dim(dim).s(tmp.str()) << '\n';
                 }
             }
 

@@ -23,6 +23,7 @@
 #include "cmdr_app.hh"
 #include "cmdr_arg.hh"
 #include "cmdr_cmd.hh"
+
 #include "cmdr_internals.hh"
 #include "cmdr_opts.hh"
 
@@ -83,14 +84,14 @@ namespace cmdr {
     next_combined:
         auto amr = matcher(pc);
         if (amr.matched) {
-            assert(amr.obj);
+            CMDR_ASSERT(amr.obj);
 
             // std::cout << " - " << amr.matched_str << ' ' << '(' << amr.obj->dotted_key() << ')';
             cmdr_verbose_debug(" - %s (%s)", amr.matched_str.c_str(), amr.obj->dotted_key().c_str());
 
             amr.obj->hit_title(amr.matched_str.c_str()); // pc.title.c_str());
 
-            if (auto &typ = amr.obj->default_value().type();
+            if (auto &typ = amr.obj->default_value()->type();
                 typ != typeid(bool) && typ != typeid(void)) {
 
                 // try solving the following input as value of this matched arg.
@@ -106,9 +107,9 @@ namespace cmdr {
                 }
 
                 std::stringstream sst(remains);
-                vars::variable &val = amr.obj->default_value();
+                opt::arg::var_type &val = amr.obj->default_value();
                 auto xb = sst.tellg();
-                sst >> val;
+                sst >> *val.get();
                 auto xe = sst.tellg();
                 int read = (int) (xe - xb);
                 value_parsed = read > 0 || sst.eof();
@@ -122,26 +123,26 @@ namespace cmdr {
 
                 pc.add_matched_arg(amr.obj, val);
                 // std::cout << " -> " << val;
-                cmdr_verbose_debug("   -> value: %s", val.as_string().c_str());
+                cmdr_verbose_debug("   -> value: %s", val->as_string().c_str());
 
                 get_app().on_arg_matched(amr.obj, val);
 
             } else if (typ == typeid(bool)) {
                 pc.add_matched_arg(amr.obj);
                 value_parsed = true;
-                
-                vars::variable value{true};
+
+                auto value = std::make_shared<vars::variable>(true);
                 get_app().on_arg_matched(amr.obj, value);
 
             } else {
                 pc.add_matched_arg(amr.obj);
                 value_parsed = true;
-                
-                vars::variable value{true};
+
+                auto value = std::make_shared<vars::variable>(true);
                 get_app().on_arg_matched(amr.obj, value);
             }
 
-            // std::cout << std::endl;
+            // std::cout << '\n';
 
             if (amr.obj->on_flag_hit()) {
                 rc = amr.obj->on_flag_hit()(
@@ -171,7 +172,14 @@ namespace cmdr {
         pc.title = argv[pc.index];
         pc.add_unknown_arg(pc.title);
         if (_treat_unknown_input_flag_as_error) {
-            return unknown_long_flag_found(pc, amr);
+            if (pc.is_flag) {
+                switch (pc.matching_flag_type) {
+                    case 0:
+                        return unknown_short_flag_found(pc, amr);
+                    default:
+                        return unknown_long_flag_found(pc, amr);
+                }
+            }
         }
         return opt::Continue;
     }
@@ -211,7 +219,7 @@ namespace cmdr {
     inline typename app::arg_matching_result
     app::matching_flag_on(parsing_context &pc,
                           bool is_long, bool is_special,
-                          std::function<opt::types::indexed_args const &(opt::cmd *)> li) {
+                          std::function<opt::types::indexed_args const &(opt::cmd *)> const &li) {
         arg_matching_result amr;
         auto &mc = pc.matched_commands();
 
@@ -274,8 +282,7 @@ namespace cmdr {
     }
 
     inline opt::Action app::unknown_long_flag_found(parsing_context &pc, arg_matching_result &amr) {
-        unused(pc);
-        unused(amr);
+        UNUSED(pc, amr);
         if (_on_unknown_argument_found)
             if (auto rc = _on_unknown_argument_found(pc.title, pc.last_matched_cmd(), true, false);
                 rc != opt::RunDefaultAction)
@@ -289,8 +296,7 @@ namespace cmdr {
     }
 
     inline opt::Action app::unknown_short_flag_found(parsing_context &pc, arg_matching_result &amr) {
-        unused(pc);
-        unused(amr);
+        UNUSED(pc, amr);
         if (_on_unknown_argument_found)
             if (auto rc = _on_unknown_argument_found(pc.title, pc.last_matched_cmd(), false, false);
                 rc != opt::RunDefaultAction)
@@ -304,7 +310,7 @@ namespace cmdr {
     }
 
     inline opt::Action app::unknown_command_found(parsing_context &pc, cmd_matching_result &cmr) {
-        unused(cmr);
+        UNUSED(pc, cmr);
         if (_on_unknown_argument_found)
             if (auto rc = _on_unknown_argument_found(pc.title, pc.last_matched_cmd(), false, true);
                 rc != opt::RunDefaultAction)
@@ -317,8 +323,62 @@ namespace cmdr {
         return opt::Abortion;
     }
 
-    inline int app::invoke_command(opt::cmd &c, string_array remain_args, parsing_context &pc) {
-        unused(pc);
+
+    inline void app::on_arg_added(opt::arg *a) {
+        auto key = a->dotted_key();
+        _store.set_raw(key.c_str(), a->default_value());
+        for (auto &cb : _on_arg_added) {
+            if (cb)
+                cb(a);
+        }
+    }
+
+    inline void app::on_cmd_added(opt::cmd *a) {
+        // auto key = a->dotted_key();
+        // _store.set(key, a->default_value());
+        for (auto &cb : _on_cmd_added) {
+            if (cb)
+                cb(a);
+        }
+    }
+
+    inline void app::on_arg_matched(opt::arg *a, opt::arg::var_type &value) {
+        auto key = a->dotted_key();
+        _store.set_raw(key.c_str(), value);
+        for (auto &cb : _on_arg_matched) {
+            if (cb)
+                cb(a);
+        }
+    }
+
+    inline void app::on_cmd_matched(opt::cmd *a) {
+        // auto key = a->dotted_key();
+        // _store.set(key, a->default_value());
+        for (auto &cb : _on_cmd_matched) {
+            if (cb)
+                cb(a);
+        }
+    }
+
+    inline void app::on_loading_externals() {
+        for (auto &_on_loading_external : _on_loading_externals) {
+            if (_on_loading_external)
+                _on_loading_external(*this);
+        }
+    }
+
+
+    inline void app::set(char const *key, vars::variable &&a) {
+        _store.set_raw_p(store_prefix().c_str(), key, a);
+    }
+
+    inline void app::set(char const *key, vars::variable const &a) {
+        _store.set_raw_p(store_prefix().c_str(), key, a);
+    }
+
+
+    inline int app::invoke_command(opt::cmd &c, string_array const &remain_args, parsing_context &pc) {
+        UNUSED(pc, c);
 
         int rc{0};
         if (_global_on_pre_invoke)
@@ -357,27 +417,27 @@ namespace cmdr {
                                opt::cmd *cc,
                                std::string const &app_name, std::string const &exe_name) {
         if (!cc->description().empty()) {
-            ss << std::endl
-               << "Description" << std::endl
-               << string::pad_left(cc->description()) << std::endl;
+            ss << '\n'
+               << "Description" << '\n'
+               << string::pad_left(cc->description()) << '\n';
         }
         if (!cc->examples().empty()) {
-            ss << std::endl
-               << "Examples" << std::endl
-               << string::pad_left(string::reg_replace(cc->examples(), "~", exe_name)) << std::endl;
+            ss << '\n'
+               << "Examples" << '\n'
+               << string::pad_left(string::reg_replace(cc->examples(), "~", exe_name)) << '\n';
         }
-        ss << std::endl
-           << "Usage" << std::endl;
+        ss << '\n'
+           << "Usage" << '\n';
         std::vector<std::string> cmds;
         auto pcc = cc;
         while (pcc && pcc->owner()) {
             cmds.insert(cmds.begin(), pcc->hit_count() > 0 ? pcc->hit_title() : pcc->title_long());
             pcc = pcc->owner();
         }
-        ss << string::pad_left(exe_name, 2) << ' ' << string::join(cmds, ' ') << " [options] [Tail Args]" << std::endl;
+        ss << string::pad_left(exe_name, 2) << ' ' << string::join(cmds, ' ') << " [options] [Tail Args]" << '\n';
 
-        ss << std::endl
-           << "Commands" << std::endl;
+        ss << '\n'
+           << "Commands" << '\n';
 
         std::ostringstream os1;
         cc->print_commands(os1, c, _minimal_tab_width, true, -1);
@@ -395,8 +455,8 @@ namespace cmdr {
                 tt << "Global Options";
             }
 
-            os2 << std::endl
-                << tt.str() << std::endl;
+            os2 << '\n'
+                << tt.str() << '\n';
             trivial->print_flags(os2, c, _minimal_tab_width, true, -1);
         } while ((trivial = trivial->owner()) != nullptr);
 
@@ -408,8 +468,7 @@ namespace cmdr {
             ss << os1.str() << os2.str();
         }
 
-        unused(app_name);
-        unused(exe_name);
+        UNUSED(app_name, exe_name);
     }
 
     inline void app::print_usages(opt::cmd *start) {
@@ -417,23 +476,23 @@ namespace cmdr {
         auto c = cmdr::terminal::colors::colorize::create();
 
         if (is_no_color())
-            c.enable(false);
+            cmdr::terminal::colors::colorize::enable(false);
 
         std::stringstream ss;
         ss << _name << ' ' << 'v' << _version;
         if (_header.empty())
-            ss << " by " << _author << '.' << ' ' << _copyright << std::endl;
+            ss << " by " << _author << '.' << ' ' << _copyright << '\n';
         else
-            ss << _header << std::endl;
+            ss << _header << '\n';
 
-        print_cmd(ss, c, start ? start : this, _name, exe_name);
+        print_cmd(ss, c, start ? start : (opt::cmd *) this, _name, exe_name);
 
         if (!_tail_line.empty()) {
-            ss << std::endl
-               << _tail_line << std::endl;
+            ss << '\n'
+               << _tail_line << '\n';
         } else {
-            ss << std::endl
-               << "Type `" << exe_name << " --help` to get help screen (this screen)." << std::endl;
+            ss << '\n'
+               << "Type `" << exe_name << " --help` to get help screen (this screen)." << '\n';
         }
 
         std::cout << ss.str();
@@ -443,10 +502,10 @@ namespace cmdr {
         // todo reset all internal states so that we can restart a new session for parsing.
     }
 
-    inline void app::prepare() {
-        prepare_env_vars();
-        load_externals();
-        apply_env_vars();
+    inline void app::prepare_common_env() {
+#if !defined(_DEBUG)
+        _store.set_dump_with_type_name(false);
+#endif
     }
 
     inline void app::prepare_env_vars() {
@@ -461,7 +520,7 @@ namespace cmdr {
 
     inline void app::apply_env_vars() {
         // auto env vars
-        _store.walk_by_full_keys([](std::pair<std::string, vars::variable *> const &val) {
+        _store.walk_by_full_keys([](std::pair<std::string, vars::store::node_pointer> const &val) {
             auto ks = string::reg_replace(val.first, R"([.-])", "_");
             string::to_upper(ks);
             char *ptr = std::getenv(ks.c_str());
@@ -473,7 +532,7 @@ namespace cmdr {
         });
 
         // cmd & args
-        this->walk_args([&](opt::arg &a) {
+        walk_args([&](opt::arg &a) {
             for (auto &ev : a.env_vars_get()) {
                 char *ptr = std::getenv(ev.c_str());
                 if (ptr) {
@@ -490,17 +549,24 @@ namespace cmdr {
         });
     }
 
+    inline void app::prepare() {
+        prepare_common_env();
+        prepare_env_vars();
+        load_externals();
+        apply_env_vars();
+    }
+
     inline int app::run(int argc, char *argv[]) {
         // debug::SigSegVInstaller _sigsegv_installer;
         // _sigsegv_installer.baz();
 
-        // std::cout << "Hello, World!" << std::endl;
+        // std::cout << "Hello, World!" << '\n';
         try {
             prepare();
 
-            parsing_context pc{this};
-            pc.add_matched_cmd(this);
-            opt::Action rc;
+            parsing_context pc{(opt::cmd *) this};
+            pc.add_matched_cmd((opt::cmd *) this);
+            opt::Action rc{opt::OK};
 
             for (int i = 1; i < argc; i = pc.index + 1) {
                 pc.title = argv[i];
@@ -553,7 +619,7 @@ namespace cmdr {
             return after_run(rc, pc, argc, argv);
 
         } catch (std::exception const &e) {
-            std::cerr << "Exception caught : " << e.what() << std::endl;
+            std::cerr << "Exception caught : " << e.what() << '\n';
             CMDR_DUMP_STACK_TRACE(e);
 
         } catch (...) {
@@ -591,6 +657,69 @@ namespace cmdr {
     }
 
 
+    inline void app::handle_eptr(const std::exception_ptr &eptr) const {
+        if (_on_handle_exception_ptr) {
+            _on_handle_exception_ptr(eptr);
+            return;
+        }
+
+        try {
+            if (eptr) {
+                std::rethrow_exception(eptr);
+            }
+        } catch (const std::exception &e) {
+            std::cout << "Caught exception \"" << e.what() << "\"\n";
+            CMDR_DUMP_STACK_TRACE(e);
+        }
+    }
+
+
+    inline app &app::operator+(opt::arg const &a) {
+        add(a);
+        return (*this);
+    }
+    inline app &app::operator+=(opt::arg const &a) {
+        add(a);
+        return (*this);
+    }
+    inline app &app::operator+(opt::cmd const &a) {
+        add(a);
+        return (*this);
+    }
+    inline app &app::operator+=(opt::cmd const &a) {
+        add(a);
+        return (*this);
+    }
+
+    inline app &app::operator+(const opt::sub_cmd &rhs) {
+        add(rhs.underlying());
+        return (*this);
+    }
+    inline app &app::operator+=(const opt::sub_cmd &rhs) {
+        add(rhs.underlying());
+        return (*this);
+    }
+    inline app &app::operator+(const opt::opt &rhs) {
+        add(rhs.underlying());
+        return (*this);
+    }
+    inline app &app::operator+=(const opt::opt &rhs) {
+        add(rhs.underlying());
+        return (*this);
+    }
+
+
+    //
+    //
+    //
+
+
+    inline void app::parsing_context::add_matched_arg(opt::arg *obj, opt::arg::var_type const &v) {
+        matched_flags.push_back(obj);
+        _values_map.emplace(std::make_pair(obj, v));
+    }
+
+
 } // namespace cmdr
 
 namespace cmdr::opt {
@@ -599,24 +728,24 @@ namespace cmdr::opt {
     //
 
 
-    inline cmd &operator+(cmd &lhs, const sub_cmd &rhs) {
-        lhs += rhs.underlying();
-        return lhs;
+    inline cmd &cmd::operator+(const sub_cmd &rhs) {
+        add(rhs.underlying());
+        return (*this);
     }
 
-    inline cmd &operator+=(cmd &lhs, const sub_cmd &rhs) {
-        lhs += rhs.underlying();
-        return lhs;
+    inline cmd &cmd::operator+=(const sub_cmd &rhs) {
+        add(rhs.underlying());
+        return (*this);
     }
 
-    inline cmd &operator+(cmd &lhs, const opt &rhs) {
-        lhs += rhs.underlying();
-        return lhs;
+    inline cmd &cmd::operator+(const cmdr::opt::opt &rhs) {
+        add(rhs.underlying());
+        return (*this);
     }
 
-    inline cmd &operator+=(cmd &lhs, const opt &rhs) {
-        lhs += rhs.underlying();
-        return lhs;
+    inline cmd &cmd::operator+=(const cmdr::opt::opt &rhs) {
+        add(rhs.underlying());
+        return (*this);
     }
 
 

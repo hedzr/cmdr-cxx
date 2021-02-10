@@ -213,7 +213,7 @@ namespace cmdr::util {
                 std::cout << val << '/' << it << " ";
             }
 
-            std::cout << std::endl;
+            std::cout << '\n';
 
             std::vector<double> vec;
             std::copy(point3d.begin(), point3d.end(), std::back_inserter(vec));
@@ -222,7 +222,7 @@ namespace cmdr::util {
                 std::cout << *i << " ";
             }
 
-            std::cout << std::endl;
+            std::cout << '\n';
             return 0;
         }
     };

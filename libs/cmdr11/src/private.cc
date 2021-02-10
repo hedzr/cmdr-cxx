@@ -18,7 +18,7 @@ static void test1() {
     ss.val("a string");
 
     std::optional<std::string> ov;
-    std::cout << (int) ii << ',' << (std::string) ss << "||| " << ov << std::endl;
+    std::cout << (int) ii << ',' << (std::string) ss << "||| " << ov << '\n';
 }
 
 static void ingest_any(const std::any &any) {

@@ -11,6 +11,7 @@
 #include <optional>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <variant>
 
 #include <cassert>
@@ -67,7 +68,7 @@ namespace cmdr::vars {
                         } else if constexpr (std::is_same_v<typename debug::lambda_func_type<decltype(g)>::type, void(std::istream &, std::any &) const>) {
                             g(is, a);
                         } else {
-                            T t;
+                            T t{};
                             g(is, t);
                             a.template emplace<T>(t);
                         }
@@ -106,7 +107,7 @@ namespace cmdr::vars {
             : _value(std::move(a)) {}
         // explicit variable(variable const &a)
         //     : _value(std::move(a.value_any())) {}
-        explicit variable(std::any const &a)
+        explicit variable(std::any a)
             : _value(std::move(a)) {}
         virtual ~variable() = default;
 
@@ -129,8 +130,8 @@ namespace cmdr::vars {
         void emplace(std::any &&o) { _value.swap(o); }
         void emplace(std::any const &o) { _value = o; }
 
-        [[nodiscard]] target_type const &value_any() const { return _value; }
-        target_type &value_any() { return _value; }
+        [[nodiscard]] target_type const &underlying_value() const { return _value; }
+        target_type &underlying_value() { return _value; }
 
         [[nodiscard]] std::string as_string() const {
             std::stringstream os;
@@ -150,8 +151,8 @@ namespace cmdr::vars {
 
         [[nodiscard]] bool has_value() const { return _value.has_value(); }
         [[nodiscard]] bool empty() const { return !_value.has_value(); }
-        void reset() { _value.reset(); }
         [[nodiscard]] const std::type_info &type() const noexcept { return _value.type(); }
+        void reset() { _value.reset(); }
 
     public:
         static self_type parse(std::string &s);
@@ -395,8 +396,10 @@ namespace cmdr::vars {
                     detail::from_any_visitor<long double>([](std::istream &is, long double &x) { is >> x; }),
                     detail::from_any_visitor<char const *>([](std::istream &is, std::any &a) { std::string s; string::strip_quotes(is, s); a=s; }),
                     detail::from_any_visitor<std::string>([](std::istream &is, std::string &s) { string::strip_quotes(is, s); }),
+#if __clang__
                     detail::from_any_visitor<variable>([](std::istream &is, variable &x) { is >> x; }),
-
+#endif
+                        
                     detail::from_any_visitor<std::vector<char const *>>([](std::istream &is, std::any &a) { std::vector<std::string> vec; parse_array(is, vec);a=vec; }),
                     detail::from_any_visitor<std::vector<std::string>>([](std::istream &is, std::vector<std::string> &a) { parse_array(is, a); }),
                     detail::from_any_visitor<std::vector<bool>>([](std::istream &is, std::vector<bool> &a) { parse_array(is, a); }),
@@ -461,7 +464,7 @@ namespace cmdr::vars {
                     detail::to_any_visitor<long double>([](std::ostream &os, long double x) { os << x; }),
                     detail::to_any_visitor<char const *>([](std::ostream &os, char const *s) { os << std::quoted(s); }),
                     detail::to_any_visitor<std::string>([](std::ostream &os, std::string const &s) { os << std::quoted(s); }),
-                    detail::to_any_visitor<variable>([](std::ostream &os, variable x) { os << x; }),
+                    detail::to_any_visitor<variable>([](std::ostream &os, variable const &x) { os << x; }),
 
                     detail::to_any_visitor<std::vector<char const *>>([](std::ostream &os, std::vector<char const *> const &a) { format_array(os, a); }),
                     detail::to_any_visitor<std::vector<std::string>>([](std::ostream &os, std::vector<std::string> const &a) { format_array(os, a); }),
@@ -505,7 +508,7 @@ namespace cmdr::vars {
             return _registry;
         }
 
-        inline bool process(std::istream &is, std::any &a) const {
+        static inline bool process(std::istream &is, std::any &a) {
             auto &reg = any_parsers();
             if (const auto it = reg.find(std::type_index(a.type()));
                 it != reg.cend()) {
@@ -519,11 +522,12 @@ namespace cmdr::vars {
                 return false;
             }
         }
-        inline bool process(std::ostream &os, std::any const &a) const {
+        static inline bool process(std::ostream &os, std::any const &a) {
             auto &reg = any_visitors();
             if (const auto it = reg.find(std::type_index(a.type()));
                 it != reg.cend()) {
-                it->second(os, a);
+                auto op = it->second;
+                op(os, a);
                 return true;
             } else {
 #if defined(_DEBUG)
@@ -542,7 +546,7 @@ namespace cmdr::vars {
         }
 
         friend std::ostream &operator<<(std::ostream &os, variable const &o) {
-            o.process(os, o._value);
+            process(os, o._value);
             return os;
         }
         /**
@@ -561,7 +565,7 @@ namespace cmdr::vars {
          *     
          */
         friend std::istream &operator>>(std::istream &is, variable &o) {
-            o.process(is, o._value);
+            process(is, o._value);
             return is;
         }
 
@@ -588,12 +592,14 @@ namespace cmdr::vars {
     class nodeT : public T {
     public:
         friend class treeT<T, small_string>;
-        typedef nodeT<T, small_string> self_type;
-        using node_vec = std::list<self_type>;
-        using node_pointer = self_type *;
+
+        // typedef nodeT<T, small_string> self_type;
+        using self_type = nodeT;
+        using node_pointer = std::shared_ptr<self_type>;
         using key_type = small_string;
-        using node_map = std::unordered_map<small_string, self_type>;
-        using node_idx = std::unordered_map<small_string, node_pointer>;
+        using node_vec = std::list<node_pointer>;
+        using node_map = std::unordered_map<key_type, node_pointer>;
+        using node_idx = std::unordered_map<key_type, node_pointer>;
 
         nodeT() = default;
         template<class A, typename... Args,
@@ -613,9 +619,11 @@ namespace cmdr::vars {
         ~nodeT() override = default;
 
     public:
+        static bool dump_with_type_name;
+
     private:
-        node_map _children{};
-        node_idx _indexes{};
+        node_map _children;
+        node_idx _indexes;
         node_pointer _parent{};
 
     public:
@@ -653,15 +661,15 @@ namespace cmdr::vars {
                 small_string k = base.substr(0, pos), remains = base.substr(pos + 1);
                 auto it = _children.find(k);
                 if (it == _children.end()) {
-                    _children.emplace(std::make_pair(k, self_type{}));
+                    _children.emplace(std::make_pair(k, std::make_shared<self_type>()));
                     it = _children.find(k);
                 }
-                it->second._set(
+                it->second->_set(
                         remains.c_str(), [&](char const *end_key, node_pointer ptr) {
                             // small_string sk(key);
                             // sk += '.';
                             // sk += end_key;
-                            unused(end_key);
+                            UNUSED(end_key, ptr);
                             _indexes.template emplace(std::make_pair(key, ptr));
                             if (cb)
                                 cb(key, ptr);
@@ -671,13 +679,13 @@ namespace cmdr::vars {
                 small_string k(key);
                 auto it = _children.find(k);
                 if (it == _children.end()) {
-                    _children.emplace(std::make_pair(k, self_type(std::forward<A>(a0), std::forward<Args>(args)...)));
+                    _children.emplace(std::make_pair(k, std::make_shared<self_type>(self_type(std::forward<A>(a0), std::forward<Args>(args)...))));
                     it = _children.find(k);
                 } else
-                    it->second.emplace(a0, args...);
+                    it->second->emplace(a0, args...);
 
                 // build index
-                auto ptr = &(it->second);
+                auto ptr = (it->second);
                 _indexes.template emplace(std::make_pair(k, ptr));
                 if (cb)
                     cb(key, ptr);
@@ -697,15 +705,15 @@ namespace cmdr::vars {
                 small_string k = base.substr(0, pos), remains = base.substr(pos + 1);
                 auto it = _children.find(k);
                 if (it == _children.end()) {
-                    _children.emplace(std::make_pair(k, self_type{}));
+                    _children.emplace(std::make_pair(k, std::make_shared<self_type>()));
                     it = _children.find(k);
                 }
-                it->second._set(
+                it->second->_set(
                         remains.c_str(), [&](char const *end_key, node_pointer ptr) {
                             // small_string sk(key);
                             // sk += '.';
                             // sk += end_key;
-                            unused(end_key);
+                            UNUSED(end_key, ptr);
                             _indexes.template emplace(std::make_pair(key, ptr));
                             if (cb)
                                 cb(key, ptr);
@@ -715,13 +723,13 @@ namespace cmdr::vars {
                 small_string k(key);
                 auto it = _children.find(k);
                 if (it == _children.end()) {
-                    _children.emplace(std::make_pair(k, self_type(std::forward<A>(a))));
+                    _children.emplace(std::make_pair(k, std::make_shared<self_type>(self_type(std::forward<A>(a)))));
                     it = _children.find(k);
                 } else
-                    it->second.emplace(a);
+                    it->second->emplace(a);
 
                 // build index
-                auto ptr = &(it->second);
+                auto ptr = (it->second);
                 _indexes.template emplace(std::make_pair(k, ptr));
                 if (cb)
                     cb(key, ptr);
@@ -735,24 +743,25 @@ namespace cmdr::vars {
         // [[nodiscard]] T const &get(std::string const &key) const { return _get(key); }
         // T &get(std::string const &key) { return _get(key); }
 
-        T const &get_raw(char const *key) const { return _get_raw(key); }
+        [[nodiscard]] T const &get_raw(char const *key) const { return _get_raw(key); }
         T &get_raw(char const *key) { return _get_raw(key); }
         [[nodiscard]] T const &get_raw(std::string const &key) const { return _get_raw(key); }
         T &get_raw(std::string const &key) { return _get_raw(key); }
 
-        T const &get_raw_p(char const *prefix, char const *key) const { return _get_raw_p(prefix, key); }
-        T &get_raw_p(char const *prefix, char const *key) { return _get_raw_p(prefix, key); }
         [[nodiscard]] T const &get_raw_p(std::string const &prefix, std::string const &key) const { return _get_raw_p(prefix, key); }
+        [[nodiscard]] T const &get_raw_p(char const *prefix, char const *key) const { return _get_raw_p(prefix, key); }
         T &get_raw_p(std::string const &prefix, std::string const &key) { return _get_raw_p(prefix, key); }
+        T &get_raw_p(char const *prefix, char const *key) { return _get_raw_p(prefix, key); }
 
     private:
         // T &_get(std::string const &key);
-        T &_get_raw(std::string const &key);
         [[nodiscard]] T const &_get_raw(std::string const &key) const;
-        T &_get_raw_p(std::string const &prefix, std::string const &key);
+        T &_get_raw(std::string const &key);
+
         [[nodiscard]] T const &_get_raw_p(std::string const &prefix, std::string const &key) const;
+        [[nodiscard]] T const &_get_raw_p(char const *prefix, char const *key) const;
+        T &_get_raw_p(std::string const &prefix, std::string const &key);
         T &_get_raw_p(char const *prefix, char const *key);
-        T const &_get_raw_p(char const *prefix, char const *key) const;
 
     public:
         static T &null_element() {
@@ -797,9 +806,9 @@ namespace cmdr::vars {
         template<class K, class V>
         class map_streamer {
             std::ostream &_os;
-            tcolorize *c;
-            tcolorize::Colors256 fg;
-            bool dim;
+            tcolorize *c{};
+            tcolorize::Colors256 fg{};
+            bool dim{};
             std::function<bool(std::pair<K, V> const &val)> on_filter;
 
         public:
@@ -809,7 +818,7 @@ namespace cmdr::vars {
                                   tcolorize *c,
                                   tcolorize::Colors256 dim_text_fg,
                                   bool dim_text_dim,
-                                  std::function<bool(std::pair<K, V> const &val)> const &on_filter = nullptr);
+                                  std::function<bool(std::pair<K, V> const &val)> on_filter_ = nullptr);
 
             // template<class K, class V>
             void operator()(std::pair<K, V> const &val);
@@ -822,14 +831,17 @@ namespace cmdr::vars {
                           bool dim_text_dim,
                           std::unordered_map<K, V> const &um,
                           std::function<bool(std::pair<K, V> const &val)> const &on_filter = nullptr,
-                          Comp pred = Comp()) const;
+                          Comp comp = Comp()) const;
 
         template<class K, class V, class Comp = std::less<K>>
         void walk_sorted(std::unordered_map<K, V> const &um,
                          std::function<void(std::pair<K, V> const &val)> const &cb,
-                         Comp pred = Comp()) const;
+                         Comp comp = Comp()) const;
 
     }; // class nodeT<T, small_string>
+
+    template<class T, class small_string>
+    inline bool nodeT<T, small_string>::dump_with_type_name{true};
 
 
     template<class T, typename small_string>
@@ -838,8 +850,8 @@ namespace cmdr::vars {
         using self_type = treeT<T, small_string>;
         using key_type = small_string;
         using node = nodeT<T, small_string>;
-        using node_pointer = node *;
-        using node_vec = std::list<node>;
+        using node_pointer = std::shared_ptr<node>;
+        using node_vec = std::list<node_pointer>;
         using node_index = std::unordered_map<small_string, node_pointer>;
 
     public:
@@ -860,8 +872,8 @@ namespace cmdr::vars {
         void set_raw(char const *key, A &&a) {
             _root.template set(key, a);
         }
-        void set_raw(char const *key, vars::variable &&a) { _root.set(key, a.value_any()); }
-        void set_raw(char const *key, vars::variable const &a) { _root.set(key, a.value_any()); }
+        void set_raw(char const *key, vars::variable &&a) { _root.set(key, a.underlying_value()); }
+        void set_raw(char const *key, vars::variable const &a) { _root.set(key, a.underlying_value()); }
 
     public:
         template<class A, typename... Args,
@@ -891,13 +903,13 @@ namespace cmdr::vars {
             std::ostringstream os;
             if (prefix && prefix[0] != 0) os << prefix << '.';
             os << key;
-            _root.set(os.str().c_str(), a.value_any());
+            _root.set(os.str().c_str(), a.underlying_value());
         }
         void set_raw_p(char const *prefix, char const *key, vars::variable const &a) {
             std::ostringstream os;
             if (prefix && prefix[0] != 0) os << prefix << '.';
             os << key;
-            _root.set(os.str().c_str(), a.value_any());
+            _root.set(os.str().c_str(), a.underlying_value());
         }
 
     public:
@@ -926,7 +938,7 @@ namespace cmdr::vars {
                 os << leading_title;
             else
                 os << "Dumping for var_t as Tree ...";
-            os << std::endl;
+            os << '\n';
             (start ? start : &_root)->dump_tree(os, &c, dim_text_fg, dim_text_dim, 0);
         }
         // template<class K, class V, class Comp = std::less<K>>
@@ -941,7 +953,7 @@ namespace cmdr::vars {
                 os << leading_title;
             else
                 os << "Dumping for var_t as Tree ...";
-            os << std::endl;
+            os << '\n';
             auto ptr = (start ? start : &_root);
             ptr->dump_tree_f(os, &c, dim_text_fg, dim_text_dim, key_prefix, on_filter, 0);
         }
@@ -954,7 +966,7 @@ namespace cmdr::vars {
                 os << leading_title;
             else
                 os << "Dumping for var_t ...";
-            os << std::endl;
+            os << '\n';
             (start ? start : &_root)->dump_full_keys(os, &c, dim_text_fg, dim_text_dim, 0);
         }
         template<class K, class V, class Comp = std::less<K>>
@@ -968,7 +980,7 @@ namespace cmdr::vars {
                 os << leading_title;
             else
                 os << "Dumping for var_t ...";
-            os << std::endl;
+            os << '\n';
             (start ? start : &_root)->dump_full_keys_f(os, &c, dim_text_fg, dim_text_dim, on_filter, 0);
         }
 
@@ -981,463 +993,26 @@ namespace cmdr::vars {
     }; // class treeT<T, small_string>
 
 
-#if 0
-    struct streamable_any : std::any {
-        void (*streamer)(std::ostream &, streamable_any const &); //= nullptr;
-        friend std::ostream &operator<<(std::istream &is, streamable_any const &a) {
-            a.streamer(os, a);
-            return os;
-        }
-
-        [[nodiscard]] std::string as_string() const {
-            std::stringstream os;
-            if (streamer)
-                streamer(os, *this);
-            return os.str();
-        }
-
-        template<class T>
-        const T &get() const {
-            return std::any_cast<T>(*this);
-        }
-
-        template<class T,
-                 typename std::enable_if<
-                         !is_duration<std::decay_t<T>>::value &&
-                         !is_stl_container<std::decay_t<T>>::value &&
-                         !std::is_same<std::decay_t<T>, streamable_any>{}>::type * = nullptr>
-        explicit streamable_any(T &&t)
-            : std::any(std::forward<T>(t))
-            , streamer([](std::istream &is, streamable_any const &self) {
-                static_assert(!is_duration<std::decay_t<T>>::value);
-                static_assert(!is_stl_container<T>::value);
-                static_assert(!std::is_same<std::decay_t<T>, streamable_any>{});
-                if constexpr (!std::is_void_v<T>) {
-                    //if constexpr (is_duration<std::decay_t<T>>::value)
-                    //    os << "norm - ";
-                    os << std::any_cast<std::decay_t<T>>(self);
-                    //auto const &vv = std::any_cast<std::decay_t<T>>(self);
-                    //os << typeid(vv).name() << " (T=" << typeid(T).name() << ")";
-
-                    // (void)(os);(void)(self);
-                    //_format(os, std::any_cast<std::decay_t<T>>(self));
-                    // if constexpr (is_duration<T>::value)
-                    //     format_duration(os, std::any_cast<std::decay_t<T>>(self));
-                    // else
-                    //     os << std::any_cast<std::decay_t<T>>(self);
-                }
-            }) {}
-
-        // template<class T, std::enable_if_t<!is_duration<T>::value, int> = 0>
-        // static void _format(std::istream &is, T const &v) {
-        //     os << v;
-        // }
-        // template<class T>
-        // static void _format<T,
-        //                     std::enable_if_t<is_duration<T>::value, int>>(std::istream &is, T const &v) {
-        //     format_duration(os, v);
-        // }
-
-        template<class U>
-        explicit streamable_any(U &&t, typename std::enable_if<is_duration<std::decay_t<U>>::value>::type * = nullptr)
-            : std::any(std::forward<U>(t))
-            , streamer([](std::istream &is, streamable_any const &self) {
-                static_assert(is_duration<std::decay_t<U>>::value);
-                // os << "[**duration**] ";
-                chrono::format_duration(os, std::any_cast<std::decay_t<U>>(self));
-            }) {}
-
-        template<class V>
-        explicit streamable_any(V &&t, typename std::enable_if<is_stl_container<std::decay_t<V>>::value>::type * = nullptr)
-            : std::any(std::forward<V>(t))
-            , streamer([](std::istream &is, streamable_any const &self) {
-                os << '[';
-                for (auto const v : std::any_cast<std::decay_t<V>>(self)) {
-                    os << v << ',';
-                }
-                os << ']';
-            }) {}
-
-        // specialize for bool streaming output
-        explicit streamable_any(bool t)
-            : std::any(std::forward<bool>(t))
-            , streamer([](std::istream &is, streamable_any const &self) {
-                os << (std::any_cast<std::decay_t<bool>>(self) ? "true" : "false");
-            }) {}
-
-        streamable_any()
-            : streamer([](std::ostream &, streamable_any const &) {}) {}
-        ~streamable_any() {}
-
-        template<class T>
-        streamable_any &operator=(T const &v) {
-            std::any::operator=(v);
-            return (*this);
-        }
-    };
-#endif
-
-#if 0
-    /**
-     * @brief a node at a hierarchical data structure
-     * @tparam holderT the real value type stored in this node
-     *
-     * A node holds a key-part and the underlying value.
-     * We can access a node by its full dotted-separated path, for
-     * example, 'app.server' and 'app.server.tls' are two nodes.
-     */
-    template<typename holderT = streamable_any>
-    class var_t {
-    public:
-        typedef var_t self_type;
-        typedef std::list<self_type> var_t_array;
-        typedef std::unordered_map<std::string, var_t> children_container;
-        typedef std::unordered_map<std::string, var_t *> child_pointers;
-
-        const int NODE_DEFAULT_VALUE{0};
-        const bool LOGGING_ENABLED{};
-
-    public:
-        var_t() = default;
-        ~var_t() = default;
-        var_t(var_t const &) = default;
-        var_t(var_t &&) noexcept = default;
-
-        template<typename A = holderT, typename... Args,
-                 std::enable_if_t<
-                         std::is_constructible<holderT, A, Args...>::value &&
-                                 !std::is_same<std::decay_t<A>, var_t>::value,
-                         int> = 0>
-        explicit var_t(A &&a0, Args &&...args)
-            : _value(std::forward<A>(a0), std::forward<Args>(args)...) {}
-
-        explicit var_t(holderT &&v)
-            : _value(std::move(v)) {}
-
-        bool operator==(const var_t &r) {
-            return _value == r._value;
-        }
-
-        template<class T>
-        var_t &operator=(T const &v) {
-            _value.operator=(v);
-            return (*this);
-        }
-
-    public:
-        var_t &get(const_chars key) { return _get(key); }
-        var_t &get(const std::string &key) { return _get(key); }
-        const var_t &get(const_chars key) const { return _get(key); }
-        const var_t &get(const std::string &key) const { return _get(key); }
-
-        [[nodiscard]] bool has(const std::string &key) const { return _full_key_map.find(key) != _full_key_map.end(); }
-
-    private:
-        var_t &_get(const std::string &key) {
-            auto it = _full_key_map.find(key);
-            if (it == _full_key_map.end())
-                throw std::invalid_argument("key is not exists");
-            return (*(it->second));
-        }
-        var_t const &_get(const std::string &key) const {
-            auto const it = _full_key_map.find(key);
-            if (it == _full_key_map.end())
-                return null_elem();
-            return (*(it->second));
-        }
-
-    public:
-        // void set(const_chars key, const holderT &val) {
-        //     std::string ks(key);
-        //     set(ks, val);
-        // }
-
-        void set(const std::string &key, holderT &&val, self_type *parent) { _put_no_parent(key, val, parent); }
-        void set(const_chars key, holderT &&val, self_type *parent) { _put_no_parent(key, val, parent); }
-        void set(const_chars key, const holderT &val, self_type *parent) { _put_no_parent(key, val, parent); }
-
-    private:
-        void _put_no_parent(const std::string &key, const holderT &val, self_type *parent) {
-            _put(key, val, parent, [this, key](const std::string &prefix, self_type *ptr) {
-                // auto sk = key;
-                // sk += '.';
-                // sk += prefix;
-                // if (auto it = _full_key_map.find(prefix); it == _full_key_map.end()) {
-                //     _full_key_map.template emplace(sk, ptr);
-                // }
-                (void) (prefix);
-                (void) (ptr);
-#if defined(TMP_TMP)
-                if (LOGGING_ENABLED)
-                    std::cout << "      > this: '" << (*this) << "', key: " << key << ", matching key: " << prefix << std::endl;
-#endif
-                (void) (this);
-                (void) (key);
-            });
-        }
-
-        void _put(const std::string &key, const holderT &val, self_type *parent,
-                  std::function<void(const std::string &, self_type *)> const &on_picked) {
-            unused(parent);
-            std::string prefix1, part1, remains;
-            std::string::size_type pos{0}, old{0}, length = key.length();
-            var_t *ptr;
-            if (pos < length) {
-                pos = key.find('.', old);
-                if (pos != std::string::npos) {
-                    part1 = key.substr(old, pos);
-                    old = pos + 1;
-                    remains = key.substr(old);
-                } else {
-                    part1 = key;
-                    pos = length;
-                    remains.clear();
-                }
-
-                // TODO optimize part1 with a small string pointer PTR, using PTR as the key of the hash_map (_children) and _key_part
-
-                typename children_container::iterator itc = _children.find(part1);
-                if (itc == _children.end()) {
-                    if (remains.empty())
-                        _children.template emplace(part1, val);
-                    else
-                        _children.template emplace(part1, NODE_DEFAULT_VALUE == 0 ? holderT() : holderT(NODE_DEFAULT_VALUE));
-                    itc = _children.find(part1);
-                }
-
-                ptr = &((*itc).second);
-                ptr->_parent = parent;
-
-#if defined(TMP_TMP)
-                if (LOGGING_ENABLED)
-                    std::cout << "   -> putting '" << (*ptr) << "' into \"" << key << "\".\n";
-#endif
-
-                prefix1 = key.substr(0, pos);
-                if (auto it = _full_key_map.find(prefix1); it == _full_key_map.end()) {
-                    _full_key_map.template emplace(prefix1, ptr);
-#if defined(TMP_TMP)
-                    if (LOGGING_ENABLED)
-                        std::cout << "      _full_key_map['" << prefix1 << "'] = '" << (*ptr) << "'\n";
-#endif
-                }
-                if (on_picked)
-                    on_picked(prefix1, ptr);
-
-                // auto p = this;
-                // while (p._parent != nullptr) {
-                //     p = p._parent;
-                //     // add this ptr to the full_key_map of parents
-                //     prefix1 = p
-                // }
-
-                if (!remains.empty()) {
-                    ptr->_put(remains, val, ptr, [this, on_picked, prefix1](const std::string &prefix, self_type *ptr) {
-                        auto sk = prefix1;
-                        sk += '.';
-                        sk += prefix;
-                        //if (this->_parent != nullptr) {
-                        if (auto it = _full_key_map.find(sk); it == _full_key_map.end()) {
-                            _full_key_map.template emplace(sk, ptr);
-#if defined(TMP_TMP)
-                            if (LOGGING_ENABLED)
-                                std::cout << "      ^ _full_key_map['" << sk << "'] = '" << (*ptr) << "'\n";
-                            // std::cout << "      putting '" << (*ptr) << "' into \"" << sk << "\".\n";
-#endif
-                        }
-                        // }
-
-                        if (on_picked)
-                            on_picked(sk, ptr);
-                    });
-                }
-            }
-        }
-
-    public:
-#if defined(_DEBUG)
-        struct map_streamer {
-            std::ostream &_os;
-
-            explicit map_streamer(std::istream &is)
-                : _os(os) {}
-
-            template<class K, class V>
-            void operator()(std::pair<K, V> const &val) {
-                // .first is your key, .second is your value
-                _os << " - " << val.first << " : " << (*val.second) << '\n';
-            }
-        };
-
-        template<class K, class V, class Comp = std::less<K>>
-        inline void print_sorted(std::istream &is, std::unordered_map<K, V> const &um, Comp pred = Comp()) const {
-            std::map<K, V> m(um.begin(), um.end(), pred);
-            std::for_each(m.begin(), m.end(), map_streamer(os));
-        }
-
-        // template<class K, class V>
-        // void print_sorted(std::unordered_map<K, V> const &um) {
-        //     print_sorted(um, std::less<K>());
-        // }
-
-        void dump_full_keys(std::istream &is, const_chars leading_title = nullptr) const {
-            if (leading_title) os << leading_title;
-            else
-                os << "Dumping for var_t ...";
-            os << std::endl;
-
-            // std::vector<std::string> keys;
-            // keys.reserve(_full_key_map.size());
-            // for (auto &it : _full_key_map) {
-            //     keys.push_back(it.first);
-            // }
-            // std::sort(keys.begin(), keys.end());
-            //
-            // for (auto &it : keys) {
-            //     os << " - " << it << " => " << _full_key_map[it] << std::endl;
-            // }
-            print_sorted(os, _full_key_map);
-        }
-
-        // template<class K, class V, class Comp = std::less<K>>
-        void dump_tree(std::istream &is, const_chars leading_title = nullptr) const {
-            if (leading_title) os << leading_title;
-            else
-                os << "Dumping for var_t as Tree ...";
-            os << std::endl;
-
-            dump_tree(os, _children, 0);
-        }
-
-    private:
-        template<class K, class V>
-        void dump_tree(std::istream &is, std::unordered_map<K, V> const &um, int level) const {
-            for (auto const &[k, v] : um) {
-                for (int i = 0; i < level; i++)
-                    os << "  ";
-                os << k << ": " << v << std::endl;
-                dump_tree(os, v._children, level + 1);
-            }
-        }
-#endif
-
-    public:
-        const self_type &null_elem() const {
-            static self_type o;
-            return o;
-        }
-
-        [[nodiscard]] bool is_empty() const { return (*this) == null_elem(); }
-
-        holderT &value() { return _value; }
-        const holderT &value() const { return _value; }
-
-        template<class T>
-        void format(std::istream &is, T const &val) {
-            os << val;
-        }
-
-        friend std::ostream &operator<<(std::ostream &output, const var_t &v) {
-            output << v._value;
-            return output;
-        }
-
-        friend std::istream &operator>>(std::istream &input, var_t &v) {
-            input >> v._value;
-            return input;
-        }
-
-    private:
-        // the saved entries of `app' looks like:
-        //   server    array("tls", "port", "host", ...)
-        //   client    array("tls", "server-addr", ...)
-        //   logging   array("level", "target", ...)
-        //   ...
-        children_container _children;
-        // the saved entries looks like:
-        //   app.server         *var_t
-        //   app.server.cert    *var_t
-        //   app.client         *var_t
-        //   app.logging        *var_t
-        child_pointers _full_key_map;
-        // any type data
-        holderT _value;
-        self_type *_parent{nullptr}; // need not to use std::weak_ptr
-        // std::string _key_part;
-    }; // class opt_var_t
-#endif
-
-#if 0
-    template<typename holderT /* = streamable_any*/>
-    class store_base {
-    public:
-        typedef var_t<holderT> var_type;
-
-    public:
-        store_base() = default;
-        ~store_base() = default;
-
-    public:
-        holderT &get(const_chars key) {
-            auto &it = _root.get(key);
-            return it.value();
-        }
-
-        auto &get_var_t(const_chars key) { _root.get(key); }
-        auto const &get_var_t(const_chars key) const { return _root.get(key); }
-
-        void set(const_chars key, holderT &&val) { _root.set(key, val, &_root); }
-
-        template<class Any>
-        void set(const_chars key, Any &&val) {
-            holderT v(val);
-            _root.set(key, v, &_root);
-        }
-
-        template<class Any>
-        void set(const_chars key, const Any &val) {
-            holderT v(val);
-            _root.set(key, v, &_root);
-        }
-
-    public:
-        const var_type &root() const { return _root; }
-
-        template<class T>
-        void format(std::istream &is, T const &v) const {
-            os << v;
-        }
-
-        friend std::ostream &operator<<(std::ostream &output, store_base const &v) {
-            v.format(output, v._root);
-            return output;
-        }
-
-        friend std::istream &operator>>(std::istream &input, store_base &v) {
-            input >> v._root;
-            return input;
-        }
-
-    private:
-        var_type _root;
-    }; // class store
-
-
-    template<class V = support_types>
-    using store = cmdr::opt::vars::store_base<V>;
-#endif
-
-
     class store : public treeT<variable, std::string> {
     public:
         store() = default;
         ~store() = default;
 
-        using parent_type = treeT<variable,std::string>;
-        
+        using parent_type = treeT<variable, std::string>;
+        // using self_type = treeT<variable, std::string>;
+        using key_type = std::string;
+        using node = nodeT<variable, std::string>;
+        using node_pointer = std::shared_ptr<node>;
+        using node_vec = std::list<node_pointer>;
+        using node_index = std::unordered_map<std::string, node_pointer>;
+
         static tcolorize _c;
         static tcolorize::Colors256 _dim_text_fg;
         static bool _dim_text_dim;
+
+        void set_dump_with_type_name(bool b) { node::dump_with_type_name = b; }
+        bool get_dump_with_type_name() const { return node::dump_with_type_name; }
+
 
         friend std::ostream &operator<<(std::ostream &os, store const &o) {
             o.dump_tree(os);
@@ -1446,30 +1021,30 @@ namespace cmdr::vars {
 
 
         void dump_tree_f(std::ostream &os = std::cout,
-                         std::function<bool(std::pair<vars::store::key_type, vars::store::node_pointer> const &)> const &on_filter = nullptr,
+                         std::function<bool(std::pair<key_type, node_pointer> const &)> const &on_filter = nullptr,
                          const_chars leading_title = nullptr,
-                         vars::store::node *start = nullptr) const {
-            parent_type::dump_tree_f(_c, _dim_text_fg, _dim_text_dim, 
+                         node *start = nullptr) const {
+            parent_type::dump_tree_f(_c, _dim_text_fg, _dim_text_dim,
                                      os, "", on_filter, leading_title, start);
         }
         void dump_full_keys_f(std::ostream &os = std::cout,
-                              std::function<bool(std::pair<vars::store::key_type, vars::store::node_pointer> const &)> const &on_filter = nullptr,
+                              std::function<bool(std::pair<key_type, node_pointer> const &)> const &on_filter = nullptr,
                               const_chars leading_title = nullptr,
-                              vars::store::node *start = nullptr) const {
-            parent_type::dump_full_keys_f(_c, _dim_text_fg, _dim_text_dim, 
+                              node *start = nullptr) const {
+            parent_type::dump_full_keys_f(_c, _dim_text_fg, _dim_text_dim,
                                           os, on_filter, leading_title, start);
         }
 
         void dump_tree(std::ostream &os = std::cout,
                        const_chars leading_title = nullptr,
                        vars::store::node *start = nullptr) const {
-            parent_type::dump_tree(_c, _dim_text_fg, _dim_text_dim, 
+            parent_type::dump_tree(_c, _dim_text_fg, _dim_text_dim,
                                    os, leading_title, start);
         }
         void dump_full_keys(std::ostream &os = std::cout,
                             const_chars leading_title = nullptr,
                             vars::store::node *start = nullptr) const {
-            parent_type::dump_full_keys(_c, _dim_text_fg, _dim_text_dim, 
+            parent_type::dump_full_keys(_c, _dim_text_fg, _dim_text_dim,
                                         os, leading_title, start);
         }
 

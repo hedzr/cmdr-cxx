@@ -685,8 +685,8 @@ namespace cmdr::terminal::colors {
         //  In 16-colors mode, you could print out the colored text directly, but you have to reset fg and bg yourself.
         //  The sample is:
         //
-        //    std::cout << colorize::style::underline << colorize::fg::red << "Hello, Colorful World!" << std::endl;
-        //    std::cout << colorize::reset::all << "Here I'm!" << std::endl;
+        //    std::cout << colorize::style::underline << colorize::fg::red << "Hello, Colorful World!" << '\n';
+        //    std::cout << colorize::reset::all << "Here I'm!" << '\n';
         //    std::cout << "END.\n\n";
         //
         //  The two modes above can be used at the same time.

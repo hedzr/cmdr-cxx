@@ -84,7 +84,7 @@ public:
 };
 
 inline std::ostream &operator<<(std::ostream &out, MyClass const &b) {
-    std::cout << "call format function!!" << std::endl;
+    std::cout << "call format function!!" << '\n';
     out << b.a;
     return out;
 }

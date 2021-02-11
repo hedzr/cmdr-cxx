@@ -16,45 +16,79 @@ namespace cmdr {
                    const_chars author = nullptr, const_chars copyright = nullptr,
                    const_chars description = nullptr,
                    const_chars examples = nullptr) {
-        if (app_holder::instance().get_ptr()) {
+#if !defined(CATCH_VERSION_MAJOR)
+        if (auto ptr = app_holder::instance().get_ptr(); ptr) {
             cmdr_throw_line("can't invoke create_app() multiple times.");
         }
-
+#endif
         return app::create(name, version, author, copyright, description, examples);
     }
 
     /**
      * @brief retrieve the config item value from store
+     * 
+     * get() will wrap a prefix 'app.' to key for extracting the raw value in Option Store.
+     * 
      * @tparam T 
-     * @param key 
+     * @param key is a dotted string like 'server.start.foreground'
      * @return 
      */
     template<class T>
     inline T get(char const *key) { return get_app().get(key).cast_as<T>(); }
     /**
      * @brief retrieve the config item value from store
+     * 
+     * get() will wrap a prefix 'app.' to key for extracting the raw value in Option Store.
+     * 
      * @tparam T 
-     * @param key 
+     * @param key is a dotted string like 'server.start.foreground'
      * @return 
      */
     template<class T>
     inline T get(std::string const &key) { return get_app().get(key).cast_as<T>(); }
     /**
-     * @brief retrieve the cli-app args/flags value item from store
+     * @brief retrieve the cli-app args/flags value item from store.
+     * 
+     * get_for_cli will wrap a prefix 'app.cli.' to key for extracting the raw value in Option Store.
+     * 
      * @tparam T 
-     * @param key 
+     * @param key is a dotted string like 'server.start.foreground'
      * @return 
      */
     template<class T>
     inline T get_for_cli(char const *key) { return get_app().get_for_cli(key).cast_as<T>(); }
     /**
      * @brief retrieve the cli-app args/flags value item from store
+     * 
+     * get_for_cli will wrap a prefix 'app.cli.' to key for extracting the raw value in Option Store.
+     * 
      * @tparam T 
-     * @param key 
+     * @param key is a dotted string like 'server.start.foreground'
      * @return 
      */
     template<class T>
     inline T get_for_cli(std::string const &key) { return get_app().get_for_cli(key).cast_as<T>(); }
+
+
+    template<class A, typename... Args,
+             std::enable_if_t<
+                     std::is_constructible<vars::variable, A, Args...>::value &&
+                             !std::is_same<std::decay_t<A>, vars::variable>::value &&
+                             !std::is_same<std::decay_t<A>, app>::value,
+                     int> = 0>
+    inline void set(char const *key, A &&a0, Args &&...args) {
+        get_app().set(key, a0, args...);
+    }
+    template<class A,
+             std::enable_if_t<std::is_constructible<vars::variable, A>::value &&
+                                      !std::is_same<std::decay_t<A>, vars::variable>::value &&
+                                      !std::is_same<std::decay_t<A>, app>::value,
+                              int> = 0>
+    void set(char const *key, A &&a) {
+        get_app().set(key, a);
+    }
+    inline void set(char const *key, vars::variable &&a) { get_app().set(key, a); }
+    inline void set(char const *key, vars::variable const &a) { get_app().set(key, a); }
 
 
     inline bool is_debug() { return get_for_cli<bool>("debug"); }

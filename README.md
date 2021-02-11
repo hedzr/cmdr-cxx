@@ -22,37 +22,40 @@
 
 - Robust Interfaces
 
+  - hooks or actions:
+    - global: pre/post-invoke 
+    - flags: on_hit
+    - commands: on_hit, pre/post-invoke, invoke
   - supports non-single-char short flag: `-ap 1`
-
   - supports sortable command/flag groups
-
   - free style flags arrangements: `$ app main sub4 bug-bug2 zero-sub3 -vqb2r1798b2r 234 --sub4-retry1 913 --bug-bug2-shell-name=fish ~~debug --int 67 -DDD --string 'must-be'`
-
   - builtin commands and flags
 
     - Help: `-h`, `-?`, `--help`, `--info`, `--usage`, ...
       - `help` command: `app help server pause` == `app server pause --help`.
     - Version & Build Info: `--version`/`--ver`/`-V`, `--build-info`/`-#`
-  - `version`/`versions` command available.
+    - `version`/`versions` command available.
     - Simulating version at runtime with `—-version-sim 1.9.1`
-- `~~tree`: list all commands and sub-commands.
+  - `~~tree`: list all commands and sub-commands.
     - `~~debug`: print the debugging info
+    - `--no-color`: disable terminal color in outputting
     - `--config <location>`: specify the location of the root config file. [only for yaml-loader]
     - Verbose & Debug: `—verbose`/`-v`, `—debug`/`-D`, `—quiet`/`-q`
-    
-- Supports `-I/usr/include -I=/usr/include` `-I /usr/include -I:/usr` option argument specifications Automatically allows those formats (applied to long option too):
-  
-  - `-I file`, `-Ifile`, and `-I=files`
+  - Supports `-I/usr/include -I=/usr/include` `-I /usr/include -I:/usr` option argument specifications Automatically allows those formats (applied to long option too):
+
+    - `-I file`, `-Ifile`, and `-I=files`
     - `-I 'file'`, `-I'file'`, and `-I='files'`
     - `-I "file"`, `-I"file"`, and `-I="files"`
-  
-- envvars overrides: `HELP=1 ./bin/test-app2-c2 server pause` is the equivalent of `./bin/test-app2-c2 server pause --help`
-  
+  - envvars overrides: `HELP=1 ./bin/test-app2-c2 server pause` is the equivalent of `./bin/test-app2-c2 server pause --help`
+  - Extending internal actions for special operations auch as printing help screen...
+  - 
+
 - Hierarchical Data Manager - `Option Store`
 
   - various data types supports
   - getting and setting by a dotted path key
   - See also 
+  - 
 
 
 

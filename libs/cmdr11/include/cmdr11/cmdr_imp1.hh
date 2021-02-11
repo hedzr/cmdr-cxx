@@ -63,7 +63,7 @@ namespace cmdr::opt::types {
             return *_root;
         return *_matched_commands.back();
     }
-    
+
     inline cmd &parsing_context::last_matched_cmd() {
         if (_matched_commands.empty())
             return cmd::null_command();
@@ -76,7 +76,7 @@ namespace cmdr::opt::types {
         return *matched_flags.back();
     }
 
-    // 
+    //
     inline void parsing_context::add_matched_arg(arg *obj, std::shared_ptr<vars::variable> const &v) {
         matched_flags.push_back(obj);
         _values_map.emplace(std::make_pair(obj, v));

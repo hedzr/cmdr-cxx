@@ -444,7 +444,7 @@ namespace cmdr {
         std::ostringstream os1;
         cc->print_commands(os1, c, _minimal_tab_width, true, -1);
 
-        std::vector<std::ostringstream*> os2;
+        std::vector<std::ostringstream *> os2;
         auto saved_minimal_tab_width = _minimal_tab_width;
     restart:
         auto trivial = cc;
@@ -458,9 +458,9 @@ namespace cmdr {
                 tt << "Global Options";
             }
 
-            auto* os = new std::ostringstream();
+            auto *os = new std::ostringstream();
             (*os) << '\n'
-                << tt.str() << '\n';
+                  << tt.str() << '\n';
 
             auto smtw = _minimal_tab_width;
             trivial->print_flags(*os, c, _minimal_tab_width, true, -1);
@@ -478,7 +478,7 @@ namespace cmdr {
         } else {
             ss << os1.str();
         }
-        
+
         for (auto &os : os2) {
             ss << os->str();
             delete os;

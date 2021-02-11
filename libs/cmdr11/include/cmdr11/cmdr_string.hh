@@ -119,7 +119,7 @@ namespace cmdr::string {
     }
 
 
-    inline std::string join(std::vector<char const*> const &array, char delim = ',', char before = '\0', char after = '\0') {
+    inline std::string join(std::vector<char const *> const &array, char delim = ',', char before = '\0', char after = '\0') {
         std::stringstream ss;
         int i = 0;
         if (before != '\0')
@@ -134,7 +134,7 @@ namespace cmdr::string {
         return ss.str();
     }
 
-    inline std::string join(std::vector<char const*> const &array, const_chars delim = ",", const_chars before = nullptr, const_chars after = nullptr) {
+    inline std::string join(std::vector<char const *> const &array, const_chars delim = ",", const_chars before = nullptr, const_chars after = nullptr) {
         std::stringstream ss;
         int i = 0;
         if (before)

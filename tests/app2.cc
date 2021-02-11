@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
         add_main_menu(cli);
 
         // cli.set_minimal_tab_stop(55);
-        
+
 #if defined(_DEBUG)
         auto &cc = cli("server");
         CMDR_ASSERT(cc.valid());

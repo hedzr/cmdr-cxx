@@ -38,9 +38,9 @@ int main(int argc, char *argv[]) {
         cmdr::set("wudao.bool", false);
 
         std::cout << cmdr::get<int>("wudao.count") << '\n';
-        auto const &aa = cmdr::get< std::vector<char const*> >("wudao.array");
+        auto const &aa = cmdr::get<std::vector<char const *>>("wudao.array");
         std::cout << cmdr::string::join(aa, ", ", "[", "]") << '\n';
-        cmdr::vars::variable& ab = cmdr::get_app().get("wudao.array");
+        cmdr::vars::variable &ab = cmdr::get_app().get("wudao.array");
         std::cout << ab << '\n';
 
         return cli.run(argc, argv);

@@ -167,7 +167,7 @@ namespace cmdr {
         }
 
         void register_action(opt::Action action, opt::types::on_internal_action const &fn);
-        
+
     protected:
         friend class opt::cmd;
 

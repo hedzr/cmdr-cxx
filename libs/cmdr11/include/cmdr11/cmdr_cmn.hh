@@ -226,7 +226,7 @@ namespace cmdr::opt {
             //     std::for_each(matched_commands.rbegin(), matched_commands.rend(), f);
             // }
         };
-        
+
         using on_internal_action = std::function<int(parsing_context &pc, int argc, char *argv[])>;
 
     } // namespace types

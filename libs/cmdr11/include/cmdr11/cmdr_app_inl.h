@@ -72,7 +72,7 @@ namespace cmdr {
             vars::store::_dim_text_dim = true;
         }
     }
-    
+
     inline void app::register_action(opt::Action action, opt::types::on_internal_action const &fn) {
         _internal_actions.emplace(action, fn);
     }

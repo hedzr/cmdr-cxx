@@ -444,9 +444,10 @@ namespace cmdr {
         std::ostringstream os1;
         cc->print_commands(os1, c, _minimal_tab_width, true, -1);
 
-        std::ostringstream os2;
-        auto trivial = cc;
+        std::vector<std::ostringstream*> os2;
         auto saved_minimal_tab_width = _minimal_tab_width;
+    restart:
+        auto trivial = cc;
         do {
             std::ostringstream tt;
             if (trivial == cc)
@@ -457,17 +458,30 @@ namespace cmdr {
                 tt << "Global Options";
             }
 
-            os2 << '\n'
+            auto* os = new std::ostringstream();
+            (*os) << '\n'
                 << tt.str() << '\n';
-            trivial->print_flags(os2, c, _minimal_tab_width, true, -1);
+
+            auto smtw = _minimal_tab_width;
+            trivial->print_flags(*os, c, _minimal_tab_width, true, -1);
+            if (smtw < _minimal_tab_width) {
+                os2.clear();
+                goto restart;
+            }
+            os2.push_back(os);
         } while ((trivial = trivial->owner()) != nullptr);
 
         if (saved_minimal_tab_width < _minimal_tab_width) {
             std::ostringstream os3;
             cc->print_commands(os3, c, _minimal_tab_width, true, -1);
-            ss << os3.str() << os2.str();
+            ss << os3.str();
         } else {
-            ss << os1.str() << os2.str();
+            ss << os1.str();
+        }
+        
+        for (auto &os : os2) {
+            ss << os->str();
+            delete os;
         }
 
         UNUSED(app_name, exe_name);

@@ -284,7 +284,7 @@ namespace cmdr {
                            auto key = cmdr::string::join(remain_args, '.');
                            cmdr::opt::cmd const *ptr = &cmdr::get_app();
                            for (auto const &k : remain_args) {
-                               ptr = ptr->find_command(k);
+                               ptr = ptr->find_command(k, true);
                                if (!ptr) break;
                            }
                            cmdr::get_app().print_usages(ptr);

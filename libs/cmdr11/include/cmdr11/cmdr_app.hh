@@ -439,7 +439,7 @@ namespace cmdr {
                            std::function<int(parsing_context &pc, int argc, char *argv[])>>
                 _internal_actions{};
 
-        int _minimal_tab_width{43};
+        int _minimal_tab_width{-1};
         static bool _longest_first;
 
         std::vector<types::on_arg_added> _on_arg_added;

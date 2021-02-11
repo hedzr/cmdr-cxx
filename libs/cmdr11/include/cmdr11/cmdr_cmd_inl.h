@@ -363,7 +363,8 @@ namespace cmdr::opt {
         }
 
         int count_all{};
-        if (wt <= 0) {
+        // if (wt <= 0)
+        {
             for (auto &it : dotted_key_on_keys) {
                 auto const &val_it = _grouped_commands.find(it.second);
                 if (val_it == _grouped_commands.end()) continue;
@@ -386,8 +387,11 @@ namespace cmdr::opt {
                     if (w > wa) wa = w;
                 }
 
-                wt = wf + 2 + ws + 2 + wa + 2;
-                if (wt < 43) wt = 43;
+                if (wf > 0) {
+                    auto wt_tmp = wf + 2 + ws + 2 + wa + 2;
+                    if (wt < wt_tmp)
+                        wt = wt_tmp;
+                }
             }
         }
 
@@ -475,11 +479,11 @@ namespace cmdr::opt {
                         tmp << t;
                     }
                     ss << std::setw(wa) << tmp.str();
-                } else
+                } else if (wa > 0)
                     ss << std::setw(wa) << ' ';
 
                 w = wf + 2 + ws + 2 + wa;
-                ss << std::setw(wt - w - (level >= 0 ? level : 0)) << ' ';
+                ss << std::setw((wt < 43 ? 43 : wt) - w - (level >= 0 ? level : 0)) << ' ';
 
                 auto d = x->descriptions();
                 auto rw = (std::size_t)((tw <= 0 ? 1000 : tw) - wt - 2);
@@ -496,6 +500,8 @@ namespace cmdr::opt {
                 //         << c.fg(fg).dim(dim).s(x->descriptions())
                 //         // << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa
                 //         << '\n';
+
+                // ss << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa;
 
                 ss << '\n';
 
@@ -534,7 +540,8 @@ namespace cmdr::opt {
         }
 
         int count_all{};
-        if (wt <= 0) {
+        // if (wt <= 0)
+        {
             for (auto &it : dotted_key_on_keys) {
                 auto const &val_it = _grouped_args.find(it.second);
                 if (val_it == _grouped_args.end()) continue;
@@ -559,8 +566,11 @@ namespace cmdr::opt {
                     if (w > wa) wa = w;
                 }
 
-                wt = wf + 2 + ws + 2 + wa + 2;
-                if (wt < 43) wt = 43;
+                if (wf > 0) {
+                    auto wt_tmp = wf + 2 + ws + 2 + wa + 2;
+                    if (wt < wt_tmp)
+                        wt = wt_tmp;
+                }
             }
         }
 
@@ -607,7 +617,7 @@ namespace cmdr::opt {
 
             for (auto &x : val) {
                 if (x->hidden()) continue;
-                ss << "  " << std::left << std::setfill(' ');
+                ss << ' ' << ' ' << std::left << std::setfill(' ');
                 if (!x->title_long().empty()) {
                     w = x->title_long().length();
                     ss << '-' << '-' << c.underline().s(x->title_long());
@@ -616,7 +626,7 @@ namespace cmdr::opt {
 
                     if (!x->title_short().empty() || !x->title_aliases().empty()) ss << ", ";
                     else
-                        ss << "  ";
+                        ss << ' ' << ' ';
 
                     w = wf - w - 2;
                     if (!x->placeholder().empty())
@@ -630,7 +640,7 @@ namespace cmdr::opt {
                     ss << '-' << x->title_short();
                     if (!x->title_aliases().empty()) ss << ", ";
                     else
-                        ss << "  ";
+                        ss << ' ' << ' ';
                     w = ws - w - 1;
                     if (w > 0) ss << std::setw(w) << ' ';
                 } else
@@ -646,11 +656,11 @@ namespace cmdr::opt {
                         tmp << '-' << '-' << t;
                     }
                     ss << std::setw(wa) << tmp.str();
-                } else
+                } else if (wa > 0)
                     ss << std::setw(wa) << ' ';
 
                 w = wf + 2 + ws + 2 + wa;
-                ss << std::setw(wt - w - (level >= 0 ? level * 2 : 0)) << ' ';
+                ss << std::setw((wt < 43 ? 43 : wt) - w - (level >= 0 ? level * 2 : 0)) << ' ';
 
                 auto d = x->descriptions();
                 auto se = x->env_vars_get();
@@ -682,27 +692,6 @@ namespace cmdr::opt {
                     d = d.substr(t);
                 } while (!d.empty());
                 // ss // << w << ',' << wt << ',' << c.fg(fg).dim(dim).s(x->descriptions());
-                //
-                // auto se = x->env_vars_get();
-                // if (!se.empty()) {
-                //     w = 0;
-                //     std::stringstream tmp;
-                //     tmp << " (ENV: ";
-                //     for (auto const &t : se) {
-                //         if (w > 0) {
-                //             tmp << ',';
-                //         } else
-                //             w++;
-                //         tmp << t;
-                //     }
-                //     tmp << ")";
-                //     if (w > 0)
-                //         ss << c.fg(fg).dim(dim).s(tmp.str());
-                // }
-                //
-                // auto sd = x->defaults();
-                // if (!sd.empty())
-                //     ss << c.fg(fg).dim(dim).s(sd);
 
                 // ss << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa;
 

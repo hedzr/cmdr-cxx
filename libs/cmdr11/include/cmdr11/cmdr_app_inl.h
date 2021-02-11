@@ -58,7 +58,7 @@ namespace cmdr {
     inline void app::initialize_internal_commands() {
         _long = DEFAULT_CLI_KEY_PREFIX;
 
-        register_actions();
+        internal_register_actions();
         add_global_options(*this);
         add_generator_menu(*this);
 
@@ -72,13 +72,17 @@ namespace cmdr {
             vars::store::_dim_text_dim = true;
         }
     }
+    
+    inline void app::register_action(opt::Action action, opt::types::on_internal_action const &fn) {
+        _internal_actions.emplace(action, fn);
+    }
 
-    inline void app::register_actions() {
-        _internal_actions.emplace(opt::RequestHelpScreen, [=](parsing_context &pc, int, char *[]) -> int {
+    inline void app::internal_register_actions() {
+        _internal_actions.emplace(opt::RequestHelpScreen, [=](opt::types::parsing_context &pc, int, char *[]) -> int {
             print_usages(&pc.last_matched_cmd());
             return 0;
         });
-        _internal_actions.emplace(opt::RequestVersionsScreen, [=](parsing_context &, int, char *[]) -> int {
+        _internal_actions.emplace(opt::RequestVersionsScreen, [=](opt::types::parsing_context &, int, char *[]) -> int {
             auto vs = this->_version;
             auto vsvar = this->get_for_cli("version-sim");
             if (!vsvar.empty()) vs = vsvar.as<std::string>();
@@ -86,7 +90,7 @@ namespace cmdr {
             std::cout << vs << '\n';
             return 0;
         });
-        _internal_actions.emplace(opt::RequestBuildInfoScreen, [=](parsing_context &, int, char *[]) -> int {
+        _internal_actions.emplace(opt::RequestBuildInfoScreen, [=](opt::types::parsing_context &, int, char *[]) -> int {
             std::stringstream compiler;
             compiler <<
             // https://blog.kowalczyk.info/article/j/guide-to-predefined-macros-in-c-compilers-gcc-clang-msvc-etc..html
@@ -132,10 +136,10 @@ namespace cmdr {
             return 0;
         });
         _internal_actions.emplace(opt::RequestTreeScreen,
-                                  [this](parsing_context &pc, int argc, char *argv[]) -> int { return print_tree_screen(pc, argc, argv); });
+                                  [this](opt::types::parsing_context &pc, int argc, char *argv[]) -> int { return print_tree_screen(pc, argc, argv); });
         _internal_actions.emplace(opt::RequestManualScreen, print_manual_screen);
         _internal_actions.emplace(opt::RequestDebugInfoScreen,
-                                  [=](parsing_context &pc, int argc, char *argv[]) -> int {
+                                  [=](opt::types::parsing_context &pc, int argc, char *argv[]) -> int {
                                       return print_debug_info_screen(pc, argc, argv);
                                   });
     }
@@ -167,7 +171,7 @@ namespace cmdr {
         return 0;
     }
 
-    inline int app::print_debug_info_screen(parsing_context &pc, int argc, char *argv[]) {
+    inline int app::print_debug_info_screen(opt::types::parsing_context &pc, int argc, char *argv[]) {
         UNUSED(pc, argc, argv);
 
         // auto &store = cli.store();
@@ -250,7 +254,7 @@ namespace cmdr {
         return 0;
     }
 
-    inline int app::print_manual_screen(parsing_context &pc, int argc, char *argv[]) {
+    inline int app::print_manual_screen(opt::types::parsing_context &pc, int argc, char *argv[]) {
         UNUSED(pc, argc, argv);
         // todo print_manual_screen
         return 0;
@@ -258,7 +262,7 @@ namespace cmdr {
 
     // inline void _pr_tree(std::ostream &os, cmd *const cc) {}
 
-    inline int app::print_tree_screen(parsing_context &pc, int argc, char *argv[]) {
+    inline int app::print_tree_screen(opt::types::parsing_context &pc, int argc, char *argv[]) {
         UNUSED(pc, argc, argv);
         std::cout << "All Commands:\n";
 

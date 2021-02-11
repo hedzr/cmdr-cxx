@@ -54,4 +54,35 @@ namespace cmdr::opt {
     }
 
 } // namespace cmdr::opt
+
+
+namespace cmdr::opt::types {
+
+    inline cmd &parsing_context::curr_command() {
+        if (_matched_commands.empty())
+            return *_root;
+        return *_matched_commands.back();
+    }
+    
+    inline cmd &parsing_context::last_matched_cmd() {
+        if (_matched_commands.empty())
+            return cmd::null_command();
+        return *_matched_commands.back();
+    }
+
+    inline arg &parsing_context::last_matched_flg() {
+        if (matched_flags.empty())
+            return cmd::null_arg();
+        return *matched_flags.back();
+    }
+
+    // 
+    inline void parsing_context::add_matched_arg(arg *obj, std::shared_ptr<vars::variable> const &v) {
+        matched_flags.push_back(obj);
+        _values_map.emplace(std::make_pair(obj, v));
+    }
+
+} // namespace cmdr::opt::types
+
+
 #endif //CMDR_CXX11_CMDR_IMP1_HH

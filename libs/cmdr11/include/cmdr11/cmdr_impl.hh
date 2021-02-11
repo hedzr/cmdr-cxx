@@ -31,7 +31,7 @@
 namespace cmdr {
 
 
-    inline string_array app::remain_args(parsing_context &pc, char *argv[], int i, int argc) {
+    inline string_array app::remain_args(opt::types::parsing_context &pc, char *argv[], int i, int argc) {
         string_array a;
         for (auto &it : pc.remain_args()) {
             a.push_back(it);
@@ -50,7 +50,7 @@ namespace cmdr {
         return a;
     }
 
-    inline opt::Action app::process_command(parsing_context &pc, int argc, char *argv[]) {
+    inline opt::Action app::process_command(opt::types::parsing_context &pc, int argc, char *argv[]) {
         auto cmr = matching_command(pc);
         if (cmr.matched) {
             cmr.obj->hit_title(pc.title.c_str());
@@ -75,8 +75,8 @@ namespace cmdr {
     }
 
     inline opt::Action
-    app::process_flag(parsing_context &pc, int argc, char *argv[], int leading_chars,
-                      std::function<arg_matching_result(parsing_context &)> const &matcher) {
+    app::process_flag(opt::types::parsing_context &pc, int argc, char *argv[], int leading_chars,
+                      std::function<arg_matching_result(opt::types::parsing_context &)> const &matcher) {
         pc.title = pc.title.substr(leading_chars);
         bool value_parsed{};
         bool extra_argv;
@@ -184,19 +184,19 @@ namespace cmdr {
         return opt::Continue;
     }
 
-    inline opt::Action app::process_special_flag(parsing_context &pc, int argc, char *argv[]) {
+    inline opt::Action app::process_special_flag(opt::types::parsing_context &pc, int argc, char *argv[]) {
         return process_flag(pc, argc, argv, 2, matching_special_flag);
     }
 
-    inline opt::Action app::process_long_flag(parsing_context &pc, int argc, char *argv[]) {
+    inline opt::Action app::process_long_flag(opt::types::parsing_context &pc, int argc, char *argv[]) {
         return process_flag(pc, argc, argv, 2, matching_long_flag);
     }
 
-    inline opt::Action app::process_short_flag(parsing_context &pc, int argc, char *argv[]) {
+    inline opt::Action app::process_short_flag(opt::types::parsing_context &pc, int argc, char *argv[]) {
         return process_flag(pc, argc, argv, 1, matching_short_flag);
     }
 
-    inline typename app::cmd_matching_result app::matching_command(parsing_context &pc) {
+    inline typename app::cmd_matching_result app::matching_command(opt::types::parsing_context &pc) {
         cmd_matching_result cmr;
         auto &c = pc.curr_command();
         opt::types::indexed_commands &li = c._long_commands;
@@ -217,7 +217,7 @@ namespace cmdr {
     }
 
     inline typename app::arg_matching_result
-    app::matching_flag_on(parsing_context &pc,
+    app::matching_flag_on(opt::types::parsing_context &pc,
                           bool is_long, bool is_special,
                           std::function<opt::types::indexed_args const &(opt::cmd *)> const &li) {
         arg_matching_result amr;
@@ -261,27 +261,27 @@ namespace cmdr {
     }
 
     inline typename app::arg_matching_result
-    app::matching_special_flag(parsing_context &pc) {
+    app::matching_special_flag(opt::types::parsing_context &pc) {
         return matching_flag_on(pc, true, true, [](opt::cmd *c) -> opt::types::indexed_args const & {
             return c->_long_args;
         });
     }
 
     inline typename app::arg_matching_result
-    app::matching_long_flag(parsing_context &pc) {
+    app::matching_long_flag(opt::types::parsing_context &pc) {
         return matching_flag_on(pc, true, false, [](opt::cmd *c) -> opt::types::indexed_args const & {
             return c->_long_args;
         });
     }
 
     inline typename app::arg_matching_result
-    app::matching_short_flag(parsing_context &pc) {
+    app::matching_short_flag(opt::types::parsing_context &pc) {
         return matching_flag_on(pc, false, false, [](opt::cmd *c) -> opt::types::indexed_args const & {
             return c->_short_args;
         });
     }
 
-    inline opt::Action app::unknown_long_flag_found(parsing_context &pc, arg_matching_result &amr) {
+    inline opt::Action app::unknown_long_flag_found(opt::types::parsing_context &pc, arg_matching_result &amr) {
         UNUSED(pc, amr);
         if (_on_unknown_argument_found)
             if (auto rc = _on_unknown_argument_found(pc.title, pc.last_matched_cmd(), true, false);
@@ -295,7 +295,7 @@ namespace cmdr {
         return opt::Abortion;
     }
 
-    inline opt::Action app::unknown_short_flag_found(parsing_context &pc, arg_matching_result &amr) {
+    inline opt::Action app::unknown_short_flag_found(opt::types::parsing_context &pc, arg_matching_result &amr) {
         UNUSED(pc, amr);
         if (_on_unknown_argument_found)
             if (auto rc = _on_unknown_argument_found(pc.title, pc.last_matched_cmd(), false, false);
@@ -309,7 +309,7 @@ namespace cmdr {
         return opt::Abortion;
     }
 
-    inline opt::Action app::unknown_command_found(parsing_context &pc, cmd_matching_result &cmr) {
+    inline opt::Action app::unknown_command_found(opt::types::parsing_context &pc, cmd_matching_result &cmr) {
         UNUSED(pc, cmr);
         if (_on_unknown_argument_found)
             if (auto rc = _on_unknown_argument_found(pc.title, pc.last_matched_cmd(), false, true);
@@ -379,7 +379,7 @@ namespace cmdr {
     }
 
 
-    inline int app::invoke_command(opt::cmd &c, string_array const &remain_args, parsing_context &pc) {
+    inline int app::invoke_command(opt::cmd &c, string_array const &remain_args, opt::types::parsing_context &pc) {
         UNUSED(pc, c);
 
         int rc{0};
@@ -594,7 +594,7 @@ namespace cmdr {
         try {
             prepare();
 
-            parsing_context pc{(opt::cmd *) this};
+            opt::types::parsing_context pc{(opt::cmd *) this};
             pc.add_matched_cmd((opt::cmd *) this);
             opt::Action rc{opt::OK};
 
@@ -663,7 +663,7 @@ namespace cmdr {
         return -1;
     }
 
-    inline int app::after_run(opt::Action rc, parsing_context &pc, int argc, char *argv[]) {
+    inline int app::after_run(opt::Action rc, opt::types::parsing_context &pc, int argc, char *argv[]) {
         if (rc > opt::OK && rc < opt::Continue)
             return internal_action(rc, pc, argc, argv);
 
@@ -690,7 +690,7 @@ namespace cmdr {
         return 0;
     }
 
-    inline int app::internal_action(opt::Action rc, parsing_context &pc, int argc, char *argv[]) {
+    inline int app::internal_action(opt::Action rc, opt::types::parsing_context &pc, int argc, char *argv[]) {
         if (auto it = _internal_actions.find(rc); it != _internal_actions.end())
             return it->second(pc, argc, argv);
         return 0;
@@ -754,10 +754,10 @@ namespace cmdr {
     //
 
 
-    inline void app::parsing_context::add_matched_arg(opt::arg *obj, opt::arg::var_type const &v) {
-        matched_flags.push_back(obj);
-        _values_map.emplace(std::make_pair(obj, v));
-    }
+    // inline void app::parsing_context::add_matched_arg(opt::arg *obj, opt::arg::var_type const &v) {
+    //     matched_flags.push_back(obj);
+    //     _values_map.emplace(std::make_pair(obj, v));
+    // }
 
 
 } // namespace cmdr

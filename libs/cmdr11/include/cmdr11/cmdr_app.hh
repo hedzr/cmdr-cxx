@@ -166,6 +166,8 @@ namespace cmdr {
             return (*this);
         }
 
+        void register_action(opt::Action action, opt::types::on_internal_action const &fn);
+        
     protected:
         friend class opt::cmd;
 
@@ -176,56 +178,6 @@ namespace cmdr {
         void on_loading_externals();
 
     private:
-        struct parsing_context {
-            opt::cmd *_root;
-            std::string title{};
-            int index{}; // argv's index
-            bool is_flag{false};
-            bool passthru_flag{false};
-            int matching_flag_type{}; // short: 0, long: 1, special: 2, ...
-            std::size_t pos{};        // start position of title
-
-            explicit parsing_context(opt::cmd *a)
-                : _root(a) {}
-
-        private:
-            opt::types::arg_pointers matched_flags{};
-            opt::types::cmd_pointers _matched_commands{};
-            string_array unknown_flags{};
-            string_array unknown_commands{};
-            string_array non_commands{};
-            typedef std::unordered_map<opt::arg *, opt::arg::var_type> val_map;
-            val_map _values_map;
-
-        public:
-            [[nodiscard]] opt::cmd &curr_command() {
-                if (_matched_commands.empty())
-                    return *_root;
-                return *_matched_commands.back();
-            }
-            [[nodiscard]] opt::cmd &last_matched_cmd() {
-                if (_matched_commands.empty())
-                    return opt::cmd::null_command();
-                return *_matched_commands.back();
-            }
-            [[nodiscard]] opt::arg &last_matched_flg() {
-                if (matched_flags.empty())
-                    return opt::cmd::null_arg();
-                return *matched_flags.back();
-            }
-
-            void add_matched_cmd(opt::cmd *obj) { _matched_commands.push_back(obj); }
-            void add_matched_arg(opt::arg *obj) { matched_flags.push_back(obj); }
-            void add_matched_arg(opt::arg *obj, opt::arg::var_type const &v);
-            void add_unknown_cmd(std::string const &obj) { unknown_commands.push_back(obj); }
-            void add_unknown_arg(std::string const &obj) { unknown_flags.push_back(obj); }
-            void add_remain_arg(std::string const &arg) { non_commands.push_back(arg); }
-            [[nodiscard]] string_array const &remain_args() const { return non_commands; }
-            auto &matched_commands() { return _matched_commands; }
-            // void reverse_foreach_matched_commands(std::function<void(opt::details::cmd_pointers<V>::value_type &it)> f) {
-            //     std::for_each(matched_commands.rbegin(), matched_commands.rend(), f);
-            // }
-        };
         struct cmd_matching_result {
             bool matched{};
             bool should_abort{};
@@ -241,29 +193,29 @@ namespace cmdr {
             std::exception e;
         };
 
-        static string_array remain_args(parsing_context &pc, char *argv[], int i, int argc);
+        static string_array remain_args(opt::types::parsing_context &pc, char *argv[], int i, int argc);
         static string_array remain_args(char *argv[], int i, int argc);
 
-        opt::Action process_command(parsing_context &pc, int argc, char *argv[]);
-        opt::Action process_flag(parsing_context &pc, int argc, char *argv[], int leading_chars, std::function<arg_matching_result(parsing_context &)> const &matcher);
-        opt::Action process_special_flag(parsing_context &pc, int argc, char *argv[]);
-        opt::Action process_long_flag(parsing_context &pc, int argc, char *argv[]);
-        opt::Action process_short_flag(parsing_context &pc, int argc, char *argv[]);
+        opt::Action process_command(opt::types::parsing_context &pc, int argc, char *argv[]);
+        opt::Action process_flag(opt::types::parsing_context &pc, int argc, char *argv[], int leading_chars, std::function<arg_matching_result(opt::types::parsing_context &)> const &matcher);
+        opt::Action process_special_flag(opt::types::parsing_context &pc, int argc, char *argv[]);
+        opt::Action process_long_flag(opt::types::parsing_context &pc, int argc, char *argv[]);
+        opt::Action process_short_flag(opt::types::parsing_context &pc, int argc, char *argv[]);
 
-        static cmd_matching_result matching_command(parsing_context &pc);
-        static arg_matching_result matching_special_flag(parsing_context &pc);
-        static arg_matching_result matching_long_flag(parsing_context &pc);
-        static arg_matching_result matching_short_flag(parsing_context &pc);
-        static arg_matching_result matching_flag_on(parsing_context &pc,
+        static cmd_matching_result matching_command(opt::types::parsing_context &pc);
+        static arg_matching_result matching_special_flag(opt::types::parsing_context &pc);
+        static arg_matching_result matching_long_flag(opt::types::parsing_context &pc);
+        static arg_matching_result matching_short_flag(opt::types::parsing_context &pc);
+        static arg_matching_result matching_flag_on(opt::types::parsing_context &pc,
                                                     bool is_long, bool is_special,
                                                     std::function<opt::types::indexed_args const &(opt::cmd *)> const &li);
 
-        opt::Action unknown_command_found(parsing_context &pc, cmd_matching_result &cmr);
-        opt::Action unknown_long_flag_found(parsing_context &pc, arg_matching_result &amr);
-        opt::Action unknown_short_flag_found(parsing_context &pc, arg_matching_result &amr);
+        opt::Action unknown_command_found(opt::types::parsing_context &pc, cmd_matching_result &cmr);
+        opt::Action unknown_long_flag_found(opt::types::parsing_context &pc, arg_matching_result &amr);
+        opt::Action unknown_short_flag_found(opt::types::parsing_context &pc, arg_matching_result &amr);
 
         void initialize_internal_commands();
-        void register_actions();
+        void internal_register_actions();
         static void add_global_options(app &cli);
         static void add_generator_menu(app &cli);
 
@@ -272,9 +224,9 @@ namespace cmdr {
         void prepare_env_vars();
         void load_externals();
         void apply_env_vars();
-        int after_run(opt::Action rc, parsing_context &pc, int argc, char *argv[]);
-        int internal_action(opt::Action rc, parsing_context &pc, int argc, char *argv[]);
-        int invoke_command(opt::cmd &cc, string_array const &remain_args, parsing_context &pc);
+        int after_run(opt::Action rc, opt::types::parsing_context &pc, int argc, char *argv[]);
+        int internal_action(opt::Action rc, opt::types::parsing_context &pc, int argc, char *argv[]);
+        int invoke_command(opt::cmd &cc, string_array const &remain_args, opt::types::parsing_context &pc);
 
         void handle_eptr(const std::exception_ptr &eptr) const;
 
@@ -295,13 +247,13 @@ namespace cmdr {
         }
 
         void print_cmd(std::ostream &ss,
-                       tcolorize &c, 
+                       tcolorize &c,
                        opt::cmd const *cc,
                        std::string const &app_name, std::string const &exe_name);
 
-        int print_debug_info_screen(parsing_context &pc, int argc, char *argv[]);
-        static int print_manual_screen(parsing_context &pc, int argc, char *argv[]);
-        int print_tree_screen(parsing_context &pc, int argc, char *argv[]);
+        int print_debug_info_screen(opt::types::parsing_context &pc, int argc, char *argv[]);
+        static int print_manual_screen(opt::types::parsing_context &pc, int argc, char *argv[]);
+        int print_tree_screen(opt::types::parsing_context &pc, int argc, char *argv[]);
 
         int on_invoking_print_cmd(opt::cmd const &hit, string_array const &remain_args);
 
@@ -435,8 +387,7 @@ namespace cmdr {
 
         //int _help_hit{};
         //cmd *_cmd_hit{};
-        std::unordered_map<opt::Action,
-                           std::function<int(parsing_context &pc, int argc, char *argv[])>>
+        std::unordered_map<opt::Action, opt::types::on_internal_action>
                 _internal_actions{};
 
         int _minimal_tab_width{-1};

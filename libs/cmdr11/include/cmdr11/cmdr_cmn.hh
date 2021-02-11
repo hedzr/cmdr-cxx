@@ -61,6 +61,11 @@ namespace cmdr::opt {
 } // namespace cmdr::opt
 
 
+namespace cmdr::vars {
+    class variable;
+} // namespace cmdr::vars
+
+
 //
 // API for developers
 //
@@ -111,6 +116,11 @@ namespace cmdr::opt {
         }
         enum Action _action;
     };
+
+
+    class cmd;
+    class arg;
+
 
     namespace types {
 
@@ -176,6 +186,48 @@ namespace cmdr::opt {
         using on_post_invoke =
                 std::function<int(cmdr::opt::cmd const &c,
                                   string_array const &remain_args)>; // callback handler
+
+
+        struct parsing_context {
+            cmd *_root;
+            std::string title{};
+            int index{}; // argv's index
+            bool is_flag{false};
+            bool passthru_flag{false};
+            int matching_flag_type{}; // short: 0, long: 1, special: 2, ...
+            std::size_t pos{};        // start position of title
+
+            explicit parsing_context(cmd *a)
+                : _root(a) {}
+
+        private:
+            arg_pointers matched_flags{};
+            cmd_pointers _matched_commands{};
+            string_array unknown_flags{};
+            string_array unknown_commands{};
+            string_array non_commands{};
+            typedef std::unordered_map<arg *, std::shared_ptr<vars::variable>> val_map;
+            val_map _values_map;
+
+        public:
+            [[nodiscard]] cmd &curr_command();
+            [[nodiscard]] cmd &last_matched_cmd();
+            [[nodiscard]] arg &last_matched_flg();
+
+            void add_matched_cmd(cmd *obj) { _matched_commands.push_back(obj); }
+            void add_matched_arg(arg *obj) { matched_flags.push_back(obj); }
+            void add_matched_arg(arg *obj, std::shared_ptr<vars::variable> const &v);
+            void add_unknown_cmd(std::string const &obj) { unknown_commands.push_back(obj); }
+            void add_unknown_arg(std::string const &obj) { unknown_flags.push_back(obj); }
+            void add_remain_arg(std::string const &arg) { non_commands.push_back(arg); }
+            [[nodiscard]] string_array const &remain_args() const { return non_commands; }
+            auto &matched_commands() { return _matched_commands; }
+            // void reverse_foreach_matched_commands(std::function<void(opt::details::cmd_pointers<V>::value_type &it)> f) {
+            //     std::for_each(matched_commands.rbegin(), matched_commands.rend(), f);
+            // }
+        };
+        
+        using on_internal_action = std::function<int(parsing_context &pc, int argc, char *argv[])>;
 
     } // namespace types
 

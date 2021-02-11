@@ -277,7 +277,13 @@ namespace cmdr {
                        .hidden(hide_sys_tools | true)
                        .on_invoke([](cmdr::opt::cmd const &hit, string_array const &remain_args) -> int {
                            UNUSED(hit, remain_args);
-                           cmdr::get_app().print_usages(nullptr);
+                           auto key = cmdr::string::join(remain_args, '.');
+                           cmdr::opt::cmd const *ptr = &cmdr::get_app();
+                           for (auto const &k : remain_args) {
+                               ptr = ptr->find_command(k);
+                               if (!ptr) break;
+                           }
+                           cmdr::get_app().print_usages(ptr);
                            std::cout << "help, !!!\n";
                            std::cout << "args: " << cmdr::string::join(remain_args, ',', '[', ']') << '\n';
                            // todo expand 'help ...' to a embedded help sub-system.

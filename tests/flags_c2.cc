@@ -61,6 +61,12 @@ TEST_CASE("flags test", "[flags]") {
         REQUIRE(cli.run(countof(argv), const_cast<char **>(argv)) == 0);
         REQUIRE(cli.get_for_cli("help").as<bool>());
     }
+    SECTION("-h-v") {
+        const char *argv[] = {"", "-h-v", "--no-color"};
+        REQUIRE(cli.run(countof(argv), const_cast<char **>(argv)) == 0);
+        REQUIRE(cli.get_for_cli("help").as<bool>() == false);
+        REQUIRE(cli.get_for_cli("verbose").as<bool>());
+    }
 
     SECTION("--version") {
         const char *argv[] = {"", "--version", "--no-color"};

@@ -27,6 +27,7 @@
     - flags: on_hit
     - commands: on_hit, pre/post-invoke, invoke
   - supports non-single-char short flag: `-ap 1`
+  - supports for `-D+`, `-D-` to enable/disable a bool option
   - supports sortable command/flag groups
   - free style flags arrangements: `$ app main sub4 bug-bug2 zero-sub3 -vqb2r1798b2r 234 --sub4-retry1 913 --bug-bug2-shell-name=fish ~~debug --int 67 -DDD --string 'must-be'`
   - builtin commands and flags
@@ -48,7 +49,6 @@
     - `-I "file"`, `-I"file"`, and `-I="files"`
   - envvars overrides: `HELP=1 ./bin/test-app2-c2 server pause` is the equivalent of `./bin/test-app2-c2 server pause --help`
   - Extending internal actions for special operations auch as printing help screen...
-  - 
 
 - Hierarchical Data Manager - `Option Store`
 

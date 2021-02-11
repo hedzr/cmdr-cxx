@@ -131,7 +131,18 @@ namespace cmdr {
                 pc.add_matched_arg(amr.obj);
                 value_parsed = true;
 
-                auto value = std::make_shared<vars::variable>(true);
+                bool v{true};
+                auto ch = pc.title[pc.pos + amr.matched_length];
+                switch (ch) {
+                    case '-':
+                        v = false;
+                        amr.matched_length++;
+                        break;
+                    case '+':
+                        amr.matched_length++;
+                        break;
+                }
+                auto value = std::make_shared<vars::variable>(v);
                 get_app().on_arg_matched(amr.obj, value);
 
             } else {

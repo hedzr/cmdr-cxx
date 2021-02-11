@@ -1,7 +1,8 @@
 # cmdr-cxx {#mainpage}
 
-![CMake Build Matrix](https://github.com/hedzr/cmdr-cxx/workflows/CMake%20Build%20Matrix/badge.svg)
-<!-- ![CMake Build Matrix](https://github.com/hedzr/cmdr-cxx/workflows/CMake%20Build%20Matrix/badge.svg?event=release) --> [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/hedzr/cmdr-cxx.svg?label=release)](https://github.com/hedzr/cmdr-cxx/releases)
+![CMake Build Matrix](https://github.com/hedzr/cmdr-cxx/workflows/CMake%20Build%20Matrix/badge.svg) <!-- 
+![CMake Build Matrix](https://github.com/hedzr/cmdr-cxx/workflows/CMake%20Build%20Matrix/badge.svg?event=release) 
+--> [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/hedzr/cmdr-cxx.svg?label=release)](https://github.com/hedzr/cmdr-cxx/releases)
 
 `cmdr-cxx`[^pre-release] is a *header-only* command-line arguments parser in C++17 and higher. As a member of #cmdr series, it provides a fully-functional `Option Store` for your hierarchical configuration data.
 

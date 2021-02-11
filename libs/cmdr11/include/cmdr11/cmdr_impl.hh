@@ -430,13 +430,7 @@ namespace cmdr {
         }
         ss << '\n'
            << "Usage" << '\n';
-        std::vector<std::string> cmds;
-        auto pcc = cc;
-        while (pcc && pcc->owner()) {
-            cmds.insert(cmds.begin(), pcc->hit_count() > 0 ? pcc->hit_title() : pcc->title_long());
-            pcc = pcc->owner();
-        }
-        ss << string::pad_left(exe_name, 2) << ' ' << string::join(cmds, ' ') << " [options] [Tail Args]" << '\n';
+        ss << string::pad_left(exe_name, 2) << ' ' << cc->title_sequences() << " [options] [Tail Args]" << '\n';
 
         ss << '\n'
            << "Commands" << '\n';
@@ -501,7 +495,21 @@ namespace cmdr {
     }
 
     inline void app::reset() {
-        // todo reset all internal states so that we can restart a new session for parsing.
+        _store.reset();
+
+        _global_on_pre_invoke = nullptr;
+        _global_on_post_invoke = nullptr;
+        _on_unknown_argument_found = nullptr;
+
+        _internal_actions.clear();
+
+        _on_arg_added.clear();
+        _on_cmd_added.clear();
+        _on_arg_matched.clear();
+        _on_cmd_matched.clear();
+        _on_loading_externals.clear();
+        _on_command_not_hooked = nullptr;
+        _on_handle_exception_ptr = nullptr;
     }
 
     inline void app::prepare_common_env() {
@@ -622,6 +630,11 @@ namespace cmdr {
 
         } catch (std::exception const &e) {
             std::cerr << "Exception caught : " << e.what() << '\n';
+            std::cerr << "         cmdline : /";
+            for (int i = 0; i < argc; i++) {
+                std::cerr << ' ' << argv[i];
+            }
+            std::cerr << "///" << '\n';
             CMDR_DUMP_STACK_TRACE(e);
 
         } catch (...) {
@@ -637,7 +650,7 @@ namespace cmdr {
         auto help_arg = store().get_raw_p(_long, "help");
         if (help_arg.cast_as<bool>()) {
             print_usages(&pc.curr_command());
-            return true;
+            return 0;
         }
 
         if (auto cc = pc.last_matched_cmd(); cc.valid()) {

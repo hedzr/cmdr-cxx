@@ -122,6 +122,8 @@ namespace cmdr::opt {
 
         [[nodiscard]] bool no_sub_commands() const { return _all_commands.empty(); }
 
+        std::string title_sequences() const;
+        
     public:
         void add(arg const &a);
         void add(cmd const &a);

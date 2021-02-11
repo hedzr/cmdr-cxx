@@ -79,7 +79,11 @@ namespace cmdr {
             return 0;
         });
         _internal_actions.emplace(opt::RequestVersionsScreen, [=](parsing_context &, int, char *[]) -> int {
-            std::cout << this->_version << '\n';
+            auto vs = this->_version;
+            auto vsvar = this->get_for_cli("version-sim");
+            if (!vsvar.empty()) vs = vsvar.as<std::string>();
+            if (vs.empty()) vs = this->_version;
+            std::cout << vs << '\n';
             return 0;
         });
         _internal_actions.emplace(opt::RequestBuildInfoScreen, [=](parsing_context &, int, char *[]) -> int {
@@ -308,9 +312,9 @@ namespace cmdr {
                        .description("display the version information")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
-                       .on_invoke([](cmdr::opt::cmd const &hit, string_array const &remain_args) -> int {
+                       .on_pre_invoke([](cmdr::opt::cmd const &hit, string_array const &remain_args) -> int {
                            UNUSED(hit, remain_args);
-                           return cmdr::opt::RequestVersionsScreen;
+                           throw opt::cmdr_requests_exception(opt::RequestVersionsScreen);
                        });
 
         cli += cmdr::opt::opt{}("version", "V", "versions", "ver")
@@ -322,6 +326,12 @@ namespace cmdr {
                            UNUSED(hit, hit_flag, remain_args);
                            return cmdr::opt::RequestVersionsScreen;
                        });
+
+        cli += cmdr::opt::opt{""}("version-sim", "vs")
+                       .description("simulate the version dynamically")
+                       .group(SYS_MGMT_GROUP)
+                       .hidden(hide_sys_tools | true)
+                       .env_vars("VERSION_SIM");
 
         // build-info
 

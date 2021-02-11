@@ -27,8 +27,21 @@ int main(int argc, char *argv[]) {
         cli += opt{1}("count", "c")
                        .description("set counter value");
 
-        cli += opt{""}("host", "h", "hostname", "server-name")
+        cli += opt{""}("host", "H", "hostname", "server-name")
                        .description("hostname or ip address");
+
+        cmdr::set("wudao.count", 1);
+        cmdr::set("wudao.string", "str");
+        cmdr::set("wudao.float", 3.14f);
+        cmdr::set("wudao.double", 2.718);
+        cmdr::set("wudao.array", std::vector{"a", "b", "c"});
+        cmdr::set("wudao.bool", false);
+
+        std::cout << cmdr::get<int>("wudao.count") << '\n';
+        auto const &aa = cmdr::get< std::vector<char const*> >("wudao.array");
+        std::cout << cmdr::string::join(aa, ", ", "[", "]") << '\n';
+        cmdr::vars::variable& ab = cmdr::get_app().get("wudao.array");
+        std::cout << ab << '\n';
 
         return cli.run(argc, argv);
 

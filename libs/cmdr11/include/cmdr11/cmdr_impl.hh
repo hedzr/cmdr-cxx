@@ -401,6 +401,12 @@ namespace cmdr {
 #endif
                 }
             }
+
+            if (c.on_post_invoke())
+                c.on_post_invoke()(c, remain_args);
+            if (_global_on_post_invoke)
+                _global_on_post_invoke(c, remain_args);
+
         } catch (...) {
             if (c.on_post_invoke())
                 c.on_post_invoke()(c, remain_args);
@@ -416,7 +422,7 @@ namespace cmdr {
     }
 
     inline void app::print_cmd(std::ostream &ss, cmdr::terminal::colors::colorize &c,
-                               opt::cmd *cc,
+                               opt::cmd const *cc,
                                std::string const &app_name, std::string const &exe_name) {
         if (!cc->description().empty()) {
             ss << '\n'
@@ -467,7 +473,7 @@ namespace cmdr {
         UNUSED(app_name, exe_name);
     }
 
-    inline void app::print_usages(opt::cmd *start) {
+    inline void app::print_usages(opt::cmd const *start) {
         std::string exe_name = path::executable_name();
         auto c = cmdr::terminal::colors::colorize::create();
 
@@ -481,7 +487,7 @@ namespace cmdr {
         else
             ss << _header << '\n';
 
-        print_cmd(ss, c, start ? start : (opt::cmd *) this, _name, exe_name);
+        print_cmd(ss, c, start ? start : (opt::cmd const *) this, _name, exe_name);
 
         if (!_tail_line.empty()) {
             ss << '\n'
@@ -656,7 +662,11 @@ namespace cmdr {
         if (auto cc = pc.last_matched_cmd(); cc.valid()) {
             if (cc.no_sub_commands()) {
                 // invoking cc
-                return invoke_command(cc, remain_args(pc, argv, pc.index + 1, argc), pc);
+                try {
+                    return invoke_command(cc, remain_args(pc, argv, pc.index + 1, argc), pc);
+                } catch (opt::cmdr_requests_exception const &ex) {
+                    return internal_action(ex._action, pc, argc, argv);
+                }
             }
 
             print_usages(&cc);

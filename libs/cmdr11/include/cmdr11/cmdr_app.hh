@@ -97,7 +97,7 @@ namespace cmdr {
             }
         }
 
-        void print_usages(opt::cmd *start = nullptr);
+        void print_usages(opt::cmd const *start = nullptr);
 
     public:
         [[maybe_unused]] void dummy() {}
@@ -295,7 +295,8 @@ namespace cmdr {
         }
 
         void print_cmd(std::ostream &ss,
-                       tcolorize &c, opt::cmd *cc,
+                       tcolorize &c, 
+                       opt::cmd const *cc,
                        std::string const &app_name, std::string const &exe_name);
 
         int print_debug_info_screen(parsing_context &pc, int argc, char *argv[]);

@@ -123,7 +123,7 @@ namespace cmdr::opt {
         [[nodiscard]] bool no_sub_commands() const { return _all_commands.empty(); }
 
         std::string title_sequences() const;
-        
+
     public:
         void add(arg const &a);
         void add(cmd const &a);
@@ -184,6 +184,8 @@ namespace cmdr::opt {
     protected:
         arg &find_flag(const_chars long_title, bool extensive = false);
         cmd &find_command(const_chars long_title, bool extensive = false);
+        arg const *find_flag(std::string const &long_title, bool extensive = false) const;
+        cmd const *find_command(std::string const &long_title, bool extensive = false) const;
 
     public:
         virtual cmd &opt(const types::option &opt_) {
@@ -201,9 +203,9 @@ namespace cmdr::opt {
 
     public:
         // wt: total width for description part.
-        void print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped = true, int level = -1);
+        void print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped = true, int level = -1) const;
         // wt: total width for description part.
-        void print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped = true, int level = -1);
+        void print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped = true, int level = -1) const;
 
         void walk_args(std::function<void(arg &)> const &cb);
     }; // class cmd

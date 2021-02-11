@@ -237,6 +237,27 @@ namespace cmdr::opt {
         return null_arg();
     }
 
+    inline arg const *cmd::find_flag(std::string const &long_title, bool extensive) const {
+        auto s = long_title;
+        if (is_leading_switch_char(s)) s = s.substr(1);
+        if (is_leading_switch_char(s)) s = s.substr(1);
+
+        auto it = _indexed_args.find(s);
+        if (it != _indexed_args.end())
+            return (*it).second;
+        if (extensive) {
+            for (auto itz : _indexed_args) {
+                if (itz.second->title_short() == long_title)
+                    return (itz).second;
+                for (auto &k : itz.second->title_aliases()) {
+                    if (k == long_title)
+                        return (itz).second;
+                }
+            }
+        }
+        return nullptr;
+    }
+
     /**
      * @brief 
      * @param long_title is a dotted string like 'app.cli.server.install.systemd', 
@@ -281,6 +302,25 @@ namespace cmdr::opt {
         return null_command();
     }
 
+    inline cmd const *cmd::find_command(std::string const &long_title, bool extensive) const {
+        auto it = _indexed_commands.find(long_title);
+        if (it != _indexed_commands.end()) {
+            auto cc = (*it).second;
+            return cc;
+        }
+        if (extensive) {
+            for (const auto &itz : _indexed_commands) {
+                if (itz.second->title_short() == long_title)
+                    return (itz).second;
+                for (auto &k : itz.second->title_aliases()) {
+                    if (k == long_title)
+                        return (itz).second;
+                }
+            }
+        }
+        return nullptr;
+    }
+
     inline int cmd::run(int argc, char *argv[]) {
         UNUSED(argc, argv);
         return 0;
@@ -301,7 +341,7 @@ namespace cmdr::opt {
         }
     }
 
-    inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, int level) {
+    inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, int level) const {
         UNUSED(grouped, level);
         auto fg = vars::store::_dim_text_fg;
         auto dim = vars::store::_dim_text_dim;
@@ -325,7 +365,9 @@ namespace cmdr::opt {
         int count_all{};
         if (wt <= 0) {
             for (auto &it : dotted_key_on_keys) {
-                auto val = _grouped_commands[it.second];
+                auto const &val_it = _grouped_commands.find(it.second);
+                if (val_it == _grouped_commands.end()) continue;
+                auto const &val = val_it->second;
                 auto clean_key = string::has_prefix(it.second, it.first) ? it.second.substr(it.first.length() + 1) : it.second;
 
                 int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
@@ -350,7 +392,9 @@ namespace cmdr::opt {
         }
 
         for (auto &it : dotted_key_on_keys) {
-            auto val = _grouped_commands[it.second];
+            auto const &val_it = _grouped_commands.find(it.second);
+            if (val_it == _grouped_commands.end()) continue;
+            auto const &val = val_it->second;
             auto clean_key = string::has_prefix(it.second, it.first) ? it.second.substr(it.first.length() + 1) : it.second;
 
             int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
@@ -469,7 +513,7 @@ namespace cmdr::opt {
     }
 
 
-    inline void cmd::print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, int level) {
+    inline void cmd::print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, int level) const {
         UNUSED(grouped, level);
         auto fg = vars::store::_dim_text_fg;
         auto dim = vars::store::_dim_text_dim;
@@ -492,7 +536,9 @@ namespace cmdr::opt {
         int count_all{};
         if (wt <= 0) {
             for (auto &it : dotted_key_on_keys) {
-                auto val = _grouped_args[it.second];
+                auto const &val_it = _grouped_args.find(it.second);
+                if (val_it == _grouped_args.end()) continue;
+                auto const &val = val_it->second;
                 auto clean_key = string::has_prefix(it.second, it.first) ? it.second.substr(it.first.length() + 1) : it.second;
 
                 int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
@@ -519,7 +565,9 @@ namespace cmdr::opt {
         }
 
         for (auto &it : dotted_key_on_keys) {
-            auto val = _grouped_args[it.second];
+            auto const &val_it = _grouped_args.find(it.second);
+            if (val_it == _grouped_args.end()) continue;
+            auto const &val = val_it->second;
             auto clean_key = string::has_prefix(it.second, it.first) ? it.second.substr(it.first.length() + 1) : it.second;
 
             int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;

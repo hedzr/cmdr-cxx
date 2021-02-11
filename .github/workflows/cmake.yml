@@ -42,12 +42,13 @@ jobs:
     steps:
       - uses: actions/checkout@v1
 
-      - name: Install gcc 10+ for Ubuntu-18
+      - name: Install gcc 10+ for Ubuntu-18, install deps
         run: |
           if [[ "$OSTYPE" == "linux-gnu"* ]]; then
             sudo add-apt-repository ppa:ubuntu-toolchain-r/test
             sudo apt update
-            sudo apt install gcc-10 g++-10 libyaml-cpp-dev
+            sudo apt install -y gcc-10 g++-10
+            sudo apt install -y libyaml-cpp-dev
           fi
           if [[ "$OSTYPE" == "darwin"* ]]; then
             brew install yaml-cpp

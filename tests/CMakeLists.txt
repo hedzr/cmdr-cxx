@@ -97,15 +97,16 @@ define_test_program(inplace-constructions inplace_constructions.cc)
 define_test_program(valarray-test valarray_test.cc)
 define_test_program(complex-test complex_test.cc)
 
-define_test_program(store-c2 c2_store.cc)
+define_test_program(store-c2 store_c2.cc )
+define_test_program(flags-c2 flags_c2.cc second_src.cc)
 
 
 # app2 c1
-define_test_program(app2-c1 app1.cc)
+define_test_program(app2-c1 app1.cc second_src.cc)
 
 
 # app2 c2
-define_test_program(app2-c2 app2.cc)
+define_test_program(app2-c2 app2.cc second_src.cc)
 
 
 #

@@ -4,7 +4,7 @@
 ![CMake Build Matrix](https://github.com/hedzr/cmdr-cxx/workflows/CMake%20Build%20Matrix/badge.svg?event=release) 
 --> [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/hedzr/cmdr-cxx.svg?label=release)](https://github.com/hedzr/cmdr-cxx/releases)
 
-`cmdr-cxx`[^pre-release] is a *header-only* command-line arguments parser in C++17 and higher. As a member of #cmdr series, it provides a fully-functional `Option Store` for your hierarchical configuration data.
+`cmdr-cxx` ^pre-release^ is a *header-only* command-line arguments parser in C++17 and higher. As a member of #cmdr series, it provides a fully-functional `Option Store` for your hierarchical configuration data.
 
 <img width="1003" alt="image-20210211180854495" src="https://user-images.githubusercontent.com/12786150/107623507-64fa0a80-6c94-11eb-9b9e-a273cfbca9a5.png">
 
@@ -17,38 +17,37 @@
   - supports short flag compat: `-vab` == `-v -a -b`, `-r3ap1zq` == `-r 3 -ap 1 -z -q`
   - supports passthrough flag: `--` will terminate the parsing
   - supports lots of data types for a flag: bool, int, uint, float, string, array, chrono duration, ...
-    - allows user-custom data type
+    - allows user-custom data types
   - automated help-screen printing 
 
 - Robust Interfaces
 
   - supports non-single-char short flag: `-ap 1`
 
-  - supports sorttable command/flag groups
+  - supports sortable command/flag groups
 
   - free style flags arrangements: `$ app main sub4 bug-bug2 zero-sub3 -vqb2r1798b2r 234 --sub4-retry1 913 --bug-bug2-shell-name=fish ~~debug --int 67 -DDD --string 'must-be'`
 
   - builtin commands and flags
 
     - Help: `-h`, `-?`, `--help`, `--info`, `--usage`, ...
+      - `help` command: `app help server pause` == `app server pause --help`.
     - Version & Build Info: `--version`/`--ver`/`-V`, `--build-info`/`-#`
-    - `version`/`versions` command available.
-
-    - Simulating version at runtime with `—version-sim 1.9.1`
-
-    - `~~tree`: list all commands and sub-commands.
+  - `version`/`versions` command available.
+    - Simulating version at runtime with `—-version-sim 1.9.1`
+- `~~tree`: list all commands and sub-commands.
     - `~~debug`: print the debugging info
     - `--config <location>`: specify the location of the root config file. [only for yaml-loader]
     - Verbose & Debug: `—verbose`/`-v`, `—debug`/`-D`, `—quiet`/`-q`
-
-  - Supports `-I/usr/include -I=/usr/include` `-I /usr/include -I:/usr` option argument specifications Automatically allows those formats (applied to long option too):
-
-    - `-I file`, `-Ifile`, and `-I=files`
+    
+- Supports `-I/usr/include -I=/usr/include` `-I /usr/include -I:/usr` option argument specifications Automatically allows those formats (applied to long option too):
+  
+  - `-I file`, `-Ifile`, and `-I=files`
     - `-I 'file'`, `-I'file'`, and `-I='files'`
     - `-I "file"`, `-I"file"`, and `-I="files"`
-
-  - envvars overrides: `HELP=1 ./bin/test-app2-c2 server pause` is the equivalent of `./bin/test-app2-c2 server pause --help`
-
+  
+- envvars overrides: `HELP=1 ./bin/test-app2-c2 server pause` is the equivalent of `./bin/test-app2-c2 server pause --help`
+  
 - Hierarchical Data Manager - `Option Store`
 
   - various data types supports
@@ -74,6 +73,8 @@ cmake --build build/
 cmake --build build/ --target install
 ```
 
+
+
 ### Run the examples
 
 The example executables can be found in `./bin`. For example:
@@ -86,7 +87,7 @@ The example executables can be found in `./bin`. For example:
 
 ### Snapshots
 
-`cmdr-cxx` print an evident, clear, and logical help-screen. Please proceed the more snapshots at [#1 - Gallery](https://github.com/hedzr/cmdr-cxx/issue/1).
+`cmdr-cxx` prints an evident, clear, and logical help-screen. Please proceed the more snapshots at [#1 - Gallery](https://github.com/hedzr/cmdr-cxx/issues/1).
 
 
 
@@ -94,20 +95,22 @@ The example executables can be found in `./bin`. For example:
 
 ## Usages
 
-)
+
 
 ### Integrated to your cmake script
 
 After installed at local, `cmdr-cxx` can be integrated as your CMake module. So we might find and use it:
 
 ```cmake
-find_library(cmdr11::cmdr11)
+find_library(cmdr11)
 
 add_executable(my-app)
 target_link_libraries(my-app PRIVATE cmdr11::cmdr11)
 ```
 
-### Short example:
+
+
+### Short example
 
 ```cpp
 #include <cmdr11/cmdr11.hh>
@@ -172,7 +175,7 @@ int main(int argc, char *argv[]) {
     }
 
     } catch (std::exception &e) {
-        std::cerr << "Exception caught for testing (NOT BUG) : " << e.what() << '\n';
+        std::cerr << "Exception caught for duplicated cmds/args: " << e.what() << '\n';
         CMDR_DUMP_STACK_TRACE(e);
     }
 
@@ -188,14 +191,14 @@ This is a simple program.
 
 ### Lookup a command and its flags
 
-The operator `()` (`cli("cmd1.sub-cmd2.sub-sub-cmd")` ) could retrieve a command (`cmdr::opt::cmd& cc`) from `cli`:
+The operator `()` (`cli("cmd1.sub-cmd2.sub-sub-cmd")` ) could be used for retrieving a command (`cmdr::opt::cmd& cc`) from `cli`:
 
 ```cpp
 auto &cc = cli("server");
 CMDR_ASSERT(cc.valid());
-CMDR_ASSERT(cc["count"].valid());
+CMDR_ASSERT(cc["count"].valid());  // the flag of 'server'
 CMDR_ASSERT(cc["host"].valid());
-CMDR_ASSERT(cc("status").valid());
+CMDR_ASSERT(cc("status").valid()); // the sub-command of 'server'
 CMDR_ASSERT(cc("start").valid());
 CMDR_ASSERT(cc("run", true).valid());
 ```
@@ -206,11 +209,12 @@ Once `cc` is valid, use `[]` to extract its flags.
 
 ### Extract the matched information of a flag
 
-While a flag given from command-line is matched ok, it hold some hit info, such as:
+While a flag given from command-line is matched ok, it holds some hit info. Such as:
 
 ```cpp
 auto &cc = cli("server");
 CMDR_ASSERT(cc.valid());
+
 CMDR_ASSERT(cc["count"].valid());
 CMDR_ASSERT(cc["count"].hit_long()); 	          // if `--count` given
 CMDR_ASSERT(cc["count"].hit_long() == false); 	// if `-c` given
@@ -256,7 +260,7 @@ auto hostname = cmdr::get_store().get_raw_p<std::string>("app.cli", "server.host
 
 Every entry in `Option Store` that we call it a config item. The entries are hierarchical. So we locate it with a dotted key path string.
 
-A config item is free data type dynamically. That is saying, you could change the data type of a item. Such as set one entry to integer array, from integer originally.
+A config item is free data type dynamically. That is saying, you could change the data type of a item at runtime. Such as setting one entry to integer array, from integer originally.
 
 
 
@@ -289,11 +293,11 @@ std::cout << ab << '\n';
 
 ## Features to improve your app arch
 
-`cmdr-cxx` provides some debugging features or top view to improve you design on CLI.
+`cmdr-cxx` provides some debugging features or top view to improve you design at CLI-side.
 
 ### Default Action
 
-We've been told we can bind an action (via `on_invoke`) to an (sub-)command:
+We've been told that we can bind an action (via `on_invoke`) to a (sub-)command:
 
 ```cpp
 t1 += sub_cmd{}("start", "s", "startup", "run")
@@ -340,7 +344,7 @@ Yes you can:
 
 ### `~~debug`
 
-Special flag has leading sequence chars `~~`.
+Special flag has the leading sequence chars `~~`.
 
 `~~debug` can disable the command action and print the internal hitting information.
 
@@ -361,7 +365,7 @@ command "pause, p" hit.
 
 Triple `D` means `--debug --debug --debug`. In `~~debug` mode,  triple `D` can dump more underlying value structure inside `Option Store`.
 
-The duplicated-flag exception there among others, is expecting because we're in testing.
+> The duplicated-flag exception there among others, is expecting because we're in testing.
 
 <img width="1009" alt="image-20210211184120423" src="https://user-images.githubusercontent.com/12786150/107626849-5a8e3f80-6c99-11eb-8e7b-278a50702c8c.png">
 
@@ -369,7 +373,7 @@ The duplicated-flag exception there among others, is expecting because we're in 
 
 #### `~~debug --cli -DDD`
 
-The values of CLI flags are ignored but `~~cli` can force dumping them.
+The values of CLI flags are ignored but `~~cli` can force them dumped. See the snapshot at [#1 - Gallary](https://github.com/hedzr/cmdr-cxx/issues/1).
 
 
 
@@ -387,7 +391,7 @@ This flag will print the command hierarchical structure:
 
 ## External Loaders
 
-There is a pre-built addon `yaml-loader` for loading the external config files in the pre-defined directory locations. `test-app-c1` demonstrate how to use it:
+There is a pre-built addon `yaml-loader` for loading the external config files in the pre-defined directory locations. `test-app-c1` demonstrates how to use it:
 
 ```cpp
 {
@@ -396,7 +400,7 @@ There is a pre-built addon `yaml-loader` for loading the external config files i
 }
 ```
 
-The coresponding cmake fragment:
+The coresponding cmake fragment might be:
 
 ```cmake
 #

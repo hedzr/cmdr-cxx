@@ -5,8 +5,10 @@
 #ifndef CMDR_CXX11_CMDR_CMN_HH
 #define CMDR_CXX11_CMDR_CMN_HH
 
+#include "cmdr_dbg.hh"
 #include <list>
 #include <unordered_map>
+
 
 namespace cmdr {
     class app;
@@ -98,6 +100,16 @@ namespace cmdr::opt {
         // Your handlers could be return this value and cmdr's
         // processor will invoke the default logic.
         RunDefaultAction,
+    };
+
+    class cmdr_requests_exception : public cmdr::exception::cmdr_exception {
+    public:
+        // using cmdr_exception::cmdr_exception;
+        explicit cmdr_requests_exception(enum Action action, char const *file = __FILE__, int line = __LINE__)
+            : cmdr_exception("req", file, line)
+            , _action(action) {
+        }
+        enum Action _action;
     };
 
     namespace types {

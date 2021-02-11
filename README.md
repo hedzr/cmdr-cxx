@@ -413,6 +413,20 @@ Inside `cmdr-cxx`, there are many optimizable points in working.
 
 
 
+
+
+
+
+## Thanks to JODL
+
+Thanks to [JetBrains](https://www.jetbrains.com/?from=cmdr-cxx) for donating product licenses to help develop **cmdr-cxx** [![jetbrains](https://gist.githubusercontent.com/hedzr/447849cb44138885e75fe46f1e35b4a0/raw/bedfe6923510405ade4c034c5c5085487532dee4/jetbrains-variant-4.svg)](https://www.jetbrains.com/?from=hedzr/cmdr-cxx)
+
+
+
+
+
+
+
 ## LICENSE
 
 MIT

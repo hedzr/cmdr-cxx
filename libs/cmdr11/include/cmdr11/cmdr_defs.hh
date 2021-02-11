@@ -69,6 +69,54 @@ void UNUSED(Args &&...args) {
 //
 
 
+// #ifndef __has_feature
+// #define __has_feature(x) 0 // Compatibility with non-clang compilers.
+// #endif
+// // Any compiler claiming C++11 supports, Visual C++ 2015 and Clang version supporting constexp
+// #if __cplusplus >= 201103L || _MSC_VER >= 1900 || __has_feature(cxx_constexpr) // C++ 11 implementation
+// namespace detail {
+//     template<typename T, std::size_t N>
+//     constexpr std::size_t countof(T const (&)[N]) noexcept {
+//         return N;
+//     }
+// } // namespace detail
+// #define countof(arr) detail::countof(arr)
+// #elif _MSC_VER // Visual C++ fallback
+// #define countof(arr) _countof(arr)
+// #elif __cplusplus >= 199711L && ( // C++ 98 trick
+// defined(__INTEL_COMPILER) || defined(__clang__) ||
+//         (defined(__GNUC__) && ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4))) template<typename T, std::size_t N>
+//         char (&COUNTOF_REQUIRES_ARRAY_ARGUMENT(T (&)[N]))[N];
+// #define countof(x) sizeof(COUNTOF_REQUIRES_ARRAY_ARGUMENT(x))
+// #else
+// #define countof(arr) sizeof(arr) / sizeof(arr[0])
+// #endif
+//
+// // template<class C>
+// // std::size_t countof(C const &c) {
+// //     return c.size();
+// // }
+
+// char arrname[5];
+// size_t count = std::extent< decltype( arrname ) >::value;
+//
+// char arrname[5];
+// size_t count = countof( arrname );
+//
+// char arrtwo[5][6];
+// size_t count_fst_dim = countof( arrtwo );    // 5
+// size_t count_snd_dim = countof( arrtwo[0] ); // 6
+//
+template<typename T, size_t N>
+size_t countof(T (&arr)[N]) {
+    UNUSED(arr);
+    return std::extent<T[N]>::value;
+}
+
+
+//
+
+
 // https://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor/46177613
 // https://stackoverflow.com/questions/142508/how-do-i-check-os-with-a-preprocessor-directive/8249232
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)

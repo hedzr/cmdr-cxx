@@ -621,6 +621,12 @@ namespace cmdr::vars {
     public:
         static bool dump_with_type_name;
 
+        void reset() {
+            _children.clear();
+            _indexes.clear();
+            _parent = nullptr;
+        }
+
     private:
         node_map _children;
         node_idx _indexes;
@@ -986,6 +992,10 @@ namespace cmdr::vars {
 
         void walk_by_full_keys(std::function<void(std::pair<small_string, node_pointer> const &val)> const &cb, node *start = nullptr) {
             (start ? start : &_root)->walk_by_full_keys(cb);
+        }
+
+        void reset() {
+            _root.reset();
         }
 
     private:

@@ -89,7 +89,7 @@ namespace cmdr::vars {
 
         for (auto const &[k, v] : _children) {
             std::stringstream ss;
-            ss << v;
+            ss << *(v.get());
 
             for (int i = 0; i < level; i++) os << "  ";
             os << k << ": ";

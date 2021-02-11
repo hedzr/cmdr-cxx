@@ -25,6 +25,7 @@ dist[s]/
 # lib[s]/
 docs/cmake-vars.txt
 b.sh
+_assets/
 
 
 

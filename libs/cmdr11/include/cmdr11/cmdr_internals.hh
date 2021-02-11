@@ -14,8 +14,7 @@ namespace cmdr {
 
     class app_holder final : public util::singleton<app_holder> {
     public:
-        explicit app_holder(typename util::singleton<app_holder>::token) { /*std::cout << "AppHolder constructed" << '\n';*/
-        }
+        explicit app_holder(typename util::singleton<app_holder>::token) {}
         ~app_holder() = default;
 
 #pragma clang diagnostic push

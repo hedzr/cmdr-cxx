@@ -51,6 +51,7 @@ namespace cmdr {
     }
 
     inline opt::Action app::process_command(opt::types::parsing_context &pc, int argc, char *argv[]) {
+        pc.is_flag = false;
         auto cmr = matching_command(pc);
         if (cmr.matched) {
             cmr.obj->hit_title(pc.title.c_str());
@@ -81,10 +82,18 @@ namespace cmdr {
         bool value_parsed{};
         bool extra_argv;
         auto rc{opt::Continue};
+        // int matched_length = 0;
+        // std::vector<arg_matching_result> tmp_amr_list;
+
     next_combined:
         auto amr = matcher(pc);
         if (amr.matched) {
             CMDR_ASSERT(amr.obj);
+
+            // if (amr.matched_length>matched_length){
+            //     matched_length=amr.matched_length;
+            //     tmp_amr_list.push_back(amr);
+            // }
 
             // std::cout << " - " << amr.matched_str << ' ' << '(' << amr.obj->dotted_key() << ')';
             cmdr_verbose_debug(" - %s (%s)", amr.matched_str.c_str(), amr.obj->dotted_key().c_str());
@@ -154,6 +163,7 @@ namespace cmdr {
             }
 
             // std::cout << '\n';
+            pc.title_fragment = amr.matched_str;
 
             if (amr.obj->on_flag_hit()) {
                 rc = amr.obj->on_flag_hit()(
@@ -180,31 +190,32 @@ namespace cmdr {
         if (amr.should_abort)
             return opt::Abortion;
 
+        pc.title_fragment = pc.title;
         pc.title = argv[pc.index];
         pc.add_unknown_arg(pc.title);
         if (_treat_unknown_input_flag_as_error) {
-            if (pc.is_flag) {
-                switch (pc.matching_flag_type) {
-                    case 0:
-                        return unknown_short_flag_found(pc, amr);
-                    default:
-                        return unknown_long_flag_found(pc, amr);
-                }
+            // if (pc.is_flag) {
+            switch (pc.matching_flag_type) {
+                case 0:
+                    return unknown_short_flag_found(pc, amr);
+                default:
+                    return unknown_long_flag_found(pc, amr);
             }
+            // }
         }
         return opt::Continue;
     }
 
     inline opt::Action app::process_special_flag(opt::types::parsing_context &pc, int argc, char *argv[]) {
-        return process_flag(pc, argc, argv, 2, matching_special_flag);
+        return process_flag(pc.mft(2), argc, argv, 2, matching_special_flag);
     }
 
     inline opt::Action app::process_long_flag(opt::types::parsing_context &pc, int argc, char *argv[]) {
-        return process_flag(pc, argc, argv, 2, matching_long_flag);
+        return process_flag(pc.mft(1), argc, argv, 2, matching_long_flag);
     }
 
     inline opt::Action app::process_short_flag(opt::types::parsing_context &pc, int argc, char *argv[]) {
-        return process_flag(pc, argc, argv, 1, matching_short_flag);
+        return process_flag(pc.mft(0), argc, argv, 1, matching_short_flag);
     }
 
     inline typename app::cmd_matching_result app::matching_command(opt::types::parsing_context &pc) {
@@ -298,10 +309,31 @@ namespace cmdr {
             if (auto rc = _on_unknown_argument_found(pc.title, pc.last_matched_cmd(), true, false);
                 rc != opt::RunDefaultAction)
                 return rc;
-        std::cerr << "Unknown long flag: " << std::quoted(pc.title.substr(pc.pos));
-        auto &c = pc.last_matched_cmd();
-        if (c.valid())
-            std::cerr << " under matched command: " << std::quoted(c.title());
+        std::cerr << "Unknown long flag: --" << std::quoted(pc.title_fragment);
+        auto *c = &pc.last_matched_cmd();
+        if (c->valid()) {
+            std::cerr << " under matched command: " << std::quoted(c->title_sequences());
+            std::cerr << '\n';
+
+            text::jaro_winkler_distance jaro{_jaro_winkler_matching_threshold};
+            std::ostringstream os;
+            os << "  Did you mean";
+            do {
+                for (auto const &cc : c->_all_args) {
+                    if (jaro.calculate(pc.title.c_str(), cc.title_long().c_str()).matched())
+                        os << '\n'
+                           << "   - " << std::quoted(cc.title_long()) << ' ' << '[' << jaro.get_distance() << ']' << " (under command " << std::quoted(c->title_sequences()) << ')' << '?';
+                    for (auto const &str : cc.title_aliases()) {
+                        if (jaro.calculate(pc.title.c_str(), str.c_str()).matched())
+                            os << '\n'
+                               << "   - " << std::quoted(str) << ' ' << '[' << jaro.get_distance() << ']' << " (under command " << std::quoted(c->title_sequences()) << ')' << '?';
+                    }
+                }
+            } while ((c = c->owner()) != nullptr);
+            if (os.tellp() > 0) {
+                std::cerr << os.str();
+            }
+        }
         std::cerr << '\n';
         return opt::Abortion;
     }
@@ -312,10 +344,26 @@ namespace cmdr {
             if (auto rc = _on_unknown_argument_found(pc.title, pc.last_matched_cmd(), false, false);
                 rc != opt::RunDefaultAction)
                 return rc;
-        std::cerr << "Unknown short flag: " << std::quoted(pc.title.substr(pc.pos));
-        auto &c = pc.last_matched_cmd();
-        if (c.valid())
-            std::cerr << " under matched command: " << std::quoted(c.title());
+        std::cerr << "Unknown short flag: -" << std::quoted(pc.title_fragment);
+        auto *c = &pc.last_matched_cmd();
+        if (c->valid()) {
+            std::cerr << " under matched command: " << std::quoted(c->title_sequences());
+            std::cerr << '\n';
+
+            text::jaro_winkler_distance jaro{_jaro_winkler_matching_threshold};
+            std::ostringstream os;
+            os << "  Did you mean";
+            do {
+                for (auto const &cc : c->_all_args) {
+                    if (jaro.calculate(pc.title.c_str(), cc.title_short().c_str()).matched())
+                        os << '\n'
+                           << "   - " << std::quoted(cc.title_short()) << ' ' << '[' << jaro.get_distance() << ']' << " (under command " << std::quoted(c->title_sequences()) << ')' << '?';
+                }
+            } while ((c = c->owner()) != nullptr);
+            if (os.tellp() > 0) {
+                std::cerr << os.str();
+            }
+        }
         std::cerr << '\n';
         return opt::Abortion;
     }
@@ -328,8 +376,26 @@ namespace cmdr {
                 return rc;
         std::cerr << "Unknown command: " << std::quoted(pc.title);
         auto &c = pc.last_matched_cmd();
-        if (c.valid())
-            std::cerr << " under matched command: " << std::quoted(c.title());
+        if (c.valid()) {
+            std::cerr << " under matched command: " << std::quoted(c.title_sequences());
+            std::cerr << '\n';
+
+            text::jaro_winkler_distance jaro{_jaro_winkler_matching_threshold};
+            std::cerr << "  Did you mean";
+            for (auto const &cc : c._all_commands) {
+                if (jaro.calculate(pc.title.c_str(), cc._long.c_str()).matched())
+                    std::cerr << '\n'
+                              << "   - " << std::quoted(cc._long) << '?';
+                if (jaro.calculate(pc.title.c_str(), cc._short.c_str()).matched())
+                    std::cerr << '\n'
+                              << "   - " << std::quoted(cc._short) << '?';
+                for (auto const &str : cc._aliases) {
+                    if (jaro.calculate(pc.title.c_str(), str.c_str()).matched())
+                        std::cerr << '\n'
+                                  << "   - " << std::quoted(str) << '?';
+                }
+            }
+        }
         std::cerr << '\n';
         return opt::Abortion;
     }

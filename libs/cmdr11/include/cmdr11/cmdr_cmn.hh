@@ -191,6 +191,7 @@ namespace cmdr::opt {
         struct parsing_context {
             cmd *_root;
             std::string title{};
+            std::string title_fragment{};
             int index{}; // argv's index
             bool is_flag{false};
             bool passthru_flag{false};
@@ -214,6 +215,12 @@ namespace cmdr::opt {
             [[nodiscard]] cmd &last_matched_cmd();
             [[nodiscard]] arg &last_matched_flg();
 
+            parsing_context &mft(int mft) {
+                is_flag = true;
+                matching_flag_type = mft;
+                return (*this);
+            }
+            
             void add_matched_cmd(cmd *obj) { _matched_commands.push_back(obj); }
             void add_matched_arg(arg *obj) { matched_flags.push_back(obj); }
             void add_matched_arg(arg *obj, std::shared_ptr<vars::variable> const &v);

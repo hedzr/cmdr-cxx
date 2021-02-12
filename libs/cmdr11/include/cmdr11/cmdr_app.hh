@@ -392,6 +392,7 @@ namespace cmdr {
 
         int _minimal_tab_width{-1};
         static bool _longest_first;
+        static text::distance _jaro_winkler_matching_threshold;
 
         std::vector<types::on_arg_added> _on_arg_added;
         std::vector<types::on_cmd_added> _on_cmd_added;
@@ -403,6 +404,7 @@ namespace cmdr {
     };
 
     inline bool app::_longest_first = true;
+    inline text::distance app::_jaro_winkler_matching_threshold = 0.83;
 
 } // namespace cmdr
 

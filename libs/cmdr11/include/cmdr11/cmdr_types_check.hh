@@ -225,6 +225,7 @@ namespace cmdr {
 } // namespace cmdr
 
 
+#if 0
 //
 // http://coliru.stacked-crooked.com/a/ff9a456aaee6ec47
 // https://stackoverflow.com/questions/40439909/c98-03-stdis-constructible-implementation
@@ -252,30 +253,28 @@ namespace cmdr::types {
     };
 
     template<typename T>
-    struct remove_ref<T&> {
+    struct remove_ref<T &> {
         typedef T type;
     };
 
-// is_base_of from https://stackoverflow.com/questions/2910979/how-does-is-base-of-work
+    // is_base_of from https://stackoverflow.com/questions/2910979/how-does-is-base-of-work
     namespace aux {
         typedef char yes[1];
         typedef char no[2];
 
-        template <typename B, typename D>
-        struct Host
-        {
-            operator B*() const;
-            operator D*();
+        template<typename B, typename D>
+        struct Host {
+            operator B *() const;
+            operator D *();
         };
-    }
-    template <typename B, typename D>
-    struct is_base_of
-    {
-        template <typename T>
-        static aux::yes& check(D*, T);
-        static aux::no& check(B*, int);
+    } // namespace aux
+    template<typename B, typename D>
+    struct is_base_of {
+        template<typename T>
+        static aux::yes &check(D *, T);
+        static aux::no &check(B *, int);
 
-        static const bool value = sizeof(check(aux::Host<B,D>(), int())) == sizeof(aux::yes);
+        static const bool value = sizeof(check(aux::Host<B, D>(), int())) == sizeof(aux::yes);
     };
 
     template<typename T>
@@ -300,11 +299,11 @@ namespace cmdr::types {
     template<>
     struct is_void<void> : integral_constant<bool, true> {};
 
-    template <bool, typename T, typename>
+    template<bool, typename T, typename>
     struct conditional {
         typedef T type;
     };
-    template <typename T, typename U>
+    template<typename T, typename U>
     struct conditional<false, T, U> {
         typedef U type;
     };
@@ -331,15 +330,15 @@ namespace cmdr::types {
         struct is_more_volatile<volatile T, volatile U> : integral_constant<bool, false> {};
 
         template<typename T, typename U>
-        struct is_more_cv : integral_constant<bool, is_more_const<T,U>::value && is_more_volatile<T,U>::value> {};
+        struct is_more_cv : integral_constant<bool, is_more_const<T, U>::value && is_more_volatile<T, U>::value> {};
 
 
         template<typename T>
         struct is_default_constructible {
             template<typename U>
-            static yes& test(int(*)[sizeof(new U)]);
+            static yes &test(int (*)[sizeof(new U)]);
             template<typename U>
-            static no& test(...);
+            static no &test(...);
             enum {
                 value = sizeof(test<T>(0)) == sizeof(yes)
             };
@@ -348,9 +347,9 @@ namespace cmdr::types {
         template<typename T, typename Arg>
         struct is_constructible_1 {
             template<typename U, typename Arg_>
-            static yes& test(int(*)[sizeof(U(static_cast<Arg_>(*((typename remove_ref<Arg_>::type*)0))))]);
+            static yes &test(int (*)[sizeof(U(static_cast<Arg_>(*((typename remove_ref<Arg_>::type *) 0))))]);
             template<typename U, typename Arg_>
-            static no& test(...);
+            static no &test(...);
             enum {
                 value = sizeof(test<T, Arg>(0)) == sizeof(yes)
             };
@@ -358,68 +357,59 @@ namespace cmdr::types {
 
         // Base pointer construct from Derived Pointer
         template<typename T, typename U>
-        struct is_constructible_1<T*, U*>
-                : conditional<
-                        is_void<typename remove_cv<T>::type>::value,
-                        integral_constant<bool, true>,
-                        typename conditional<
-                                is_void<typename remove_cv<U>::type>::value,
-                                integral_constant<bool, false>,
-                                typename conditional<
-                                        is_more_cv<T, U>::value,
-                                        integral_constant<bool, false>,
-                                        is_base_of<T,U>
-                                >::type
-                        >::type
-                >::type
-        {};
+        struct is_constructible_1<T *, U *>
+            : conditional<
+                      is_void<typename remove_cv<T>::type>::value,
+                      integral_constant<bool, true>,
+                      typename conditional<
+                              is_void<typename remove_cv<U>::type>::value,
+                              integral_constant<bool, false>,
+                              typename conditional<
+                                      is_more_cv<T, U>::value,
+                                      integral_constant<bool, false>,
+                                      is_base_of<T, U>>::type>::type>::type {};
 
         // Base pointer construct from Derived Pointer
         template<typename T, typename U>
-        struct is_constructible_1<T&, U&>
-                : conditional<
-                        is_more_cv<T, U>::value,
-                        integral_constant<bool, false>,
-                        is_base_of<T,U>
-                >::type
-        {};
+        struct is_constructible_1<T &, U &>
+            : conditional<
+                      is_more_cv<T, U>::value,
+                      integral_constant<bool, false>,
+                      is_base_of<T, U>>::type {};
 
 
         template<typename T, typename Arg1, typename Arg2>
         struct is_constructible_2 {
             template<typename U, typename Arg1_, typename Arg2_>
-            static yes& test(int(*)[
-            sizeof(U(
-                    static_cast<Arg1_>(*((typename remove_ref<Arg1_>::type*)0)),
-                    static_cast<Arg2_>(*((typename remove_ref<Arg2_>::type*)0))
-            ))
-            ]);
+            static yes &test(int (*)[sizeof(U(
+                    static_cast<Arg1_>(*((typename remove_ref<Arg1_>::type *) 0)),
+                    static_cast<Arg2_>(*((typename remove_ref<Arg2_>::type *) 0))))]);
             template<typename U, typename Arg1_, typename Arg2_>
-            static no& test(...);
+            static no &test(...);
             enum {
                 value = sizeof(test<T, Arg1, Arg2>(0)) == sizeof(yes)
             };
         };
-    }
+    } // namespace aux
 
     template<typename T, typename Arg1 = void, typename Arg2 = void>
     struct is_constructible : integral_constant<bool, aux::is_constructible_2<T, Arg1, Arg2>::value> {
-
     };
 
     template<typename T, typename Arg>
     struct is_constructible<T, Arg> : integral_constant<bool, aux::is_constructible_1<T, Arg>::value> {
-
     };
     template<typename T>
     struct is_constructible<T> : integral_constant<bool, aux::is_default_constructible<T>::value> {
-
     };
 
 #else
     using is_constructible = std::is_constructible;
 #endif
-    
-}
+
+} // namespace cmdr::types
+
+#endif // 0
+
 
 #endif //CMDR_CXX11_CMDR_TYPES_CHECK_HH

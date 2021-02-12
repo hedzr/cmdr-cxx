@@ -87,18 +87,23 @@ namespace cmdr::path {
 #ifdef __linux__
 
     inline std::string get_executable_path() {
-        char rawPathName[PATH_MAX];
+        char rawPathName[PATH_MAX * 2 + 1];
         char *p = realpath(PROC_SELF_EXE, rawPathName);
+        // std::cout << "[DBG] exe path 1 : " << rawPathName << '\n';
+        // std::cout << "[DBG] exe path 2 : " << p << '\n';
         return std::string(p ? p : rawPathName);
     }
 
     inline std::string get_executable_dir() {
         std::string executablePath = get_executable_path();
-        char *executablePathStr = new char[executablePath.length() + 1];
+        // char *executablePathStr = new char[executablePath.length() + 1];
+        char executablePathStr[PATH_MAX * 2 + 1];
         strcpy(executablePathStr, executablePath.c_str());
         char *executableDir = dirname(executablePathStr);
-        delete[] executablePathStr;
-        return std::string(executableDir);
+        std::string ret(executableDir);
+        // std::cout << "[DBG] exe path : " << executablePathStr << '\n';
+        // std::cout << "[DBG] exe dir  : " << executableDir << '\n';
+        return ret;
     }
 
     inline std::string merge(std::string pathA, std::string pathB) {

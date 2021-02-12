@@ -23,13 +23,23 @@
 - Robust Interfaces
 
   - hooks or actions:
+
     - global: pre/post-invoke 
     - flags: on_hit
     - commands: on_hit, pre/post-invoke, invoke
+
   - supports non-single-char short flag: `-ap 1`
+
   - supports for `-D+`, `-D-` to enable/disable a bool option
+
   - supports sortable command/flag groups
+
   - free style flags arrangements: `$ app main sub4 bug-bug2 zero-sub3 -vqb2r1798b2r 234 --sub4-retry1 913 --bug-bug2-shell-name=fish ~~debug --int 67 -DDD --string 'must-be'`
+
+  - Smart suggestions for wrong command and flags
+
+    based on [Jaro-Winkler distance](https://en.wikipedia.org/wiki/Jaro–Winkler_distance). See [Snapshot](https://github.com/hedzr/cmdr-cxx/issues/1)
+
   - builtin commands and flags
 
     - Help: `-h`, `-?`, `--help`, `--info`, `--usage`, ...
@@ -42,12 +52,15 @@
     - `--no-color`: disable terminal color in outputting
     - `--config <location>`: specify the location of the root config file. [only for yaml-loader]
     - Verbose & Debug: `—verbose`/`-v`, `—debug`/`-D`, `—quiet`/`-q`
+
   - Supports `-I/usr/include -I=/usr/include` `-I /usr/include -I:/usr` option argument specifications Automatically allows those formats (applied to long option too):
 
     - `-I file`, `-Ifile`, and `-I=files`
     - `-I 'file'`, `-I'file'`, and `-I='files'`
     - `-I "file"`, `-I"file"`, and `-I="files"`
+
   - envvars overrides: `HELP=1 ./bin/test-app2-c2 server pause` is the equivalent of `./bin/test-app2-c2 server pause --help`
+
   - Extending internal actions for special operations auch as printing help screen...
 
 - Hierarchical Data Manager - `Option Store`

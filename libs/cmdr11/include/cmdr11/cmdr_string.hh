@@ -27,6 +27,8 @@
 
 #include <type_traits>
 
+#include <chrono>
+
 #include <iomanip>
 #include <sstream>
 
@@ -575,11 +577,23 @@ namespace cmdr::string {
 
 } // namespace cmdr::string
 
+#if __GNUC__ < 10
+#include <math.h>
+#else
+#include <cmath>
+#endif
+
 namespace cmdr::text {
 
     typedef double distance;
 
     namespace detail {
+
+#if __GNUC__ < 10
+        inline double floor(double x) { return ::floor(x); }
+#else
+        inline double floor(double x) { return std::floor(x); }
+#endif
 
         // constexpr float EPSILON = 0.0001; // 1e-4
         constexpr float EPSILON = 0.00000001; // 1e-8
@@ -676,6 +690,7 @@ namespace cmdr::text {
         ~jaro_winkler_distance() = default;
 
         [[nodiscard]] distance get_distance() const override { return _distance; }
+
     protected:
         distance calc(const_chars text, const_chars input, bool append) override {
             if (append) {
@@ -709,7 +724,7 @@ namespace cmdr::text {
 
             // Maximum distance upto which matching
             // is allowed
-            int max_dist = (int) (std::floor(std::max(len1, len2) / 2) - 1);
+            int max_dist = (int) (detail::floor(std::max(len1, len2) / 2) - 1);
 
             // Count of matches
             int match = 0;

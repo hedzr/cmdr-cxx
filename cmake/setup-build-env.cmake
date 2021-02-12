@@ -27,6 +27,14 @@ else ()
                       )
 endif ()
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)
+  # gcc-9: std::is_constructible
+  add_compile_options(-D_LIBCPP_TESTING_FALLBACK_IS_CONSTRUCTIBLE)
+  message("> GCC ${CMAKE_CXX_COMPILER_VERSION} FOUND")
+else()
+  message("> ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} FOUND")
+endif ()
+
 if (DEBUG AND MINGW)
   add_link_options(--allow-multiple-definition)
 endif ()

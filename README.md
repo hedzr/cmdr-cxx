@@ -80,6 +80,10 @@ WIP, pre-released now.
 
 ## Build
 
+> gcc 10+: passed
+>
+> clang 12+: passed
+
 ```bash
 # configure
 cmake -S . -B build/
@@ -195,8 +199,6 @@ int main(int argc, char *argv[]) {
         CMDR_DUMP_STACK_TRACE(e);
     }
 
-    // cmdr::debug::UnhandledExceptionHookInstaller _ueh{};
-    // cmdr::debug::SigSegVInstaller _ssi{};
     return cli.run(argc, argv);
 }
 ```
@@ -432,7 +434,30 @@ add_yaml_loader(test-app2-c1)
 
 Inside `cmdr-cxx`, there are many optimizable points in working.
 
+- [x] enable dim text in terminal
 
+  ```bash
+  CMDR_DIM=1 ./bin/test-app2-c2 main sub4 bug-bug2
+  ```
+
+- [x] `--no-color`
+
+- [x] enable very verbose debugging
+
+  ```cpp
+  #define CMDR_ENABLE_VERBOSE_LOG
+  #include <cmdr11/cmdr11.hh>
+  ```
+
+- [x] enable unhandled exception handler
+
+  ```cpp
+  cmdr::debug::UnhandledExceptionHookInstaller _ueh{}; // for c++ exceptions
+  cmdr::debug::SigSegVInstaller _ssi{};                // for SIGSEGV ...
+  return cli.run(argc, argv);
+  ```
+
+- [ ] 
 
 
 

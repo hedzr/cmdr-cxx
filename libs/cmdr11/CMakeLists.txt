@@ -150,6 +150,12 @@ if (MSVC)
 endif ()
 
 
+set(CLI_NAME cmdr11-cli)
+add_executable(${CLI_NAME} src/main.cc)
+target_include_directories(${CLI_NAME} PRIVATE $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>)
+target_link_libraries(${CLI_NAME} PRIVATE libs::cmdr11)
+
+
 ## TESTING ######################################
 
 if (BUILD_TESTING)
@@ -174,6 +180,12 @@ install(TARGETS ${PROJECT_NAME}
         EXPORT ${PROJECT_NAME}Targets
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        )
+
+install(TARGETS ${CLI_NAME}
+        EXPORT ${PROJECT_NAME}Targets
+        DESTINATION ${CMAKE_INSTALL_BINDIR}
         )
 
 install(EXPORT ${PROJECT_NAME}Targets
@@ -186,20 +198,72 @@ install(DIRECTORY include/${PROJECT_NAME}
         )
 
 install(FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/include/cmdr-cxx.hh
+        DESTINATION
+        ${CMAKE_INSTALL_INCLUDEDIR})
+
+install(FILES
         ${CMAKE_CURRENT_LIST_DIR}/cmake/${PROJECT_NAME}Config.cmake
         DESTINATION
         ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
+#install(TARGETS ${PROJECT_NAME}
+#        # COMPONENT applications
+#        # DESTINATION "bin"
+#        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+#        )
+
+
+## PACKAGING ######################################
+
+# build a CPack driven installer package
+include(InstallRequiredSystemLibraries)
+set(CPACK_PROJECT_NAME ${PROJECT_NAME})
+set(CPACK_PACKAGE_DIRECTORY ${CMAKE_SOURCE_DIR}/dist)
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+set(CPACK_PACKAGE_VERSION_MAJOR "${VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${VERSION_PATCH}")
+set(PROJECT_VERSION_FULL ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
+set(CPACK_SOURCE_IGNORE_FILES
+    ${PROJECT_SOURCE_DIR}/build
+    ${PROJECT_SOURCE_DIR}/cmake-build-debug
+    ${PROJECT_SOURCE_DIR}/dist
+    ${PROJECT_SOURCE_DIR}/.idea
+    ${PROJECT_SOURCE_DIR}/.DS_Store
+    ${PROJECT_SOURCE_DIR}/.git
+    ${PROJECT_SOURCE_DIR}/.gitignore
+    ${PROJECT_SOURCE_DIR}/.vscode
+    ${PROJECT_SOURCE_DIR}/.PIC
+    ${PROJECT_SOURCE_DIR}/ref
+    ${PROJECT_SOURCE_DIR}/_assets/*)
+#set(CPACK_SOURCE_GENERATOR "TXZ")
+#set(CPACK_SOURCE_PACKAGE_FILE_NAME ${ARCHIVE_NAME})
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(CPACK_PACKAGE_DESCRIPTION "A C++17 header-only command-line parser with hierarchical config data manager")
+set(CPACK_PACKAGE_CONTACT "Hedzr Yeh hedzrz@gmail.com")
+
+#set(CPACK_DEBIAN_PACKAGE_DEPENDS "cssrobopec,libqt4-xml,libqt4-network,libqtgui4,treeupdatablereeti")
+#set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/Debian/postinst")
+
+#if (NOT CPack_CMake_INCLUDED)
+include(package-deb)
+include(CPack)
+#endif ()
+
 
 ## DEBUG ######################################
+
 
 # debug_dump_target_inc_dirs(${PROJECT_NAME})
 
 debug_print_value(ARCHIVE_NAME)
-debug_print_value(PROJECT_ARCHIVE_NAME)
 debug_print_value(BUILD_TESTING)
+debug_print_value(PROJECT_ARCHIVE_NAME)
 debug_print_value(CMAKE_CURRENT_SOURCE_DIR)
 debug_print_value(PROJECT_SOURCE_DIR)
+debug_print_value(CPACK_PACKAGE_DIRECTORY)
+debug_print_value(CPACK_PROJECT_VERSION)
 
 #debug_dump_target_inc_dirs_interface_only(${PROJECT_NAME})
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)

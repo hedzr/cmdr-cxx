@@ -10,7 +10,7 @@ include(target-dirs)
 include(utils)
 include(options)
 
-project(cmdr-cxx11
+project(cmdr-cxx
         VERSION ${VERSION}
         DESCRIPTION "cmdr-cxx11 is a POSIX-compliant command-line arguments parser in C++, its part of cmdr series."
         LANGUAGES CXX)
@@ -20,10 +20,12 @@ include(cxx-detect-compilers)
 include(setup-build-env)
 include(versions-gen)
 
-prepare_cpack()
+# prepare_cpack()
 
 debug_print_top_vars()
-debug_print_value(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+#debug_print_value(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+
+
 ## TPL ## HEAD END ##########
 
 

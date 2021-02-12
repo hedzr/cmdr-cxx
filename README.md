@@ -86,12 +86,34 @@ WIP, pre-released now.
 
 ```bash
 # configure
-cmake -S . -B build/
+cmake -DENABLE_AUTOMATE_TESTS=OFF -S . -B build/
 # build
 cmake --build build/
 # install
 cmake --build build/ --target install
 ```
+
+
+
+### Prerequisites
+
+To run all automated tests, or, you're trying to use `yaml-loader` add-on, some dependencies need to prepared at first.
+
+#### Linux
+
+```bash
+sudo apt install -y libyaml-cpp-dev
+```
+
+#### macOS
+
+```bash
+brew install yaml-cpp
+```
+
+
+
+
 
 
 

@@ -23,16 +23,23 @@
 #ifndef CMDR_CXX11_CMDR_STRING_HH
 #define CMDR_CXX11_CMDR_STRING_HH
 
-#include <any>
 #include <cassert>
-#include <iomanip>
-#include <regex>
-#include <sstream>
-#include <string>
+
 #include <type_traits>
-#include <utility>
+
+#include <iomanip>
+#include <sstream>
+
+#include <any>
+#include <array>
+#include <string>
 #include <variant>
 #include <vector>
+
+#include <regex>
+#include <utility>
+
+#include "cmdr_defs.hh"
 
 
 namespace cmdr::string {
@@ -567,5 +574,212 @@ namespace cmdr::string {
     } // namespace conv
 
 } // namespace cmdr::string
+
+namespace cmdr::text {
+
+    typedef double distance;
+
+    namespace detail {
+
+        // constexpr float EPSILON = 0.0001; // 1e-4
+        constexpr float EPSILON = 0.00000001; // 1e-8
+
+        /// @brief      See if two floating point numbers are approximately equal.
+        /// @param[in]  a        number 1
+        /// @param[in]  b        number 2
+        /// @param[in]  epsilon  A small value such that if the difference between the two numbers is
+        ///                      smaller than this they can safely be considered to be equal.
+        /// @return     true if the two numbers are approximately equal, and false otherwise
+        inline bool is_float_eq(float a, float b, float epsilon = EPSILON) {
+            return ((a - b) < epsilon) && ((b - a) < epsilon);
+        }
+        inline bool is_double_eq(double a, double b, double epsilon = EPSILON) {
+            return ((a - b) < epsilon) && ((b - a) < epsilon);
+        }
+
+        /// @brief      See if floating point number `a` is > `b`
+        /// @param[in]  a        number 1
+        /// @param[in]  b        number 2
+        /// @param[in]  epsilon  a small value such that if `a` is > `b` by this amount, `a` is considered
+        ///             to be definitively > `b`
+        /// @return     true if `a` is definitively > `b`, and false otherwise
+        inline bool is_float_gt(float a, float b, float epsilon = EPSILON) {
+            return a > b + epsilon;
+        }
+        inline bool is_double_gt(double a, double b, double epsilon = EPSILON) {
+            return a > b + epsilon;
+        }
+
+        /// @brief      See if floating point number `a` is < `b`
+        /// @param[in]  a        number 1
+        /// @param[in]  b        number 2
+        /// @param[in]  epsilon  a small value such that if `a` is < `b` by this amount, `a` is considered
+        ///             to be definitively < `b`
+        /// @return     true if `a` is definitively < `b`, and false otherwise
+        inline bool is_float_lt(float a, float b, float epsilon = EPSILON) {
+            return a < b - epsilon;
+        }
+        inline bool is_double_lt(double a, double b, double epsilon = EPSILON) {
+            return a < b - epsilon;
+        }
+
+        /// @brief      Returns true if `a` is definitively >= `b`, and false otherwise
+        inline bool is_float_ge(float a, float b, float epsilon = EPSILON) {
+            return a > b - epsilon;
+        }
+        inline bool is_double_ge(double a, double b, double epsilon = EPSILON) {
+            return a > b - epsilon;
+        }
+
+        /// @brief      Returns true if `a` is definitively <= `b`, and false otherwise
+        inline bool is_float_le(float a, float b, float epsilon = EPSILON) {
+            return a < b + epsilon;
+        }
+        inline bool is_double_le(double a, double b, double epsilon = EPSILON) {
+            return a < b + epsilon;
+        }
+
+    } // namespace detail
+
+
+    class distance_base {
+    public:
+        // distance operator()(const_chars text) { return calc(text, 0.7); }
+        distance operator()(const_chars text, const_chars input) { return calc(text, input, false); }
+        // distance_base &operator+(const_chars text, const_chars input) {
+        //     calc(text, input, 0.7, true);
+        //     return (*this);
+        // }
+        explicit operator distance() const { return get_distance(); }
+
+        bool operator==(double d) const { return detail::is_double_eq(get_distance(), d); }
+        bool equal(double d) const { return detail::is_double_eq(get_distance(), d); }
+
+        distance_base &calculate(const_chars text, const_chars input) {
+            calc(text, input, false);
+            return (*this);
+        }
+        bool matched() const { return detail::is_double_ge(get_distance(), get_threshold()); }
+
+    protected:
+        virtual distance calc(const_chars text, const_chars input, bool append) = 0;
+        [[nodiscard]] virtual distance get_distance() const = 0;
+        [[nodiscard]] virtual distance get_threshold() const = 0;
+    };
+
+
+    class jaro_winkler_distance final : public distance_base {
+    public:
+        explicit jaro_winkler_distance(distance threshold = 0.7, bool case_sensitive = true)
+            : _threshold(threshold)
+            , _case_sensitive(case_sensitive) {}
+        ~jaro_winkler_distance() = default;
+
+        [[nodiscard]] distance get_distance() const override { return _distance; }
+    protected:
+        distance calc(const_chars text, const_chars input, bool append) override {
+            if (append) {
+                if (!detail::is_double_eq(_distance, 0))
+                    return _distance;
+            }
+
+            _distance = 0;
+
+            auto len1 = std::strlen(text);
+            auto len2 = std::strlen(input);
+
+            // Exit early if either are empty
+            if (len1 == 0 || len2 == 0) {
+                return _distance;
+            }
+
+            std::string s1(text);
+            std::string s2(input);
+
+            // Convert to lower if case-sensitive is false
+            if (!_case_sensitive) {
+                std::transform(s1.begin(), s1.end(), s1.begin(), ::tolower);
+                std::transform(s2.begin(), s2.end(), s2.begin(), ::tolower);
+            }
+
+            // Exit early if they're an exact match.
+            if (s1 == s2) {
+                return 1;
+            }
+
+            // Maximum distance upto which matching
+            // is allowed
+            int max_dist = (int) (std::floor(std::max(len1, len2) / 2) - 1);
+
+            // Count of matches
+            int match = 0;
+
+            // Hash for matches
+            std::vector<int> hash_s1{};
+            std::vector<int> hash_s2{};
+            hash_s1.reserve(len1);
+            hash_s2.reserve(len2);
+            for (int i = 0; i < (int) len1; i++) hash_s1[i] = 0;
+            for (int i = 0; i < (int) len2; i++) hash_s2[i] = 0;
+            // int hash_s1[s1.length()] = { 0 },
+            //         hash_s2[s2.length()] = { 0 };
+
+            // Traverse through the first string
+            for (int i = 0; i < (int) len1; i++) {
+
+                // Check if there is any matches
+                for (int j = std::max(0, i - max_dist);
+                     j < std::min((int) len2, i + max_dist + 1); j++)
+
+                    // If there is a match
+                    if (s1[i] == s2[j] && hash_s2[j] == 0) {
+                        hash_s1[i] = 1;
+                        hash_s2[j] = 1;
+                        match++;
+                        break;
+                    }
+            }
+
+            // If there is no match
+            if (match == 0)
+                return _distance;
+
+            // Number of transpositions
+            distance t = 0;
+
+            int point = 0;
+
+            // Count number of occurances
+            // where two characters match but
+            // there is a third matched character
+            // in between the indices
+            for (int i = 0; i < (int) len1; i++)
+                if (hash_s1[i]) {
+
+                    // Find the next matched character
+                    // in second string
+                    while (hash_s2[point] == 0)
+                        point++;
+
+                    if (s1[i] != s2[point++])
+                        t++;
+                }
+
+            t /= 2;
+
+            // Return the Jaro Similarity
+            _distance = (((distance) match) / ((distance) len1) + ((distance) match) / ((distance) len2) + ((distance) match - t) / ((distance) match)) / 3.0;
+            return _distance;
+        }
+        [[nodiscard]] distance get_threshold() const override { return _threshold; }
+
+    private:
+        distance _threshold{0.7};
+        // const double StringMetricFactor = 100000000000;
+        bool _case_sensitive{true};
+        distance _distance{};
+    };
+
+} // namespace cmdr::text
 
 #endif //CMDR_CXX11_CMDR_STRING_HH

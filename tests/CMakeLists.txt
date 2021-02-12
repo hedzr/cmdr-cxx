@@ -99,6 +99,7 @@ define_test_program(complex-test complex_test.cc)
 
 define_test_program(store-c2 store_c2.cc)
 define_test_program(flags-c2 flags_c2.cc second_src.cc)
+define_test_program(jaro-c2 jaro_c2.cc)
 
 
 # app2 c1

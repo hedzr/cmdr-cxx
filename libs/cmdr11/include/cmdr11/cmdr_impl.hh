@@ -543,8 +543,10 @@ namespace cmdr {
             trivial->print_flags(*os, c, _minimal_tab_width, true, -1);
             if (smtw < _minimal_tab_width) {
                 os2.clear();
+                delete os;
                 goto restart;
             }
+            
             os2.push_back(os);
         } while ((trivial = trivial->owner()) != nullptr);
 

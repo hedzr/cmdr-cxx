@@ -105,6 +105,8 @@ To run all automated tests, or, you're trying to use `yaml-loader` add-on, some 
 sudo apt install -y libyaml-cpp-dev
 ```
 
+> For CentOS or RedHat, maybe the compiling from source codes is necessary.
+
 #### macOS
 
 ```bash

@@ -27,6 +27,9 @@ docs/cmake-vars.txt
 b.sh
 _assets/
 dist/
+sftp-config(-alt\\d?)?\\.json
+\\.sublime-(project|workspace)
+sftp-settings\\.json
 
 
 

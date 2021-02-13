@@ -51,8 +51,6 @@ if (POLICY CMP0076)
     cmake_policy(SET CMP0076 NEW)
 endif ()
 
-# option(BUILD_TESTING "Build the testing tree." ON)
-#
 # To enable Nightly Target and More, uncomment and include CTest script from CMake bundle.
 # include(CTest)
 
@@ -150,6 +148,8 @@ if (MSVC)
 endif ()
 
 
+## cmdr11-cxx-cli Target ######################################
+
 set(CLI_NAME cmdr11-cli)
 add_executable(${CLI_NAME} src/main.cc)
 target_include_directories(${CLI_NAME} PRIVATE $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>)
@@ -218,11 +218,12 @@ install(FILES
 
 # build a CPack driven installer package
 include(InstallRequiredSystemLibraries)
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
+set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
 set(CPACK_PACKAGE_DIRECTORY ${CMAKE_SOURCE_DIR}/dist)
-set(CPACK_PACKAGE_VERSION_MAJOR "${VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${VERSION_MINOR}")
-set(CPACK_PACKAGE_VERSION_PATCH "${VERSION_PATCH}")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
 set(CPACK_SOURCE_IGNORE_FILES
     ${PROJECT_SOURCE_DIR}/build
     ${PROJECT_SOURCE_DIR}/cmake-build-debug
@@ -241,6 +242,7 @@ set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_DESCRIPTION "A C++17 header-only command-line parser with hierarchical config data manager")
 #set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "")
 set(CPACK_PACKAGE_CONTACT "Hedzr Yeh <hedzrz@gmail.com>")
+set(CPACK_PACKAGE_VENDOR "Hedzr Studio")
 
 if (DISTRO_NAME STREQUAL "Debian")
     message(STATUS ">>>> Found Debian <<<<")
@@ -277,7 +279,11 @@ debug_print_value(PROJECT_ARCHIVE_NAME)
 debug_print_value(CMAKE_CURRENT_SOURCE_DIR)
 debug_print_value(PROJECT_SOURCE_DIR)
 debug_print_value(CPACK_PACKAGE_DIRECTORY)
-debug_print_value(CPACK_PROJECT_VERSION)
+debug_print_value(CPACK_PACKAGE_NAME)
+debug_print_value(CPACK_PACKAGE_VERSION)
+debug_print_value(CPACK_PACKAGE_VERSION_MAJOR)
+debug_print_value(CPACK_PACKAGE_VERSION_MINOR)
+debug_print_value(CPACK_PACKAGE_VERSION_PATCH)
 
 #debug_dump_target_inc_dirs_interface_only(${PROJECT_NAME})
 get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)

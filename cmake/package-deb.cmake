@@ -1,16 +1,20 @@
 set(CPACK_GENERATOR "DEB")
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 
+# https://cmake.org/cmake/help/latest/module/CPack.html
+# https://cmake.org/cmake/help/latest/cpack_gen/deb.html#cpack_gen:CPack%20DEB%20Generator
+
 set(CPACK_DEBIAN_PACKAGE_NAME "libcmdr11-dev")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${CPACK_PACKAGE_CONTACT})
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION ${CPACK_PACKAGE_DESCRIPTION})
 
 #set(CPACK_DEBIAN_PACKAGE_VERSION ${PROJECT_VERSION})
 
-#set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.3.1-6), libc6 (<< 3)")
-#set(CPACK_DEBIAN_PACKAGE_DEPENDS "cssrobopec,libqt4-xml,libqt4-network,libqtgui4,treeupdatablereeti")
+#set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.4), libgcc-s1 (>= 3.0), libstdc++6 (>= 9)")
+##set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.3.1-6), libc6 (<< 3)")
+##set(CPACK_DEBIAN_PACKAGE_DEPENDS "cssrobopec,libqt4-xml,libqt4-network,libqtgui4,treeupdatablereeti")
 #set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/Debian/postinst")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 
 set(CPACK_DEBIAN_PACKAGE_LICENSE ${CPACK_RESOURCE_FILE_LICENSE})
-set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/hedzr/cmdr-cxx")
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE ${CPACK_PACKAGE_HOMEPAGE})

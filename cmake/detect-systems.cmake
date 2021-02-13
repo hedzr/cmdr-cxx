@@ -57,7 +57,7 @@ if (MSVC OR MSYS OR MINGW)
   # for detecting Windows compilers
 endif ()
 
-if (LINUX OR UNIX)
+if (LINUX)
   #file(READ "/etc/issue" ETC_ISSUE)
   #string(REGEX MATCH "Debian|Ubuntu" DIST ${ETC_ISSUE})
   file(STRINGS /etc/os-release distro REGEX "^NAME=")

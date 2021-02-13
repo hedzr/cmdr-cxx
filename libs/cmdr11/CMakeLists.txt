@@ -216,6 +216,8 @@ install(FILES
 
 ## PACKAGING ######################################
 
+# https://cmake.org/cmake/help/latest/module/CPack.html
+
 # build a CPack driven installer package
 include(InstallRequiredSystemLibraries)
 set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
@@ -243,6 +245,7 @@ set(CPACK_PACKAGE_DESCRIPTION "A C++17 header-only command-line parser with hier
 #set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "")
 set(CPACK_PACKAGE_CONTACT "Hedzr Yeh <hedzrz@gmail.com>")
 set(CPACK_PACKAGE_VENDOR "Hedzr Studio")
+set(CPACK_PACKAGE_HOMEPAGE "https://github.com/hedzr/cmdr-cxx")
 
 if (DISTRO_NAME STREQUAL "Debian")
     message(STATUS ">>>> Found Debian <<<<")

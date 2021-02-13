@@ -22,11 +22,12 @@ sav[e]/
 SAV[E]/
 output[s]/
 dist[s]/
+dist-ubuntu/
+dist-centos/
 # lib[s]/
 docs/cmake-vars.txt
 b.sh
 _assets/
-dist/
 sftp-config(-alt\\d?)?\\.json
 \\.sublime-(project|workspace)
 sftp-settings\\.json

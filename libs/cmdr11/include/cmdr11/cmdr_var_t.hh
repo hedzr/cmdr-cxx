@@ -29,6 +29,10 @@
 #include <cmath>
 #include <complex>
 
+#include <mutex>
+#include <shared_mutex>
+#include <thread>
+
 
 #include "cmdr_defs.hh"
 #include "cmdr_types.hh"
@@ -622,6 +626,7 @@ namespace cmdr::vars {
         static bool dump_with_type_name;
 
         void reset() {
+            std::shared_lock<std::shared_mutex> lock(mutex_);
             _children.clear();
             _indexes.clear();
             _parent = nullptr;
@@ -631,6 +636,7 @@ namespace cmdr::vars {
         node_map _children;
         node_idx _indexes;
         node_pointer _parent{};
+        mutable std::shared_mutex mutex_;
 
     public:
         template<class A, typename... Args,
@@ -639,16 +645,16 @@ namespace cmdr::vars {
                                  !std::is_same<std::decay_t<A>, self_type>::value,
                          int> = 0>
         void set(char const *key, A &&a0, Args &&...args) {
-            this->_set(
-                    key, [&](char const *, node_pointer) {}, a0, args...);
+            std::shared_lock<std::shared_mutex> lock(mutex_);
+            this->_set(key, [&](char const *, node_pointer) {}, a0, args...);
         }
         template<class A,
                  std::enable_if_t<std::is_constructible<T, A>::value &&
                                           !std::is_same<std::decay_t<A>, self_type>::value,
                                   int> = 0>
         void set(char const *key, A &&a) {
-            this->_set(
-                    key, [&](char const *, node_pointer) {}, a);
+            std::shared_lock<std::shared_mutex> lock(mutex_);
+            this->_set(key, [&](char const *, node_pointer) {}, a);
         }
 
     private:

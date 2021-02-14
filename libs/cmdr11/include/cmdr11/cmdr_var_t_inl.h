@@ -29,6 +29,7 @@ namespace cmdr::vars {
 
     template<class T, class small_string>
     inline T &nodeT<T, small_string>::_get_raw(std::string const &key) {
+        std::shared_lock<std::shared_mutex> lock(mutex_);
         auto it = _indexes.find(key);
         if (it == _indexes.end()) {
             return null_element();
@@ -38,6 +39,7 @@ namespace cmdr::vars {
 
     template<class T, class small_string>
     inline T const &nodeT<T, small_string>::_get_raw(std::string const &key) const {
+        std::shared_lock<std::shared_mutex> lock(mutex_);
         auto it = _indexes.find(key);
         if (it == _indexes.end()) {
             return null_element();

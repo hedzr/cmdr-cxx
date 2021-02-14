@@ -21,7 +21,7 @@ namespace cmdr::opt {
         ss << ' ' << '[' << "DEFAULT";
         if (!_placeholder.empty())
             ss << ' ' << _placeholder;
-        ss << '=' << _default.get() << ']';
+        ss << '=' << *_default.get() << ']';
         // if (!std::holds_alternative<std::monostate>(_default)) {
         //     ss << ' ' << '[' << "DEFAULT=" << variant_to_string(_default) << ']';
         // }

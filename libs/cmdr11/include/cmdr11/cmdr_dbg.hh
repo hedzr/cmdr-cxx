@@ -341,7 +341,14 @@ namespace cmdr::debug {
 
 } // namespace cmdr::debug
 
+
+//
+//
+//
+
+
 namespace cmdr::exception {
+
     class cmdr_exception : public std::runtime_error {
         std::string msg;
         std::vector<std::string> st;
@@ -361,31 +368,52 @@ namespace cmdr::exception {
         }
         [[nodiscard]] std::vector<std::string> const &stacktrace() const { return st; }
     };
+
 #define cmdr_throw_line(arg) throw cmdr::exception::cmdr_exception(arg, __FILE__, __LINE__)
+
+    class cmdr_biz_error : public cmdr_exception {
+    public:
+        using cmdr_exception::cmdr_exception;
+    };
+    
+    class required_flag_missed : public cmdr_biz_error {
+    public:
+        using cmdr_biz_error::cmdr_biz_error;
+    };
+
+#define cmdr_throw_as(typ, arg) throw cmdr::exception::typ(arg, __FILE__, __LINE__)
+
 } // namespace cmdr::exception
+
+//
 
 namespace cmdr::debug {
     // unwrap nested exceptions, printing each nested exception to
     // std::cerr
-    inline void dump_stacktrace(const char *file, int line, const std::exception &e, std::size_t depth = 0) {
-        std::cerr << "  [EX][ERR]: " // << demangle(typeid(e).name()) << ", "
+    inline void dump_stacktrace(const char *file, int line, const std::exception &e, bool print_stack = true, std::size_t depth = 0) {
+        std::cerr << "      [EX] [ERR] : " // << demangle(typeid(e).name()) << ", "
                   << std::string(depth, ' ') << e.what() << '\n';
-        if (depth == 0 && "cmdr::exception::cmdr_exception" == type(e)) {
-            print_stacktrace(((cmdr::exception::cmdr_exception const *) (&e))->stacktrace());
-        }
-        try {
-            std::rethrow_if_nested(e);
-        } catch (const std::exception &nested) {
-            dump_stacktrace(file, line, nested, depth + 1);
+        if (print_stack) {
+            if (depth == 0 && "cmdr::exception::cmdr_exception" == type(e)) {
+                print_stacktrace(((cmdr::exception::cmdr_exception const *) (&e))->stacktrace());
+            }
+            try {
+                std::rethrow_if_nested(e);
+            } catch (const std::exception &nested) {
+                dump_stacktrace(file, line, nested, print_stack, depth + 1);
+            }
         }
 #if defined(__GNUC__) || defined(__clang__)
         if (depth == 0) {
-            std::cerr << "- [CAPTURED]: " << file << ":" << line << '\n';
-            print_stacktrace();
+            std::cerr << "    - [CAPTURED] : " << file << ":" << line << '\n';
+            if (print_stack) {
+                print_stacktrace();
+            }
         }
 #endif
     }
 #define CMDR_DUMP_STACK_TRACE(e) cmdr::debug::dump_stacktrace(__FILE__, __LINE__, e)
+#define CMDR_DUMP_WITHOUT_STACK_TRACE(e) cmdr::debug::dump_stacktrace(__FILE__, __LINE__, e, false)
 
 } // namespace cmdr::debug
 

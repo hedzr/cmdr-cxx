@@ -299,6 +299,7 @@ namespace cmdr::opt {
         string_array _env_vars;
         std::string _placeholder;
         std::string _toggle_group;
+        // bool _required: 1;
 
         types::on_flag_hit _on_flag_hit;
 
@@ -344,10 +345,11 @@ namespace cmdr::opt {
         void _copy(const arg &o) {
             bas::_copy(o);
 
+            __COPY(_default);
             __COPY(_env_vars);
-            __COPY(_toggle_group);
             __COPY(_placeholder);
-            __COPY(_default); // TODO _default in duplicating in copy constructing
+            __COPY(_toggle_group);
+            // __COPY(_required);
             __COPY(_on_flag_hit);
         }
 
@@ -373,10 +375,17 @@ namespace cmdr::opt {
         return (*this);     \
     }                       \
     typ const &mn() const { return _##mn; }
+#define PROP_SET4(mn, typ)  \
+    arg &mn(typ const &s) { \
+        _##mn = s;          \
+        return (*this);     \
+    }                       \
+    typ mn() const { return _##mn; }
 
         // PROP_SET3(env_vars, string_array)
         // PROP_SET(toggle_group)
         PROP_SET(placeholder)
+        // PROP_SET4(required, bool)
         // PROP_SET(default)
 
         // PROP_SET3(on_flag_hit, auto)
@@ -384,6 +393,7 @@ namespace cmdr::opt {
 #undef PROP_SET
 #undef PROP_SET2
 #undef PROP_SET3
+#undef PROP_SET4
 
         arg &on_flag_hit(types::on_flag_hit const &h) {
             _on_flag_hit = h;

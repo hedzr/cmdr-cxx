@@ -403,7 +403,7 @@ namespace cmdr {
 
     inline void app::on_arg_added(opt::arg *a) {
         auto key = a->dotted_key();
-        auto val = a->default_value().get();
+        auto *val = a->default_value().get();
         _store.set_raw(key.c_str(), *val);
         for (auto &cb : _on_arg_added) {
             if (cb)
@@ -422,7 +422,7 @@ namespace cmdr {
 
     inline void app::on_arg_matched(opt::arg *a, opt::arg::var_type &value) {
         auto key = a->dotted_key();
-        auto val = value.get();
+        auto *val = value.get();
         _store.set_raw(key.c_str(), *val);
         for (auto &cb : _on_arg_matched) {
             if (cb)
@@ -546,7 +546,7 @@ namespace cmdr {
                 delete os;
                 goto restart;
             }
-            
+
             os2.push_back(os);
         } while ((trivial = trivial->owner()) != nullptr);
 

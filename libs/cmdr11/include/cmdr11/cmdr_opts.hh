@@ -101,8 +101,9 @@ namespace cmdr::opt {
     class opt {
     public:
         opt() = default;
-        opt(opt const *) = delete;
-        opt(opt &&) = delete;
+        // opt(opt const *) = delete;
+        opt(opt &&o)
+            : _arg(std::move(o._arg)) {}
         template<class A, typename... Args,
                  std::enable_if_t<
                          std::is_constructible<vars::variable, A, Args...>::value &&

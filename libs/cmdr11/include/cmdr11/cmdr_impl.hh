@@ -766,6 +766,19 @@ namespace cmdr {
         return -1;
     }
 
+    inline void app::check_required_flags(opt::cmd &cc) {
+        auto *ptr = &cc;
+        do {
+            for (auto &fp : ptr->_all_args) {
+                if (fp.required() && fp.hit_count() < 1) {
+                    char msg[512];
+                    std::sprintf(msg, "the flag '%s' missed, it's indispensable.", fp.title().c_str());
+                    cmdr_throw_as(required_flag_missed, msg);
+                }
+            }
+        } while ((ptr = ptr->owner()) != nullptr);
+    }
+
     inline int app::after_run(opt::Action rc, opt::types::parsing_context &pc, int argc, char *argv[]) {
         if (rc > opt::OK && rc < opt::Continue)
             return internal_action(rc, pc, argc, argv);
@@ -780,6 +793,7 @@ namespace cmdr {
             if (cc.no_sub_commands()) {
                 // invoking cc
                 try {
+                    check_required_flags(cc);
                     return invoke_command(cc, remain_args(pc, argv, pc.index + 1, argc), pc);
                 } catch (opt::cmdr_requests_exception const &ex) {
                     return internal_action(ex._action, pc, argc, argv);

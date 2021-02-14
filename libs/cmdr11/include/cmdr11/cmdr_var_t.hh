@@ -1003,9 +1003,9 @@ namespace cmdr::vars {
                        node *start = nullptr) const {
             // auto c = tcolorize::create();
             if (leading_title)
-                os << leading_title;
+                os << c.bold().s(leading_title);
             else
-                os << "Dumping for var_t as Tree ...";
+                os << c.bold().s("Dumping for var_t as Tree ...");
             os << '\n';
             (start ? start : &_root)->dump_tree(os, &c, dim_text_fg, dim_text_dim, 0);
         }
@@ -1018,9 +1018,9 @@ namespace cmdr::vars {
                          node *start = nullptr) const {
             // auto c = tcolorize::create();
             if (leading_title)
-                os << leading_title;
+                os << c.bold().s(leading_title);
             else
-                os << "Dumping for var_t as Tree ...";
+                os << c.bold().s("Dumping for var_t as Tree ...");
             os << '\n';
             auto ptr = (start ? start : &_root);
             ptr->dump_tree_f(os, &c, dim_text_fg, dim_text_dim, key_prefix, on_filter, 0);
@@ -1031,9 +1031,9 @@ namespace cmdr::vars {
                             node *start = nullptr) const {
             // auto c = tcolorize::create();
             if (leading_title)
-                os << leading_title;
+                os << c.bold().s(leading_title);
             else
-                os << "Dumping for var_t ...";
+                os << c.bold().s("Dumping for var_t ...");
             os << '\n';
             (start ? start : &_root)->dump_full_keys(os, &c, dim_text_fg, dim_text_dim, 0);
         }
@@ -1045,9 +1045,9 @@ namespace cmdr::vars {
                               node *start = nullptr) const {
             // auto c = tcolorize::create();
             if (leading_title)
-                os << leading_title;
+                os << c.bold().s(leading_title);
             else
-                os << "Dumping for var_t ...";
+                os << c.bold().s("Dumping for var_t ...");
             os << '\n';
             (start ? start : &_root)->dump_full_keys_f(os, &c, dim_text_fg, dim_text_dim, on_filter, 0);
         }

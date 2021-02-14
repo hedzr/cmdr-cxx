@@ -208,7 +208,7 @@ namespace cmdr {
             };
 
             if (tilde_debug_hit_count > 1) {
-                dump_full_keys_f(std::cout, filter);
+                dump_full_keys_f(std::cout, filter, "Dumping the Option Store ...");
                 // store.dump_full_keys_f(cli._dim_text_fg, cli._dim_text_dim, std::cout,
                 //                        [](std::pair<vars::store::key_type, vars::store::node_pointer> const &) -> bool {
                 //                            return false;
@@ -216,7 +216,7 @@ namespace cmdr {
             }
 
             if (tilde_debug_hit_count > 2) {
-                dump_tree_f(std::cout, filter);
+                dump_tree_f(std::cout, filter, "Dumping the Option Store as Tree ...");
                 // dump_tree_f(std::cout, [](std::pair<vars::store::key_type, vars::store::node_pointer> const &) -> bool {
                 //     return false;
                 // });

@@ -747,13 +747,18 @@ namespace cmdr {
             cmdr_verbose_debug("   - app::after_run ...");
             return after_run(rc, pc, argc, argv);
 
+        } catch (cmdr::exception::cmdr_biz_error const &e) {
+            if (_no_catch_cmdr_biz_error)
+                throw e;
+            CMDR_DUMP_WITHOUT_STACK_TRACE(e);
+
         } catch (std::exception const &e) {
             std::cerr << "Exception caught : " << e.what() << '\n';
-            std::cerr << "         cmdline : /";
+            std::cerr << "         cmdline : [";
             for (int i = 0; i < argc; i++) {
                 std::cerr << ' ' << argv[i];
             }
-            std::cerr << "///" << '\n';
+            std::cerr << " ]" << '\n';
             CMDR_DUMP_STACK_TRACE(e);
 
             // } catch (...) {

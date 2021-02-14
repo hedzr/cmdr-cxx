@@ -91,20 +91,31 @@ void add_main_menu(cmdr::app &cli) {
     {
         auto &t1 = *cli.last_added_command();
 
+        auto ox1 = opt{79129L};
+        ox1("long", "b")
+                .description("flag b")
+                .required();
+        // std::cout << "1. " << *ox1.underlying().default_value().get() << '\n';
+        t1 += ox1;
+        // // std::cout << "2. " << *ox1.underlying().default_value().get() << '\n';
+        // // std::cout << "3. " << *t1["long"].default_value().get() << '\n';
+        // std::cout << "4. CLI/STORE: " << cmdr::get_for_cli<long>("main.long") << '\n';
+
         t1 += opt{10}("int", "i")
                       .description("set the int-value");
         t1 += opt{""}("string", "str")
                       .description("set the string-value");
-        t1 += opt{}("b-arch", "a")
-                      .description("flag a");
-        t1 += opt{}("b-bech", "b")
-                      .description("flag b");
-        t1 += opt{}("b-coach", "c")
-                      .description("flag c");
-        t1 += opt{}("b-dent", "d")
-                      .description("flag d");
-        t1 += opt{std::vector{"a"}}("array", "e")
-                      .description("flag array");
+        t1 += opt{3.13f}("float", "f")
+                      .description("flag float");
+        t1 += opt{3.12}("double", "d")
+                .description("flag double");
+        
+        t1 += opt{std::vector{3, 9, 17}}("int-array", "ia")
+                      .description("flag int array");
+        t1 += opt{98LL}("long-long", "ll")
+                      .description("flag long-long");
+        t1 += opt{std::vector{"a","Z"}}("string-array", "sa")
+                      .description("flag string array");
 
         using namespace std::complex_literals;
 

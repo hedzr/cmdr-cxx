@@ -138,4 +138,34 @@ TEST_CASE("flags test", "[flags]") {
         REQUIRE(cli["tree"].hit_long());
         REQUIRE(cli["tree"].hit_count() == 1);
     }
+
+    // default value of an arg/flag, ...
+
+    SECTION("main --float 2.7") {
+        const char *argv[] = {"", "main", "--float", "2.7", "--no-color"};
+        REQUIRE(cli.run(countof(argv), const_cast<char **>(argv)) == 0);
+
+        REQUIRE(cli.get_for_cli("main.int").as<int>() == 10);
+        REQUIRE(cli.get_for_cli("main.long").as<long>() == 79129L);
+        REQUIRE(cli.get_for_cli("main.float").as<float>() == 2.7f);
+        REQUIRE(cli.get_for_cli("main.long-long").as<long long>() == 98LL);
+        REQUIRE(cli.get_for_cli("main.string-array").as<std::vector<const char *>>() == std::vector{"a", "Z"});
+        REQUIRE(cli.get_for_cli("no-color").as<bool>());
+    }
+
+    // required flag
+
+    SECTION("main sub1 --float 2.7") {
+        const char *argv[] = {"", "main", "sub1", "--float", "2.7", "--no-color"};
+        try {
+            cli.set_no_catch_cmdr_biz_error(true).
+                    run(countof(argv), const_cast<char **>(argv));
+        } catch (cmdr::exception::cmdr_biz_error const &e) {
+            auto c{cmdr::terminal::colors::colorize::create()};
+            std::cout << c.bold().s("<<CAPTURED>> ") << e.what() << '\n';
+        }
+        REQUIRE(cli.get_for_cli("main.long").as<long>() == 79129L);
+        REQUIRE(cli.get_for_cli("main.float").as<float>() == 2.7f);
+        REQUIRE(cli.get_for_cli("no-color").as<bool>());
+    }
 }

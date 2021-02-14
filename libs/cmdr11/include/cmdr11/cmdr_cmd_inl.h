@@ -99,8 +99,11 @@ namespace cmdr::opt {
 
             auto ptr = &_all_args.back();
 
-            if (ptr->default_value().get() == nullptr)
+            if (ptr->default_value().get() == nullptr) {
                 ptr->default_value(vars::variable{false});
+                cmdr_verbose_debug("  -> set arg default value to false. [key: '%s'] [cmd: \"%s\"]", a.title_long().c_str(), this->title_sequences().c_str());
+            }
+            
             if (_grouped_args.find(gn) == _grouped_args.end())
                 _grouped_args.emplace(gn, types::arg_pointers{});
             _grouped_args[gn].push_back(ptr);

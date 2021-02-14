@@ -147,7 +147,7 @@ namespace cmdr::log {
     _Pragma("GCC diagnostic pop")
 #endif
 
-#if CMDR_ENABLE_VERBOSE_LOG
+#if defined(CMDR_ENABLE_VERBOSE_LOG)
 // inline void debug(char const *fmt, ...) {
 //     va_list va;
 //     va_start(va, fmt);
@@ -157,7 +157,7 @@ namespace cmdr::log {
 #if defined(_MSC_VER)
 #define cmdr_verbose_debug(...) cmdr::log::holder(__FILE__, __LINE__, __FUNCSIG__)(__VA_ARGS__)
 #else
-#define cmdr_verbose_debug(..) cmdr::log::holder(__FILE__, __LINE__, __PRETTY_FUNCTION__)(__VA_ARGS__)
+#define cmdr_verbose_debug(...) cmdr::log::holder(__FILE__, __LINE__, __PRETTY_FUNCTION__)(__VA_ARGS__)
 #endif
 #else
 // #define cmdr_verbose_debug(...)

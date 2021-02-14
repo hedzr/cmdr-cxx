@@ -377,6 +377,8 @@ namespace cmdr {
         cmdr::vars::store _store;
         std::string _store_prefix{DEFAULT_KEY_PREFIX};
 
+        mutable std::mutex _run_is_singleton;
+        
         // static colorize &colorizer() {...}
 
         opt::types::on_pre_invoke _global_on_pre_invoke;

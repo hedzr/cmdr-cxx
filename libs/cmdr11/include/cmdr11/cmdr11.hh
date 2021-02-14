@@ -34,9 +34,14 @@
 #pragma once
 
 
-// #define CAST_CONST_CHARS_AS_STD_STRING
+// #define CMDR_CAST_CONST_CHARS_AS_STD_STRING     1
 // To cast a const char* string as a std::string instance in extracting
 // arg default value, uncomment the above line.
+
+// #define CMDR_ENABLE_VERBOSE_LOG    1
+// To enable internal very verbose logging, uncomment the above line.
+// see also cmdr_verbose_debug(...) in cmdr_log.hh
+
 
 #include "cmdr_defs.hh"
 #include "cmdr_types.hh"

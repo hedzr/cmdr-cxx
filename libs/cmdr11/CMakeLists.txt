@@ -34,11 +34,11 @@ else ()
 endif ()
 
 option(CMDR_ENABLE_VERBOSE_LOG "whether or not print the matching decisions to logging output in running" OFF)
-if (${CMDR_ENABLE_VERBOSE_LOG})
-    set(_cmdr_enable_verbose_log 1)
-else ()
-    set(_cmdr_enable_verbose_log 0)
-endif ()
+#if (${CMDR_ENABLE_VERBOSE_LOG})
+#    set(_cmdr_enable_verbose_log 1)
+#else ()
+#    set(_cmdr_enable_verbose_log 0)
+#endif ()
 
 
 ## SETTINGS ######################################
@@ -58,7 +58,7 @@ endif ()
 #find_package(ZLIB REQUIRED)
 #find_package(fmt)
 #include(deps_inc_fmt)
-if (CMDR_ENABLE_VERBOSE_LOG)
+if (${CMDR_ENABLE_VERBOSE_LOG})
     # include(deps_inc_spdlog)
     # Or for a spdlog standalone install:
     # find_package(spdlog REQUIRED)
@@ -131,8 +131,11 @@ target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE $<INSTALL_INTERFACE:
 target_compile_definitions(${PROJECT_NAME} INTERFACE
                            CMDR_ENABLE_ASSERTIONS=${_cmdr_enable_assertions}
                            CMDR_ENABLE_PRECONDITION_CHECKS=${_cmdr_enable_precondition_checks}
-                           CMDR_ENABLE_WRAPPER=${_cmdr_enable_wrapper}
-                           CMDR_ENABLE_VERBOSE_LOG=${_cmdr_enable_verbose_log})
+                           CMDR_ENABLE_WRAPPER=${_cmdr_enable_wrapper})
+if (${CMDR_ENABLE_VERBOSE_LOG})
+    target_compile_definitions(${PROJECT_NAME} INTERFACE
+                               CMDR_ENABLE_VERBOSE_LOG=1)
+endif()
 #target_link_libraries(${PROJECT_NAME} INTERFACE debug_assert)
 #target_link_libraries(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARIES})
 #target_link_libraries(${PROJECT_NAME} PRIVATE libs::sm-lib)

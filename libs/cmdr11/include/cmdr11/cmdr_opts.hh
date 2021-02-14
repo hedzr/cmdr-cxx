@@ -117,7 +117,7 @@ namespace cmdr::opt {
                                   int> = 0>
         explicit opt(A &&a)
             : _arg(std::forward<A>(a)) {}
-#if defined(CAST_CONST_CHARS_AS_STD_STRING)
+#if defined(CMDR_CAST_CONST_CHARS_AS_STD_STRING)
         explicit opt(char const *&&a)
             : _arg(std::string(a)) {}
 #endif

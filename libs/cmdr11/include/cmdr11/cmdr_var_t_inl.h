@@ -12,11 +12,11 @@
 namespace cmdr::vars {
 
 
-    inline variable::self_type variable::parse(std::string &s) {
-        self_type v;
+    inline variable variable::parse(std::string &s) {
+        variable v;
         std::istringstream is(s);
         is >> v;
-        return v;
+        return v; // variable(v._value);
     }
 
     // template<class T, class small_string>

@@ -86,7 +86,7 @@ namespace cmdr {
         });
         _internal_actions.emplace(opt::RequestVersionsScreen, [=](opt::types::parsing_context &, int, char *[]) -> int {
             auto vs = this->_version;
-            auto vsvar = this->get_for_cli("version-sim");
+            auto &vsvar = this->get_for_cli("version-sim");
             if (!vsvar.empty()) vs = vsvar.as<std::string>();
             if (vs.empty()) vs = this->_version;
             std::cout << vs << '\n';

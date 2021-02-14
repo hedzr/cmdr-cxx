@@ -64,12 +64,12 @@ int main(int argc, char *argv[]) {
         {
             auto &t1 = *cli.last_added_command();
 
-            t1 += opt{10}("int", "i")
-                          .description("set the int-value");
-            t1 += opt{10}("int", "i")
-                          .description("set the int-value");
             t1 += opt{""}("string", "str")
-                          .description("set the string-value");
+                    .description("set the string-value");
+            t1 += opt{10}("int", "i")
+                          .description("set the int-value");
+            t1 += opt{10}("int", "i")
+                          .description("set the int-value");
         }
 #endif
 

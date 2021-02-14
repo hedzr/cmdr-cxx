@@ -39,6 +39,7 @@
 #include "cmdr_types_check.hh"
 
 #include "cmdr_dbg.hh"
+#include "cmdr_log.hh"
 
 #include "cmdr_chrono.hh"
 #include "cmdr_string.hh"
@@ -105,20 +106,25 @@ namespace cmdr::vars {
                          int> = 0>
         explicit variable(A &&a)
             : _value(std::forward<A>(a)) {}
-        // explicit variable(variable &&a)
-        //     : _value(std::move(a.value_any())) {}
         explicit variable(std::any &&a)
             : _value(std::move(a)) {}
-        // explicit variable(variable const &a)
-        //     : _value(std::move(a.value_any())) {}
         explicit variable(std::any a)
             : _value(std::move(a)) {}
+        // explicit variable(variable const &a)
+        //     : _value(a._value) {}
+        // explicit variable(variable &&a)
+        //     : _value(std::move(a._value)) {}
         virtual ~variable() = default;
 
         template<typename T>
         variable &operator=(T const &o) {
             _value = o;
             return (*this);
+        }
+
+        void clone_to(variable &target) const { target._copy(*this); }
+        void _copy(variable const &o) {
+            _value.operator=(o._value);
         }
 
         // variable& operator=(const variable& o){
@@ -143,14 +149,31 @@ namespace cmdr::vars {
             return os.str();
         }
 
+#if defined(_DEBUG)
+        template<class T>
+        T as() const { return cast_as<T>(); }
+#else
         template<class T>
         T as() const {
             return std::any_cast<T>(_value);
         }
+#endif
 
         template<class T>
         T cast_as() const {
-            return std::any_cast<T>(_value);
+            try {
+                return std::any_cast<T>(_value);
+            } catch (std::bad_cast const &e) {
+                char buf[512];
+                std::ostringstream vs;
+                vs << (*this);
+                std::sprintf(buf, "can't cast type '%s' (value: '%s') -> type '%s', (ex: %s)",
+                             _value.type().name(),
+                             vs.str().c_str(),
+                             debug::type_name<T>().data(),
+                             e.what());
+                cmdr_throw_line(buf);
+            }
         }
 
         [[nodiscard]] bool has_value() const { return _value.has_value(); }
@@ -159,7 +182,7 @@ namespace cmdr::vars {
         void reset() { _value.reset(); }
 
     public:
-        static self_type parse(std::string &s);
+        static variable parse(std::string &s);
 
     protected:
         template<class T>
@@ -592,6 +615,11 @@ namespace cmdr::vars {
     using tcolorize = cmdr::terminal::colors::colorize;
 
 
+    /**
+     * @brief wrap type T as a node for trreT<T,...>
+     * @tparam T must implement clone_to(T&), variadic template constructors, operator=, operator>>, and operator<<, etc..
+     * @tparam small_string 
+     */
     template<class T, class small_string>
     class nodeT : public T {
     public:
@@ -599,6 +627,7 @@ namespace cmdr::vars {
 
         // typedef nodeT<T, small_string> self_type;
         using self_type = nodeT;
+        using parent_type = T;
         using node_pointer = std::shared_ptr<self_type>;
         using key_type = small_string;
         using node_vec = std::list<node_pointer>;
@@ -606,6 +635,13 @@ namespace cmdr::vars {
         using node_idx = std::unordered_map<key_type, node_pointer>;
 
         nodeT() = default;
+        explicit nodeT(self_type const &o)
+            : T{} {
+            _parent = o._parent;
+            _indexes = o._indexes;
+            _children = o._children;
+            o.clone_to(*this);
+        }
         template<class A, typename... Args,
                  std::enable_if_t<
                          std::is_constructible<T, A, Args...>::value &&
@@ -636,7 +672,7 @@ namespace cmdr::vars {
         node_map _children;
         node_idx _indexes;
         node_pointer _parent{};
-        mutable std::shared_mutex mutex_;
+        mutable std::shared_mutex mutex_{};
 
     public:
         template<class A, typename... Args,
@@ -645,16 +681,26 @@ namespace cmdr::vars {
                                  !std::is_same<std::decay_t<A>, self_type>::value,
                          int> = 0>
         void set(char const *key, A &&a0, Args &&...args) {
-            std::shared_lock<std::shared_mutex> lock(mutex_);
-            this->_set(key, [&](char const *, node_pointer) {}, a0, args...);
+#if defined(CMDR_ENABLE_VERBOSE_LOG)
+            // std::ostringstream osdbg;
+            // osdbg << a0;
+            cmdr_verbose_debug("     > [store] _set '%s' => '?', ... (variadic)", key);
+#endif
+            this->_set(
+                    key, [&](char const *, node_pointer) {}, a0, args...);
         }
         template<class A,
                  std::enable_if_t<std::is_constructible<T, A>::value &&
                                           !std::is_same<std::decay_t<A>, self_type>::value,
                                   int> = 0>
         void set(char const *key, A &&a) {
-            std::shared_lock<std::shared_mutex> lock(mutex_);
-            this->_set(key, [&](char const *, node_pointer) {}, a);
+#if defined(CMDR_ENABLE_VERBOSE_LOG)
+            // std::ostringstream osdbg;
+            // osdbg << a;
+            cmdr_verbose_debug("     > [store] _set '%s' => '?'", key);
+#endif
+            this->_set(
+                    key, [&](char const *, node_pointer) {}, a);
         }
 
     private:
@@ -710,6 +756,7 @@ namespace cmdr::vars {
                                           !std::is_same<std::decay_t<A>, self_type>::value,
                                   int> = 0>
         void _set(char const *key, update_parent_index const &cb, A &&a) {
+            std::shared_lock<std::shared_mutex> lock(mutex_);
             char const *part = std::strchr(key, '.');
             if (part) {
                 small_string base(key);
@@ -743,6 +790,15 @@ namespace cmdr::vars {
                 // build index
                 auto ptr = (it->second);
                 _indexes.template emplace(std::make_pair(k, ptr));
+#if defined(CMDR_ENABLE_VERBOSE_LOG) && 0
+                {
+                    std::ostringstream osdbg;
+                    osdbg << (*this);
+                    std::ostringstream osdbg1;
+                    osdbg1 << '?';
+                    cmdr_verbose_debug("     > [     ]      '%s' => '%s' (should be '%s')", key, osdbg.str().c_str(), osdbg1.str().c_str());
+                }
+#endif
                 if (cb)
                     cb(key, ptr);
                 return;

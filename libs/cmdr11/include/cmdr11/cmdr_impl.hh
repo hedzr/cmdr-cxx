@@ -624,10 +624,12 @@ namespace cmdr {
     }
 
     inline void app::load_externals() {
+        cmdr_verbose_debug("   - load_externals ...");
         on_loading_externals();
     }
 
     inline void app::apply_env_vars() {
+        cmdr_verbose_debug("   - apply_env_vars ...");
         // auto env vars
         _store.walk_by_full_keys([](std::pair<std::string, vars::store::node_pointer> const &val) {
             auto ks = string::reg_replace(val.first, R"([.-])", "_");
@@ -635,7 +637,7 @@ namespace cmdr {
             char *ptr = std::getenv(ks.c_str());
             if (ptr) {
                 std::stringstream(ptr) >> (*val.second);
-                cmdr_verbose_debug("  ENV[%s (%s)] => %s", ks.c_str(), val.first.c_str(), ptr);
+                cmdr_verbose_debug("      ENV[%s (%s)] => %s", ks.c_str(), val.first.c_str(), ptr);
                 // std::cout << "  ENV[" << ks << '(' << val.first << ")] => " << ptr << '\n';
             }
         });
@@ -649,7 +651,7 @@ namespace cmdr {
                     auto &v = _store.get_raw(dk);
                     std::stringstream(ptr) >> v;
                     // std::cout << "  ENV[" << ev << '(' << dk << ")] => " << ptr << " / " << _store.get_raw(dk) << '\n';
-                    cmdr_verbose_debug("  ENV[%s (%s)] => %s / %s", ev.c_str(), dk.c_str(), ptr, _store.get_raw(dk).as_string().c_str());
+                    cmdr_verbose_debug("      ENV[%s (%s)] => %s / %s", ev.c_str(), dk.c_str(), ptr, _store.get_raw(dk).as_string().c_str());
                     a.default_value(v);
                     a.update_hit_count_from_env(ev, 1);
                     // std::cout << " / " << a.default_value() << '\n';
@@ -668,11 +670,15 @@ namespace cmdr {
     inline int app::run(int argc, char *argv[]) {
         // debug::SigSegVInstaller _sigsegv_installer;
         // _sigsegv_installer.baz();
+        
+        cmdr_verbose_debug(" - app::run ...");
+        std::lock_guard _guard(_run_is_singleton);
 
         // std::cout << "Hello, World!" << '\n';
         try {
             prepare();
 
+            cmdr_verbose_debug("   - app::parsing args ...");
             opt::types::parsing_context pc{(opt::cmd *) this};
             pc.add_matched_cmd((opt::cmd *) this);
             opt::Action rc{opt::OK};
@@ -725,6 +731,7 @@ namespace cmdr {
                     return 0;
             }
 
+            cmdr_verbose_debug("   - app::after_run ...");
             return after_run(rc, pc, argc, argv);
 
         } catch (std::exception const &e) {
@@ -746,7 +753,7 @@ namespace cmdr {
         if (rc > opt::OK && rc < opt::Continue)
             return internal_action(rc, pc, argc, argv);
 
-        auto help_arg = store().get_raw_p(_long, "help");
+        auto &help_arg = store().get_raw_p(_long, "help");
         if (help_arg.cast_as<bool>()) {
             print_usages(&pc.curr_command());
             return 0;

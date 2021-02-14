@@ -170,7 +170,7 @@ void add_server_menu(cmdr::app &cli) {
         // std::any v1 = "lolo";
         // auto v1e = std::any_cast<char const *>(v1);
         auto &dv1 = t1.last_added_arg()->default_value();
-#if defined(CAST_CONST_CHARS_AS_STD_STRING)
+#if defined(CMDR_CAST_CONST_CHARS_AS_STD_STRING)
         auto dv2 = dv1->cast_as<std::string>();
 #else
         auto dv2 = dv1->cast_as<char const *>();

@@ -670,9 +670,22 @@ namespace cmdr {
     inline int app::run(int argc, char *argv[]) {
         // debug::SigSegVInstaller _sigsegv_installer;
         // _sigsegv_installer.baz();
-        
+
         cmdr_verbose_debug(" - app::run ...");
         std::lock_guard _guard(_run_is_singleton);
+
+        class post_runner {
+            std::function<void()> _fn;
+
+        public:
+            post_runner(std::function<void()> const &fn)
+                : _fn(fn) {}
+            ~post_runner() {
+                if (_fn) _fn();
+            }
+        };
+        // // optional to post_run(), for the rare exception post processing if necessary
+        post_runner post_runner_([=]() { post_run(); });
 
         // std::cout << "Hello, World!" << '\n';
         try {
@@ -743,8 +756,7 @@ namespace cmdr {
             std::cerr << "///" << '\n';
             CMDR_DUMP_STACK_TRACE(e);
 
-        } catch (...) {
-            post_run(); // optional to post_run(), for the rare exception post processing if necessary
+            // } catch (...) {
         }
         return -1;
     }

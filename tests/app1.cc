@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
 #endif
 
 #if 1
-        cli += sub_cmd{}("dup", "dup")
+        cli += sub_cmd{}("dup-test", "dup")
                        .description("dup command/flag for testing")
                        .group("Test");
         {

@@ -107,11 +107,12 @@ namespace cmdr::opt {
         RunDefaultAction,
     };
 
+
     class cmdr_requests_exception : public cmdr::exception::cmdr_exception {
     public:
         // using cmdr_exception::cmdr_exception;
         explicit cmdr_requests_exception(enum Action action, char const *file = __FILE__, int line = __LINE__)
-            : cmdr_exception("req", file, line)
+            : cmdr_exception(file, line, "req")
             , _action(action) {
         }
         enum Action _action;

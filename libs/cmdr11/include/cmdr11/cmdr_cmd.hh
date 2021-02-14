@@ -9,6 +9,7 @@
 
 #include "cmdr_arg.hh"
 
+#include "cmdr_dbg.hh"
 #include "cmdr_terminal.hh"
 
 
@@ -212,5 +213,63 @@ namespace cmdr::opt {
 
 } // namespace cmdr::opt
 
+
+namespace cmdr::exception {
+
+    class dup_short_cmd_found : public dup_error {
+        cmdr::opt::cmd const *_o;
+        cmdr::opt::cmd const *_c;
+
+    public:
+        using dup_error::dup_error;
+        explicit dup_short_cmd_found(const char *file, int line, opt::cmd const *c, opt::cmd const *owner);
+    };
+
+    class dup_long_cmd_found : public dup_error {
+        cmdr::opt::cmd const *_o;
+        cmdr::opt::cmd const *_c;
+
+    public:
+        using dup_error::dup_error;
+        explicit dup_long_cmd_found(const char *file, int line, opt::cmd const *c, opt::cmd const *owner);
+    };
+
+    class dup_alias_cmd_found : public dup_error {
+        cmdr::opt::cmd const *_o;
+        cmdr::opt::cmd const *_c;
+
+    public:
+        using dup_error::dup_error;
+        explicit dup_alias_cmd_found(const char *file, int line, const char *title, opt::cmd const *c, opt::cmd const *owner);
+    };
+
+    class dup_short_flag_found : public dup_error {
+        cmdr::opt::arg const *_o;
+        cmdr::opt::cmd const *_c;
+
+    public:
+        using dup_error::dup_error;
+        explicit dup_short_flag_found(const char *file, int line, opt::arg const *a, opt::cmd const *c);
+    };
+
+    class dup_long_flag_found : public dup_error {
+        cmdr::opt::arg const *_o;
+        cmdr::opt::cmd const *_c;
+
+    public:
+        using dup_error::dup_error;
+        explicit dup_long_flag_found(const char *file, int line, opt::arg const *a, opt::cmd const *c);
+    };
+
+    class dup_alias_flag_found : public dup_error {
+        cmdr::opt::arg const *_o;
+        cmdr::opt::cmd const *_c;
+
+    public:
+        using dup_error::dup_error;
+        explicit dup_alias_flag_found(const char *file, int line, const char *title, opt::arg const *a, opt::cmd const *c);
+    };
+
+} // namespace cmdr::exception
 
 #endif //CMDR_CXX11_CMDR_CMD_HH

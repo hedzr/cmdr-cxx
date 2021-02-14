@@ -346,15 +346,19 @@ namespace cmdr::debug {
 //
 //
 
-
+namespace cmdr::opt {
+    class arg;
+    class cmd;
+} // namespace cmdr::opt
 namespace cmdr::exception {
 
     class cmdr_exception : public std::runtime_error {
-        std::string msg;
         std::vector<std::string> st;
 
+    protected:
+        std::string msg;
     public:
-        cmdr_exception(const std::string &arg, const char *file, int line)
+        cmdr_exception(const char *file, int line, const std::string &arg)
             : std::runtime_error(arg) {
             std::ostringstream o;
             o << arg << "  " << file << ":" << line;
@@ -369,19 +373,25 @@ namespace cmdr::exception {
         [[nodiscard]] std::vector<std::string> const &stacktrace() const { return st; }
     };
 
-#define cmdr_throw_line(arg) throw cmdr::exception::cmdr_exception(arg, __FILE__, __LINE__)
+#define cmdr_throw_line(arg) throw cmdr::exception::cmdr_exception(__FILE__, __LINE__, arg)
 
     class cmdr_biz_error : public cmdr_exception {
     public:
         using cmdr_exception::cmdr_exception;
     };
-    
+
     class required_flag_missed : public cmdr_biz_error {
     public:
         using cmdr_biz_error::cmdr_biz_error;
     };
 
-#define cmdr_throw_as(typ, arg) throw cmdr::exception::typ(arg, __FILE__, __LINE__)
+
+    class dup_error : public cmdr_biz_error {
+    public:
+        using cmdr_biz_error::cmdr_biz_error;
+    };
+
+#define cmdr_throw_as(typ, ...) throw cmdr::exception::typ(__FILE__, __LINE__, __VA_ARGS__)
 
 } // namespace cmdr::exception
 

@@ -103,7 +103,7 @@ namespace cmdr::opt {
                 ptr->default_value(vars::variable{false});
                 cmdr_verbose_debug("  -> set arg default value to false. [key: '%s'] [cmd: \"%s\"]", a.title_long().c_str(), this->title_sequences().c_str());
             }
-            
+
             if (_grouped_args.find(gn) == _grouped_args.end())
                 _grouped_args.emplace(gn, types::arg_pointers{});
             _grouped_args[gn].push_back(ptr);
@@ -112,17 +112,20 @@ namespace cmdr::opt {
 
             if (!a.title_short().empty()) {
                 if (auto const &it = _short_args.find(a.title_short()); it != _short_args.end())
-                    cmdr_throw_line(std::string("duplicated short flag found: -") + a.title_short() + std::string(" ") + a.title_long() + std::string(", parent cmd = ") + title_sequences());
+                    // cmdr_throw_line(std::string("duplicated short flag found: -") + a.title_short() + std::string(" ") + a.title_long() + std::string(", parent cmd = ") + title_sequences());
+                    cmdr_throw_as(dup_short_flag_found, &a, this);
                 _short_args.insert({a.title_short(), ptr});
             }
 
             if (auto const &it = _long_args.find(a.title_long()); it != _long_args.end())
-                cmdr_throw_line(std::string("duplicated long flag found: --") + a.title_long() + std::string(", parent cmd = ") + title_sequences());
+                // cmdr_throw_line(std::string("duplicated long flag found: --") + a.title_long() + std::string(", parent cmd = ") + title_sequences());
+                cmdr_throw_as(dup_short_flag_found, &a, this);
             _long_args.insert({a.title_long(), ptr});
 
             for (auto const &itz : a.title_aliases()) {
                 if (auto const &it = _long_args.find(itz); it != _long_args.end())
-                    cmdr_throw_line(std::string("duplicated alias flag found: -") + itz + std::string(", parent cmd = ") + title_sequences());
+                    // cmdr_throw_line(std::string("duplicated alias flag found: -") + itz + std::string(", parent cmd = ") + title_sequences());
+                    cmdr_throw_as(dup_alias_flag_found, itz.c_str(), &a, this);
                 _long_args.insert({itz, ptr});
             }
 
@@ -166,15 +169,18 @@ namespace cmdr::opt {
             _indexed_commands.insert({a.title_long(), ptr});
             if (!a.title_short().empty()) {
                 if (auto const &it = _short_commands.find(a.title_short()); it != _short_commands.end())
-                    cmdr_throw_line(std::string("duplicated short command found: ") + a.title_short() + std::string(" ") + a.title_long() + std::string(", parent cmd = ") + title_sequences());
+                    // cmdr_throw_line(std::string("duplicated short command found: ") + a.title_short() + std::string(" ") + a.title_long() + std::string(", parent cmd = ") + title_sequences());
+                    cmdr_throw_as(dup_short_cmd_found, &a, this);
                 _short_commands.insert({a.title_short(), ptr});
             }
             if (auto const &it = _long_commands.find(a.title_long()); it != _long_commands.end())
-                cmdr_throw_line(std::string("duplicated long command found: ") + a.title_long() + std::string(", parent cmd = ") + title_sequences());
+                // cmdr_throw_line(std::string("duplicated long command found: ") + a.title_long() + std::string(", parent cmd = ") + title_sequences());
+                cmdr_throw_as(dup_long_cmd_found, &a, this);
             _long_commands.insert({a.title_long(), ptr});
             for (auto const &itz : a.title_aliases()) {
                 if (auto const &it = _long_commands.find(itz); it != _long_commands.end())
-                    cmdr_throw_line(std::string("duplicated alias command found: ") + itz + std::string(", parent cmd = ") + title_sequences());
+                    // cmdr_throw_line(std::string("duplicated alias command found: ") + itz + std::string(", parent cmd = ") + title_sequences());
+                    cmdr_throw_as(dup_alias_cmd_found, itz.c_str(), &a, this);
                 _long_commands.insert({itz, ptr});
             }
 

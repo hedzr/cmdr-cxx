@@ -9,10 +9,81 @@
 #include "cmdr_arg.hh"
 
 
-namespace cmdr::vars {
+namespace cmdr::exception {
 
+    inline dup_short_cmd_found::dup_short_cmd_found(const char *file, int line, opt::cmd const *c, opt::cmd const *owner)
+        : dup_error{file, line, ""}
+        , _o(owner)
+        , _c(c) {
+        char buf[512];
+        std::sprintf(buf, "duplicated short command found: \"%s\"/\"%s\" under command \"%s\"",
+                     _c->title_short().c_str(),
+                     _c->title().c_str(),
+                     _o->title_sequences().c_str());
+        msg = std::string((char const *) buf);
+    }
 
-} // namespace cmdr::vars
+    inline dup_long_cmd_found::dup_long_cmd_found(const char *file, int line, opt::cmd const *c, opt::cmd const *owner)
+        : dup_error{file, line, ""}
+        , _o(owner)
+        , _c(c) {
+        char buf[512];
+        std::sprintf(buf, "duplicated long command found: \"%s\"/\"%s\" under command \"%s\"",
+                     _c->title_long().c_str(),
+                     _c->title().c_str(),
+                     _o->title_sequences().c_str());
+        msg = std::string((char const *) buf);
+    }
+
+    inline dup_alias_cmd_found::dup_alias_cmd_found(const char *file, int line, const char *title, opt::cmd const *c, opt::cmd const *owner)
+        : dup_error{file, line, ""}
+        , _o(owner)
+        , _c(c) {
+        char buf[512];
+        std::sprintf(buf, "duplicated alias command found: \"%s\"/\"%s\" under command \"%s\"",
+                     title,
+                     _c->title().c_str(),
+                     _o->title_sequences().c_str());
+        msg = std::string((char const *) buf);
+    }
+
+    inline dup_short_flag_found::dup_short_flag_found(const char *file, int line, opt::arg const *a, opt::cmd const *c)
+        : dup_error{file, line, ""}
+        , _o(a)
+        , _c(c) {
+        char buf[512];
+        std::sprintf(buf, "duplicated short flag found: \"%s\"/\"%s\" under command \"%s\"",
+                     _o->title_short().c_str(),
+                     _o->title().c_str(),
+                     _c->title_sequences().c_str());
+        msg = std::string((char const *) buf);
+    }
+
+    inline dup_long_flag_found::dup_long_flag_found(const char *file, int line, opt::arg const *a, opt::cmd const *c)
+        : dup_error{file, line, ""}
+        , _o(a)
+        , _c(c) {
+        char buf[512];
+        std::sprintf(buf, "duplicated long flag found: \"%s\"/\"%s\" under command \"%s\"",
+                     _o->title_long().c_str(),
+                     _o->title().c_str(),
+                     _c->title_sequences().c_str());
+        msg = std::string((char const *) buf);
+    }
+
+    inline dup_alias_flag_found::dup_alias_flag_found(const char *file, int line, const char *title, opt::arg const *a, opt::cmd const *c)
+        : dup_error{file, line, ""}
+        , _o(a)
+        , _c(c) {
+        char buf[512];
+        std::sprintf(buf, "duplicated alias flag found: \"%s\"/\"%s\" under command \"%s\"",
+                     title,
+                     _o->title().c_str(),
+                     _c->title_sequences().c_str());
+        msg = std::string((char const *) buf);
+    }
+
+} // namespace cmdr::exception
 
 namespace cmdr::opt {
 

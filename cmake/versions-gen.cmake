@@ -3,6 +3,11 @@
 # https://github.com/pmirshad/cmake-with-git-metadata/blob/master/CMakeLists.txt
 
 
+if (DEFINED VERSION_H_NAME)
+else ()
+  set(VERSION_H_NAME "version.h")
+endif ()
+
 if (DEFINED ARCHIVE_NAME)
 else ()
   set(ARCHIVE_NAME ${CMAKE_PROJECT_NAME}-${PROJECT_VERSION})
@@ -53,9 +58,9 @@ if (EXISTS ${xVERSION_IN})
   message(STATUS "Generating version.h from ${xVERSION_IN} to ${CMAKE_GENERATED_DIR} - Version ${PROJECT_VERSION}...")
   configure_file(
           ${xVERSION_IN}
-          ${CMAKE_GENERATED_DIR}/version.h
+          ${CMAKE_GENERATED_DIR}/${VERSION_H_NAME}
   )
-  message(STATUS "Generated: ${CMAKE_GENERATED_DIR}/version.h")
+  message(STATUS "Generated: ${CMAKE_GENERATED_DIR}/${VERSION_H_NAME}")
 endif ()
 
 

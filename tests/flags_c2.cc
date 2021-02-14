@@ -8,7 +8,6 @@
 #include <catch2/catch.hpp>
 
 
-#include "version.h"
 #include <cmdr-cxx.hh>
 
 #include "second_src.hh"
@@ -23,7 +22,7 @@
 
 TEST_CASE("flags test", "[flags]") {
 
-    auto cli = cmdr::app::create("flags", xVERSION_STRING, "hedzr",
+    auto cli = cmdr::app::create("flags", CMDR_VERSION_STRING, "hedzr",
                                  "Copyright © 2021 by hedzr, All Rights Reserved.",
                                  "A demo app for cmdr-c11 library.",
                                  "$ ~ --help");

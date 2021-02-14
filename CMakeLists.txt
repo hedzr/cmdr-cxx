@@ -15,6 +15,7 @@ project(cmdr-cxx
         DESCRIPTION "cmdr-cxx11 is a POSIX-compliant command-line arguments parser in C++, its part of cmdr series."
         LANGUAGES CXX)
 
+set(VERSION_H_NAME "cmdr-version.hh")
 include(cxx-standard-def)
 include(cxx-detect-compilers)
 include(setup-build-env)

@@ -170,9 +170,12 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 set(CONFIG_PACKAGE_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
+debug_print_value(CMAKE_PROJECT_VERSION)
+debug_print_value(PROJECT_VERSION)
+
 write_basic_package_version_file(
         ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
-        VERSION ${CMAKE_PROJECT_VERSION}
+        VERSION ${PROJECT_VERSION}
         COMPATIBILITY SameMajorVersion
 )
 
@@ -196,6 +199,11 @@ install(EXPORT ${PROJECT_NAME}Targets
 install(DIRECTORY include/${PROJECT_NAME}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         )
+
+install(FILES
+        ${CMAKE_BINARY_DIR}/generated/cmdr-version.hh
+        DESTINATION
+        ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
 
 install(FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/include/cmdr-cxx.hh

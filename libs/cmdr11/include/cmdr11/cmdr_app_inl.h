@@ -12,7 +12,9 @@
 #include <set>
 #include <sstream>
 #include <stdexcept>
-#include <version.h>
+
+
+#include "cmdr-version.hh"
 
 
 #include "cmdr_cmn.hh"
@@ -129,10 +131,10 @@ namespace cmdr {
                     << " at " << ts.str() << '\n'
                     << compiler.str() << '\n'
                     << ts.str() << '\n'
-                    << xPROJECT_NAME << '\n'
-                    << xARCHIVE_NAME << '\n'
-                    << xGIT_BRANCH << '\n'
-                    << xGIT_COMMIT_HASH << '\n';
+                    << CMDR_PROJECT_NAME << '\n'
+                    << CMDR_ARCHIVE_NAME << '\n'
+                    << CMDR_GIT_BRANCH << '\n'
+                    << CMDR_GIT_COMMIT_HASH << '\n';
             return 0;
         });
         _internal_actions.emplace(opt::RequestTreeScreen,

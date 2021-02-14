@@ -30,7 +30,6 @@
 
 #define ENABLE_VARIABLE
 #include "cmdr11/cmdr11.hh"
-#include "version.h"
 
 #include "custom_iterator.hh"
 

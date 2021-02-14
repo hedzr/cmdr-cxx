@@ -2,7 +2,6 @@
 //
 //
 
-#include "version.h"
 #include <cmdr-cxx.hh>
 
 
@@ -16,7 +15,7 @@ int main(int argc, char *argv[]) {
 
     try {
         using namespace cmdr::opt;
-        return cmdr::cli("app1", xVERSION_STRING, "hedzr",
+        return cmdr::cli("app1", CMDR_VERSION_STRING, "hedzr",
                          "Copyright © 2021 by hedzr, All Rights Reserved.",
                          "A demo app for cmdr-c11 library.",
                          "$ ~ --help")

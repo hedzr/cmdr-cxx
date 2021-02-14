@@ -3,8 +3,7 @@
 //
 
 #include "./addons/loaders/yaml_loader.hh"
-#include "version.h"
-#include <cmdr-cxx.hh>
+#include "cmdr-cxx.hh"
 
 #include <cmath>
 #include <complex>
@@ -20,7 +19,7 @@
 
 
 int main(int argc, char *argv[]) {
-    auto cli = cmdr::cli("app1", xVERSION_STRING, "hedzr",
+    auto cli = cmdr::cli("app1", CMDR_VERSION_STRING, "hedzr",
                          "Copyright © 2021 by hedzr, All Rights Reserved.",
                          "A demo app for cmdr-c11 library.",
                          "$ ~ --help");

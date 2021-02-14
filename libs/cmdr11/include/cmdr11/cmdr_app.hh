@@ -107,13 +107,31 @@ namespace cmdr {
         [[nodiscard]] vars::store const &store() const { return _store; }
         vars::store &store() { return _store; }
 
-        app &set_match_longest_first(bool b = true) {
-            _longest_first = b;
+        app &set_minimal_tab_stop(int width = 43) {
+            _minimal_tab_width = width;
             return (*this);
         }
 
-        app &set_minimal_tab_stop(int width = 43) {
-            _minimal_tab_width = width;
+        /**
+         * @brief true means that we don't suppress the cmdr biz errors (such 
+         * as *required_flag_missed*) so that you can capture its.
+         * By default, the exceptions will be caught in app::run().
+         * 
+         * @param b 
+         * @return 
+         */
+        app &set_no_catch_cmdr_biz_error(bool b = true) {
+            _no_catch_cmdr_biz_error = b;
+            return (*this);
+        }
+
+        /**
+         * @brief while longest_first is true, parser will try matching the 
+         * longest flag for command-line input.
+         * That is, "-ap1" will be parsed as "-ap=1" instead of "-a -p -1".
+         */
+        app &set_match_longest_first(bool b = true) {
+            _longest_first = b;
             return (*this);
         }
 
@@ -126,6 +144,7 @@ namespace cmdr {
             _global_on_post_invoke = std::move(cb);
             return (*this);
         }
+        
         app &treat_unknown_input_command_as_error(bool b) {
             _treat_unknown_input_command_as_error = b;
             return (*this);
@@ -227,6 +246,7 @@ namespace cmdr {
         int after_run(opt::Action rc, opt::types::parsing_context &pc, int argc, char *argv[]);
         int internal_action(opt::Action rc, opt::types::parsing_context &pc, int argc, char *argv[]);
         int invoke_command(opt::cmd &cc, string_array const &remain_args, opt::types::parsing_context &pc);
+        static void check_required_flags(opt::cmd& cc);
 
         void handle_eptr(const std::exception_ptr &eptr) const;
 
@@ -393,7 +413,11 @@ namespace cmdr {
                 _internal_actions{};
 
         int _minimal_tab_width{-1};
+        
+        bool _no_catch_cmdr_biz_error{false};
+        
         static bool _longest_first;
+        
         static text::distance _jaro_winkler_matching_threshold;
 
         std::vector<types::on_arg_added> _on_arg_added;

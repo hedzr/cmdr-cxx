@@ -146,7 +146,7 @@ The example executables can be found in `./bin`. For example:
 After installed at local, `cmdr-cxx` can be integrated as your CMake module. So we might find and use it:
 
 ```cmake
-find_library(cmdr11)
+find_package(cmdr11 REQUIRED)
 
 add_executable(my-app)
 target_link_libraries(my-app PRIVATE cmdr11::cmdr11)

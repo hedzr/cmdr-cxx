@@ -469,7 +469,7 @@ Inside `cmdr-cxx`, there are many optimizable points in working.
 - [x] enable very verbose debugging
 
   ```cpp
-  #define CMDR_ENABLE_VERBOSE_LOG
+  #define CMDR_ENABLE_VERBOSE_LOG 1
   #include <cmdr11/cmdr11.hh>
   ```
 

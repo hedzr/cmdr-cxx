@@ -75,76 +75,30 @@
 
 
 
-## Bonus
-
-- golang: [cmdr](https:://github.com/hedzr/cmdr)
-- .netcore: [CMdr.Core](https://github.com/hedzr/Cmdr.Core)
-
 
 
 ## Status
 
 WIP, pre-released now.
 
+- v0.2.8 - fixed cmdr11Config.cmake for importing transparently
 - v0.2.7 - `auto &cli = cmdr::create(...)`
 - v0.2.5 - public release starts
 
 
-
-## Build
-
-> gcc 10+: passed
->
-> clang 12+: passed
-
-```bash
-# configure
-cmake -DENABLE_AUTOMATE_TESTS=OFF -S . -B build/
-# build
-cmake --build build/
-# install
-cmake --build build/ --target install
-```
-
-
-
-### Prerequisites
-
-To run all automated tests, or, you're trying to use `yaml-loader` add-on, some dependencies need to prepared at first.
-
-#### Linux
-
-```bash
-sudo apt install -y libyaml-cpp-dev
-```
-
-> For CentOS or RedHat, maybe the compiling from source codes is necessary.
-
-#### macOS
-
-```bash
-brew install yaml-cpp
-```
-
-
-
-
-
-
-
-### Run the examples
-
-The example executables can be found in `./bin`. For example:
-
-```bash
-./bin/app2
-```
 
 
 
 ### Snapshots
 
 `cmdr-cxx` prints an evident, clear, and logical help-screen. Please proceed the more snapshots at [#1 - Gallery](https://github.com/hedzr/cmdr-cxx/issues/1).
+
+
+
+### Bonus
+
+- golang: [cmdr](https:://github.com/hedzr/cmdr)
+- .netcore: [CMdr.Core](https://github.com/hedzr/Cmdr.Core)
 
 
 
@@ -164,6 +118,17 @@ find_package(cmdr11 REQUIRED)
 add_executable(my-app)
 target_link_libraries(my-app PRIVATE cmdr11::cmdr11)
 ```
+
+Or you can download [deps-cmdr11.cmake](https://github.com/hedzr/cmdr-cxx/blob/master/cmake/deps-cmdr11.cmake) and include it:
+
+```cmake
+add_executable(my-app)
+
+include(deps-cmdr11)     # put deps-cmdr11.cmake into your cmake module path
+add_cmdr_cxx_to(my-app)
+```
+
+
 
 
 
@@ -534,6 +499,59 @@ Inside `cmdr-cxx`, there are many optimizable points in working.
 
 
 
+
+## For Developer
+
+
+
+### Build
+
+> gcc 10+: passed
+>
+> clang 12+: passed
+
+```bash
+# configure
+cmake -DENABLE_AUTOMATE_TESTS=OFF -S . -B build/
+# build
+cmake --build build/
+# install
+cmake --build build/ --target install
+```
+
+
+
+### Prerequisites
+
+To run all automated tests, or, you're trying to use `yaml-loader` add-on, some dependencies need to prepared at first.
+
+#### Linux
+
+```bash
+sudo apt install -y libyaml-cpp-dev
+```
+
+> For CentOS or RedHat, maybe the compiling from source codes is necessary.
+
+#### macOS
+
+```bash
+brew install yaml-cpp
+```
+
+
+
+
+
+
+
+### Run the examples
+
+The example executables can be found in `./bin`. For example:
+
+```bash
+./bin/app2
+```
 
 
 

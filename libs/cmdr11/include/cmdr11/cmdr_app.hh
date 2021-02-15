@@ -135,6 +135,35 @@ namespace cmdr {
             return (*this);
         }
 
+        /**
+         * @brief do not print cmdr endings at end of help screen?
+         * This option will remove the "Powered by cmdr-cxx" line.
+         */
+        app &set_no_cmdr_endings(bool b = true) {
+            _no_cmdr_ending = b;
+            return (*this);
+        }
+
+        /**
+         * @brief remove the tail line in help screen?
+         * @param b 
+         * @return 
+         */
+        app &set_no_tail_line(bool b = true) {
+            _no_tail_line = b;
+            return (*this);
+        }
+
+        /**
+         * @brief setup the last line in help screen (except cmdr endings line)
+         * @param line 
+         * @return 
+         */
+        app &set_tail_line(std::string const& line) {
+            _tail_line = line;
+            return (*this);
+        }
+
     public:
         app &set_global_pre_invoke_handler(opt::types::on_pre_invoke &&cb) {
             _global_on_pre_invoke = std::move(cb);
@@ -415,6 +444,8 @@ namespace cmdr {
         int _minimal_tab_width{-1};
         
         bool _no_catch_cmdr_biz_error{false};
+        bool _no_cmdr_ending{false};
+        bool _no_tail_line{false};
         
         static bool _longest_first;
         

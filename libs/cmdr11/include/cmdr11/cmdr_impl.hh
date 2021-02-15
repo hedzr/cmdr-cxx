@@ -582,12 +582,18 @@ namespace cmdr {
 
         print_cmd(ss, c, start ? start : (opt::cmd const *) this, _name, exe_name);
 
-        if (!_tail_line.empty()) {
-            ss << '\n'
-               << _tail_line << '\n';
-        } else {
-            ss << '\n'
-               << "Type `" << exe_name << " --help` to get help screen (this screen)." << '\n';
+        if (!_no_tail_line) {
+            if (!_tail_line.empty()) {
+                ss << '\n'
+                   << _tail_line << '\n';
+            } else {
+                ss << '\n'
+                   << "Type `" << exe_name << " --help` to get help screen (this screen)." << '\n';
+            }
+        }
+        
+        if (!_no_cmdr_ending) {
+            ss << c.dim(cmdr::vars::store::_dim_text_dim).fg(cmdr::vars::store::_dim_text_fg).s("Powered by cmdr-cxx: https://github.com/hedzr/cmdr-cxx.") << '\n';
         }
 
         std::cout << ss.str();

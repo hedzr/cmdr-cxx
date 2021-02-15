@@ -231,6 +231,10 @@ This is a simple program.
 
 
 
+## Fast Document
+
+
+
 ### Lookup a command and its flags
 
 The operator `()` (`cli("cmd1.sub-cmd2.sub-sub-cmd")` ) could be used for retrieving a command (`cmdr::opt::cmd& cc`) from `cli`:
@@ -238,14 +242,26 @@ The operator `()` (`cli("cmd1.sub-cmd2.sub-sub-cmd")` ) could be used for retrie
 ```cpp
 auto &cc = cli("server");
 CMDR_ASSERT(cc.valid());
-CMDR_ASSERT(cc["count"].valid());  // the flag of 'server'
+CMDR_ASSERT(cc["count"].valid());     // the flag of 'server'
 CMDR_ASSERT(cc["host"].valid());
-CMDR_ASSERT(cc("status").valid()); // the sub-command of 'server'
-CMDR_ASSERT(cc("start").valid());
-CMDR_ASSERT(cc("run", true).valid());
+CMDR_ASSERT(cc("status").valid());    // the sub-command of 'server'
+CMDR_ASSERT(cc("start").valid());     // sub-command: 'start'
+CMDR_ASSERT(cc("run", true).valid()); // or alias: 'run'
 ```
 
 Once `cc` is valid, use `[]` to extract its flags.
+
+The dotted key is allowed. For example: `cc["start.port"].valid()`.
+
+```cpp
+CMDR_ASSERT(cli("server.start").valid());
+CMDR_ASSERT(cli("server.start.port").valid());
+
+// get flag 'port' of command 'server.start':
+CMDR_ASSERT(cc["start.port"].valid());
+```
+
+
 
 
 
@@ -254,8 +270,8 @@ Once `cc` is valid, use `[]` to extract its flags.
 While a flag given from command-line is matched ok, it holds some hit info. Such as:
 
 ```cpp
-auto &cc = cli("server");
-CMDR_ASSERT(cc.valid());
+auto &cc = cli("server");  // get 'server' command object
+CMDR_ASSERT(cc.valid());   // got ok?
 
 CMDR_ASSERT(cc["count"].valid());
 CMDR_ASSERT(cc["count"].hit_long()); 	          // if `--count` given
@@ -429,7 +445,28 @@ This flag will print the command hierarchical structure:
 
 
 
+### Remove the cmdr-cxx tail line
 
+By default a citation line will be printed at the ends of help screen:
+
+<img width="684" alt="image-20210215100547030" src="https://user-images.githubusercontent.com/12786150/107898103-da582a80-6f75-11eb-9ffc-02cdd2af249d.png">
+
+I knew this option is what you want:
+
+```cpp
+    auto cli = cmdr::cli("app2", CMDR_VERSION_STRING, "hedzr",
+                         "Copyright © 2021 by hedzr, All Rights Reserved.",
+                         "A demo app for cmdr-c11 library.",
+                         "$ ~ --help");
+    cli
+            // remove "Powered by cmdr-cxx" line
+            .set_no_cmdr_endings(true)
+            // customize the last line except cmdr endings
+            // .set_tail_line("")
+            .set_no_tail_line(true);
+```
+
+The "Type `...` ..." line is called as `tail line`, customize it with `set_tail_line(str)`. Or, you can disable the tail line by `set_no_tail_line(bool)`.
 
 ## External Loaders
 

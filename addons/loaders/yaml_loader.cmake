@@ -112,23 +112,6 @@ macro(add_yaml_loader_to target)
       #         )
     endif ()
 
-    #    message(STATUS "yaml_loader:    CI_RUNNING = $ENV{CI_RUNNING}")
-    #    if ($ENV{CI_RUNNING})
-    #      message(STATUS "yaml_loader: config target_link_libraries ...")
-    #      target_include_directories(${target} PRIVATE
-    #                                 $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
-    #                                 $<INSTALL_INTERFACE:include>
-    #                                 /usr/local/include
-    #                                 )
-    #      target_link_directories(${target} PRIVATE
-    #                              /usr/local/lib
-    #                              # ${CMAKE_CURRENT_BINARY_DIR}/${YAML_PP_TGT_NAME}-prefix/src/${YAML_PP_TGT_NAME}-build
-    #                              )
-    #      target_link_libraries(${target}
-    #                            PRIVATE
-    #                            yaml-cpp
-    #                            )
-    #    else ()
     message(STATUS "yaml_loader: add_dependencies")
     add_dependencies(${target} ${YAML_PP_TGT_NAME})
     target_link_libraries(${target}

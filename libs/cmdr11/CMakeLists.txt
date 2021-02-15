@@ -152,16 +152,18 @@ endif ()
 
 ## cmdr11-cxx-cli Target ######################################
 
-set(CLI_NAME cmdr11-cli)
-add_executable(${CLI_NAME} src/main.cc)
-target_include_directories(${CLI_NAME} PRIVATE $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>)
-target_link_libraries(${CLI_NAME} PRIVATE libs::cmdr11)
-set_target_properties(${CLI_NAME}
-                      PROPERTIES
-                      # DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}"
-                      RELEASE_POSTFIX "${CMAKE_RELEASE_POSTFIX}"
-                      MINSIZEREL_POSTFIX "${CMAKE_MINSIZEREL_POSTFIX}"
-                      RELWITHDEBINFO_POSTFIX "${CMAKE_RELWITHDEBINFO_POSTFIX}")
+if (ENABLE_CLI_APP)
+    set(CLI_NAME cmdr11-cli)
+    add_executable(${CLI_NAME} src/main.cc)
+    target_include_directories(${CLI_NAME} PRIVATE $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>)
+    target_link_libraries(${CLI_NAME} PRIVATE libs::cmdr11)
+    set_target_properties(${CLI_NAME}
+                          PROPERTIES
+                          # DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}"
+                          RELEASE_POSTFIX "${CMAKE_RELEASE_POSTFIX}"
+                          MINSIZEREL_POSTFIX "${CMAKE_MINSIZEREL_POSTFIX}"
+                          RELWITHDEBINFO_POSTFIX "${CMAKE_RELWITHDEBINFO_POSTFIX}")
+endif ()
 
 
 ## TESTING ######################################

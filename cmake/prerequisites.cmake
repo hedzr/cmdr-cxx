@@ -93,6 +93,9 @@ else ()
 endif ()
 
 
+option(ENABLE_CLI_APP "Enable cli apps" ON)
+
+
 # ############################## for testing
 set(ENV{CTEST_OUTPUT_ON_FAILURE} 1)
 set_property(GLOBAL PROPERTY UNIT_TEST_TARGETS)

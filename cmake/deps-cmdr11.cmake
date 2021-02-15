@@ -23,6 +23,7 @@ macro(add_cmdr_cxx_to target)
                         # BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/cmdr-cxx-build"
                         CMAKE_ARGS
                         -DENABLE_TESTS=OFF
+                        -DENABLE_CLI_APP=OFF
                         -DENABLE_AUTOMATE_TESTS=OFF
                         -DBUILD_DOCUMENTATION=OFF
                         --no-warn-unused-cli
@@ -37,47 +38,23 @@ macro(add_cmdr_cxx_to target)
     #    set(CMDR11_FOUND ON)
 
     message(STATUS "cmdr-cxx: add ${CMDR_CXX_TGT_NAME} module to '${target}' from building dir.")
-    if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "Darwin" OR APPLE)
-      target_include_directories(${target} PRIVATE
-                                 $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
-                                 $<INSTALL_INTERFACE:include>
-                                 /usr/local/include
-                                 )
-      target_link_directories(${target} PRIVATE
-                              /usr/local/lib
-                              # ${CMAKE_CURRENT_BINARY_DIR}/${CMDR_CXX_TGT_NAME}-prefix/src/${CMDR_CXX_TGT_NAME}-build
-                              )
-      # target_link_libraries(${target}
-      #         PRIVATE
-      #         cmdr11::cmdr11
-      #         )
-    endif ()
-
     message(STATUS "cmdr-cxx:    CI_RUNNING = $ENV{CI_RUNNING}")
-    if ($ENV{CI_RUNNING})
-      message(STATUS "cmdr-cxx: config target_link_libraries ...")
-      target_include_directories(${target} PRIVATE
-                                 $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
-                                 $<INSTALL_INTERFACE:include>
-                                 /usr/local/include
-                                 )
-      target_link_directories(${target} PRIVATE
-                              /usr/local/lib
-                              # ${CMAKE_CURRENT_BINARY_DIR}/${CMDR_CXX_TGT_NAME}-prefix/src/${CMDR_CXX_TGT_NAME}-build
-                              )
-      target_link_libraries(${target}
-                            PRIVATE
-                            cmdr11::cmdr11
-                            )
-    else ()
-      message(STATUS "cmdr-cxx: add_dependencies")
-      add_dependencies(${target} ${CMDR_CXX_TGT_NAME})
-    endif ()
+    message(STATUS "cmdr-cxx: add_dependencies")
+    add_dependencies(${target} ${CMDR_CXX_TGT_NAME})
 
   else ()
 
     message(STATUS "cmdr-cxx: package found at ${CMDR11_INCLUDE_DIR}, ${CMDR11_VERSION}")
     message(STATUS "cmdr-cxx: add ${CMDR_CXX_TGT_NAME} module to '${target}' from CMake Modules registry.")
+    #    target_include_directories(${target} PRIVATE
+    #            $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
+    #            $<INSTALL_INTERFACE:include>
+    #            ${CMDR11_INCLUDE_DIR}
+    #            )
+    #    target_link_directories(${target} PRIVATE
+    #            ${CMDR11_LIBRARY_DIR}
+    #            # ${CMAKE_CURRENT_BINARY_DIR}/${CMDR_CXX_TGT_NAME}-prefix/src/${CMDR_CXX_TGT_NAME}-build
+    #            )
     target_link_libraries(${target}
                           PRIVATE
                           ${CMDR11_LIBRARIES}

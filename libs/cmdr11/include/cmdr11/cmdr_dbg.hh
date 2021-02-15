@@ -12,10 +12,11 @@
 #include <typeinfo>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#include <execinfo.h>
 #ifdef _WIN64
 #else
 #endif
+#else
+#include <execinfo.h>
 #endif
 
 #ifdef __GNUG__

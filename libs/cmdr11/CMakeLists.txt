@@ -1,5 +1,5 @@
 project(cmdr11
-        VERSION ${CMAKE_PROJECT_VERSION}
+        VERSION ${VERSION}
         DESCRIPTION "libcmdr11 - cmdr cxx library for C++17"
         LANGUAGES CXX)
 
@@ -182,6 +182,7 @@ set(CONFIG_PACKAGE_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
 debug_print_value(CMAKE_PROJECT_VERSION)
 debug_print_value(PROJECT_VERSION)
+debug_print_value(VERSION)
 
 write_basic_package_version_file(
         ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake

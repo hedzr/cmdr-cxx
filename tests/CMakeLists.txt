@@ -1,5 +1,5 @@
 project(test
-        VERSION ${CMAKE_PROJECT_VERSION}
+        VERSION ${VERSION}
         DESCRIPTION "tests - test apps for cmdr cxx11 library"
         LANGUAGES C CXX)
 

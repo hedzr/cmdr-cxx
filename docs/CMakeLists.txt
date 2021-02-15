@@ -1,10 +1,11 @@
 
 option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" OFF)
-find_package(Doxygen)
-if (DEBUG OR NOT DOXYGEN_FOUND)
-    set(BUILD_DOCUMENTATION OFF)
+if (BUILD_DOCUMENTATION)
+    find_package(Doxygen)
+    if (DEBUG OR NOT DOXYGEN_FOUND)
+        set(BUILD_DOCUMENTATION OFF)
+    endif ()
 endif ()
-
 
 if (BUILD_DOCUMENTATION)
 

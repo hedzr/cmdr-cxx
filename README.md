@@ -162,7 +162,7 @@ target_link_libraries(my-app PRIVATE cmdr11::cmdr11)
 
 int main(int argc, char *argv[]) {
 
-    auto cli = cmdr::cli("app2", xVERSION_STRING, "hedzr",
+    auto &cli = cmdr::cli("app2", xVERSION_STRING, "hedzr",
                          "Copyright © 2021 by hedzr, All Rights Reserved.",
                          "A demo app for cmdr-c11 library.",
                          "$ ~ --help");
@@ -454,11 +454,10 @@ By default a citation line will be printed at the ends of help screen:
 I knew this option is what you want:
 
 ```cpp
-    auto cli = cmdr::cli("app2", CMDR_VERSION_STRING, "hedzr",
+    auto &cli = cmdr::cli("app2", CMDR_VERSION_STRING, "hedzr",
                          "Copyright © 2021 by hedzr, All Rights Reserved.",
                          "A demo app for cmdr-c11 library.",
-                         "$ ~ --help");
-    cli
+                         "$ ~ --help")
             // remove "Powered by cmdr-cxx" line
             .set_no_cmdr_endings(true)
             // customize the last line except cmdr endings
@@ -518,7 +517,8 @@ Inside `cmdr-cxx`, there are many optimizable points in working.
   return cli.run(argc, argv);
   ```
 
-- [ ] 
+  
+
 
 
 

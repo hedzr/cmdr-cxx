@@ -47,6 +47,16 @@ namespace cmdr {
         app_holder::instance().put(this);
     }
 
+    inline app &app::create_new(const_chars name, const_chars version,
+                           const_chars author,
+                           const_chars copyright,
+                           const_chars description,
+                           const_chars examples) {
+        auto *x = new app{name, version, author, copyright, description, examples};
+        x->initialize_internal_commands();
+        return *app_holder::instance();
+    }
+
     inline app app::create(const_chars name, const_chars version,
                            const_chars author,
                            const_chars copyright,

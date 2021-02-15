@@ -10,7 +10,7 @@ void fatal_exit(const std::string &msg) {
 }
 
 int main(int argc, char *argv[]) {
-    auto cli = cmdr::cli("app2", CMDR_VERSION_STRING, "hedzr",
+    auto &cli = cmdr::cli("app2", CMDR_VERSION_STRING, "hedzr",
                          "Copyright © 2021 by hedzr, All Rights Reserved.",
                          "A demo app for cmdr-cxx library.",
                          "$ ~ --help");

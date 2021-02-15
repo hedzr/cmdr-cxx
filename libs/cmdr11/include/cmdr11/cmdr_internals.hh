@@ -12,6 +12,9 @@ namespace cmdr {
 
     class app;
 
+    /**
+     * @brief to hold the last app* instance.
+     */
     class app_holder final : public util::singleton<app_holder> {
     public:
         explicit app_holder(typename util::singleton<app_holder>::token) {}

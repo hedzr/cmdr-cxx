@@ -78,6 +78,12 @@ namespace cmdr {
                           const_chars description = nullptr,
                           const_chars examples = nullptr);
 
+        static app &create_new(const_chars name, const_chars version,
+                               const_chars author = nullptr,
+                               const_chars copyright = nullptr,
+                               const_chars description = nullptr,
+                               const_chars examples = nullptr);
+
         /**
          * @brief reset all internal parsing states and preparing for new command-line parsing.
          */
@@ -103,6 +109,8 @@ namespace cmdr {
         [[maybe_unused]] void dummy() {}
         //[[nodiscard]] bool help_hit() const { return _help_hit > 0; }
         //[[nodiscard]] cmd *command_hit() const { return _cmd_hit; }
+
+        app &uniq() const;
 
         [[nodiscard]] vars::store const &store() const { return _store; }
         vars::store &store() { return _store; }
@@ -159,7 +167,7 @@ namespace cmdr {
          * @param line 
          * @return 
          */
-        app &set_tail_line(std::string const& line) {
+        app &set_tail_line(std::string const &line) {
             _tail_line = line;
             return (*this);
         }
@@ -173,7 +181,7 @@ namespace cmdr {
             _global_on_post_invoke = std::move(cb);
             return (*this);
         }
-        
+
         app &treat_unknown_input_command_as_error(bool b) {
             _treat_unknown_input_command_as_error = b;
             return (*this);
@@ -275,7 +283,7 @@ namespace cmdr {
         int after_run(opt::Action rc, opt::types::parsing_context &pc, int argc, char *argv[]);
         int internal_action(opt::Action rc, opt::types::parsing_context &pc, int argc, char *argv[]);
         int invoke_command(opt::cmd &cc, string_array const &remain_args, opt::types::parsing_context &pc);
-        static void check_required_flags(opt::cmd& cc);
+        static void check_required_flags(opt::cmd &cc);
 
         void handle_eptr(const std::exception_ptr &eptr) const;
 
@@ -427,7 +435,7 @@ namespace cmdr {
         std::string _store_prefix{DEFAULT_KEY_PREFIX};
 
         mutable std::mutex _run_is_singleton;
-        
+
         // static colorize &colorizer() {...}
 
         opt::types::on_pre_invoke _global_on_pre_invoke;
@@ -442,13 +450,13 @@ namespace cmdr {
                 _internal_actions{};
 
         int _minimal_tab_width{-1};
-        
+
         bool _no_catch_cmdr_biz_error{false};
         bool _no_cmdr_ending{false};
         bool _no_tail_line{false};
-        
+
         static bool _longest_first;
-        
+
         static text::distance _jaro_winkler_matching_threshold;
 
         std::vector<types::on_arg_added> _on_arg_added;

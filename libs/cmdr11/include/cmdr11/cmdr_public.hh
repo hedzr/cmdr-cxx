@@ -12,12 +12,24 @@ namespace cmdr {
     inline app &get_app() { return *app_holder::instance().get_ptr(); }
     inline auto &get_store() { return get_app().store(); }
 
-    inline app cli(const_chars name, const_chars version,
-                   const_chars author = nullptr, const_chars copyright = nullptr,
-                   const_chars description = nullptr,
-                   const_chars examples = nullptr) {
+    inline app &app::uniq() const { return get_app(); }
+
+    inline app &cli(const_chars name, const_chars version,
+                    const_chars author = nullptr, const_chars copyright = nullptr,
+                    const_chars description = nullptr,
+                    const_chars examples = nullptr) {
+        if (auto *ptr = app_holder::instance().get_ptr(); ptr) {
+            return get_app();
+        }
+        return app::create_new(name, version, author, copyright, description, examples);
+    }
+
+    inline app new_cli(const_chars name, const_chars version,
+                       const_chars author = nullptr, const_chars copyright = nullptr,
+                       const_chars description = nullptr,
+                       const_chars examples = nullptr) {
 #if !defined(CATCH_VERSION_MAJOR)
-        if (auto ptr = app_holder::instance().get_ptr(); ptr) {
+        if (auto *ptr = app_holder::instance().get_ptr(); ptr) {
             cmdr_throw_line("can't invoke create_app() multiple times.");
         }
 #endif

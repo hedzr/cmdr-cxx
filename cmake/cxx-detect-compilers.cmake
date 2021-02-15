@@ -37,10 +37,10 @@ endif ()
 #
 # CPU bits
 #
-if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
-  set(CPU_ARCH x64)
-else ()
-  set(CPU_ARCH x86)
-endif ()
-mark_as_advanced(CPU_ARCH)
+#if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
+#  set(CPU_ARCH x64)
+#else ()
+#  set(CPU_ARCH x86)
+#endif ()
+#mark_as_advanced(CPU_ARCH)
 

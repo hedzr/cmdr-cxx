@@ -141,7 +141,7 @@ TEST_CASE("flags test", "[flags]") {
 
     // default value of an arg/flag, ...
 
-    SECTION("main --float 2.7") {
+    SECTION("default value of an arg/flag: main --float 2.7") {
         const char *argv[] = {"", "main", "--float", "2.7", "--no-color"};
         REQUIRE(cli.run(countof(argv), const_cast<char **>(argv)) == 0);
 
@@ -152,10 +152,31 @@ TEST_CASE("flags test", "[flags]") {
         REQUIRE(cli.get_for_cli("main.string-array").as<std::vector<const char *>>() == std::vector{"a", "Z"});
         REQUIRE(cli.get_for_cli("no-color").as<bool>());
     }
+    
+    // store
+
+    SECTION("store: main --float 2.7") {
+        cmdr::set("wudao.count", 1);
+        cmdr::set("wudao.string", "str");
+        cmdr::set("wudao.float", 3.14f);
+        cmdr::set("wudao.double", 2.718);
+        cmdr::set("wudao.array", std::vector{"a", "b", "c"});
+        cmdr::set("wudao.bool", false);
+
+        std::cout << cmdr::get<int>("wudao.count") << '\n';
+        auto const &aa = cmdr::get<std::vector<char const *>>("wudao.array");
+        std::cout << cmdr::string::join(aa, ", ", "[", "]") << '\n';
+        cmdr::vars::variable &ab = cmdr::get_app().get("wudao.array");
+        std::cout << ab << '\n';
+
+        const char *argv[] = {"", "main", "--version", "--no-color"};
+        REQUIRE(cli.run(countof(argv), const_cast<char **>(argv)) == 0);
+        REQUIRE(cli.get_for_cli("no-color").as<bool>());
+    }
 
     // required flag
 
-    SECTION("main sub1 --float 2.7") {
+    SECTION("required flag: main sub1 --float 2.7") {
         const char *argv[] = {"", "main", "sub1", "--float", "2.7", "--no-color"};
         try {
             cli.set_no_catch_cmdr_biz_error(true).

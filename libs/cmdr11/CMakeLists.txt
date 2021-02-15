@@ -127,7 +127,6 @@ target_include_directories(${PROJECT_NAME}
                            #${spdlog_SOURCE_DIR}/include
                            )
 target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>)
-
 target_compile_definitions(${PROJECT_NAME} INTERFACE
                            CMDR_ENABLE_ASSERTIONS=${_cmdr_enable_assertions}
                            CMDR_ENABLE_PRECONDITION_CHECKS=${_cmdr_enable_precondition_checks}
@@ -135,7 +134,7 @@ target_compile_definitions(${PROJECT_NAME} INTERFACE
 if (${CMDR_ENABLE_VERBOSE_LOG})
     target_compile_definitions(${PROJECT_NAME} INTERFACE
                                CMDR_ENABLE_VERBOSE_LOG=1)
-endif()
+endif ()
 #target_link_libraries(${PROJECT_NAME} INTERFACE debug_assert)
 #target_link_libraries(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARIES})
 #target_link_libraries(${PROJECT_NAME} PRIVATE libs::sm-lib)
@@ -157,6 +156,12 @@ set(CLI_NAME cmdr11-cli)
 add_executable(${CLI_NAME} src/main.cc)
 target_include_directories(${CLI_NAME} PRIVATE $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>)
 target_link_libraries(${CLI_NAME} PRIVATE libs::cmdr11)
+set_target_properties(${CLI_NAME}
+                      PROPERTIES
+                      # DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}"
+                      RELEASE_POSTFIX "${CMAKE_RELEASE_POSTFIX}"
+                      MINSIZEREL_POSTFIX "${CMAKE_MINSIZEREL_POSTFIX}"
+                      RELWITHDEBINFO_POSTFIX "${CMAKE_RELWITHDEBINFO_POSTFIX}")
 
 
 ## TESTING ######################################
@@ -299,13 +304,13 @@ debug_print_value(CPACK_PACKAGE_VERSION_MAJOR)
 debug_print_value(CPACK_PACKAGE_VERSION_MINOR)
 debug_print_value(CPACK_PACKAGE_VERSION_PATCH)
 
-#debug_dump_target_inc_dirs_interface_only(${PROJECT_NAME})
-get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
-foreach (dir ${dirs})
-    message(STATUS "    = '${dir}'")
-endforeach ()
+##debug_dump_target_inc_dirs_interface_only(${PROJECT_NAME})
+#get_property(dirs DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY INCLUDE_DIRECTORIES)
+#foreach (dir ${dirs})
+#    message(STATUS "    = '${dir}'")
+#endforeach ()
 
-get_directory_property(inc_dirs INCLUDE_DIRECTORIES)
-list(TRANSFORM inc_dirs PREPEND "-I ")
-list(JOIN inc_dirs " " INCLUDE_STRING)
-debug_print_value(inc_dirs)
+#get_directory_property(inc_dirs INCLUDE_DIRECTORIES)
+#list(TRANSFORM inc_dirs PREPEND "-I ")
+#list(JOIN inc_dirs " " INCLUDE_STRING)
+#debug_print_value(inc_dirs)

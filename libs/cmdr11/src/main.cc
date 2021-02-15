@@ -10,13 +10,13 @@ void fatal_exit(const std::string &msg) {
 }
 
 int main(int argc, char *argv[]) {
+    auto cli = cmdr::cli("app2", CMDR_VERSION_STRING, "hedzr",
+                         "Copyright © 2021 by hedzr, All Rights Reserved.",
+                         "A demo app for cmdr-cxx library.",
+                         "$ ~ --help");
+
     try {
         using namespace cmdr::opt;
-
-        auto cli = cmdr::cli("app2", CMDR_VERSION_STRING, "hedzr",
-                             "Copyright © 2021 by hedzr, All Rights Reserved.",
-                             "A demo app for cmdr-c11 library.",
-                             "$ ~ --help");
 
         // cli.opt(opt_dummy{}());
 
@@ -36,18 +36,17 @@ int main(int argc, char *argv[]) {
         cmdr::set("wudao.array", std::vector{"a", "b", "c"});
         cmdr::set("wudao.bool", false);
 
+#if defined(FORCE_ASSERTIONS)
         std::cout << cmdr::get<int>("wudao.count") << '\n';
         auto const &aa = cmdr::get<std::vector<char const *>>("wudao.array");
         std::cout << cmdr::string::join(aa, ", ", "[", "]") << '\n';
         cmdr::vars::variable &ab = cmdr::get_app().get("wudao.array");
         std::cout << ab << '\n';
-
-        return cli.run(argc, argv);
-
+#endif
+        
     } catch (std::exception &e) {
         std::cerr << "Exception caught : " << e.what() << '\n';
-
-    } catch (...) {
-        cmdr::get_app().post_run(); // optional to post_run(), for the rare exception post processing if necessary
     }
+
+    return cli.run(argc, argv);
 }

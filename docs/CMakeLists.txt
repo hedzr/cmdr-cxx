@@ -1,13 +1,12 @@
 
-set(OPT_VAL_FOR_BUILD_DOC ${DOXYGEN_FOUND})
-#if (DEBUG)
-#    set(OPT_VAL_FOR_BUILD_DOC OFF)
-#endif ()
-set(OPT_VAL_FOR_BUILD_DOC OFF)
-option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" ${OPT_VAL_FOR_BUILD_DOC})
+option(BUILD_DOCUMENTATION "Create and install the HTML based API documentation (requires Doxygen)" OFF)
+find_package(Doxygen)
+if (DEBUG OR NOT DOXYGEN_FOUND)
+    set(BUILD_DOCUMENTATION OFF)
+endif ()
+
 
 if (BUILD_DOCUMENTATION)
-    find_package(Doxygen)
 
     if (!DOXYGEN_FOUND)
         #

@@ -122,7 +122,7 @@ endif ()
 # For test-app-c1, loading the dependency to yaml-cpp
 #
 include(loaders/yaml_loader)
-add_yaml_loader(test-app2-c1)
+add_yaml_loader_to(test-app2-c1)
 target_compile_definitions(test-app2-c1 PRIVATE 
                            CMDR_ENABLE_VERBOSE_LOG=1)
 
@@ -133,3 +133,4 @@ debug_print_value(ARCHIVE_NAME)
 debug_print_value(PROJECT_ARCHIVE_NAME)
 debug_print_value(BUILD_TESTING)
 debug_print_value(CMAKE_SOURCE_DIR)
+message(STATUS "end of tests")

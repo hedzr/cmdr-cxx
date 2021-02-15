@@ -47,6 +47,7 @@
     - Version & Build Info: `--version`/`--ver`/`-V`, `--build-info`/`-#`
     - `version`/`versions` command available.
     - Simulating version at runtime with `—-version-sim 1.9.1`
+    
   - `~~tree`: list all commands and sub-commands.
     - `~~debug`: print the debugging info
     - `--no-color`: disable terminal color in outputting
@@ -61,6 +62,8 @@
 
   - envvars overrides: `HELP=1 ./bin/test-app2-c2 server pause` is the equivalent of `./bin/test-app2-c2 server pause --help`
 
+  - Extensible external loaders: `cli.set_global_on_loading_externals(...);`
+
   - Extending internal actions for special operations auch as printing help screen...
 
 - Hierarchical Data Manager - `Option Store`
@@ -72,9 +75,19 @@
 
 
 
+## Bonus
+
+- golang: [cmdr](https:://github.com/hedzr/cmdr)
+- .netcore: [CMdr.Core](https://github.com/hedzr/Cmdr.Core)
+
+
+
 ## Status
 
 WIP, pre-released now.
+
+- v0.2.7 - `auto &cli = cmdr::create(...)`
+- v0.2.5 - public release starts
 
 
 

@@ -6,6 +6,8 @@
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true)
 
 
+# /usr/local/share/cmake/Modules
+# /usr/share/cmake/Modules
 #list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/${CMAKE_SCRIPTS}/Modules:${CMAKE_SOURCE_DIR}/${CMAKE_SCRIPTS}")
 #message("CMAKE_MODULE_PATH = ${CMAKE_MODULE_PATH}") ###
 

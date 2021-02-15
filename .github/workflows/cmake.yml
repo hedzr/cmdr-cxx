@@ -257,14 +257,14 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {
-            name: "Windows Latest MSVC", artifact: "Windows-MSVC.7z",
-            os: ubuntu-latest
-          }
-          - {
-            name: "Windows Latest MinGW", artifact: "Windows-MinGW.7z",
-            os: ubuntu-latest
-          }
+#          - {
+#            name: "Windows Latest MSVC", artifact: "Windows-MSVC.7z",
+#            os: ubuntu-latest
+#          }
+#          - {
+#            name: "Windows Latest MinGW", artifact: "Windows-MinGW.7z",
+#            os: ubuntu-latest
+#          }
           - {
             name: "Ubuntu Latest GCC", artifact: "Linux.7z",
             os: ubuntu-latest

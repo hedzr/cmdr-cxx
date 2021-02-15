@@ -8,7 +8,7 @@ include(add-policies)
 include(detect-systems)
 include(target-dirs)
 include(utils)
-include(options)
+
 
 project(cmdr-cxx
         VERSION ${VERSION}
@@ -36,12 +36,15 @@ debug_print_top_vars()
 # add_library(study_cmake library.cxx library.h)
 add_subdirectory(libs)
 add_subdirectory(src)
-add_subdirectory(tests)
+if (ENABLE_TESTS)
+    add_subdirectory(tests)
+endif()
 add_subdirectory(docs)
 
 
 ## TPL ## TAIL ##########
 
+message(STATUS "tail of top level : ")
 apply_all_unit_tests(all_tests)     # invoke CTest unittests automatically.
 dump_feature_summary()              # tail print to cmake-debug/features.log
 # env var CTEST_OUTPUT_ON_FAILURE=1 to display ctest error verbosely.

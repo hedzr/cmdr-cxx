@@ -5,12 +5,18 @@
 #ifndef CMDR_CXX11_CMDR_DBG_HH
 #define CMDR_CXX11_CMDR_DBG_HH
 
-#include <execinfo.h>
 #include <sstream>
 #include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
 #include <typeinfo>
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#include <execinfo.h>
+#ifdef _WIN64
+#else
+#endif
+#endif
 
 #ifdef __GNUG__
 #include <cstdlib>

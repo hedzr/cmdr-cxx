@@ -430,7 +430,7 @@ namespace cmdr {
 
         // generators
         cli += cmdr::opt::sub_cmd{}("generate", "g", "gen")
-                       .description("generators of this appT (such as manual, markdown, ...)")
+                       .description("generators of this app (such as manual, markdown, ...)")
                        .group(SYS_MGMT_GROUP)
                 // .opt(opt_dummy{}())
                 // .opt(opt_dummy{}());

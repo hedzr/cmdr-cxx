@@ -518,8 +518,11 @@ namespace cmdr {
         ss << '\n'
            << "Commands" << '\n';
 
+        auto const &help_arg = find_flag("help");
+        bool show_hidden_items = help_arg.valid() && help_arg.hit_count() > 2;
+
         std::ostringstream os1;
-        cc->print_commands(os1, c, _minimal_tab_width, true, -1);
+        cc->print_commands(os1, c, _minimal_tab_width, true, show_hidden_items, -1);
 
         std::vector<std::ostringstream *> os2;
         auto saved_minimal_tab_width = _minimal_tab_width;
@@ -540,7 +543,7 @@ namespace cmdr {
                   << tt.str() << '\n';
 
             auto smtw = _minimal_tab_width;
-            trivial->print_flags(*os, c, _minimal_tab_width, true, -1);
+            trivial->print_flags(*os, c, _minimal_tab_width, true, show_hidden_items, -1);
             if (smtw < _minimal_tab_width) {
                 os2.clear();
                 delete os;
@@ -552,7 +555,7 @@ namespace cmdr {
 
         if (saved_minimal_tab_width < _minimal_tab_width) {
             std::ostringstream os3;
-            cc->print_commands(os3, c, _minimal_tab_width, true, -1);
+            cc->print_commands(os3, c, _minimal_tab_width, true, show_hidden_items, -1);
             ss << os3.str();
         } else {
             ss << os1.str();
@@ -591,7 +594,7 @@ namespace cmdr {
                    << "Type `" << exe_name << " --help` to get help screen (this screen)." << '\n';
             }
         }
-        
+
         if (!_no_cmdr_ending) {
             ss << c.dim(cmdr::vars::store::_dim_text_dim).fg(cmdr::vars::store::_dim_text_fg).s("Powered by cmdr-cxx: https://github.com/hedzr/cmdr-cxx.") << '\n';
         }

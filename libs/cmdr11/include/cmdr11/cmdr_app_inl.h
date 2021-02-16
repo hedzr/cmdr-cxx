@@ -48,10 +48,10 @@ namespace cmdr {
     }
 
     inline app &app::create_new(const_chars name, const_chars version,
-                           const_chars author,
-                           const_chars copyright,
-                           const_chars description,
-                           const_chars examples) {
+                                const_chars author,
+                                const_chars copyright,
+                                const_chars description,
+                                const_chars examples) {
         auto *x = new app{name, version, author, copyright, description, examples};
         x->initialize_internal_commands();
         return *app_holder::instance();
@@ -277,10 +277,13 @@ namespace cmdr {
     inline int app::print_tree_screen(opt::types::parsing_context &pc, int argc, char *argv[]) {
         UNUSED(pc, argc, argv);
         std::cout << "All Commands:\n";
-
+        
+        auto const &help_arg = find_flag("help");
+        bool show_hidden_items = help_arg.valid() && help_arg.hit_count() > 2;
+        
         // _pr_tree(std::cout, &pc.last_matched_cmd());
         auto c = cmdr::terminal::colors::colorize::create();
-        pc.last_matched_cmd().print_commands(std::cout, c, _minimal_tab_width, true, 0);
+        pc.last_matched_cmd().print_commands(std::cout, c, _minimal_tab_width, true, show_hidden_items, 0);
         return 0;
     }
 
@@ -432,6 +435,7 @@ namespace cmdr {
         cli += cmdr::opt::sub_cmd{}("generate", "g", "gen")
                        .description("generators of this app (such as manual, markdown, ...)")
                        .group(SYS_MGMT_GROUP)
+                       .hidden()
                 // .opt(opt_dummy{}())
                 // .opt(opt_dummy{}());
                 ;
@@ -461,7 +465,7 @@ namespace cmdr {
                     // .opt(opt_dummy{}())
                     ;
 
-            t1 += cmdr::opt::sub_cmd{}("shell", "s", "sh")
+            t1 += cmdr::opt::sub_cmd{}("shell", "s", "sh", "comp", "completion")
                           .description("generate the bash/zsh auto-completion script or install it.")
                     // .opt(opt_dummy{}())
                     // .opt(opt_dummy{}())

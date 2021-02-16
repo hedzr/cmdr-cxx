@@ -18,7 +18,7 @@
   - supports passthrough flag: `--` will terminate the parsing
   - supports lots of data types for a flag: bool, int, uint, float, string, array, chrono duration, ...
     - allows user-custom data types
-  - automated help-screen printing 
+  - automated help-screen printing (*`-hhh` to print the hidden items*)
 
 - Robust Interfaces
 

@@ -204,9 +204,9 @@ namespace cmdr::opt {
 
     public:
         // wt: total width for description part.
-        void print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped = true, int level = -1) const;
+        void print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, bool show_hidden_items, int level = -1) const;
         // wt: total width for description part.
-        void print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped = true, int level = -1) const;
+        void print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, bool show_hidden_items, int level = -1) const;
 
         void walk_args(std::function<void(arg &)> const &cb);
     }; // class cmd

@@ -350,7 +350,8 @@ namespace cmdr::opt {
         }
     }
 
-    inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, int level) const {
+
+    inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, bool show_hidden_items, int level) const {
         UNUSED(grouped, level);
         auto fg = vars::store::_dim_text_fg;
         auto dim = vars::store::_dim_text_dim;
@@ -382,7 +383,7 @@ namespace cmdr::opt {
 
                 int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
                 for (auto &x : val) {
-                    if (x->hidden()) continue;
+                    if (!show_hidden_items && x->hidden()) continue;
                     valid_count++;
                     w = x->title_long().length();
                     if (w > wf) wf = w;
@@ -412,7 +413,7 @@ namespace cmdr::opt {
 
             int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
             for (auto &x : val) {
-                if (x->hidden()) continue;
+                if (!show_hidden_items && x->hidden()) continue;
                 valid_count++;
                 w = x->title_long().length();
                 if (w > wf) wf = w;
@@ -433,7 +434,7 @@ namespace cmdr::opt {
             if (it.second != UNSORTED_GROUP) {
                 int i = 0;
                 for (auto &x : val) {
-                    if (x->hidden()) continue;
+                    if (!show_hidden_items && x->hidden()) continue;
                     i++;
                 }
                 if (i > 0) {
@@ -449,7 +450,7 @@ namespace cmdr::opt {
             }
 
             for (auto &x : val) {
-                if (x->hidden()) continue;
+                if (!show_hidden_items && x->hidden()) continue;
 
                 if (level >= 0)
                     ss << std::string((level + level_pad) * 2, ' ') << '*' << ' ';
@@ -517,7 +518,7 @@ namespace cmdr::opt {
                 count_all++;
 
                 if (level >= 0 && !x->no_sub_commands()) {
-                    x->print_commands(ss, c, wt, grouped, level + level_pad + 1);
+                    x->print_commands(ss, c, wt, grouped, show_hidden_items, level + level_pad + 1);
                 }
             }
         }
@@ -528,7 +529,7 @@ namespace cmdr::opt {
     }
 
 
-    inline void cmd::print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, int level) const {
+    inline void cmd::print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, bool show_hidden_items, int level) const {
         UNUSED(grouped, level);
         auto fg = vars::store::_dim_text_fg;
         auto dim = vars::store::_dim_text_dim;
@@ -559,7 +560,7 @@ namespace cmdr::opt {
 
                 int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
                 for (auto &x : val) {
-                    if (x->hidden()) continue;
+                    if (!show_hidden_items && x->hidden()) continue;
                     valid_count++;
                     w = x->title_long().length() + 2;
                     if (!x->placeholder().empty())
@@ -591,7 +592,7 @@ namespace cmdr::opt {
 
             int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
             for (auto &x : val) {
-                if (x->hidden()) continue;
+                if (!show_hidden_items && x->hidden()) continue;
                 valid_count++;
                 w = x->title_long().length() + 2;
                 if (!x->placeholder().empty())
@@ -613,7 +614,7 @@ namespace cmdr::opt {
             if (it.second != UNSORTED_GROUP) {
                 int i = 0;
                 for (auto &x : val) {
-                    if (x->hidden()) continue;
+                    if (!show_hidden_items && x->hidden()) continue;
                     i++;
                 }
                 if (i > 0) {
@@ -625,7 +626,7 @@ namespace cmdr::opt {
             }
 
             for (auto &x : val) {
-                if (x->hidden()) continue;
+                if (!show_hidden_items && x->hidden()) continue;
                 ss << ' ' << ' ' << std::left << std::setfill(' ');
                 if (!x->title_long().empty()) {
                     w = x->title_long().length();

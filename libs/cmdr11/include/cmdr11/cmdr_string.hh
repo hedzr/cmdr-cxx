@@ -353,34 +353,7 @@ namespace cmdr::string {
         return wrap(str, '"', '"');
     }
 
-    inline std::string strip(const std::string &str, char const *pre, char const *post) {
-        std::size_t p1 = 0, p2 = str.length();
-        if (has_prefix(str, pre))
-            p1 = std::strlen(pre);
-        if (has_suffix(str, post))
-            p2 -= std::strlen(post);
-        return str.substr(p1, p2 - p1);
-    }
-
-    inline std::string strip_quotes(const std::string &str) {
-        std::size_t p1 = 0, p2 = str.length() - 1;
-        while (str[p1] == '"' || str[p1] == '\'') p1++;
-        while (str[p2] == '"' || str[p2] == '\'') p2--;
-        if (p2 + 1 < p1) p2 = p1 - 1;
-        return str.substr(p1, p2 + 1);
-    }
-
     std::string read_until(std::istream &in, char delimiter = ',');
-
-    inline void strip_quotes(std::istream &is, std::string &s) {
-        auto ch = is.peek();
-        if (ch == '\'' || ch == '"') {
-            char c;
-            is >> c;
-            s = read_until(is, ch);
-        } else
-            is >> s;
-    }
 
     inline std::string read_until(std::istream &in, char delimiter) {
         std::string cr;
@@ -420,6 +393,55 @@ namespace cmdr::string {
         } while ((tot < sz) || (cr.substr(tot - sz, sz) != delimiter));
         ret = cr.substr(0, tot - sz); // or return cr; if you want to keep the delimiter
         return true;
+    }
+
+
+    inline std::string strip(const std::string &str, char const *pre, char const *post) {
+        std::size_t p1 = 0, p2 = str.length();
+        if (has_prefix(str, pre))
+            p1 = std::strlen(pre);
+        if (has_suffix(str, post))
+            p2 -= std::strlen(post);
+        return str.substr(p1, p2 - p1);
+    }
+
+    inline std::string strip_quotes(const std::string &str) {
+        std::size_t p1 = 0, p2 = str.length() - 1;
+        while (str[p1] == '"' || str[p1] == '\'') p1++;
+        while (str[p2] == '"' || str[p2] == '\'') p2--;
+        if (p2 + 1 < p1) p2 = p1 - 1;
+        return str.substr(p1, p2 + 1);
+    }
+
+    inline void strip_quotes(std::istream &is, std::string &s) {
+        auto ch = is.peek();
+        if (ch == '\'' || ch == '"') {
+            char c;
+            is >> c;
+            s = read_until(is, ch);
+        } else
+            is >> s;
+    }
+
+
+    inline std::string &trim_right_space(std::string &s) {
+        s.erase(s.find_last_not_of(" \n\r\t\v\f") + 1);
+        return s;
+    }
+
+    inline std::string trim_right_space(std::string &&s) {
+        s.erase(s.find_last_not_of(" \n\r\t\v\f") + 1);
+        return std::move(s);
+    }
+
+    inline std::string &trim_left_space(std::string &s) {
+        s.erase(0, s.find_first_not_of(" \n\r\t\v\f"));
+        return s;
+    }
+
+    inline std::string trim_left_space(std::string &&s) {
+        s.erase(0, s.find_first_not_of(" \n\r\t\v\f"));
+        return std::move(s);
     }
 
 

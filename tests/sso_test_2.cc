@@ -98,4 +98,8 @@ int main() {
     std::cout << "cmdr::is_duration<std::chrono::nanoseconds> : " << cmdr::is_duration<std::chrono::nanoseconds>::value << '\n';
     std::cout << "cmdr::is_duration<long long> : " << cmdr::is_duration<decltype(0xfull)>::value << '\n';
     std::cout << "cmdr::is_duration<bool> : " << cmdr::is_duration<bool>::value << '\n';
+
+    //
+    std::string str1 = "body install it";
+    std::cout << cmdr::string::trim_left_space(str1.substr(4)) << '\n';
 }

@@ -458,9 +458,16 @@ namespace cmdr::opt {
                     ss << "  " << std::left << std::setfill(' ');
                 if (!x->title_long().empty()) {
                     w = x->title_long().length();
-                    ss << c.underline().s(x->title_long());
+                    if (x->hidden())
+                        ss << c.underline().fg(fg).dim(dim).s(x->title_long());
+                    else
+                        ss << c.underline().s(x->title_long());
 
-                    if (!x->title_short().empty() || !x->title_aliases().empty()) ss << ", ";
+                    if (!x->title_short().empty() || !x->title_aliases().empty())
+                        if (x->hidden())
+                            ss << c.fg(fg).dim(dim).s(", ");
+                        else
+                            ss << ", ";
                     else
                         ss << "  ";
 
@@ -468,16 +475,25 @@ namespace cmdr::opt {
                     if (w > 0) ss << std::setw(w) << ' ';
                 } else
                     ss << std::setw(wf + 2) << ' ';
+
                 if (!x->title_short().empty()) {
                     w = x->title_short().length();
-                    ss << x->title_short();
-                    if (!x->title_aliases().empty()) ss << ", ";
+                    if (x->hidden())
+                        ss << c.fg(fg).dim(dim).s(x->title_short());
+                    else
+                        ss << x->title_short();
+                    if (!x->title_aliases().empty())
+                        if (x->hidden())
+                            ss << c.fg(fg).dim(dim).s(", ");
+                        else
+                            ss << ", ";
                     else
                         ss << "  ";
                     w = ws - w;
                     if (w > 0) ss << std::setw(w) << ' ';
                 } else
                     ss << std::setw(ws + 2) << ' ';
+
                 if (!x->title_aliases().empty()) {
                     w = 0;
                     std::stringstream tmp;
@@ -488,7 +504,15 @@ namespace cmdr::opt {
                             w++;
                         tmp << t;
                     }
-                    ss << std::setw(wa) << tmp.str();
+
+                    if (x->hidden()) {
+                        auto v = tmp.str();
+                        std::ostringstream cs;
+                        cs << c.fg(fg).dim(dim).s(tmp.str());
+                        auto cc = cs.str();
+                        ss << std::setw(wa + cc.length() - v.length()) << cc;
+                    } else
+                        ss << std::setw(wa) << tmp.str();
                 } else if (wa > 0)
                     ss << std::setw(wa) << ' ';
 
@@ -512,6 +536,9 @@ namespace cmdr::opt {
                 //         << '\n';
 
                 // ss << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa;
+
+                // if (x->hidden())
+                //     ss << '>' << x->hidden();
 
                 ss << '\n';
 
@@ -630,11 +657,22 @@ namespace cmdr::opt {
                 ss << ' ' << ' ' << std::left << std::setfill(' ');
                 if (!x->title_long().empty()) {
                     w = x->title_long().length();
-                    ss << '-' << '-' << c.underline().s(x->title_long());
-                    if (!x->placeholder().empty())
-                        ss << '=' << x->placeholder();
+                    if (x->hidden())
+                        ss << c.fg(fg).dim(dim).s("--") << c.underline().fg(fg).dim(dim).s(x->title_long());
+                    else
+                        ss << '-' << '-' << c.underline().s(x->title_long());
+                    if (!x->placeholder().empty()) {
+                        if (x->hidden())
+                            ss << c.fg(fg).dim(dim).s("=") << c.fg(fg).dim(dim).s(x->placeholder());
+                        else
+                            ss << '=' << x->placeholder();
+                    }
 
-                    if (!x->title_short().empty() || !x->title_aliases().empty()) ss << ", ";
+                    if (!x->title_short().empty() || !x->title_aliases().empty())
+                        if (x->hidden())
+                            ss << c.fg(fg).dim(dim).s(", ");
+                        else
+                            ss << ", ";
                     else
                         ss << ' ' << ' ';
 
@@ -645,16 +683,25 @@ namespace cmdr::opt {
                     if (w > 0) ss << std::setw(w) << ' ';
                 } else
                     ss << std::setw(wf + 2) << ' ';
+
                 if (!x->title_short().empty()) {
                     w = x->title_short().length();
-                    ss << '-' << x->title_short();
-                    if (!x->title_aliases().empty()) ss << ", ";
+                    if (x->hidden())
+                        ss << c.fg(fg).dim(dim).s("-") << c.fg(fg).dim(dim).s(x->title_short());
+                    else
+                        ss << '-' << x->title_short();
+                    if (!x->title_aliases().empty())
+                        if (x->hidden())
+                            ss << c.fg(fg).dim(dim).s(", ");
+                        else
+                            ss << ", ";
                     else
                         ss << ' ' << ' ';
                     w = ws - w - 1;
                     if (w > 0) ss << std::setw(w) << ' ';
                 } else
                     ss << std::setw(ws + 2) << ' ';
+
                 if (!x->title_aliases().empty()) {
                     w = 0;
                     std::stringstream tmp;
@@ -665,7 +712,15 @@ namespace cmdr::opt {
                             w++;
                         tmp << '-' << '-' << t;
                     }
-                    ss << std::setw(wa) << tmp.str();
+
+                    if (x->hidden()) {
+                        auto v = tmp.str();
+                        std::ostringstream cs;
+                        cs << c.fg(fg).dim(dim).s(tmp.str());
+                        auto cc = cs.str();
+                        ss << std::setw(wa + cc.length() - v.length()) << cc;
+                    } else
+                        ss << std::setw(wa) << tmp.str();
                 } else if (wa > 0)
                     ss << std::setw(wa) << ' ';
 
@@ -704,6 +759,9 @@ namespace cmdr::opt {
                 // ss // << w << ',' << wt << ',' << c.fg(fg).dim(dim).s(x->descriptions());
 
                 // ss << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa;
+
+                // if (x->hidden())
+                //     ss << '>' << x->hidden();
 
                 ss << '\n';
 

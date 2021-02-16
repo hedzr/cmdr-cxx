@@ -17,20 +17,20 @@ _deps
 .options.cmake
 
 
-ref/
-sav[e]/
-SAV[E]/
-output[s]/
-dist[s]/
-dist-ubuntu/
-dist-centos/
-# lib[s]/
+refs?/
+save?/
+SAVE?/
+outputs?/
+dists?/
+dist-.+/
+# libs?/
 docs/cmake-vars.txt
 b.sh
 _assets/
 sftp-config(-alt\\d?)?\\.json
 \\.sublime-(project|workspace)
 sftp-settings\\.json
+
 
 
 

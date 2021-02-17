@@ -92,6 +92,12 @@ namespace cmdr {
         int run(int argc, char *argv[]) override;
 
         void post_run() const override {
+            for (auto const &fn : _on_post_runs) {
+                if (fn) {
+                    fn(*this);
+                }
+            }
+            
             if (std::current_exception() != nullptr) {
                 handle_eptr(std::current_exception());
             } else {
@@ -214,6 +220,11 @@ namespace cmdr {
 
         app &set_global_on_command_not_hooked(opt::types::on_invoke const &cb) {
             _on_command_not_hooked = cb;
+            return (*this);
+        }
+
+        app &set_global_on_post_run(std::function<void()> const &fn) {
+            _on_post_run.push_back(fn);
             return (*this);
         }
 
@@ -464,6 +475,7 @@ namespace cmdr {
         std::vector<types::on_arg_matched> _on_arg_matched;
         std::vector<types::on_cmd_matched> _on_cmd_matched;
         std::vector<types::on_loading_externals> _on_loading_externals;
+        std::vector<types::on_post_run> _on_post_runs;
         opt::types::on_invoke _on_command_not_hooked;
         std::function<void(const std::exception_ptr &eptr)> _on_handle_exception_ptr;
     };

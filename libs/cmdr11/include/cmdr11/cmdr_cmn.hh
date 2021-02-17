@@ -26,6 +26,7 @@ namespace cmdr {
 
         // using exceptions if loading failed...
         using on_loading_externals = std::function<void(app &cli)>;
+        using on_post_run = std::function<void(app const &cli)>;
     } // namespace types
 } // namespace cmdr
 

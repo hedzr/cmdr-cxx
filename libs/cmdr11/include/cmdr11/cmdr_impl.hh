@@ -191,7 +191,15 @@ namespace cmdr {
             }
 
             // cannot parse the value to arg, ignore it and continue for the next arg
-            std::cerr << "cannot parse the value of the flag " << std::quoted(amr.matched_str) << '\n';
+            {
+                std::ostringstream osn;
+                std::ostringstream os1;
+                os1 << vars::store::_c.bold().s(amr.matched_str);
+                osn << vars::store::_c.bold().s("[!]") 
+                    << vars::store::_c.fg(terminal::colors::colorize::Colors256::Red).s(" cannot parse the value of the flag ") 
+                    << std::quoted(os1.str());
+                std::cerr << osn.str() << '\n';
+            }
             return opt::Continue;
         }
 
@@ -468,7 +476,7 @@ namespace cmdr {
         for (auto &on_loading_external : _on_loading_externals) {
             if (on_loading_external) {
                 on_loading_external(*this);
-}
+            }
         }
     }
 

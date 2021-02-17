@@ -23,7 +23,7 @@ namespace cmdr::log {
             explicit Log(typename util::singleton<Log>::token) {}
             ~Log() = default;
 
-            [[maybe_unused]] cmdr::terminal::colors::colorize _c;
+            // [[maybe_unused]] cmdr::terminal::colors::colorize _c;
 
             template<class... Args>
             void log([[maybe_unused]] const char *fmt, [[maybe_unused]] Args const &...args) {

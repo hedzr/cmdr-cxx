@@ -25,8 +25,6 @@ namespace cmdr::log {
 
             [[maybe_unused]] cmdr::terminal::colors::colorize _c;
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-parameter"
             template<class... Args>
             void log([[maybe_unused]] const char *fmt, [[maybe_unused]] Args const &...args) {
                 // std::fprintf(std::stderr)
@@ -61,15 +59,11 @@ namespace cmdr::log {
                             file, line,
                             fg_light_gray, func, fg_reset_all);
             }
-#pragma clang diagnostic pop
         };
     } // namespace detail
 
     class log {
     public:
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-parameter"
-
         template<class... Args>
         static void print(const char *fmt, Args const &...args) {
             xlog().template log(fmt, args...);
@@ -94,8 +88,6 @@ namespace cmdr::log {
 
             std::printf("%s [debug]: %s\n", time_buf, buf.data());
         }
-
-#pragma clang diagnostic pop
 
     private:
         static detail::Log &xlog() { return detail::Log::instance(); }

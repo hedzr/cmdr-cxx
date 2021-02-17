@@ -97,7 +97,7 @@ namespace cmdr {
                     fn(*this);
                 }
             }
-            
+
             if (std::current_exception() != nullptr) {
                 handle_eptr(std::current_exception());
             } else {
@@ -223,8 +223,8 @@ namespace cmdr {
             return (*this);
         }
 
-        app &set_global_on_post_run(std::function<void()> const &fn) {
-            _on_post_run.push_back(fn);
+        app &set_global_on_post_run(types::on_post_run const &fn) {
+            _on_post_runs.push_back(fn);
             return (*this);
         }
 

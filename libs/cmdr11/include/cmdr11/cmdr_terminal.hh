@@ -28,7 +28,7 @@ namespace cmdr::terminal {
         static bool isatty() { return ::isatty(0); }
 
         static const char *term() {
-            auto str = std::getenv("TERM");
+            auto *str = std::getenv("TERM");
             if (!str)
                 return "";
             return str;
@@ -38,7 +38,7 @@ namespace cmdr::terminal {
 #if defined(OS_WIN)
             return true;
 #else
-            auto str = term();
+            const auto *str = term();
             const char *Terms[] = {"ansi", "color", "console", "cygwin", "gnome", "konsole",
                                    "kterm", "linux", "msys", "putty", "rxvt", "screen",
                                    "vt100", "xterm", "xterm-256colors", "xterm-color"};
@@ -53,7 +53,7 @@ namespace cmdr::terminal {
 #if defined(OS_WIN)
             return 256;
 #else
-            auto str = std::getenv("COLORTERM");
+            auto *str = std::getenv("COLORTERM");
             // const char *str = ::getenv("COLORTERM");
 
             if (!str) {
@@ -84,7 +84,7 @@ namespace cmdr::terminal {
             width = (int) (csbi.dwSize.X);
             height = (int) (csbi.dwSize.Y);
             return {height, width};
-#elif defined(__linux__) || defined(OS_MACOS)
+#elif defined(__linux__) || defined(OS_MACOS) || defined(OS_MAC) || defined(OS_APPLE)
             // #if !defined(OS_WIN) && !defined(OS_ANDROID)
             struct winsize size {};
             ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
@@ -749,7 +749,7 @@ namespace cmdr::terminal::colors {
                 if (o._auto_reset) {
                     os << "\033[0m";
 
-                    auto xo = const_cast<colorize *>(&o);
+                    auto *xo = const_cast<colorize *>(&o);
                     xo->_st._i = 0;
                     xo->_st._individual._auto_reset_invoked = true;
                     std::stringstream sz;

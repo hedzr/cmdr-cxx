@@ -80,7 +80,7 @@ namespace cmdr {
             return 0;
         };
 
-        if (auto p = std::getenv("CMDR_DIM"); p && p[0] == '1') {
+        if (auto *p = std::getenv("CMDR_DIM"); p && p[0] == '1') {
             vars::store::_dim_text_dim = true;
         }
     }

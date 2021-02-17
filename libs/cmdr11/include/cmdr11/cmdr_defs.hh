@@ -22,7 +22,7 @@
 //#define UNUSED(...) [__VA_ARGS__](){}
 //#endif
 template<typename... Args>
-void UNUSED(Args &&...args) {
+void UNUSED([[maybe_unused]] Args &&...args) {
     (void) (sizeof...(args));
 }
 
@@ -72,7 +72,7 @@ void UNUSED(Args &&...args) {
 // #ifndef __has_feature
 // #define __has_feature(x) 0 // Compatibility with non-clang compilers.
 // #endif
-// // Any compiler claiming C++11 supports, Visual C++ 2015 and Clang version supporting constexp
+// // Any compiler claiming C++11 supports, Visual C++ 2015 and Clang version supporting constexpr
 // #if __cplusplus >= 201103L || _MSC_VER >= 1900 || __has_feature(cxx_constexpr) // C++ 11 implementation
 // namespace detail {
 //     template<typename T, std::size_t N>
@@ -108,7 +108,7 @@ void UNUSED(Args &&...args) {
 // size_t count_snd_dim = countof( arrtwo[0] ); // 6
 //
 template<typename T, size_t N>
-size_t countof(T (&arr)[N]) {
+[[maybe_unused]] size_t countof(T (&arr)[N]) {
     UNUSED(arr);
     return std::extent<T[N]>::value;
 }
@@ -178,7 +178,7 @@ template<typename T>
 struct always_false : std::false_type {};
 
 template<typename T>
-constexpr bool always_false_v = always_false<T>::value;
+[[maybe_unused]] constexpr bool always_false_v = always_false<T>::value;
 
 
 typedef const char *const_chars;

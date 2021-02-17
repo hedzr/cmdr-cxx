@@ -222,7 +222,7 @@ namespace cmdr::exception {
 
     public:
         using dup_error::dup_error;
-        explicit dup_short_cmd_found(const char *file, int line, opt::cmd const *c, opt::cmd const *owner);
+        [[maybe_unused]] explicit dup_short_cmd_found(const char *file, int line, opt::cmd const *c, opt::cmd const *owner);
     };
 
     class dup_long_cmd_found : public dup_error {

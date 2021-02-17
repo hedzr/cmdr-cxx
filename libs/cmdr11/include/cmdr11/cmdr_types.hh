@@ -6,7 +6,7 @@
 #define CMDR_CXX11_CMDR_TYPES_HH
 
 // BETTER in-place construction form without std::in_place_t tag.
-#define BETTER 1
+//#define BETTER 1
 
 
 #include <any>
@@ -40,7 +40,6 @@ namespace cmdr {
                                        int, unsigned int, int8_t, int16_t,
                                        //int32_t, int64_t,
                                        uint8_t, uint16_t,
-                                       //uint32_t, uint64_t,
                                        long, long long, unsigned long, unsigned long long,
                                        float, double,
                                        std::chrono::nanoseconds,
@@ -100,9 +99,9 @@ namespace cmdr {
     using base_type [[maybe_unused]] = std::any;
     // helper constant for the visitor #3
     template<class>
-    inline constexpr bool always_false_v = false;
+    [[maybe_unused]] inline constexpr bool always_false_v = false;
 
-    inline std::string variant_to_string(const support_types &v) {
+    [[maybe_unused]] inline std::string variant_to_string(const support_types &v) {
         std::stringstream ss;
 
         std::visit([&ss](auto &&arg) {

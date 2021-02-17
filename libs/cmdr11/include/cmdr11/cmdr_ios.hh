@@ -10,9 +10,9 @@
 
 namespace cmdr::io {
 
-    class ios_flags_saver {
+    class [[maybe_unused]] ios_flags_saver {
     public:
-        explicit ios_flags_saver(std::ostream &os)
+        [[maybe_unused]] explicit ios_flags_saver(std::ostream &os)
             : ios(os)
             , f(os.flags()) {}
         ~ios_flags_saver() { ios.flags(f); }

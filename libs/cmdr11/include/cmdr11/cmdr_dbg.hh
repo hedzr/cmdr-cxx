@@ -61,7 +61,7 @@ namespace cmdr::debug {
 #else
     template<typename T>
     constexpr auto type_name() noexcept {
-        std::string_view name = "Error: unsupported compiler", prefix, suffix;
+        std::string_view name, prefix, suffix;
 #ifdef __clang__
         name = __PRETTY_FUNCTION__;
         prefix = "auto type_name() [T = ";
@@ -74,6 +74,8 @@ namespace cmdr::debug {
         name = __FUNCSIG__;
         prefix = "auto __cdecl type_name<";
         suffix = ">(void) noexcept";
+#else
+        name = "Error: unsupported compiler";
 #endif
         name.remove_prefix(prefix.size());
         name.remove_suffix(suffix.size());
@@ -172,6 +174,7 @@ namespace cmdr::debug {
     //     LDFLAGS=-rdynamic
     //
     // https://panthema.net/2008/0901-stacktrace-demangled/
+    //
     /** Print a demangled stack backtrace of the caller function to FILE* out. */
     template<int max_frames = 63>
     static inline void print_stacktrace(FILE *out = stderr, int skip = 1) {
@@ -449,7 +452,7 @@ namespace cmdr::debug {
             std::set_terminate(handler);
             _this = this;
         }
-        explicit UnhandledExceptionHookInstaller(std::function<void()> f)
+        [[maybe_unused]] explicit UnhandledExceptionHookInstaller(std::function<void()> f)
             : _f(std::move(f)) {
             std::set_terminate(handler);
             _this = this;
@@ -490,7 +493,7 @@ namespace cmdr::debug {
             signal(SIGSEGV, handler);
             _this = this;
         }
-        explicit SigSegVInstaller(std::function<void(int sig)> f)
+        [[maybe_unused]] explicit SigSegVInstaller(std::function<void(int sig)> f)
             : _f(std::move(f)) {
             signal(SIGSEGV, handler);
             _this = this;
@@ -517,7 +520,7 @@ namespace cmdr::debug {
             exit(1);
         }
 
-        void baz() {
+        [[maybe_unused]] void baz() {
             int *foo = (int *) -1; // make a bad pointer
             printf("%d\n", *foo);  // causes segfault
         }

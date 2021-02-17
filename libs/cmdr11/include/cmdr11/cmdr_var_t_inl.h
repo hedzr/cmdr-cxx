@@ -21,7 +21,7 @@ namespace cmdr::vars {
 
     // template<class T, class small_string>
     // inline T &nodeT<T, small_string>::_get(std::string const &key) {
-    //     std::stringstream ss;
+    //     std::ostringstream ss;
     //     ss << DEFAULT_KEY_PREFIX << '.' << key;
     //     return _get_raw(ss.str());
     // }

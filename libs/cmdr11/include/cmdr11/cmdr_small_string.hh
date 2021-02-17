@@ -5,7 +5,7 @@
 #ifndef CMDR_CXX11_CMDR_SHORT_STRING_HH
 #define CMDR_CXX11_CMDR_SHORT_STRING_HH
 
-#include <cstring> // memcpy
+#include <cstring> // for memcpy
 #include <iosfwd>  // ostream operator <<
 #include <string>
 

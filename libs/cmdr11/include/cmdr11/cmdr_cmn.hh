@@ -104,7 +104,7 @@ namespace cmdr::opt {
         // unknown_command_found handlers.
         // Your handlers could be return this value and cmdr's
         // processor will invoke the default logic.
-        RunDefaultAction,
+        RunDefaultAction [[maybe_unused]],
     };
 
 
@@ -190,14 +190,14 @@ namespace cmdr::opt {
 
 
         struct parsing_context {
-            cmd *_root;
-            std::string title{};
-            std::string title_fragment{};
-            int index{}; // argv's index
-            bool is_flag{false};
-            bool passthru_flag{false};
-            int matching_flag_type{}; // short: 0, long: 1, special: 2, ...
-            std::size_t pos{};        // start position of title
+            cmd *_root;                                 // root command, i.e. app
+            std::string title{};                        // the input fragment text (one arg) in command-line
+            std::string title_fragment{};               // the matching pieces in title
+            int index{};                                // index to argv
+            [[maybe_unused]] bool is_flag{false};       //
+            [[maybe_unused]] bool passthru_flag{false}; //
+            int matching_flag_type{};                   // short: 0, long: 1, special: 2, ...
+            std::size_t pos{};                          // start position of title
 
             explicit parsing_context(cmd *a)
                 : _root(a) {}
@@ -221,7 +221,7 @@ namespace cmdr::opt {
                 matching_flag_type = mft;
                 return (*this);
             }
-            
+
             void add_matched_cmd(cmd *obj) { _matched_commands.push_back(obj); }
             void add_matched_arg(arg *obj) { matched_flags.push_back(obj); }
             void add_matched_arg(arg *obj, std::shared_ptr<vars::variable> const &v);
@@ -230,9 +230,6 @@ namespace cmdr::opt {
             void add_remain_arg(std::string const &arg) { non_commands.push_back(arg); }
             [[nodiscard]] string_array const &remain_args() const { return non_commands; }
             auto &matched_commands() { return _matched_commands; }
-            // void reverse_foreach_matched_commands(std::function<void(opt::details::cmd_pointers<V>::value_type &it)> f) {
-            //     std::for_each(matched_commands.rbegin(), matched_commands.rend(), f);
-            // }
         };
 
         using on_internal_action = std::function<int(parsing_context &pc, int argc, char *argv[])>;

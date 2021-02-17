@@ -12,7 +12,7 @@ namespace cmdr {
     inline app &get_app() { return *app_holder::instance().get_ptr(); }
     inline auto &get_store() { return get_app().store(); }
 
-    inline app &app::uniq() const { return get_app(); }
+    [[maybe_unused]] inline app &app::uniq() const { return get_app(); }
 
     inline app &cli(const_chars name, const_chars version,
                     const_chars author = nullptr, const_chars copyright = nullptr,

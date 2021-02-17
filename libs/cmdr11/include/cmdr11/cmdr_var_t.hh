@@ -371,10 +371,10 @@ namespace cmdr::vars {
                     is >> ch;
                     x = false;
                     return true;
-                } else {
-                    x = false;
-                    return true;
                 }
+                x = false;
+                return true;
+
             } else if (ch == 'o' || ch == 'O') {
                 is >> ch;
                 ch = is.peek();
@@ -541,13 +541,12 @@ namespace cmdr::vars {
                 it != reg.cend()) {
                 it->second(is, a);
                 return true;
-            } else {
-#if defined(_DEBUG)
-                std::cout << "Unregistered type for parsing " << std::quoted(a.type().name()) << "\ufe0e" << '\n';
-                std::cerr << "Unregistered type for parsing " << std::quoted(a.type().name()) << "\ufe0e" << '\n';
-#endif
-                return false;
             }
+#if defined(_DEBUG)
+            std::cout << "Unregistered type for parsing " << std::quoted(a.type().name()) << "\ufe0e" << '\n';
+            std::cerr << "Unregistered type for parsing " << std::quoted(a.type().name()) << "\ufe0e" << '\n';
+#endif
+            return false;
         }
         static inline bool process(std::ostream &os, std::any const &a) {
             auto &reg = any_visitors();
@@ -556,13 +555,12 @@ namespace cmdr::vars {
                 auto op = it->second;
                 op(os, a);
                 return true;
-            } else {
-#if defined(_DEBUG)
-                std::cout << "Unregistered type for visiting " << std::quoted(a.type().name()) << "\ufe0e" << '\n';
-                std::cerr << "Unregistered type for visiting " << std::quoted(a.type().name()) << "\ufe0e" << '\n';
-#endif
-                return false;
             }
+#if defined(_DEBUG)
+            std::cout << "Unregistered type for visiting " << std::quoted(a.type().name()) << "\ufe0e" << '\n';
+            std::cerr << "Unregistered type for visiting " << std::quoted(a.type().name()) << "\ufe0e" << '\n';
+#endif
+            return false;
         }
 
         template<class T, class F>
@@ -585,7 +583,7 @@ namespace cmdr::vars {
          * For an exact converting, A responding initial value with right type
          * must be set into variable. For example:
          * 
-         *     std::stringstream ss("true");
+         *     std::istringstream ss("true");
          *     cmdr::vars::variable v{false}; // or v{} to initialize a bool value implicitly.
          *     ss >> v; // so that we can convert the input stream with that type.
          *     std::cout << std::boolalpha << v; // print v will get this output: true.
@@ -616,7 +614,7 @@ namespace cmdr::vars {
 
 
     /**
-     * @brief wrap type T as a node for trreT<T,...>
+     * @brief wrap type T as a node for treeT<T,...>
      * @tparam T must implement clone_to(T&), variadic template constructors, operator=, operator>>, and operator<<, etc..
      * @tparam small_string 
      */
@@ -1001,7 +999,6 @@ namespace cmdr::vars {
                        std::ostream &os,
                        const_chars leading_title = nullptr,
                        node *start = nullptr) const {
-            // auto c = tcolorize::create();
             if (leading_title)
                 os << c.bold().s(leading_title);
             else
@@ -1016,7 +1013,6 @@ namespace cmdr::vars {
                          std::function<bool(std::pair<key_type, node_pointer> const &)> const &on_filter,
                          const_chars leading_title = nullptr,
                          node *start = nullptr) const {
-            // auto c = tcolorize::create();
             if (leading_title)
                 os << c.bold().s(leading_title);
             else
@@ -1029,7 +1025,6 @@ namespace cmdr::vars {
                             std::ostream &os,
                             const_chars leading_title = nullptr,
                             node *start = nullptr) const {
-            // auto c = tcolorize::create();
             if (leading_title)
                 os << c.bold().s(leading_title);
             else
@@ -1043,7 +1038,6 @@ namespace cmdr::vars {
                               std::function<bool(std::pair<K, V> const &)> const &on_filter,
                               const_chars leading_title = nullptr,
                               node *start = nullptr) const {
-            // auto c = tcolorize::create();
             if (leading_title)
                 os << c.bold().s(leading_title);
             else

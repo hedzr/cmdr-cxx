@@ -110,7 +110,7 @@ namespace cmdr {
         //[[nodiscard]] bool help_hit() const { return _help_hit > 0; }
         //[[nodiscard]] cmd *command_hit() const { return _cmd_hit; }
 
-        app &uniq() const;
+        [[maybe_unused]] app &uniq() const;
 
         [[nodiscard]] vars::store const &store() const { return _store; }
         vars::store &store() { return _store; }

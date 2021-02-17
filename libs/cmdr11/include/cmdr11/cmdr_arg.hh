@@ -183,7 +183,7 @@ namespace cmdr::opt {
                     ss << ',' << ' ';
                 ss << _short;
             }
-            auto sp = " ";
+            const auto *sp = " ";
             for (auto &x : _aliases) {
                 if (ss.tellp() > 0)
                     ss << ',' << sp, sp = "";
@@ -415,7 +415,7 @@ namespace cmdr::opt {
                     ss << ',' << ' ';
                 ss << '-' << bas::_short;
             }
-            auto sp = " ";
+            const auto *sp = " ";
             for (auto &x : bas::_aliases) {
                 if (ss.tellp() > 0)
                     ss << ',' << sp, sp = "";

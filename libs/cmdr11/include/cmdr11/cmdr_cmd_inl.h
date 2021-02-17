@@ -97,7 +97,7 @@ namespace cmdr::opt {
             } else
                 _all_args.push_back(a);
 
-            auto ptr = &_all_args.back();
+            auto *ptr = &_all_args.back();
 
             if (ptr->default_value().get() == nullptr) {
                 ptr->default_value(vars::variable{false});
@@ -153,7 +153,7 @@ namespace cmdr::opt {
             } else
                 _all_commands.push_back(a);
 
-            auto ptr = &_all_commands.back();
+            auto *ptr = &_all_commands.back();
 
             if (_grouped_commands.find(gn) == _grouped_commands.end())
                 _grouped_commands.emplace(gn, types::cmd_pointers{});
@@ -193,13 +193,13 @@ namespace cmdr::opt {
 
 
     inline std::string cmd::title_sequences() const {
-        std::vector<std::string> cmds;
-        auto pcc = this;
+        std::vector<std::string> commands;
+        const auto *pcc = this;
         while (pcc && pcc->owner()) {
-            cmds.insert(cmds.begin(), pcc->hit_count() > 0 ? pcc->hit_title() : pcc->title_long());
+            commands.insert(commands.begin(), pcc->hit_count() > 0 ? pcc->hit_title() : pcc->title_long());
             pcc = pcc->owner();
         }
-        return string::join(cmds, ' ');
+        return string::join(commands, ' ');
     }
 
 
@@ -285,7 +285,7 @@ namespace cmdr::opt {
         auto s = st.str();
         auto it = _indexed_commands.find(s);
         if (it != _indexed_commands.end()) {
-            auto cc = (*it).second;
+            auto *cc = (*it).second;
 #if defined(_DEBUG)
             bool found = false;
             for (auto const &itl : _grouped_commands[cc->group_name()]) {
@@ -314,7 +314,7 @@ namespace cmdr::opt {
     inline cmd const *cmd::find_command(std::string const &long_title, bool extensive) const {
         auto it = _indexed_commands.find(long_title);
         if (it != _indexed_commands.end()) {
-            auto cc = (*it).second;
+            auto *cc = (*it).second;
             return cc;
         }
         if (extensive) {

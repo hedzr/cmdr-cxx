@@ -11,7 +11,7 @@
 
 namespace cmdr::exception {
 
-    inline dup_short_cmd_found::dup_short_cmd_found(const char *file, int line, opt::cmd const *c, opt::cmd const *owner)
+    [[maybe_unused]] inline dup_short_cmd_found::dup_short_cmd_found(const char *file, int line, opt::cmd const *c, opt::cmd const *owner)
         : dup_error{file, line, ""}
         , _o(owner)
         , _c(c) {
@@ -23,7 +23,7 @@ namespace cmdr::exception {
         msg = std::string((char const *) buf);
     }
 
-    inline dup_long_cmd_found::dup_long_cmd_found(const char *file, int line, opt::cmd const *c, opt::cmd const *owner)
+    [[maybe_unused]] inline dup_long_cmd_found::dup_long_cmd_found(const char *file, int line, opt::cmd const *c, opt::cmd const *owner)
         : dup_error{file, line, ""}
         , _o(owner)
         , _c(c) {
@@ -35,7 +35,7 @@ namespace cmdr::exception {
         msg = std::string((char const *) buf);
     }
 
-    inline dup_alias_cmd_found::dup_alias_cmd_found(const char *file, int line, const char *title, opt::cmd const *c, opt::cmd const *owner)
+    [[maybe_unused]] inline dup_alias_cmd_found::dup_alias_cmd_found(const char *file, int line, const char *title, opt::cmd const *c, opt::cmd const *owner)
         : dup_error{file, line, ""}
         , _o(owner)
         , _c(c) {
@@ -47,7 +47,7 @@ namespace cmdr::exception {
         msg = std::string((char const *) buf);
     }
 
-    inline dup_short_flag_found::dup_short_flag_found(const char *file, int line, opt::arg const *a, opt::cmd const *c)
+    [[maybe_unused]] inline dup_short_flag_found::dup_short_flag_found(const char *file, int line, opt::arg const *a, opt::cmd const *c)
         : dup_error{file, line, ""}
         , _o(a)
         , _c(c) {
@@ -59,7 +59,7 @@ namespace cmdr::exception {
         msg = std::string((char const *) buf);
     }
 
-    inline dup_long_flag_found::dup_long_flag_found(const char *file, int line, opt::arg const *a, opt::cmd const *c)
+    [[maybe_unused]] inline dup_long_flag_found::dup_long_flag_found(const char *file, int line, opt::arg const *a, opt::cmd const *c)
         : dup_error{file, line, ""}
         , _o(a)
         , _c(c) {
@@ -71,7 +71,7 @@ namespace cmdr::exception {
         msg = std::string((char const *) buf);
     }
 
-    inline dup_alias_flag_found::dup_alias_flag_found(const char *file, int line, const char *title, opt::arg const *a, opt::cmd const *c)
+    [[maybe_unused]] inline dup_alias_flag_found::dup_alias_flag_found(const char *file, int line, const char *title, opt::arg const *a, opt::cmd const *c)
         : dup_error{file, line, ""}
         , _o(a)
         , _c(c) {

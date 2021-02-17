@@ -94,25 +94,25 @@ namespace cmdr::string {
     // split("abxycdxy!!xydefxya", "xy", std::back_inserter(out));
     // ...
     template<class Iter>
-    inline Iter split(const std::string &s, const std::string &delim, Iter out) {
-        if (delim.empty()) {
+    inline Iter split(const std::string &s, const std::string &delimiter, Iter out) {
+        if (delimiter.empty()) {
             *out++ = s;
             return out;
         }
-        size_t a = 0, b = s.find(delim);
+        size_t a = 0, b = s.find(delimiter);
         for (; b != std::string::npos;
-             a = b + delim.length(), b = s.find(delim, a)) {
+             a = b + delimiter.length(), b = s.find(delimiter, a)) {
             *out++ = std::move(s.substr(a, b - a));
         }
         *out++ = std::move(s.substr(a, s.length() - a));
         return out;
     }
 
-    inline string_array split(const std::string &s, char delim = '\n') {
+    inline string_array split(const std::string &s, char delimiter = '\n') {
         std::stringstream ss(s);
         std::string item;
         std::vector<std::string> elems;
-        while (std::getline(ss, item, delim)) {
+        while (std::getline(ss, item, delimiter)) {
             elems.push_back(std::move(item));
         }
         return elems;
@@ -128,14 +128,14 @@ namespace cmdr::string {
     }
 
 
-    inline std::string join(std::vector<char const *> const &array, char delim = ',', char before = '\0', char after = '\0') {
+    inline std::string join(std::vector<char const *> const &array, char delimiter = ',', char before = '\0', char after = '\0') {
         std::stringstream ss;
         int i = 0;
         if (before != '\0')
             ss << before;
         for (auto const &it : array) {
             if (i++ > 0)
-                ss << delim;
+                ss << delimiter;
             ss << it;
         }
         if (after != '\0')
@@ -143,14 +143,14 @@ namespace cmdr::string {
         return ss.str();
     }
 
-    inline std::string join(std::vector<char const *> const &array, const_chars delim = ",", const_chars before = nullptr, const_chars after = nullptr) {
+    inline std::string join(std::vector<char const *> const &array, const_chars delimiter = ",", const_chars before = nullptr, const_chars after = nullptr) {
         std::stringstream ss;
         int i = 0;
         if (before)
             ss << before;
         for (auto const &it : array) {
             if (i++ > 0)
-                ss << delim;
+                ss << delimiter;
             ss << it;
         }
         if (after)
@@ -158,14 +158,14 @@ namespace cmdr::string {
         return ss.str();
     }
 
-    inline std::string join(string_array const &array, char delim = ',', char before = '\0', char after = '\0') {
+    inline std::string join(string_array const &array, char delimiter = ',', char before = '\0', char after = '\0') {
         std::stringstream ss;
         int i = 0;
         if (before != '\0')
             ss << before;
         for (auto const &it : array) {
             if (i++ > 0)
-                ss << delim;
+                ss << delimiter;
             ss << it;
         }
         if (after != '\0')
@@ -173,14 +173,14 @@ namespace cmdr::string {
         return ss.str();
     }
 
-    inline std::string join(string_array const &array, const_chars delim = ",", const_chars before = nullptr, const_chars after = nullptr) {
+    inline std::string join(string_array const &array, const_chars delimiter = ",", const_chars before = nullptr, const_chars after = nullptr) {
         std::stringstream ss;
         int i = 0;
         if (before)
             ss << before;
         for (auto const &it : array) {
             if (i++ > 0)
-                ss << delim;
+                ss << delimiter;
             ss << it;
         }
         if (after)
@@ -369,12 +369,12 @@ namespace cmdr::string {
 
     inline std::string read_until(std::istream &in, char const *delimiter = ",") {
         std::string cr;
-        char delim = *delimiter;
+        char de = *delimiter;
         size_t sz = std::strlen(delimiter), tot;
         do {
             std::string temp;
-            std::getline(in, temp, delim);
-            cr += temp + delim;
+            std::getline(in, temp, de);
+            cr += temp + de;
             tot = cr.size();
         } while ((tot < sz) || (cr.substr(tot - sz, sz) != delimiter));
         return cr.substr(0, tot - sz); // or return cr; if you want to keep the delimiter
@@ -453,7 +453,7 @@ namespace cmdr::string {
             auto const &from = match[0];
             auto const &th = match[1];
             auto const &var_name = th.str();
-            auto ptr = std::getenv(var_name.c_str());
+            auto *ptr = std::getenv(var_name.c_str());
             text.replace(from.first, from.second, ptr ? ptr : "");
         }
         return text;
@@ -483,7 +483,7 @@ namespace cmdr::string {
         //
         // from: https://stackoverflow.com/questions/4351371/c-performance-challenge-integer-to-stdstring-conversion
         //
-        inline std::string &itoa(int n, std::string &s) {
+        [[maybe_unused]] inline std::string &itoa(int n, std::string &s) {
             if (n == 0) {
                 s = "0";
                 return s;
@@ -786,7 +786,7 @@ namespace cmdr::text {
 
             int point = 0;
 
-            // Count number of occurances
+            // Count number of occupancies
             // where two characters match but
             // there is a third matched character
             // in between the indices

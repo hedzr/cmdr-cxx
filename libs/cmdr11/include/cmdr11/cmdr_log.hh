@@ -23,12 +23,12 @@ namespace cmdr::log {
             explicit Log(typename util::singleton<Log>::token) {}
             ~Log() = default;
 
-            cmdr::terminal::colors::colorize _c;
+            [[maybe_unused]] cmdr::terminal::colors::colorize _c;
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-parameter"
             template<class... Args>
-            void log(const char *fmt, Args const &...args) {
+            void log([[maybe_unused]] const char *fmt, [[maybe_unused]] Args const &...args) {
                 // std::fprintf(std::stderr)
             }
             void vdebug(const char *file, int line, const char *func,
@@ -169,7 +169,7 @@ namespace cmdr::log {
 //#define cmdr_verbose_debug(...) (void)(__VA_ARGS__)
 
 template<typename... Args>
-void cmdr_verbose_debug(Args &&...args) { (void) (sizeof...(args)); }
+void cmdr_verbose_debug([[maybe_unused]] Args &&...args) { (void) (sizeof...(args)); }
 #endif
 
 #endif //CMDR_CXX11_CMDR_LOG_HH

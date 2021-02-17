@@ -2,8 +2,8 @@
 // Created by Hedzr Yeh on 2021/1/11.
 //
 
-#ifndef CMDR_CXX11_CMDR_EXEINFO_HH
-#define CMDR_CXX11_CMDR_EXEINFO_HH
+#ifndef CMDR_CXX11_CMDR_PATH_HH
+#define CMDR_CXX11_CMDR_PATH_HH
 
 #pragma once
 
@@ -177,7 +177,7 @@ namespace std {
 #else
 
 #include <climits>
-#include <unistd.h> //readlink
+#include <unistd.h> // for readlink
 
 
 #endif
@@ -194,4 +194,4 @@ namespace cmdr::path {
 //////// for executable_name() END
 
 
-#endif //CMDR_CXX11_CMDR_EXEINFO_HH
+#endif //CMDR_CXX11_CMDR_PATH_HH

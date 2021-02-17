@@ -104,7 +104,7 @@ namespace cmdr::opt {
         // unknown_command_found handlers.
         // Your handlers could be return this value and cmdr's
         // processor will invoke the default logic.
-        RunDefaultAction [[maybe_unused]],
+        RunDefaultAction,
     };
 
 
@@ -194,8 +194,8 @@ namespace cmdr::opt {
             std::string title{};                        // the input fragment text (one arg) in command-line
             std::string title_fragment{};               // the matching pieces in title
             int index{};                                // index to argv
-            [[maybe_unused]] bool is_flag{false};       //
-            [[maybe_unused]] bool passthru_flag{false}; //
+            bool is_flag{false};       //
+            bool passthru_flag{false}; //
             int matching_flag_type{};                   // short: 0, long: 1, special: 2, ...
             std::size_t pos{};                          // start position of title
 

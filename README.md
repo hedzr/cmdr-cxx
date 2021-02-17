@@ -22,25 +22,25 @@
 
 - Robust Interfaces
 
-  - hooks or actions:
+  - Hooks or Actions:
 
     - global: pre/post-invoke 
     - flags: on_hit
     - commands: on_hit, pre/post-invoke, invoke
 
-  - supports non-single-char short flag: `-ap 1`
+  - Supports non-single-char short flag: `-ap 1`
 
-  - supports for `-D+`, `-D-` to enable/disable a bool option
+  - Supports for `-D+`, `-D-` to enable/disable a bool option
 
-  - supports sortable command/flag groups
+  - Supports sortable command/flag groups
 
-  - free style flags arrangements: `$ app main sub4 bug-bug2 zero-sub3 -vqb2r1798b2r 234 --sub4-retry1 913 --bug-bug2-shell-name=fish ~~debug --int 67 -DDD --string 'must-be'`
+  - Free style flags arrangements: `$ app main sub4 bug-bug2 zero-sub3 -vqb2r1798b2r 234 --sub4-retry1 913 --bug-bug2-shell-name=fish ~~debug --int 67 -DDD --string 'must-be' --long 789`
 
   - Smart suggestions for wrong command and flags
 
     based on [Jaro-Winkler distance](https://en.wikipedia.org/wiki/Jaro–Winkler_distance). See [Snapshot](https://github.com/hedzr/cmdr-cxx/issues/1)
 
-  - builtin commands and flags
+  - Builtin commands and flags
 
     - Help: `-h`, `-?`, `--help`, `--info`, `--usage`, ...
       - `help` command: `app help server pause` == `app server pause --help`.
@@ -48,19 +48,20 @@
     - `version`/`versions` command available.
     - Simulating version at runtime with `—-version-sim 1.9.1`
     
-  - `~~tree`: list all commands and sub-commands.
+  - `~~tree`: lists all commands and sub-commands.
+    
     - `~~debug`: print the debugging info
     - `--no-color`: disable terminal color in outputting
     - `--config <location>`: specify the location of the root config file. [only for yaml-loader]
-    - Verbose & Debug: `—verbose`/`-v`, `—debug`/`-D`, `—quiet`/`-q`
-
+  - Verbose & Debug: `—verbose`/`-v`, `—debug`/`-D`, `—quiet`/`-q`
+    
   - Supports `-I/usr/include -I=/usr/include` `-I /usr/include -I:/usr` option argument specifications Automatically allows those formats (applied to long option too):
 
     - `-I file`, `-Ifile`, and `-I=files`
     - `-I 'file'`, `-I'file'`, and `-I='files'`
     - `-I "file"`, `-I"file"`, and `-I="files"`
 
-  - envvars overrides: `HELP=1 ./bin/test-app2-c2 server pause` is the equivalent of `./bin/test-app2-c2 server pause --help`
+  - Envvars overrides: `HELP=1 ./bin/test-app2-c2 server pause` is the equivalent of `./bin/test-app2-c2 server pause --help`
 
   - Extensible external loaders: `cli.set_global_on_loading_externals(...);`
 
@@ -69,9 +70,8 @@
 - Hierarchical Data Manager - `Option Store`
 
   - various data types supports
-  - getting and setting by a dotted path key
-  - See also 
-  - 
+  - accusing the item with its dotted path key (such as `server.tls.certs.cert-bundle`)
+  - See also [Fast Doc](#fast-document) section.
 
 
 
@@ -81,6 +81,7 @@
 
 WIP, pre-released now.
 
+- v0.2.9 - [WIP] various fixes, improves
 - v0.2.8 - fixed cmdr11Config.cmake for importing transparently
 - v0.2.7 - `auto &cli = cmdr::create(...)`
 - v0.2.5 - public release starts
@@ -98,7 +99,7 @@ WIP, pre-released now.
 ### Bonus
 
 - golang: [cmdr](https:://github.com/hedzr/cmdr)
-- .netcore: [CMdr.Core](https://github.com/hedzr/Cmdr.Core)
+- .netcore: [Cmdr.Core](https://github.com/hedzr/Cmdr.Core)
 
 
 
@@ -124,7 +125,7 @@ Or you can download [deps-cmdr11.cmake](https://github.com/hedzr/cmdr-cxx/blob/m
 ```cmake
 add_executable(my-app)
 
-include(deps-cmdr11)     # put deps-cmdr11.cmake into your cmake module path
+include(deps-cmdr11)     # put deps-cmdr11.cmake into your cmake module path at first
 add_cmdr_cxx_to(my-app)
 ```
 
@@ -321,7 +322,7 @@ std::cout << ab << '\n';
 
 ### `cmdr::vars::variable`
 
-`cmdr-cxx` provides stream in and out on lots of types via `cmdr::vars::variable`, take a look for further.
+`cmdr-cxx` provides stream-io on lots of types via `cmdr::vars::variable`, take a look for further.
 
 
 
@@ -395,6 +396,10 @@ command "pause, p" hit.
 
 ```
 
+Another one in [Gallary](https://github.com/hedzr/cmdr-cxx/issues/1):
+
+<img width="912" alt="image-20210217161825139" src="https://user-images.githubusercontent.com/12786150/108175867-39679c00-713c-11eb-8ef2-4d363d37755e.png">
+
 
 
 #### `-DDD`
@@ -409,7 +414,7 @@ Triple `D` means `--debug --debug --debug`. In `~~debug` mode,  triple `D` can d
 
 #### `~~debug --cli -DDD`
 
-The values of CLI flags are ignored but `~~cli` can force them dumped. See the snapshot at [#1 - Gallary](https://github.com/hedzr/cmdr-cxx/issues/1).
+The values of CLI flags are ignored but `~~cli` can make them raised when dumping. See the snapshot at [#1 - Gallary](https://github.com/hedzr/cmdr-cxx/issues/1).
 
 
 
@@ -425,7 +430,7 @@ This flag will print the command hierarchical structure:
 
 ### Remove the cmdr-cxx tail line
 
-By default a citation line will be printed at the ends of help screen:
+By default a citation line(s) will be printed at the ends of help screen:
 
 <img width="684" alt="image-20210215100547030" src="https://user-images.githubusercontent.com/12786150/107898103-da582a80-6f75-11eb-9ffc-02cdd2af249d.png">
 
@@ -443,7 +448,9 @@ I knew this option is what you want:
             .set_no_tail_line(true);
 ```
 
-The "Type `...` ..." line is called as `tail line`, customize it with `set_tail_line(str)`. Or, you can disable the tail line by `set_no_tail_line(bool)`.
+The "Type `...` ..." line could be customized by `set_tail_line(str)`, so called `tail line`,. Or, you can disable the `tail line`  by `set_no_tail_line(bool)`.
+
+The `Powered by ...` line can be disabled by `set_no_cmdr_ending`, so-called `cmdr-ending` line.
 
 ## External Loaders
 
@@ -466,11 +473,11 @@ include(loaders/yaml_loader)
 add_yaml_loader(test-app2-c1)
 ```
 
+> This add-on needs a third-part library,`yaml-cpp`, presented.
 
+## Specials
 
-## Optimizations
-
-Inside `cmdr-cxx`, there are many optimizable points in working.
+Inside `cmdr-cxx`, there are many optimizable points and some of them in working.
 
 - [x] enable dim text in terminal
 
@@ -495,7 +502,13 @@ Inside `cmdr-cxx`, there are many optimizable points in working.
   return cli.run(argc, argv);
   ```
 
-  
+- [x] `-hhh` (i.e. `--help --help --help`) will print the help screen with those invisible items (the hidden commands and flags).
+
+- [x] Tab-stop position is adjustable based the options automatically
+
+- [x] The right-side of a line, in the help screen, command/flag decriptions usually, can be wrapped and aligned along the tab-stop width.
+
+- [ ] More...
 
 
 

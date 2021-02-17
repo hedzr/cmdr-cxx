@@ -523,8 +523,9 @@ namespace cmdr::opt {
                     for (auto const &t : x->title_aliases()) {
                         if (w > 0) {
                             tmp << ',';
-                        } else
+                        } else {
                             w++;
+                        }
                         tmp << t;
                     }
 
@@ -535,35 +536,30 @@ namespace cmdr::opt {
                         auto s1 = os1.str();
                         escaped_chars += s1.length() - v.length();
                         ss << std::setw(wa + s1.length() - v.length()) << s1;
-                    } else
+                    } else {
                         ss << std::setw(wa) << tmp.str();
+                    }
                 } else if (wa > 0)
                     ss << std::setw(wa) << ' ';
 
                 w = wf + 2 + ws + 2 + wa;
-                ss << std::setw((wt < 43 ? 43 : wt) - w - (level >= 0 ? level : 0)) << ' ';
+                auto wt_real = (wt < 43 ? 43 : wt);
+                ss << std::setw(wt_real - w - (level >= 0 ? level : 0)) << ' ';
 
                 auto d = x->descriptions();
-                auto rw = (std::size_t)((tw <= 0 ? 1000 : tw) - wt - 2 - escaped_chars);
+                auto rw = (std::size_t)((tw <= 0 ? 1000 : tw) - wt_real - 2);
                 w = 0;
                 do {
-                    if (w++ != 0)
-                        ss << std::string(wt + 2 + escaped_chars, ' ');
+                    if (w++ != 0) {
+                        ss << '\n'
+                           << std::string(wt_real + 2, ' ');
+                    }
                     auto t = std::min(rw, d.length());
                     ss << c.fg(fg).dim(dim).s(d.substr(0, t));
                     d = string::trim_left_space(d.substr(t));
                 } while (!d.empty());
-
-                // ss // << wt << ',' << level << ','
-                //         << c.fg(fg).dim(dim).s(x->descriptions())
-                //         // << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa
-                //         << '\n';
-
-                // ss << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa;
-
-                // if (x->hidden())
-                //     ss << '>' << x->hidden();
-
+                
+                //ss << '/' << wt << '(' << wt_real << ',' << escaped_chars << ')' << rw << '/' << tw;
                 ss << '\n';
 
                 count_all++;
@@ -785,7 +781,8 @@ namespace cmdr::opt {
                     ss << std::setw(wa) << ' ';
 
                 w = wf + 2 + ws + 2 + wa;
-                ss << std::setw((wt < 43 ? 43 : wt) - w - (level >= 0 ? level * 2 : 0)) << ' ';
+                auto wt_real = (wt < 43 ? 43 : wt);
+                ss << std::setw(wt_real - w - (level >= 0 ? level * 2 : 0)) << ' ';
 
                 auto d = x->descriptions();
                 auto se = x->env_vars_get();
@@ -796,35 +793,34 @@ namespace cmdr::opt {
                     for (auto const &t : se) {
                         if (w > 0) {
                             tmp << ',';
-                        } else
+                        } else {
                             w++;
+                        }
                         tmp << t;
                     }
                     tmp << ")";
-                    if (w > 0)
+                    if (w > 0) {
                         d += tmp.str();
+                    }
                 }
                 auto sd = x->defaults();
-                if (!sd.empty())
+                if (!sd.empty()) {
                     d += sd;
-                auto rw = (std::size_t)((tw <= 0 ? 1000 : tw) - wt - 2 - escaped_chars);
+                }
+                auto rw = (std::size_t)((tw <= 0 ? 1000 : tw) - wt_real - 2);
                 w = 0;
                 do {
-                    if (w++ != 0)
-                        ss << std::string(wt + 2 + escaped_chars, ' ');
+                    if (w++ != 0) {
+                        ss << '\n'
+                           << std::string(wt_real + 2, ' ');
+                    }
                     auto t = std::min(rw, d.length());
                     auto s1 = d.substr(0, t);
                     ss << c.fg(fg).dim(dim).s(d.substr(0, t));
                     d = string::trim_left_space(d.substr(t));
                 } while (!d.empty());
-                // ss // << w << ',' << wt << ',' << c.fg(fg).dim(dim).s(x->descriptions());
 
-                // ss << wt << ',' << w << '|' << wf << ',' << ws << ',' << wa;
-
-                // if (x->hidden())
-                //     ss << '>' << x->hidden();
-
-                // ss << '/' << wt + 2 << '/' << escaped_chars << '/' << rw << '/' << tw;
+                //ss << '/' << wt << '(' << wt_real << ',' << escaped_chars << ')' << rw << '/' << tw;
                 ss << '\n';
 
                 count_all++;

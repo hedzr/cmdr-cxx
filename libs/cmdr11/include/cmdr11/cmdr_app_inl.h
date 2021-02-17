@@ -173,11 +173,16 @@ namespace cmdr {
             if (a.hit_count() > 0) {
                 auto k = a.dotted_key();
                 auto &v = _store.get_raw(k);
-                std::cout << " - " << a.hit_count() << " hits: " << std::quoted(a.title())
-                          << " (hit title: " << std::quoted(a.hit_title())
-                          << ", spec:" << a.hit_special()
-                          << ", long:" << a.hit_long()
-                          << ", env:" << a.hit_env() << ") => " << v << '\n';
+                std::ostringstream os1, os2, os3, os4;
+                os1 << a.hit_count() << " hits: ";
+                os2 << vars::store::_c.fg(terminal::colors::colorize::Colors256::Green).s(os1.str());
+                os3 << " (hit title: " << std::quoted(a.hit_title())
+                    << ", spec:" << a.hit_special()
+                    << ", long:" << a.hit_long()
+                    << ", env:" << a.hit_env() << ")";
+                os4 << vars::store::_c.fg(terminal::colors::colorize::Colors256::Grey).italic().s(os3.str());
+                std::cout << " - " << os2.str() << std::quoted(a.title())
+                          << os4.str() << " => " << v << '\n';
             }
         });
         return 0;
@@ -277,10 +282,10 @@ namespace cmdr {
     inline int app::print_tree_screen(opt::types::parsing_context &pc, int argc, char *argv[]) {
         UNUSED(pc, argc, argv);
         std::cout << "All Commands:\n";
-        
+
         auto const &help_arg = find_flag("help");
         bool show_hidden_items = help_arg.valid() && help_arg.hit_count() > 2;
-        
+
         // _pr_tree(std::cout, &pc.last_matched_cmd());
         auto c = cmdr::terminal::colors::colorize::create();
         pc.last_matched_cmd().print_commands(std::cout, c, _minimal_tab_width, true, show_hidden_items, 0);

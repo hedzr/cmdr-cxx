@@ -161,6 +161,12 @@ namespace cmdr {
             _tail_line = line;
             return (*this);
         }
+        
+        app &set_alias_right_align(bool b = true) {
+            _alias_right_align = b;
+            return (*this);
+        }
+
 
         /**
          * @brief Sample code:
@@ -469,16 +475,6 @@ namespace cmdr {
         std::unordered_map<opt::Action, opt::types::on_internal_action>
                 _internal_actions{};
 
-        int _minimal_tab_width{-1};
-
-        bool _no_catch_cmdr_biz_error{false};
-        bool _no_cmdr_ending{false};
-        bool _no_tail_line{false};
-
-        static bool _longest_first;
-
-        static text::distance _jaro_winkler_matching_threshold;
-
         std::vector<types::on_arg_added> _on_arg_added;
         std::vector<types::on_cmd_added> _on_cmd_added;
         std::vector<types::on_arg_matched> _on_arg_matched;
@@ -488,9 +484,6 @@ namespace cmdr {
         opt::types::on_invoke _on_command_not_hooked;
         std::function<void(const std::exception_ptr &eptr)> _on_handle_exception_ptr;
     };
-
-    inline bool app::_longest_first = true;
-    inline text::distance app::_jaro_winkler_matching_threshold = 0.83;
 
 } // namespace cmdr
 

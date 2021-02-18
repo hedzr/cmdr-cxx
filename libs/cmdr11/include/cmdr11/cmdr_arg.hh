@@ -50,6 +50,19 @@ namespace cmdr::opt {
         cmd *_owner{nullptr};
 
     public:
+        static bool _alias_right_align;
+
+        static int _minimal_tab_width;
+
+        static bool _no_catch_cmdr_biz_error;
+        static bool _no_cmdr_ending;
+        static bool _no_tail_line;
+
+        static bool _longest_first;
+
+        static text::distance _jaro_winkler_matching_threshold;
+
+    public:
         bas() = default;
         ~bas() override = default;
         bas(const bas &o) { _copy(o); }
@@ -284,6 +297,18 @@ namespace cmdr::opt {
             return false;
         }
     }; // class bas
+
+    
+    inline bool bas::_alias_right_align = false;
+
+    inline int bas::_minimal_tab_width{-1};
+
+    inline bool bas::_no_catch_cmdr_biz_error{false};
+    inline bool bas::_no_cmdr_ending{false};
+    inline bool bas::_no_tail_line{false};
+
+    inline bool bas::_longest_first = true;
+    inline text::distance bas::_jaro_winkler_matching_threshold = 0.83;
 
 
     /**

@@ -38,6 +38,8 @@ int main(int argc, char *argv[]) {
         add_main_menu(cli);
 
         // cli.set_minimal_tab_stop(55);
+        using cmdr::terminal::colors::colorize;
+        cli.set_alternate_text_color(colorize::Green);
 
 #if defined(_DEBUG)
         auto &cc = cli("server");

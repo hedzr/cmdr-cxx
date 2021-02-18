@@ -91,23 +91,7 @@ namespace cmdr {
 
         int run(int argc, char *argv[]) override;
 
-        void post_run() const override {
-            for (auto const &fn : _on_post_runs) {
-                if (fn) {
-                    fn(*this);
-                }
-            }
-
-            if (std::current_exception() != nullptr) {
-                handle_eptr(std::current_exception());
-            } else {
-                // if (help_hit()) {
-                //     //
-                // } else {
-                //     //
-                // }
-            }
-        }
+        void post_run() const override;
 
         void print_usages(opt::cmd const *start = nullptr);
 
@@ -175,6 +159,31 @@ namespace cmdr {
          */
         app &set_tail_line(std::string const &line) {
             _tail_line = line;
+            return (*this);
+        }
+
+        /**
+         * @brief Sample code:
+         * 
+         *     auto& cli = cmdr::cli("app2", ...);
+         *     using cmdr::terminal::colors::colorize;
+         *     cli.set_alternate_text_color(colorize::Green);
+         *
+         * @param color 
+         * @return 
+         */
+        app &set_alternate_text_color(terminal::colors::colorize::Colors256 color = terminal::colors::colorize::Colors256::Grey50) {
+            vars::store::_dim_text_fg = color;
+            return (*this);
+        }
+
+        app &set_alternate_text_dim_mode(bool use_dim_effect = true) {
+            vars::store::_dim_text_dim = use_dim_effect;
+            return (*this);
+        }
+
+        app &set_long_title_underline(bool use_underline_effect = true) {
+            vars::store::_long_title_underline = use_underline_effect;
             return (*this);
         }
 

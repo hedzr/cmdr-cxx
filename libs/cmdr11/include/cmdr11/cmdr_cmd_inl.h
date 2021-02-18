@@ -355,6 +355,7 @@ namespace cmdr::opt {
         UNUSED(grouped, level);
         auto fg = vars::store::_dim_text_fg;
         auto dim = vars::store::_dim_text_dim;
+        auto underline = vars::store::_long_title_underline;
         auto [th, tw] = terminal::terminfo::get_win_size();
 
         std::set<std::string> keys;
@@ -462,19 +463,19 @@ namespace cmdr::opt {
                     w = x->title_long().length();
                     if (x->hidden()) {
                         std::ostringstream os1;
-                        os1 << c.underline().fg(fg).dim(dim).s(x->title_long());
+                        os1 << c.underline(underline).fg(fg).dim(dim).s(x->title_long());
                         auto s1 = os1.str();
                         escaped_chars += s1.length() - x->title_long().length();
                         ss << s1;
                     } else {
                         std::ostringstream os1;
-                        os1 << c.underline().s(x->title_long());
+                        os1 << c.underline(underline).s(x->title_long());
                         auto s1 = os1.str();
                         escaped_chars += s1.length() - x->title_long().length();
                         ss << s1;
                     }
 
-                    if (!x->title_short().empty() || !x->title_aliases().empty())
+                    if (!x->title_short().empty() || !x->title_aliases().empty()) {
                         if (x->hidden()) {
                             std::ostringstream os1;
                             os1 << c.fg(fg).dim(dim).s(", ");
@@ -483,8 +484,9 @@ namespace cmdr::opt {
                             ss << s1;
                         } else
                             ss << ", ";
-                    else
+                    } else {
                         ss << "  ";
+                    }
 
                     w = wf - w;
                     if (w > 0) ss << std::setw(w) << ' ';
@@ -580,6 +582,7 @@ namespace cmdr::opt {
         UNUSED(grouped, level);
         auto fg = vars::store::_dim_text_fg;
         auto dim = vars::store::_dim_text_dim;
+        auto underline = vars::store::_long_title_underline;
         auto [th, tw] = terminal::terminfo::get_win_size();
 
         std::set<std::string> keys;
@@ -684,17 +687,18 @@ namespace cmdr::opt {
                         std::ostringstream os1, os2;
                         os1 << c.fg(fg).dim(dim).s("--");
                         auto s1 = os1.str();
-                        os2 << c.underline().fg(fg).dim(dim).s(x->title_long());
+                        os2 << c.underline(underline).fg(fg).dim(dim).s(x->title_long());
                         auto s2 = os2.str();
                         escaped_chars += s1.length() - 2 + s2.length() - x->title_long().length();
                         ss << s1 << s2;
                     } else {
                         std::ostringstream os1;
-                        os1 << c.underline().s(x->title_long());
+                        os1 << c.underline(underline).s(x->title_long());
                         auto s1 = os1.str();
                         escaped_chars += s1.length() - x->title_long().length();
                         ss << '-' << '-' << s1;
                     }
+                    
                     if (!x->placeholder().empty()) {
                         if (x->hidden()) {
                             std::ostringstream os1, os2;
@@ -709,7 +713,7 @@ namespace cmdr::opt {
                         }
                     }
 
-                    if (!x->title_short().empty() || !x->title_aliases().empty())
+                    if (!x->title_short().empty() || !x->title_aliases().empty()) {
                         if (x->hidden()) {
                             std::ostringstream os1;
                             os1 << c.fg(fg).dim(dim).s(", ");
@@ -718,9 +722,10 @@ namespace cmdr::opt {
                             ss << s1;
                         } else
                             ss << ", ";
-                    else
+                    } else {
                         ss << ' ' << ' ';
-
+                    }
+                    
                     w = wf - w - 2;
                     if (!x->placeholder().empty())
                         w -= x->placeholder().length() + 1;

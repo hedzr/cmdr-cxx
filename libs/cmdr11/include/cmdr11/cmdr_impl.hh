@@ -195,8 +195,8 @@ namespace cmdr {
                 std::ostringstream osn;
                 std::ostringstream os1;
                 os1 << vars::store::_c.bold().s(amr.matched_str);
-                osn << vars::store::_c.bold().s("[!]") 
-                    << vars::store::_c.fg(terminal::colors::colorize::Colors256::Red).s(" cannot parse the value of the flag ") 
+                osn << vars::store::_c.bold().s("[!]")
+                    << vars::store::_c.fg(terminal::colors::colorize::Colors256::Red).s(" cannot parse the value of the flag ")
                     << std::quoted(os1.str());
                 std::cerr << osn.str() << '\n';
             }
@@ -540,6 +540,7 @@ namespace cmdr {
         return rc;
     }
 
+
     inline void app::print_cmd(std::ostream &ss, cmdr::terminal::colors::colorize &c,
                                opt::cmd const *cc,
                                std::string const &app_name, std::string const &exe_name) {
@@ -646,6 +647,7 @@ namespace cmdr {
         std::cout << ss.str();
     }
 
+
     inline void app::reset() {
         _store.reset();
 
@@ -662,6 +664,14 @@ namespace cmdr {
         _on_loading_externals.clear();
         _on_command_not_hooked = nullptr;
         _on_handle_exception_ptr = nullptr;
+    }
+
+
+    inline void app::prepare() {
+        prepare_common_env();
+        prepare_env_vars();
+        load_externals();
+        apply_env_vars();
     }
 
     inline void app::prepare_common_env() {
@@ -710,12 +720,6 @@ namespace cmdr {
         });
     }
 
-    inline void app::prepare() {
-        prepare_common_env();
-        prepare_env_vars();
-        load_externals();
-        apply_env_vars();
-    }
 
     inline int app::run(int argc, char *argv[]) {
         // debug::SigSegVInstaller _sigsegv_installer;
@@ -822,6 +826,7 @@ namespace cmdr {
         return -1;
     }
 
+
     inline void app::check_required_flags(opt::cmd &cc) {
         auto *ptr = &cc;
         do {
@@ -871,6 +876,24 @@ namespace cmdr {
         return 0;
     }
 
+
+    inline void app::post_run() const {
+        for (auto const &fn : _on_post_runs) {
+            if (fn) {
+                fn(*this);
+            }
+        }
+
+        if (std::current_exception() != nullptr) {
+            handle_eptr(std::current_exception());
+        } else {
+            // if (help_hit()) {
+            //     //
+            // } else {
+            //     //
+            // }
+        }
+    }
 
     inline void app::handle_eptr(const std::exception_ptr &eptr) const {
         if (_on_handle_exception_ptr) {

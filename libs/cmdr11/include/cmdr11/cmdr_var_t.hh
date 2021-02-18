@@ -1075,6 +1075,7 @@ namespace cmdr::vars {
         static tcolorize _c;
         static tcolorize::Colors256 _dim_text_fg;
         static bool _dim_text_dim;
+        static bool _long_title_underline;
 
         void set_dump_with_type_name(bool b) { node::dump_with_type_name = b; }
         bool get_dump_with_type_name() const { return node::dump_with_type_name; }
@@ -1119,6 +1120,7 @@ namespace cmdr::vars {
     inline tcolorize store::_c{tcolorize::create()};
     inline tcolorize::Colors256 store::_dim_text_fg{tcolorize::Colors256::Grey50};
     inline bool store::_dim_text_dim{false};
+    inline bool store::_long_title_underline{true};
 
 
 } // namespace cmdr::vars

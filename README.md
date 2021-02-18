@@ -99,7 +99,7 @@ WIP, pre-released now.
 ### Bonus
 
 - golang: [cmdr](https:://github.com/hedzr/cmdr)
-- .netcore: [Cmdr.Core](https://github.com/hedzr/Cmdr.Core)
+- .netCore: [Cmdr.Core](https://github.com/hedzr/Cmdr.Core)
 
 
 

@@ -81,7 +81,9 @@
 
 WIP, pre-released now.
 
-- v0.2.9 - [WIP] various fixes, improves
+
+- v0.2.10 - [WIP]
+- v0.2.9 - various fixes, improves
 - v0.2.8 - fixed cmdr11Config.cmake for importing transparently
 - v0.2.7 - `auto &cli = cmdr::create(...)`
 - v0.2.5 - public release starts

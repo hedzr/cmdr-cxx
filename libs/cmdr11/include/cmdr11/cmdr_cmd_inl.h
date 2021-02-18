@@ -336,6 +336,8 @@ namespace cmdr::opt {
     }
 
 
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "misc-no-recursion"
     inline void cmd::walk_args(std::function<void(arg &)> const &cb) {
         for (auto &it : _grouped_commands) {
             for (auto &z : it.second) {
@@ -349,8 +351,191 @@ namespace cmdr::opt {
             }
         }
     }
+#pragma clang diagnostic pop
 
 
+    namespace detail {
+        inline std::string _os_env_vars(arg *x) {
+            std::stringstream tmp;
+            auto se = x->env_vars_get();
+            if (!se.empty()) {
+                int w = 0;
+                tmp << " (ENV: ";
+                for (auto const &t : se) {
+                    if (w > 0) {
+                        tmp << ',';
+                    } else {
+                        w++;
+                    }
+                    tmp << t;
+                }
+                tmp << ")";
+            }
+            return tmp.str();
+        }
+
+        inline std::string _out_desc(std::string const &desc,
+                                     cmdr::terminal::colors::colorize &c,
+                                     cmdr::terminal::colors::colorize::Colors256 fg,
+                                     bool dim,
+                                     int tw,
+                                     int wt_real) {
+            std::ostringstream ss;
+            auto d = desc;
+            auto rw = (std::size_t)((tw <= 0 ? 1000 : tw) - wt_real - 2);
+            int w = 0;
+            do {
+                if (w++ != 0) {
+                    ss << '\n'
+                       << std::string(wt_real + 2, ' ');
+                }
+                auto t = std::min(rw, d.length());
+                auto s1 = d.substr(0, t);
+                ss << c.fg(fg).dim(dim).s(d.substr(0, t));
+                d = string::trim_left_space(d.substr(t));
+            } while (!d.empty());
+            return ss.str();
+        }
+
+        inline std::string _out_comma_space(bool title_is_empty, bas *x,
+                                            cmdr::terminal::colors::colorize &c,
+                                            cmdr::terminal::colors::colorize::Colors256 fg,
+                                            bool dim, bool underline,
+                                            int &escaped_chars) {
+            if (title_is_empty) {
+                return "  "; // ss << ' ' << ' ';
+            } else {
+                if (x->hidden()) {
+                    std::ostringstream os1;
+                    os1 << c.fg(fg).dim(dim).s(", ");
+                    auto s1 = os1.str();
+                    escaped_chars += s1.length() - 2;
+                    return s1;
+                } else {
+                    return ", ";
+                }
+            }
+            UNUSED(underline);
+        }
+
+        inline std::string _out_placeholder(arg *x,
+                                            cmdr::terminal::colors::colorize &c,
+                                            cmdr::terminal::colors::colorize::Colors256 fg,
+                                            bool dim, bool underline,
+                                            int &escaped_chars) {
+            std::ostringstream osr;
+            if (!x->placeholder().empty()) {
+                if (x->hidden()) {
+                    std::ostringstream os1, os2;
+                    os1 << c.fg(fg).dim(dim).s("=");
+                    auto s1 = os1.str();
+                    os2 << c.fg(fg).dim(dim).s(x->placeholder());
+                    auto s2 = os2.str();
+                    escaped_chars += s1.length() - 1 + s2.length() - x->placeholder().length();
+                    osr << s1 << s2;
+                } else {
+                    osr << '=' << x->placeholder();
+                }
+                UNUSED(underline);
+            }
+            return osr.str();
+        }
+
+        inline std::string _out_title_aliases(bas *x,
+                                              cmdr::terminal::colors::colorize &c,
+                                              cmdr::terminal::colors::colorize::Colors256 fg,
+                                              bool dim, bool underline,
+                                              bool right_align, 
+                                              int wa,
+                                              int &escaped_chars,
+                                              bool flag = true) {
+            std::ostringstream osr;
+            if (!x->title_aliases().empty()) {
+                int w = 0;
+                std::stringstream tmp;
+                for (auto const &t : x->title_aliases()) {
+                    if (w > 0) {
+                        tmp << ',';
+                    } else
+                        w++;
+                    if (flag) tmp << '-' << '-';
+                    tmp << t;
+                }
+
+                if (!right_align) osr << std::left;
+                
+                if (x->hidden()) {
+                    std::ostringstream os1;
+                    auto v = tmp.str();
+                    os1 << c.fg(fg).dim(dim).s(v);
+                    auto s1 = os1.str();
+                    escaped_chars += s1.length() - v.length();
+                    osr << std::setw(wa + s1.length() - v.length()) << s1;
+                } else
+                    osr << std::setw(wa) << tmp.str();
+            } else if (wa > 0)
+                osr << std::setw(wa) << ' ';
+            UNUSED(underline);
+            return osr.str();
+        }
+
+        inline std::string _out_title_short(std::string const &title, bas *x,
+                                            cmdr::terminal::colors::colorize &c,
+                                            cmdr::terminal::colors::colorize::Colors256 fg,
+                                            bool dim, bool underline,
+                                            int &escaped_chars, bool flag = true) {
+            std::ostringstream osr;
+            if (x->hidden()) {
+                std::ostringstream os1, os2;
+                if (flag) {
+                    os1 << c.fg(fg).dim(dim).s("-");
+                    auto s1 = os1.str();
+                    osr << s1;
+                    escaped_chars += s1.length() - 1;
+                }
+                os2 << c.fg(fg).dim(dim).s(title);
+                auto s2 = os2.str();
+                escaped_chars += s2.length() - title.length();
+                osr << s2;
+            } else {
+                if (flag) osr << '-';
+                osr << title;
+            }
+            UNUSED(underline);
+            return osr.str();
+        }
+
+        inline std::string _out_title_long(std::string const &title, bas *x,
+                                           cmdr::terminal::colors::colorize &c,
+                                           cmdr::terminal::colors::colorize::Colors256 fg,
+                                           bool dim, bool underline,
+                                           int &escaped_chars, bool flag = true) {
+            std::ostringstream os1, os2, osr;
+            if (x->hidden()) {
+                if (flag) {
+                    os1 << c.fg(fg).dim(dim).s("--");
+                    auto s1 = os1.str();
+                    osr << s1;
+                    escaped_chars += s1.length() - 2;
+                }
+                os2 << c.underline(underline).fg(fg).dim(dim).s(title);
+                auto s2 = os2.str();
+                escaped_chars += s2.length() - title.length();
+                osr << s2;
+            } else {
+                os1 << c.underline(underline).s(title);
+                auto s1 = os1.str();
+                escaped_chars += s1.length() - title.length();
+                if (flag) { osr << '-' << '-'; }
+                osr << s1;
+            }
+            return osr.str();
+        }
+    } // namespace detail
+
+
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "misc-no-recursion"
     inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, bool show_hidden_items, int level) const {
         UNUSED(grouped, level);
         auto fg = vars::store::_dim_text_fg;
@@ -461,32 +646,8 @@ namespace cmdr::opt {
                     ss << "  " << std::left << std::setfill(' ');
                 if (!x->title_long().empty()) {
                     w = x->title_long().length();
-                    if (x->hidden()) {
-                        std::ostringstream os1;
-                        os1 << c.underline(underline).fg(fg).dim(dim).s(x->title_long());
-                        auto s1 = os1.str();
-                        escaped_chars += s1.length() - x->title_long().length();
-                        ss << s1;
-                    } else {
-                        std::ostringstream os1;
-                        os1 << c.underline(underline).s(x->title_long());
-                        auto s1 = os1.str();
-                        escaped_chars += s1.length() - x->title_long().length();
-                        ss << s1;
-                    }
-
-                    if (!x->title_short().empty() || !x->title_aliases().empty()) {
-                        if (x->hidden()) {
-                            std::ostringstream os1;
-                            os1 << c.fg(fg).dim(dim).s(", ");
-                            auto s1 = os1.str();
-                            escaped_chars += s1.length() - 2;
-                            ss << s1;
-                        } else
-                            ss << ", ";
-                    } else {
-                        ss << "  ";
-                    }
+                    ss << detail::_out_title_long(x->title_long(), x, c, fg, dim, underline, escaped_chars, false);
+                    ss << detail::_out_comma_space(x->title_short().empty() && x->title_aliases().empty(), x, c, fg, dim, underline, escaped_chars);
 
                     w = wf - w;
                     if (w > 0) ss << std::setw(w) << ' ';
@@ -495,72 +656,22 @@ namespace cmdr::opt {
 
                 if (!x->title_short().empty()) {
                     w = x->title_short().length();
-                    if (x->hidden()) {
-                        std::ostringstream os1;
-                        os1 << c.fg(fg).dim(dim).s(x->title_short());
-                        auto s1 = os1.str();
-                        escaped_chars += s1.length() - x->title_short().length();
-                        ss << s1;
-                    } else
-                        ss << x->title_short();
-                    if (!x->title_aliases().empty())
-                        if (x->hidden()) {
-                            std::ostringstream os1;
-                            os1 << c.fg(fg).dim(dim).s(", ");
-                            auto s1 = os1.str();
-                            escaped_chars += s1.length() - 2;
-                            ss << s1;
-                        } else
-                            ss << ", ";
-                    else
-                        ss << "  ";
+                    ss << detail::_out_title_short(x->title_short(), x, c, fg, dim, underline, escaped_chars, false);
+                    ss << detail::_out_comma_space(x->title_aliases().empty(), x, c, fg, dim, underline, escaped_chars);
+
                     w = ws - w;
                     if (w > 0) ss << std::setw(w) << ' ';
                 } else
                     ss << std::setw(ws + 2) << ' ';
 
-                if (!x->title_aliases().empty()) {
-                    w = 0;
-                    std::stringstream tmp;
-                    for (auto const &t : x->title_aliases()) {
-                        if (w > 0) {
-                            tmp << ',';
-                        } else {
-                            w++;
-                        }
-                        tmp << t;
-                    }
-
-                    if (x->hidden()) {
-                        std::ostringstream os1;
-                        auto v = tmp.str();
-                        os1 << c.fg(fg).dim(dim).s(v);
-                        auto s1 = os1.str();
-                        escaped_chars += s1.length() - v.length();
-                        ss << std::setw(wa + s1.length() - v.length()) << s1;
-                    } else {
-                        ss << std::setw(wa) << tmp.str();
-                    }
-                } else if (wa > 0)
-                    ss << std::setw(wa) << ' ';
+                ss << detail::_out_title_aliases(x, c, fg, dim, underline, _alias_right_align, wa, escaped_chars, false);
 
                 w = wf + 2 + ws + 2 + wa;
                 auto wt_real = (wt < 43 ? 43 : wt);
                 ss << std::setw(wt_real - w - (level >= 0 ? level : 0)) << ' ';
 
-                auto d = x->descriptions();
-                auto rw = (std::size_t)((tw <= 0 ? 1000 : tw) - wt_real - 2);
-                w = 0;
-                do {
-                    if (w++ != 0) {
-                        ss << '\n'
-                           << std::string(wt_real + 2, ' ');
-                    }
-                    auto t = std::min(rw, d.length());
-                    ss << c.fg(fg).dim(dim).s(d.substr(0, t));
-                    d = string::trim_left_space(d.substr(t));
-                } while (!d.empty());
-                
+                ss << detail::_out_desc(x->descriptions(), c, fg, dim, tw, wt_real);
+
                 //ss << '/' << wt << '(' << wt_real << ',' << escaped_chars << ')' << rw << '/' << tw;
                 ss << '\n';
 
@@ -576,7 +687,7 @@ namespace cmdr::opt {
             ss << c.fg(fg).dim(dim).s("  (no sub-commands)") << '\n';
         }
     }
-
+#pragma clang diagnostic pop
 
     inline void cmd::print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, bool show_hidden_items, int level) const {
         UNUSED(grouped, level);
@@ -683,49 +794,10 @@ namespace cmdr::opt {
                 ss << ' ' << ' ' << std::left << std::setfill(' ');
                 if (!x->title_long().empty()) {
                     w = x->title_long().length();
-                    if (x->hidden()) {
-                        std::ostringstream os1, os2;
-                        os1 << c.fg(fg).dim(dim).s("--");
-                        auto s1 = os1.str();
-                        os2 << c.underline(underline).fg(fg).dim(dim).s(x->title_long());
-                        auto s2 = os2.str();
-                        escaped_chars += s1.length() - 2 + s2.length() - x->title_long().length();
-                        ss << s1 << s2;
-                    } else {
-                        std::ostringstream os1;
-                        os1 << c.underline(underline).s(x->title_long());
-                        auto s1 = os1.str();
-                        escaped_chars += s1.length() - x->title_long().length();
-                        ss << '-' << '-' << s1;
-                    }
-                    
-                    if (!x->placeholder().empty()) {
-                        if (x->hidden()) {
-                            std::ostringstream os1, os2;
-                            os1 << c.fg(fg).dim(dim).s("=");
-                            auto s1 = os1.str();
-                            os2 << c.fg(fg).dim(dim).s(x->placeholder());
-                            auto s2 = os2.str();
-                            escaped_chars += s1.length() - 1 + s2.length() - x->placeholder().length();
-                            ss << s1 << s2;
-                        } else {
-                            ss << '=' << x->placeholder();
-                        }
-                    }
+                    ss << detail::_out_title_long(x->title_long(), x, c, fg, dim, underline, escaped_chars);
+                    ss << detail::_out_placeholder(x, c, fg, dim, underline, escaped_chars);
+                    ss << detail::_out_comma_space(x->title_short().empty() && x->title_aliases().empty(), x, c, fg, dim, underline, escaped_chars);
 
-                    if (!x->title_short().empty() || !x->title_aliases().empty()) {
-                        if (x->hidden()) {
-                            std::ostringstream os1;
-                            os1 << c.fg(fg).dim(dim).s(", ");
-                            auto s1 = os1.str();
-                            escaped_chars += s1.length() - 2;
-                            ss << s1;
-                        } else
-                            ss << ", ";
-                    } else {
-                        ss << ' ' << ' ';
-                    }
-                    
                     w = wf - w - 2;
                     if (!x->placeholder().empty())
                         w -= x->placeholder().length() + 1;
@@ -736,94 +808,28 @@ namespace cmdr::opt {
 
                 if (!x->title_short().empty()) {
                     w = x->title_short().length();
-                    if (x->hidden()) {
-                        std::ostringstream os1, os2;
-                        os1 << c.fg(fg).dim(dim).s("-");
-                        auto s1 = os1.str();
-                        os2 << c.fg(fg).dim(dim).s(x->title_short());
-                        auto s2 = os2.str();
-                        escaped_chars += s1.length() - 1 + s2.length() - x->title_short().length();
-                        ss << s1 << s2;
-                    } else
-                        ss << '-' << x->title_short();
-                    if (!x->title_aliases().empty())
-                        if (x->hidden()) {
-                            std::ostringstream os1;
-                            os1 << c.fg(fg).dim(dim).s(", ");
-                            auto s1 = os1.str();
-                            escaped_chars += s1.length() - 2;
-                            ss << s1;
-                        } else
-                            ss << ", ";
-                    else
-                        ss << ' ' << ' ';
+                    ss << detail::_out_title_short(x->title_short(), x, c, fg, dim, underline, escaped_chars);
+                    ss << detail::_out_comma_space(x->title_aliases().empty(), x, c, fg, dim, underline, escaped_chars);
+
                     w = ws - w - 1;
                     if (w > 0) ss << std::setw(w) << ' ';
                 } else
                     ss << std::setw(ws + 2) << ' ';
 
-                if (!x->title_aliases().empty()) {
-                    w = 0;
-                    std::stringstream tmp;
-                    for (auto const &t : x->title_aliases()) {
-                        if (w > 0) {
-                            tmp << ',';
-                        } else
-                            w++;
-                        tmp << '-' << '-' << t;
-                    }
-
-                    if (x->hidden()) {
-                        std::ostringstream os1;
-                        auto v = tmp.str();
-                        os1 << c.fg(fg).dim(dim).s(v);
-                        auto s1 = os1.str();
-                        escaped_chars += s1.length() - v.length();
-                        ss << std::setw(wa + s1.length() - v.length()) << s1;
-                    } else
-                        ss << std::setw(wa) << tmp.str();
-                } else if (wa > 0)
-                    ss << std::setw(wa) << ' ';
+                ss << detail::_out_title_aliases(x, c, fg, dim, underline, _alias_right_align, wa, escaped_chars);
 
                 w = wf + 2 + ws + 2 + wa;
                 auto wt_real = (wt < 43 ? 43 : wt);
                 ss << std::setw(wt_real - w - (level >= 0 ? level * 2 : 0)) << ' ';
 
-                auto d = x->descriptions();
-                auto se = x->env_vars_get();
-                if (!se.empty()) {
-                    w = 0;
-                    std::stringstream tmp;
-                    tmp << " (ENV: ";
-                    for (auto const &t : se) {
-                        if (w > 0) {
-                            tmp << ',';
-                        } else {
-                            w++;
-                        }
-                        tmp << t;
-                    }
-                    tmp << ")";
-                    if (w > 0) {
-                        d += tmp.str();
-                    }
-                }
+                std::stringstream td;
+                td << x->descriptions();
+                td << detail::_os_env_vars(x);
                 auto sd = x->defaults();
                 if (!sd.empty()) {
-                    d += sd;
+                    td << sd;
                 }
-                auto rw = (std::size_t)((tw <= 0 ? 1000 : tw) - wt_real - 2);
-                w = 0;
-                do {
-                    if (w++ != 0) {
-                        ss << '\n'
-                           << std::string(wt_real + 2, ' ');
-                    }
-                    auto t = std::min(rw, d.length());
-                    auto s1 = d.substr(0, t);
-                    ss << c.fg(fg).dim(dim).s(d.substr(0, t));
-                    d = string::trim_left_space(d.substr(t));
-                } while (!d.empty());
+                ss << detail::_out_desc(td.str(), c, fg, dim, tw, wt_real);
 
                 //ss << '/' << wt << '(' << wt_real << ',' << escaped_chars << ')' << rw << '/' << tw;
                 ss << '\n';

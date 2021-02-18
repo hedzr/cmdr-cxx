@@ -108,13 +108,13 @@ void add_main_menu(cmdr::app &cli) {
         t1 += opt{3.13f}("float", "f")
                       .description("flag float");
         t1 += opt{3.12}("double", "d")
-                .description("flag double");
-        
+                      .description("flag double");
+
         t1 += opt{std::vector{3, 9, 17}}("int-array", "ia")
                       .description("flag int array");
         t1 += opt{98LL}("long-long", "ll")
                       .description("flag long-long");
-        t1 += opt{std::vector{"a","Z"}}("string-array", "sa")
+        t1 += opt{std::vector{"a", "Z"}}("string-array", "sa")
                       .description("flag string array");
 
         using namespace std::complex_literals;
@@ -190,7 +190,7 @@ void add_server_menu(cmdr::app &cli) {
         // std::cout << "test: " << dv1 << v1e << '\n';
 #endif
 
-        t1 += opt{(int16_t) 4567}("port", "p")
+        t1 += opt{(int16_t) 4567}("port", "p", "pt", "prt")
                       .description("listening port number")
                       .group("TCP")
                       .placeholder("PORT")

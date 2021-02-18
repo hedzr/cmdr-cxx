@@ -355,6 +355,172 @@ namespace cmdr::opt {
 
 
     namespace detail {
+
+        inline std::map<std::string, std::string> sort_keys(types::grouped_cmd_list const &grouped_commands) {
+            std::set<std::string> keys;
+            std::map<std::string, std::string> dotted_key_on_keys;
+            auto nobody_num = std::stoi(NOBODY_GROUP_SORTER);
+            for (auto &it : grouped_commands) {
+                auto &title = it.first;
+                keys.insert(title);
+                auto ptr = title.find('.');
+                if (ptr != std::string::npos) {
+                    auto dotted = title.substr(0, ptr);
+                    dotted_key_on_keys.insert({dotted, title});
+                } else {
+                    dotted_key_on_keys.insert({std::to_string(nobody_num++), title});
+                }
+            }
+            return dotted_key_on_keys;
+        }
+
+        inline std::map<std::string, std::string> sort_keys(types::grouped_arg_list const &grouped_args) {
+            std::set<std::string> keys;
+            std::map<std::string, std::string> dotted_key_on_keys;
+            auto nobody_num = std::stoi(NOBODY_GROUP_SORTER);
+            for (auto &it : grouped_args) {
+                keys.insert(it.first);
+                auto ptr = it.first.find('.');
+                if (ptr != std::string::npos) {
+                    auto dotted = it.first.substr(0, ptr);
+                    dotted_key_on_keys.insert({dotted, it.first});
+                } else {
+                    dotted_key_on_keys.insert({std::to_string(nobody_num++), it.first});
+                }
+            }
+            return dotted_key_on_keys;
+        }
+
+        inline auto _out_group_name(std::string const &group_name,
+                                    std::string& clean_key, 
+                                    types::cmd_pointers const &val,
+                                    terminal::colors::colorize &c,
+                                    terminal::colors::colorize::Colors256 fg, bool dim,
+                                    bool show_hidden_items, int level, int &level_pad) {
+            std::ostringstream ss;
+            if (group_name != UNSORTED_GROUP) {
+                int i = 0;
+                for (auto &x : val) {
+                    if (!show_hidden_items && x->hidden()) continue;
+                    i++;
+                }
+                if (i > 0) {
+                    if (level >= 0)
+                        ss << std::string(level * 2, ' ') << '-' << ' ';
+                    else
+                        ss << ' ' << ' ';
+                    std::stringstream tmp;
+                    tmp << '[' << clean_key << ']';
+                    ss << c.fg(fg).dim(dim).s(tmp.str()) << '\n';
+                    level_pad++;
+                }
+            }
+            return ss.str();
+        }
+
+        inline auto calc_widths(bool show_hidden_items, types::cmd_pointers const &val) {
+            int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
+            for (auto &x : val) {
+                if (!show_hidden_items && x->hidden()) continue;
+                valid_count++;
+                w = x->title_long().length();
+                if (w > wf) wf = w;
+                w = x->title_short().length();
+                if (w > ws) ws = w;
+                w = 0;
+                for (auto const &t : x->title_aliases()) {
+                    if (w > 0) w += 1;
+                    w += t.length();
+                }
+                if (w > wa) wa = w;
+            }
+            return std::make_tuple(wf, ws, wa, w, valid_count);
+        }
+
+        inline void populate_tab_stop_width(std::map<std::string, std::string> const &dotted_key_on_keys,
+                                            types::grouped_cmd_list const &grouped_commands,
+                                            bool show_hidden_items,
+                                            int &wt) {
+            for (auto &it : dotted_key_on_keys) {
+                auto const &val_it = grouped_commands.find(it.second);
+                if (val_it == grouped_commands.end()) continue;
+                auto const &val = val_it->second;
+                auto clean_key = string::has_prefix(it.second, it.first) ? it.second.substr(it.first.length() + 1) : it.second;
+
+                auto [wf, ws, wa, w, valid_count] = calc_widths(show_hidden_items, val);
+
+                if (wf > 0) {
+                    auto wt_tmp = wf + 2 + ws + 2 + wa + 2;
+                    if (wt < wt_tmp)
+                        wt = wt_tmp;
+                }
+            }
+        }
+
+        inline auto _out_group_name(std::string const &group_name,
+                                    std::string& clean_key,
+                                    types::arg_pointers const &val,
+                                    terminal::colors::colorize &c,
+                                    terminal::colors::colorize::Colors256 fg, bool dim,
+                                    bool show_hidden_items) {
+            std::ostringstream ss;
+            if (group_name != UNSORTED_GROUP) {
+                int i = 0;
+                for (auto &x : val) {
+                    if (!show_hidden_items && x->hidden()) continue;
+                    i++;
+                }
+                if (i > 0) {
+                    ss << ' ' << ' ';
+                    std::stringstream tmp;
+                    tmp << '[' << clean_key << ']';
+                    ss << c.fg(fg).dim(dim).s(tmp.str()) << '\n';
+                }
+            }
+            return ss.str();
+        }
+        
+        inline auto calc_widths(bool show_hidden_items, types::arg_pointers const &val) {
+            int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
+            for (auto &x : val) {
+                if (!show_hidden_items && x->hidden()) continue;
+                valid_count++;
+                w = x->title_long().length() + 2;
+                if (!x->placeholder().empty())
+                    w += x->placeholder().length() + 1;
+                if (w > wf) wf = w;
+                w = x->title_short().length() + 1;
+                if (w > ws) ws = w;
+                w = 0;
+                for (auto const &t : x->title_aliases()) {
+                    if (w > 0) w += 1;
+                    w += t.length() + 2;
+                }
+                if (w > wa) wa = w;
+            }
+            return std::make_tuple(wf, ws, wa, w, valid_count);
+        }
+
+        inline void populate_tab_stop_width(std::map<std::string, std::string> const &dotted_key_on_keys,
+                                            types::grouped_arg_list const &grouped_args,
+                                            bool show_hidden_items,
+                                            int &wt) {
+            for (auto &it : dotted_key_on_keys) {
+                auto const &val_it = grouped_args.find(it.second);
+                if (val_it == grouped_args.end()) continue;
+                auto const &val = val_it->second;
+                auto clean_key = string::has_prefix(it.second, it.first) ? it.second.substr(it.first.length() + 1) : it.second;
+
+                auto [wf, ws, wa, w, valid_count] = calc_widths(show_hidden_items, val);
+
+                if (wf > 0) {
+                    auto wt_tmp = wf + 2 + ws + 2 + wa + 2;
+                    if (wt < wt_tmp)
+                        wt = wt_tmp;
+                }
+            }
+        }
+
         inline std::string _os_env_vars(arg *x) {
             std::stringstream tmp;
             auto se = x->env_vars_get();
@@ -445,7 +611,7 @@ namespace cmdr::opt {
                                               cmdr::terminal::colors::colorize &c,
                                               cmdr::terminal::colors::colorize::Colors256 fg,
                                               bool dim, bool underline,
-                                              bool right_align, 
+                                              bool right_align,
                                               int wa,
                                               int &escaped_chars,
                                               bool flag = true) {
@@ -463,7 +629,7 @@ namespace cmdr::opt {
                 }
 
                 if (!right_align) osr << std::left;
-                
+
                 if (x->hidden()) {
                     std::ostringstream os1;
                     auto v = tmp.str();
@@ -543,53 +709,9 @@ namespace cmdr::opt {
         auto underline = vars::store::_long_title_underline;
         auto [th, tw] = terminal::terminfo::get_win_size();
 
-        std::set<std::string> keys;
-        std::map<std::string, std::string> dotted_key_on_keys;
-        auto nobody_num = std::stoi(NOBODY_GROUP_SORTER);
-        for (auto &it : _grouped_commands) {
-            auto &title = it.first;
-            keys.insert(title);
-            auto ptr = title.find('.');
-            if (ptr != std::string::npos) {
-                auto dotted = title.substr(0, ptr);
-                dotted_key_on_keys.insert({dotted, title});
-            } else {
-                dotted_key_on_keys.insert({std::to_string(nobody_num++), title});
-            }
-        }
-
         int count_all{};
-        // if (wt <= 0)
-        {
-            for (auto &it : dotted_key_on_keys) {
-                auto const &val_it = _grouped_commands.find(it.second);
-                if (val_it == _grouped_commands.end()) continue;
-                auto const &val = val_it->second;
-                auto clean_key = string::has_prefix(it.second, it.first) ? it.second.substr(it.first.length() + 1) : it.second;
-
-                int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
-                for (auto &x : val) {
-                    if (!show_hidden_items && x->hidden()) continue;
-                    valid_count++;
-                    w = x->title_long().length();
-                    if (w > wf) wf = w;
-                    w = x->title_short().length();
-                    if (w > ws) ws = w;
-                    w = 0;
-                    for (auto const &t : x->title_aliases()) {
-                        if (w > 0) w += 1;
-                        w += t.length();
-                    }
-                    if (w > wa) wa = w;
-                }
-
-                if (wf > 0) {
-                    auto wt_tmp = wf + 2 + ws + 2 + wa + 2;
-                    if (wt < wt_tmp)
-                        wt = wt_tmp;
-                }
-            }
-        }
+        std::map<std::string, std::string> dotted_key_on_keys = detail::sort_keys(_grouped_commands);
+        detail::populate_tab_stop_width(dotted_key_on_keys, _grouped_commands, show_hidden_items, wt);
 
         for (auto &it : dotted_key_on_keys) {
             auto const &val_it = _grouped_commands.find(it.second);
@@ -597,44 +719,14 @@ namespace cmdr::opt {
             auto const &val = val_it->second;
             auto clean_key = string::has_prefix(it.second, it.first) ? it.second.substr(it.first.length() + 1) : it.second;
 
-            int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
-            for (auto &x : val) {
-                if (!show_hidden_items && x->hidden()) continue;
-                valid_count++;
-                w = x->title_long().length();
-                if (w > wf) wf = w;
-                w = x->title_short().length();
-                if (w > ws) ws = w;
-                w = 0;
-                for (auto const &t : x->title_aliases()) {
-                    if (w > 0) w += 1;
-                    w += t.length();
-                }
-                if (w > wa) wa = w;
-            }
+            auto [wf, ws, wa, w, valid_count] = detail::calc_widths(show_hidden_items, val);
 
             if (valid_count == 0)
                 continue;
 
             int level_pad = 0;
-            if (it.second != UNSORTED_GROUP) {
-                int i = 0;
-                for (auto &x : val) {
-                    if (!show_hidden_items && x->hidden()) continue;
-                    i++;
-                }
-                if (i > 0) {
-                    if (level >= 0)
-                        ss << std::string(level * 2, ' ') << '-' << ' ';
-                    else
-                        ss << ' ' << ' ';
-                    std::stringstream tmp;
-                    tmp << '[' << clean_key << ']';
-                    ss << c.fg(fg).dim(dim).s(tmp.str()) << '\n';
-                    level_pad++;
-                }
-            }
-
+            ss << detail::_out_group_name(it.second, clean_key, val, c, fg, dim, show_hidden_items, level, level_pad);
+            
             for (auto &x : val) {
                 if (!show_hidden_items && x->hidden()) continue;
 
@@ -696,54 +788,10 @@ namespace cmdr::opt {
         auto underline = vars::store::_long_title_underline;
         auto [th, tw] = terminal::terminfo::get_win_size();
 
-        std::set<std::string> keys;
-        std::map<std::string, std::string> dotted_key_on_keys;
-        auto nobody_num = std::stoi(NOBODY_GROUP_SORTER);
-        for (auto &it : _grouped_args) {
-            keys.insert(it.first);
-            auto ptr = it.first.find('.');
-            if (ptr != std::string::npos) {
-                auto dotted = it.first.substr(0, ptr);
-                dotted_key_on_keys.insert({dotted, it.first});
-            } else {
-                dotted_key_on_keys.insert({std::to_string(nobody_num++), it.first});
-            }
-        }
-
         int count_all{};
-        // if (wt <= 0)
-        {
-            for (auto &it : dotted_key_on_keys) {
-                auto const &val_it = _grouped_args.find(it.second);
-                if (val_it == _grouped_args.end()) continue;
-                auto const &val = val_it->second;
-                auto clean_key = string::has_prefix(it.second, it.first) ? it.second.substr(it.first.length() + 1) : it.second;
-
-                int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
-                for (auto &x : val) {
-                    if (!show_hidden_items && x->hidden()) continue;
-                    valid_count++;
-                    w = x->title_long().length() + 2;
-                    if (!x->placeholder().empty())
-                        w += x->placeholder().length() + 1;
-                    if (w > wf) wf = w;
-                    w = x->title_short().length() + 1;
-                    if (w > ws) ws = w;
-                    w = 0;
-                    for (auto const &t : x->title_aliases()) {
-                        if (w > 0) w += 1;
-                        w += t.length() + 2;
-                    }
-                    if (w > wa) wa = w;
-                }
-
-                if (wf > 0) {
-                    auto wt_tmp = wf + 2 + ws + 2 + wa + 2;
-                    if (wt < wt_tmp)
-                        wt = wt_tmp;
-                }
-            }
-        }
+        std::map<std::string, std::string> dotted_key_on_keys = detail::sort_keys(_grouped_commands);
+        detail::populate_tab_stop_width(dotted_key_on_keys, _grouped_commands, show_hidden_items, wt);
+        detail::populate_tab_stop_width(dotted_key_on_keys, _grouped_args, show_hidden_items, wt);
 
         for (auto &it : dotted_key_on_keys) {
             auto const &val_it = _grouped_args.find(it.second);
@@ -751,41 +799,13 @@ namespace cmdr::opt {
             auto const &val = val_it->second;
             auto clean_key = string::has_prefix(it.second, it.first) ? it.second.substr(it.first.length() + 1) : it.second;
 
-            int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
-            for (auto &x : val) {
-                if (!show_hidden_items && x->hidden()) continue;
-                valid_count++;
-                w = x->title_long().length() + 2;
-                if (!x->placeholder().empty())
-                    w += x->placeholder().length() + 1;
-                if (w > wf) wf = w;
-                w = x->title_short().length() + 1;
-                if (w > ws) ws = w;
-                w = 0;
-                for (auto const &t : x->title_aliases()) {
-                    if (w > 0) w += 1;
-                    w += t.length() + 2;
-                }
-                if (w > wa) wa = w;
-            }
+            auto [wf, ws, wa, w, valid_count] = detail::calc_widths(show_hidden_items, val);
 
             if (valid_count == 0)
                 continue;
 
-            if (it.second != UNSORTED_GROUP) {
-                int i = 0;
-                for (auto &x : val) {
-                    if (!show_hidden_items && x->hidden()) continue;
-                    i++;
-                }
-                if (i > 0) {
-                    ss << ' ' << ' ';
-                    std::stringstream tmp;
-                    tmp << '[' << clean_key << ']';
-                    ss << c.fg(fg).dim(dim).s(tmp.str()) << '\n';
-                }
-            }
-
+            ss << detail::_out_group_name(it.second, clean_key, val, c, fg, dim, show_hidden_items);
+            
             for (auto &x : val) {
                 if (!show_hidden_items && x->hidden()) continue;
 

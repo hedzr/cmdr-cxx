@@ -42,8 +42,8 @@ namespace cmdr::util {
     protected:
         pointer ptr_;
     };
-    
-    
+
+
     // https://gist.github.com/jeetsukumaran/307264
     //
     // More:
@@ -227,9 +227,9 @@ namespace cmdr::util {
             return 0;
         }
     };
-    
+
 #endif
-    
+
 } // namespace cmdr::util
 
 #endif //CMDR_CXX11_CUSTOM_ITERATOR_HH

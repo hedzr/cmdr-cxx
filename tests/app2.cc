@@ -19,14 +19,14 @@
 
 int main(int argc, char *argv[]) {
     auto &cli = cmdr::cli("app2", CMDR_VERSION_STRING, "hedzr",
-                         "Copyright © 2021 by hedzr, All Rights Reserved.",
-                         "A demo app for cmdr-c11 library.",
-                         "$ ~ --help")
-                       // remove "Powered by cmdr-cxx" line
-                       .set_no_cmdr_endings()
-                       // customize the last line except cmdr endings
-                       .set_tail_line("")
-                       .set_no_tail_line(false);
+                          "Copyright © 2021 by hedzr, All Rights Reserved.",
+                          "A demo app for cmdr-c11 library.",
+                          "$ ~ --help")
+                        // remove "Powered by cmdr-cxx" line
+                        .set_no_cmdr_endings()
+                        // customize the last line except cmdr endings
+                        .set_tail_line("")
+                        .set_no_tail_line(false);
 
     try {
         using namespace cmdr::opt;

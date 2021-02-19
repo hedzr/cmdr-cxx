@@ -11,9 +11,9 @@ void fatal_exit(const std::string &msg) {
 
 int main(int argc, char *argv[]) {
     auto &cli = cmdr::cli("app2", CMDR_VERSION_STRING, "hedzr",
-                         "Copyright © 2021 by hedzr, All Rights Reserved.",
-                         "A demo app for cmdr-cxx library.",
-                         "$ ~ --help");
+                          "Copyright © 2021 by hedzr, All Rights Reserved.",
+                          "A demo app for cmdr-cxx library.",
+                          "$ ~ --help");
 
     try {
         using namespace cmdr::opt;
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
         cmdr::vars::variable &ab = cmdr::get_app().get("wudao.array");
         std::cout << ab << '\n';
 #endif
-        
+
     } catch (std::exception &e) {
         std::cerr << "Exception caught : " << e.what() << '\n';
     }

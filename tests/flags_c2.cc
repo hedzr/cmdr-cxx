@@ -52,7 +52,7 @@ TEST_CASE("flags test", "[flags]") {
 
     SECTION("--help") {
         const char *argv[] = {"", "--help", "--no-color"};
-        REQUIRE(cli.run((int)countof(argv), const_cast<char **>(argv)) == 0);
+        REQUIRE(cli.run((int) countof(argv), const_cast<char **>(argv)) == 0);
         REQUIRE(cli.get_for_cli("help").as<bool>());
     }
     SECTION("-h") {
@@ -152,7 +152,7 @@ TEST_CASE("flags test", "[flags]") {
         REQUIRE(cli.get_for_cli("main.string-array").as<std::vector<const char *>>() == std::vector{"a", "Z"});
         REQUIRE(cli.get_for_cli("no-color").as<bool>());
     }
-    
+
     // store
 
     SECTION("store: main --float 2.7") {

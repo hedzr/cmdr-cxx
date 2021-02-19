@@ -52,5 +52,5 @@ if (NOT TARGET cmdr11::cmdr11)
     message(">=< CMDR11_LIBRARY_DIR  = ${CMDR11_LIBRARY_DIR}")
     message(">=< CMDR11_LIBRARIES    = ${CMDR11_LIBRARIES}")
   endif ()
-  
+
 endif ()

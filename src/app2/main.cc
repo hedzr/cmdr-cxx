@@ -12,11 +12,11 @@ void fatal_exit(const std::string &msg) {
 int main(int argc, char *argv[]) {
     try {
         using namespace cmdr::opt;
-        
+
         auto &cli = cmdr::cli("app2", CMDR_VERSION_STRING, "hedzr",
-                             "Copyright © 2021 by hedzr, All Rights Reserved.",
-                             "A demo app for cmdr-c11 library.",
-                             "$ ~ --help");
+                              "Copyright © 2021 by hedzr, All Rights Reserved.",
+                              "A demo app for cmdr-c11 library.",
+                              "$ ~ --help");
 
         // cli.opt(opt_dummy{}());
 

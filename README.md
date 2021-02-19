@@ -82,13 +82,19 @@
 WIP, pre-released now.
 
 
-- v0.2.10 - [WIP]
+- v0.2.10 - [WIP] MSVC (Build Tool 16.7.2+, VS2019 passed)
 - v0.2.9 - various fixes, improves
 - v0.2.8 - fixed cmdr11Config.cmake for importing transparently
 - v0.2.7 - `auto &cli = cmdr::create(...)`
 - v0.2.5 - public release starts
 
+CXX 17 Compilers:
 
+- gcc 10+: passed
+
+- clang 12+: passed
+
+- vc build tool 16.7.2, 16.8.5 (VS2019 or Build Tool) passed
 
 
 
@@ -456,7 +462,11 @@ The `Powered by ...` line can be disabled by `set_no_cmdr_ending`, so-called `cm
 
 ## External Loaders
 
-There is a pre-built addon `yaml-loader` for loading the external config files in the pre-defined directory locations. `test-app-c1` demonstrates how to use it:
+There is a builtin addon `yaml-loader` for loading the external config files in the pre-defined directory locations. As a sample to show you how to write a external loader, `yaml-loader` will load and parse the yaml config file and merge it into `Option Store`.
+
+> TODO: `conf.d` not processed now.
+
+`test-app-c1` demonstrates how to use it:
 
 ```cpp
 {
@@ -524,6 +534,8 @@ Inside `cmdr-cxx`, there are many optimizable points and some of them in working
 > gcc 10+: passed
 >
 > clang 12+: passed
+>
+> vc build tool 16.7.2, 16.8.5 (VS2019 or Build Tool) passed
 
 ```bash
 # configure
@@ -534,27 +546,52 @@ cmake --build build/
 cmake --build build/ --target install
 ```
 
+### Other Options
+
+1. `BUILD_DOCUMENTATION`=OFF
+2. `ENABLE_TESTS`=OFF
+
+
+
 
 
 ### Prerequisites
 
 To run all automated tests, or, you're trying to use `yaml-loader` add-on, some dependencies need to prepared at first.
 
-#### Linux
+
+
+#### Catch2
+
+If the tests are enabled, [ `Catch2`](https://github.com/catchorg/Catch2) will be downloaded while cmake configuring and building automatically. If you have a local cmake-findable Catch2 copy, more attentions would be appreciated.
+
+
+
+#### Others
+
+In our tests, `test-app2-c1` and `yaml-loader` will request [`yaml-cpp`](https://github.com/jbeder/yaml-cpp) is present.
+
+##### Linux
 
 ```bash
 sudo apt install -y libyaml-cpp-dev
 ```
 
-> For CentOS or RedHat, maybe the compiling from source codes is necessary.
+> For CentOS or RedHat: `sudo dnf install yaml-cpp`
 
-#### macOS
+##### macOS
 
 ```bash
 brew install yaml-cpp
 ```
 
+##### Windows
 
+```bash
+vcpkg install yaml-cpp
+```
+
+> **NOTE** that [vcpkg](https://github.com/microsoft/vcpkg) want to inject the control file for cmake building, see also [Using vcpkg with CMake](https://github.com/microsoft/vcpkg#using-vcpkg-with-cmake)
 
 
 

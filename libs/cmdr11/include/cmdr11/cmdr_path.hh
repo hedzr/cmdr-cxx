@@ -109,7 +109,7 @@ namespace cmdr::path {
         return executablePath.parent_path();
     }
 
-    inline std::string merge(std::string pathA, std::string pathB) {
+    inline std::filesystem::path merge(std::string pathA, std::string pathB) {
         return pathA + "/" + pathB;
     }
 
@@ -138,7 +138,7 @@ namespace cmdr::path {
         //return std::filesystem::path(executableDir);
     }
 
-    inline std::string merge(std::string const &pathA, std::string const &pathB) {
+    inline std::filesystem::path merge(std::string const &pathA, std::string const &pathB) {
         return pathA + "/" + pathB;
     }
 

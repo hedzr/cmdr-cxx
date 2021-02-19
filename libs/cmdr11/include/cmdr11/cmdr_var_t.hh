@@ -928,7 +928,7 @@ namespace cmdr::vars {
                                  !std::is_same<std::decay_t<A>, self_type>::value,
                          int> = 0>
         void set_raw(char const *key, A &&a0, Args &&...args) {
-            _root.template set(key, a0, args...);
+            _root.set(key, a0, args...);
         }
         template<class A,
                  std::enable_if_t<std::is_constructible<T, A>::value &&
@@ -936,7 +936,7 @@ namespace cmdr::vars {
                                           !std::is_same<std::decay_t<A>, self_type>::value,
                                   int> = 0>
         void set_raw(char const *key, A &&a) {
-            _root.template set(key, a);
+            _root.set(key, a);
         }
         void set_raw(char const *key, vars::variable &&a) { _root.set(key, a.underlying_value()); }
         void set_raw(char const *key, vars::variable const &a) { _root.set(key, a.underlying_value()); }

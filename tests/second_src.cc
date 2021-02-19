@@ -64,8 +64,9 @@ void add_test_menu(cmdr::app &cli) {
                           //
                           // no effects because we try and catch all c++ exceptions in app::run()
                           //
+          #if __clang__ || __GNUC__
                           cmdr::debug::UnhandledExceptionHookInstaller _ueh{};
-
+                          #endif
                           throw std::runtime_error("hello, this is a runtime_error");
                           return 0;
                       });
@@ -73,8 +74,10 @@ void add_test_menu(cmdr::app &cli) {
                       .description("causes a segfault and hook it via linux signal()")
                       .group("Test")
                       .on_invoke([](cmd const, string_array const &) -> int {
+#if __clang__ || __GNUC__
                           // cmdr::debug::UnhandledExceptionHookInstaller _ueh{};
                           cmdr::debug::SigSegVInstaller _ssi{};
+                          #endif
                           int *foo = (int *) -1; // make a bad pointer
                           printf("%d\n", *foo);  // causes segfault
                           return 0;
@@ -83,8 +86,10 @@ void add_test_menu(cmdr::app &cli) {
                       .description("causes a segfault and hook it via linux signal()")
                       .group("Test")
                       .on_invoke([](cmd const, string_array const &) -> int {
+#if __clang__ || __GNUC__
                           // cmdr::debug::UnhandledExceptionHookInstaller _ueh{};
                           cmdr::debug::SignalInstaller<SIGFPE> _si{};
+                          #endif
                           int foo = 0;
                           printf("%d\n", 8989 / foo); // causes segfpe
                           return 0;

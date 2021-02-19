@@ -5,6 +5,8 @@
 #ifndef CMDR_CXX11_CMDR_LOG_HH
 #define CMDR_CXX11_CMDR_LOG_HH
 
+#include "cmdr_defs.hh"
+
 #include "cmdr_terminal.hh"
 #include "cmdr_utils.hh"
 
@@ -31,9 +33,9 @@ namespace cmdr::log {
             }
             void vdebug(const char *file, int line, const char *func,
                         char const *fmt, va_list args) {
-                auto t = std::time(nullptr);
+                // auto t = cross::time(nullptr);
                 char time_buf[100];
-                std::strftime(time_buf, sizeof time_buf, "%D %T", std::gmtime(&t));
+                std::strftime(time_buf, sizeof time_buf, "%D %T", cross::gmtime());
 
                 va_list args2;
                 va_copy(args2, args);
@@ -73,9 +75,9 @@ namespace cmdr::log {
         //     xlog().vdebug(fmt, args);
         // }
         static void debug(char const *fmt, ...) {
-            auto t = std::time(nullptr);
+            // auto t = cross::time(nullptr);
             char time_buf[100];
-            std::strftime(time_buf, sizeof time_buf, "%D %T", std::gmtime(&t));
+            std::strftime(time_buf, sizeof time_buf, "%D %T", cross::gmtime());
 
             va_list args1;
             va_start(args1, fmt);
@@ -93,13 +95,6 @@ namespace cmdr::log {
         static detail::Log &xlog() { return detail::Log::instance(); }
     }; // class log
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-parameter"
-
-    // inline void Logger::print(const char *fmt, void *args) {
-    // }
-
-#pragma clang diagnostic pop
 
     class holder {
         const char *_file;

@@ -25,13 +25,23 @@ namespace cmdr::terminal {
         //
         // see:
         // https://pubs.opengroup.org/onlinepubs/009695399/functions/isatty.html
-        static bool isatty() { return ::isatty(0); }
+        static bool isatty() {
+#if !defined(OS_WIN)
+            return ::isatty(0);
+#else
+            return false; // for windows
+#endif
+        }
 
         static const char *term() {
+#if !defined(OS_WIN)
             auto *str = std::getenv("TERM");
             if (!str)
                 return "";
             return str;
+#else
+            return ""; // for windows
+#endif
         }
 
         static bool is_colorful() {
@@ -78,11 +88,11 @@ namespace cmdr::terminal {
         }
 
         static std::tuple<int, int> get_win_size() {
-#if defined(_WIN32)
+#if defined(OS_WIN)
             CONSOLE_SCREEN_BUFFER_INFO csbi;
             GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-            width = (int) (csbi.dwSize.X);
-            height = (int) (csbi.dwSize.Y);
+            int width = (int) (csbi.dwSize.X);
+            int height = (int) (csbi.dwSize.Y);
             return {height, width};
 #elif defined(__linux__) || defined(OS_MACOS) || defined(OS_MAC) || defined(OS_APPLE)
             // #if !defined(OS_WIN) && !defined(OS_ANDROID)

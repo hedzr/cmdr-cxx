@@ -26,7 +26,7 @@ void UNUSED([[maybe_unused]] Args &&...args) {
     (void) (sizeof...(args));
 }
 
-#elif __GNUC__
+#elif __GNUC__ || _MSC_VER
 
 // c way unused
 #ifndef UNUSED
@@ -61,8 +61,10 @@ void UNUSED([[maybe_unused]] Args &&...args) {
 #define __COPY(m) this->m = o.m
 #endif
 
+#if !defined(_WIN32)
 #ifndef TEXT
 #define TEXT(x) (#x)
+#endif
 #endif
 
 
@@ -121,7 +123,7 @@ template<typename T, size_t N>
 // https://stackoverflow.com/questions/142508/how-do-i-check-os-with-a-preprocessor-directive/8249232
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 //define something for Windows (32-bit and 64-bit, this part is common)
-#define OS_WINDOWS
+//#define OS_WINDOWS
 #define OS_WIN
 #ifdef _WIN64
 //define something for Windows (64-bit only)
@@ -207,6 +209,63 @@ const char *const NOBODY_GROUP_SORTER = "3333";
 // #if defined(CMDR_ENABLE_VERBOSE_LOG)
 // #include <spdlog/spdlog.h>
 // #endif
+
+
+////////////////////////////////////////////////////////////////////////
+
+#include <stdlib.h>
+
+#if defined(OS_WIN)
+#include <sstream>
+#define WIN32_LEAN_AND_MEAN
+#define VC_EXTRALEAN
+// #define _CRT_SECURE_NO_WARNINGS
+#include <windows.h>
+#undef min
+#undef max
+#include <time.h>
+namespace cmdr::cross {
+    inline void setenv(const char *__name, const char *__value, int __overwrite = 1) {
+        UNUSED(__overwrite);
+        std::ostringstream os;
+        os << __name << '=' << __value;
+        _putenv(os.str().c_str());
+    }
+
+    inline time_t time(time_t *_t = nullptr) {
+        return ::time(_t);
+    }
+    inline struct tm *gmtime(time_t const *_t = nullptr, struct tm *_tm = nullptr) {
+        gmtime_s(_tm, _t);
+        return _tm;
+    }
+
+    template<class T>
+    inline T max(T a, T b) { return a < b ? b : a; }
+    template<class T>
+    inline T min(T a, T b) { return a < b ? a : b; }
+} // namespace cmdr::cross
+#else
+#include <algorithm>
+#include <time.h>
+namespace cmdr::cross {
+    inline void setenv(const char *__name, const char *__value, int __overwrite = 1) {
+        ::setenv(__name, __value, __overwrite);
+    }
+
+    inline time_t time(time_t *_t = nullptr) {
+        return std::time(_t);
+    }
+    inline struct tm *gmtime(time_t const *_t = nullptr, struct tm *_tm = nullptr) {
+        return std::gmtime(_t ? _t : time(), _tm);
+    }
+
+    template<class T>
+    inline T max(T a, T b) { return std::max(a, b); }
+    template<class T>
+    inline T min(T a, T b) { return std::min(a, b); }
+} // namespace cmdr::cross
+#endif
 
 
 #endif //CMDR_CXX11_CMDR_DEFS_HH

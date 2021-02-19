@@ -191,14 +191,14 @@ namespace cmdr::opt {
 
 
         struct parsing_context {
-            cmd *_root;                                 // root command, i.e. app
-            std::string title{};                        // the input fragment text (one arg) in command-line
-            std::string title_fragment{};               // the matching pieces in title
-            int index{};                                // index to argv
-            bool is_flag{false};       //
-            bool passthru_flag{false}; //
-            int matching_flag_type{};                   // short: 0, long: 1, special: 2, ...
-            std::size_t pos{};                          // start position of title
+            cmd *_root;                   // root command, i.e. app
+            std::string title{};          // the input fragment text (one arg) in command-line
+            std::string title_fragment{}; // the matching pieces in title
+            int index{};                  // index to argv
+            bool is_flag{false};          //
+            bool passthru_flag{false};    //
+            int matching_flag_type{};     // short: 0, long: 1, special: 2, ...
+            std::size_t pos{};            // start position of title
 
             explicit parsing_context(cmd *a)
                 : _root(a) {}

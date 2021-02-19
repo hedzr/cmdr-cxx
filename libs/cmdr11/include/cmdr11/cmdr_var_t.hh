@@ -252,7 +252,7 @@ namespace cmdr::vars {
             std::string s;
             is >> ch;
             if (ch != '[') s += ch;
-            while ((ok = string::read_until(is, s, ","))) {
+            while ((ok = string::read_until(is, s, ",")) == true) {
                 std::stringstream ss(s);
                 T t;
                 ss >> t;
@@ -283,7 +283,7 @@ namespace cmdr::vars {
          * @return 
          */
         static bool parse_bool(std::istream &is, bool &x) {
-            char ch;
+            int ch;
             ch = is.peek();
             if (ch == '0') {
                 x = false;
@@ -771,7 +771,7 @@ namespace cmdr::vars {
                             // sk += '.';
                             // sk += end_key;
                             UNUSED(end_key, ptr);
-                            _indexes.template emplace(std::make_pair(key, ptr));
+                            _indexes.emplace(std::make_pair(key, ptr));
                             if (cb)
                                 cb(key, ptr);
                         },
@@ -787,7 +787,7 @@ namespace cmdr::vars {
 
                 // build index
                 auto ptr = (it->second);
-                _indexes.template emplace(std::make_pair(k, ptr));
+                _indexes.emplace(std::make_pair(k, ptr));
 #if defined(CMDR_ENABLE_VERBOSE_LOG) && 0
                 {
                     std::ostringstream osdbg;
@@ -952,7 +952,7 @@ namespace cmdr::vars {
             std::ostringstream os;
             if (prefix && prefix[0] != 0) os << prefix << '.';
             os << key;
-            _root.template set(os.str().c_str(), a0, args...);
+            _root.set(os.str().c_str(), a0, args...);
         }
         template<class A,
                  std::enable_if_t<std::is_constructible<T, A>::value &&
@@ -963,7 +963,7 @@ namespace cmdr::vars {
             std::ostringstream os;
             if (prefix && prefix[0] != 0) os << prefix << '.';
             os << key;
-            _root.template set(os.str().c_str(), a);
+            _root.set(os.str().c_str(), a);
         }
         void set_raw_p(char const *prefix, char const *key, vars::variable &&a) {
             std::ostringstream os;

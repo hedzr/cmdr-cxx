@@ -104,13 +104,13 @@ namespace cmdr {
         });
         _internal_actions.emplace(opt::RequestBuildInfoScreen, [=](opt::types::parsing_context &, int, char *[]) -> int {
             std::stringstream compiler;
-            compiler <<
+            compiler
             // https://blog.kowalczyk.info/article/j/guide-to-predefined-macros-in-c-compilers-gcc-clang-msvc-etc..html
             // http://beefchunk.com/documentation/lang/c/pre-defined-c/precomp.html
 #if defined(__clang__)
-                    "clang " << __clang_major__ << "." << __clang_minor__ << "." << __clang_patchlevel__
+                    << "clang " << __clang_major__ << "." << __clang_minor__ << "." << __clang_patchlevel__
 #elif defined(__GNUC__)
-                            "gcc " <<  __GNUC__ <<"."<<__GNUC_MINOR__ // __VERSION__
+                        <<    "gcc " <<  __GNUC__ <<"."<<__GNUC_MINOR__ // __VERSION__
 #if defined(__GNU_PATCHLEVEL__)
                                                                  <<"."<<__GNUC_PATCHLEVEL__
 #endif

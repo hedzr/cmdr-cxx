@@ -14,6 +14,8 @@
 #include <stdexcept>
 
 
+#include "cmdr_defs.hh"
+
 #include "cmdr_cmn.hh"
 
 #include "cmdr_arg.hh"
@@ -336,8 +338,8 @@ namespace cmdr::opt {
     }
 
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "misc-no-recursion"
+    //#pragma clang diagnostic push
+    //#pragma ide diagnostic ignored "misc-no-recursion"
     inline void cmd::walk_args(std::function<void(arg &)> const &cb) {
         for (auto &it : _grouped_commands) {
             for (auto &z : it.second) {
@@ -351,7 +353,7 @@ namespace cmdr::opt {
             }
         }
     }
-#pragma clang diagnostic pop
+    //#pragma clang diagnostic pop
 
 
     namespace detail {
@@ -392,7 +394,7 @@ namespace cmdr::opt {
         }
 
         inline auto _out_group_name(std::string const &group_name,
-                                    std::string& clean_key, 
+                                    std::string &clean_key,
                                     types::cmd_pointers const &val,
                                     terminal::colors::colorize &c,
                                     terminal::colors::colorize::Colors256 fg, bool dim,
@@ -423,14 +425,14 @@ namespace cmdr::opt {
             for (auto &x : val) {
                 if (!show_hidden_items && x->hidden()) continue;
                 valid_count++;
-                w = x->title_long().length();
+                w = (int) x->title_long().length();
                 if (w > wf) wf = w;
-                w = x->title_short().length();
+                w = (int) x->title_short().length();
                 if (w > ws) ws = w;
                 w = 0;
                 for (auto const &t : x->title_aliases()) {
                     if (w > 0) w += 1;
-                    w += t.length();
+                    w += (int) t.length();
                 }
                 if (w > wa) wa = w;
             }
@@ -458,7 +460,7 @@ namespace cmdr::opt {
         }
 
         inline auto _out_group_name(std::string const &group_name,
-                                    std::string& clean_key,
+                                    std::string &clean_key,
                                     types::arg_pointers const &val,
                                     terminal::colors::colorize &c,
                                     terminal::colors::colorize::Colors256 fg, bool dim,
@@ -479,22 +481,22 @@ namespace cmdr::opt {
             }
             return ss.str();
         }
-        
+
         inline auto calc_widths(bool show_hidden_items, types::arg_pointers const &val) {
             int wf = 0, ws = 0, wa = 0, w = 0, valid_count = 0;
             for (auto &x : val) {
                 if (!show_hidden_items && x->hidden()) continue;
                 valid_count++;
-                w = x->title_long().length() + 2;
+                w = (int) x->title_long().length() + 2;
                 if (!x->placeholder().empty())
-                    w += x->placeholder().length() + 1;
+                    w += (int) x->placeholder().length() + 1;
                 if (w > wf) wf = w;
-                w = x->title_short().length() + 1;
+                w = (int) x->title_short().length() + 1;
                 if (w > ws) ws = w;
                 w = 0;
                 for (auto const &t : x->title_aliases()) {
                     if (w > 0) w += 1;
-                    w += t.length() + 2;
+                    w += (int) t.length() + 2;
                 }
                 if (w > wa) wa = w;
             }
@@ -555,7 +557,7 @@ namespace cmdr::opt {
                     ss << '\n'
                        << std::string(wt_real + 2, ' ');
                 }
-                auto t = std::min(rw, d.length());
+                auto t = cmdr::cross::min(rw, d.length());
                 auto s1 = d.substr(0, t);
                 ss << c.fg(fg).dim(dim).s(d.substr(0, t));
                 d = string::trim_left_space(d.substr(t));
@@ -575,7 +577,7 @@ namespace cmdr::opt {
                     std::ostringstream os1;
                     os1 << c.fg(fg).dim(dim).s(", ");
                     auto s1 = os1.str();
-                    escaped_chars += s1.length() - 2;
+                    escaped_chars += (int) (s1.length() - 2);
                     return s1;
                 } else {
                     return ", ";
@@ -597,7 +599,7 @@ namespace cmdr::opt {
                     auto s1 = os1.str();
                     os2 << c.fg(fg).dim(dim).s(x->placeholder());
                     auto s2 = os2.str();
-                    escaped_chars += s1.length() - 1 + s2.length() - x->placeholder().length();
+                    escaped_chars += (int) (s1.length() - 1 + s2.length() - x->placeholder().length());
                     osr << s1 << s2;
                 } else {
                     osr << '=' << x->placeholder();
@@ -635,7 +637,7 @@ namespace cmdr::opt {
                     auto v = tmp.str();
                     os1 << c.fg(fg).dim(dim).s(v);
                     auto s1 = os1.str();
-                    escaped_chars += s1.length() - v.length();
+                    escaped_chars += (int) (s1.length() - v.length());
                     osr << std::setw(wa + s1.length() - v.length()) << s1;
                 } else
                     osr << std::setw(wa) << tmp.str();
@@ -657,11 +659,11 @@ namespace cmdr::opt {
                     os1 << c.fg(fg).dim(dim).s("-");
                     auto s1 = os1.str();
                     osr << s1;
-                    escaped_chars += s1.length() - 1;
+                    escaped_chars += (int) (s1.length() - 1);
                 }
                 os2 << c.fg(fg).dim(dim).s(title);
                 auto s2 = os2.str();
-                escaped_chars += s2.length() - title.length();
+                escaped_chars += (int) (s2.length() - title.length());
                 osr << s2;
             } else {
                 if (flag) osr << '-';
@@ -682,16 +684,16 @@ namespace cmdr::opt {
                     os1 << c.fg(fg).dim(dim).s("--");
                     auto s1 = os1.str();
                     osr << s1;
-                    escaped_chars += s1.length() - 2;
+                    escaped_chars += (int) (s1.length() - 2);
                 }
                 os2 << c.underline(underline).fg(fg).dim(dim).s(title);
                 auto s2 = os2.str();
-                escaped_chars += s2.length() - title.length();
+                escaped_chars += (int) (s2.length() - title.length());
                 osr << s2;
             } else {
                 os1 << c.underline(underline).s(title);
                 auto s1 = os1.str();
-                escaped_chars += s1.length() - title.length();
+                escaped_chars += (int) (s1.length() - title.length());
                 if (flag) { osr << '-' << '-'; }
                 osr << s1;
             }
@@ -700,8 +702,8 @@ namespace cmdr::opt {
     } // namespace detail
 
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "misc-no-recursion"
+    //#pragma clang diagnostic push
+    //#pragma ide diagnostic ignored "misc-no-recursion"
     inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, bool show_hidden_items, int level) const {
         UNUSED(grouped, level);
         auto fg = vars::store::_dim_text_fg;
@@ -726,7 +728,7 @@ namespace cmdr::opt {
 
             int level_pad = 0;
             ss << detail::_out_group_name(it.second, clean_key, val, c, fg, dim, show_hidden_items, level, level_pad);
-            
+
             for (auto &x : val) {
                 if (!show_hidden_items && x->hidden()) continue;
 
@@ -737,7 +739,7 @@ namespace cmdr::opt {
                 else
                     ss << "  " << std::left << std::setfill(' ');
                 if (!x->title_long().empty()) {
-                    w = x->title_long().length();
+                    w = (int) x->title_long().length();
                     ss << detail::_out_title_long(x->title_long(), x, c, fg, dim, underline, escaped_chars, false);
                     ss << detail::_out_comma_space(x->title_short().empty() && x->title_aliases().empty(), x, c, fg, dim, underline, escaped_chars);
 
@@ -747,7 +749,7 @@ namespace cmdr::opt {
                     ss << std::setw(wf + 2) << ' ';
 
                 if (!x->title_short().empty()) {
-                    w = x->title_short().length();
+                    w = (int) x->title_short().length();
                     ss << detail::_out_title_short(x->title_short(), x, c, fg, dim, underline, escaped_chars, false);
                     ss << detail::_out_comma_space(x->title_aliases().empty(), x, c, fg, dim, underline, escaped_chars);
 
@@ -779,7 +781,7 @@ namespace cmdr::opt {
             ss << c.fg(fg).dim(dim).s("  (no sub-commands)") << '\n';
         }
     }
-#pragma clang diagnostic pop
+    //#pragma clang diagnostic pop
 
     inline void cmd::print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, bool show_hidden_items, int level) const {
         UNUSED(grouped, level);
@@ -805,7 +807,7 @@ namespace cmdr::opt {
                 continue;
 
             ss << detail::_out_group_name(it.second, clean_key, val, c, fg, dim, show_hidden_items);
-            
+
             for (auto &x : val) {
                 if (!show_hidden_items && x->hidden()) continue;
 
@@ -813,21 +815,21 @@ namespace cmdr::opt {
 
                 ss << ' ' << ' ' << std::left << std::setfill(' ');
                 if (!x->title_long().empty()) {
-                    w = x->title_long().length();
+                    w = (int) x->title_long().length();
                     ss << detail::_out_title_long(x->title_long(), x, c, fg, dim, underline, escaped_chars);
                     ss << detail::_out_placeholder(x, c, fg, dim, underline, escaped_chars);
                     ss << detail::_out_comma_space(x->title_short().empty() && x->title_aliases().empty(), x, c, fg, dim, underline, escaped_chars);
 
                     w = wf - w - 2;
                     if (!x->placeholder().empty())
-                        w -= x->placeholder().length() + 1;
+                        w -= (int) x->placeholder().length() + 1;
 
                     if (w > 0) ss << std::setw(w) << ' ';
                 } else
                     ss << std::setw(wf + 2) << ' ';
 
                 if (!x->title_short().empty()) {
-                    w = x->title_short().length();
+                    w = (int) x->title_short().length();
                     ss << detail::_out_title_short(x->title_short(), x, c, fg, dim, underline, escaped_chars);
                     ss << detail::_out_comma_space(x->title_aliases().empty(), x, c, fg, dim, underline, escaped_chars);
 

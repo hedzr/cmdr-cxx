@@ -20,10 +20,10 @@ namespace cmdr {
         explicit app_holder(typename util::singleton<app_holder>::token) {}
         ~app_holder() = default;
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "readability-convert-member-functions-to-static"
+        //#pragma clang diagnostic push
+        //#pragma ide diagnostic ignored "readability-convert-member-functions-to-static"
         [[maybe_unused]] void use() const { std::cout << "in use" << '\n'; }
-#pragma clang diagnostic pop
+        //#pragma clang diagnostic pop
 
     public:
         app *get_ptr() { return _app; }

@@ -277,10 +277,12 @@ namespace cmdr::string {
         // f.toupper(const_cast<ch *>(input.data()), input.data() + input.size());
     }
 
+#if __clang__
     inline void to_upper_trans(std::string &str) {
         // std::for_each(str.begin(), str.end(), [](char &c) { c = ::toupper(c); });
         std::transform(str.begin(), str.end(), str.begin(), ::toupper);
     }
+#endif
 
     inline std::string to_capitalize(const std::string &text) {
         std::string s;
@@ -296,7 +298,7 @@ namespace cmdr::string {
 
 
     inline bool has_prefix(const std::string &str, const_chars prefix) {
-        int sl = std::strlen(prefix), ml = str.length();
+        std::size_t sl = std::strlen(prefix), ml = str.length();
         if (ml >= sl) {
             if (str.compare(0, sl, prefix) == 0)
                 return true;
@@ -305,7 +307,7 @@ namespace cmdr::string {
     }
 
     inline bool has_prefix(const std::string &str, const std::string &prefix) {
-        int sl = prefix.length(), ml = str.length();
+        std::size_t sl = prefix.length(), ml = str.length();
         if (ml >= sl) {
             if (str.compare(0, sl, prefix) == 0)
                 return true;
@@ -314,7 +316,7 @@ namespace cmdr::string {
     }
 
     inline bool has_suffix(const std::string &str, const_chars suffix) {
-        int sl = std::strlen(suffix), ml = str.length();
+        std::size_t sl = std::strlen(suffix), ml = str.length();
         if (ml >= sl) {
             if (str.compare(ml - sl, sl, suffix) == 0)
                 return true;
@@ -323,7 +325,7 @@ namespace cmdr::string {
     }
 
     inline bool has_suffix(const std::string &str, const std::string &suffix) {
-        int sl = suffix.length(), ml = str.length();
+        std::size_t sl = suffix.length(), ml = str.length();
         if (ml >= sl) {
             if (str.compare(ml - sl, sl, suffix) == 0)
                 return true;
@@ -397,6 +399,7 @@ namespace cmdr::string {
 
 
     inline std::string strip(const std::string &str, char const *pre, char const *post) {
+        if (str.empty()) return str;
         std::size_t p1 = 0, p2 = str.length();
         if (has_prefix(str, pre))
             p1 = std::strlen(pre);
@@ -406,6 +409,7 @@ namespace cmdr::string {
     }
 
     inline std::string strip_quotes(const std::string &str) {
+        if (str.empty()) return str;
         std::size_t p1 = 0, p2 = str.length() - 1;
         while (str[p1] == '"' || str[p1] == '\'') p1++;
         while (str[p2] == '"' || str[p2] == '\'') p2--;
@@ -418,7 +422,7 @@ namespace cmdr::string {
         if (ch == '\'' || ch == '"') {
             char c;
             is >> c;
-            s = read_until(is, ch);
+            s = read_until(is, (char) ch);
         } else
             is >> s;
     }
@@ -618,7 +622,7 @@ namespace cmdr::text {
 #endif
 
         // constexpr float EPSILON = 0.0001; // 1e-4
-        constexpr float EPSILON = 0.00000001; // 1e-8
+        constexpr float EPSILON = 0.00000001f; // 1e-8
 
         /// @brief      See if two floating point numbers are approximately equal.
         /// @param[in]  a        number 1
@@ -735,8 +739,10 @@ namespace cmdr::text {
 
             // Convert to lower if case-sensitive is false
             if (!_case_sensitive) {
-                std::transform(s1.begin(), s1.end(), s1.begin(), ::tolower);
-                std::transform(s2.begin(), s2.end(), s2.begin(), ::tolower);
+                string::to_lower(s1);
+                string::to_lower(s2);
+                //std::transform(s1.begin(), s1.end(), s1.begin(), ::tolower);
+                //std::transform(s2.begin(), s2.end(), s2.begin(), ::tolower);
             }
 
             // Exit early if they're an exact match.
@@ -746,8 +752,7 @@ namespace cmdr::text {
 
             // Maximum distance upto which matching
             // is allowed
-            int max_dist = (int) (detail::floor(std::max(len1, len2) / 2) - 1);
-
+            int max_dist = (int) (detail::floor((double) cross::max(len1, len2) / 2) - 1);
             // Count of matches
             int match = 0;
 
@@ -756,6 +761,10 @@ namespace cmdr::text {
             std::vector<int> hash_s2{};
             hash_s1.reserve(len1);
             hash_s2.reserve(len2);
+#if _MSC_VER
+            hash_s1.resize(len1);
+            hash_s2.resize(len2);
+#endif
             for (int i = 0; i < (int) len1; i++) hash_s1[i] = 0;
             for (int i = 0; i < (int) len2; i++) hash_s2[i] = 0;
             // int hash_s1[s1.length()] = { 0 },
@@ -765,8 +774,8 @@ namespace cmdr::text {
             for (int i = 0; i < (int) len1; i++) {
 
                 // Check if there is any matches
-                for (int j = std::max(0, i - max_dist);
-                     j < std::min((int) len2, i + max_dist + 1); j++)
+                for (int j = cross::max(0, i - max_dist);
+                     j < cross::min((int) len2, i + max_dist + 1); j++)
 
                     // If there is a match
                     if (s1[i] == s2[j] && hash_s2[j] == 0) {

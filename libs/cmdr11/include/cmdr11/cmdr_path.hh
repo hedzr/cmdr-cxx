@@ -2,8 +2,8 @@
 // Created by Hedzr Yeh on 2021/1/11.
 //
 
-#ifndef CMDR_CXX11_CMDR_PATH_HH
-#define CMDR_CXX11_CMDR_PATH_HH
+#ifndef CMDR11_CMDR_PATH_HH
+#define CMDR11_CMDR_PATH_HH
 
 #pragma once
 
@@ -13,18 +13,22 @@
 
 namespace cmdr::path {
 
-    std::string get_executable_path();
+    std::filesystem::path get_executable_path();
 
-    std::string get_executable_dir();
+    std::filesystem::path get_executable_dir();
 
-    std::string merge(std::string pathA, std::string pathB);
+    std::filesystem::path merge(std::string pathA, std::string pathB);
 
     bool file_exists(const std::string &filePath);
+    bool file_exists(std::filesystem::path const &&filePath);
 
 } // namespace cmdr::path
 
 
 #if defined(_WIN32)
+#define WIN32_LEAN_AND_MEAN
+#define VC_EXTRALEAN
+// #define _CRT_SECURE_NO_WARNINGS
 #include <Shlwapi.h>
 #include <io.h>
 #include <windows.h>
@@ -38,7 +42,6 @@ namespace cmdr::path {
 #include <libgen.h>
 #include <mach-o/dyld.h>
 #include <unistd.h>
-
 
 #endif
 
@@ -59,23 +62,23 @@ namespace cmdr::path {
 
 #if defined(_WIN32)
 
-    inline std::string get_executable_path() {
+    inline std::filesystem::path get_executable_path() {
         char rawPathName[MAX_PATH];
         GetModuleFileNameA(NULL, rawPathName, MAX_PATH);
         return std::string(rawPathName);
     }
 
-    inline std::string get_executable_dir() {
-        std::string executablePath = get_executable_path();
-        char *exePath = new char[executablePath.length()];
-        strcpy(exePath, executablePath.c_str());
-        PathRemoveFileSpecA(exePath);
-        std::string directory = std::string(exePath);
-        delete[] exePath;
-        return directory;
+    inline std::filesystem::path get_executable_dir() {
+        auto executablePath = get_executable_path();
+        // char *exePath = new char[executablePath.length()];
+        // strcpy(exePath, executablePath.c_str());
+        // PathRemoveFileSpecA(exePath);
+        // std::string directory = std::string(exePath);
+        // delete[] exePath;
+        return executablePath.parent_path();
     }
 
-    inline std::string merge(std::string pathA, std::string pathB) {
+    inline std::filesystem::path merge(std::string pathA, std::string pathB) {
         char combined[MAX_PATH];
         PathCombineA(combined, pathA.c_str(), pathB.c_str());
         std::string mergedPath(combined);
@@ -86,7 +89,7 @@ namespace cmdr::path {
 
 #ifdef __linux__
 
-    inline std::string get_executable_path() {
+    inline std::filesystem::path get_executable_path() {
         char rawPathName[PATH_MAX * 2 + 1];
         char *p = realpath(PROC_SELF_EXE, rawPathName);
         // std::cout << "[DBG] exe path 1 : " << rawPathName << '\n';
@@ -94,16 +97,16 @@ namespace cmdr::path {
         return std::string(p ? p : rawPathName);
     }
 
-    inline std::string get_executable_dir() {
-        std::string executablePath = get_executable_path();
-        // char *executablePathStr = new char[executablePath.length() + 1];
-        char executablePathStr[PATH_MAX * 2 + 1];
-        strcpy(executablePathStr, executablePath.c_str());
-        char *executableDir = dirname(executablePathStr);
-        std::string ret(executableDir);
+    inline std::filesystem::path get_executable_dir() {
+        auto executablePath = get_executable_path();
+        // // char *executablePathStr = new char[executablePath.length() + 1];
+        /./ char executablePathStr[PATH_MAX * 2 + 1];
+        // strcpy(executablePathStr, executablePath.c_str());
+        // char *executableDir = dirname(executablePathStr);
+        // std::string ret(executableDir);
         // std::cout << "[DBG] exe path : " << executablePathStr << '\n';
         // std::cout << "[DBG] exe dir  : " << executableDir << '\n';
-        return ret;
+        return executablPath.parent_path();
     }
 
     inline std::string merge(std::string pathA, std::string pathB) {
@@ -114,7 +117,7 @@ namespace cmdr::path {
 
 #ifdef __APPLE__
 
-    inline std::string get_executable_path() {
+    inline std::filesystem::path get_executable_path() {
         char rawPathName[PATH_MAX];
         char realPathName[PATH_MAX];
         auto rawPathSize = (uint32_t) sizeof(rawPathName);
@@ -122,16 +125,17 @@ namespace cmdr::path {
         if (!_NSGetExecutablePath(rawPathName, &rawPathSize)) {
             realpath(rawPathName, realPathName);
         }
-        return std::string(realPathName);
+        return std::filesystem::path(realPathName);
     }
 
-    inline std::string get_executable_dir() {
-        std::string executablePath = get_executable_path();
-        char *executablePathStr = new char[executablePath.length() + 1];
-        strcpy(executablePathStr, executablePath.c_str());
-        char *executableDir = dirname(executablePathStr);
-        delete[] executablePathStr;
-        return std::string(executableDir);
+    inline std::filesystem::path get_executable_dir() {
+        auto executablePath = get_executable_path();
+        return executablePath.parent_path();
+        //char *executablePathStr = new char[executablePath.length() + 1];
+        //strcpy(executablePathStr, executablePath.c_str());
+        //char *executableDir = dirname(executablePathStr);
+        //delete[] executablePathStr;
+        //return std::filesystem::path(executableDir);
     }
 
     inline std::string merge(std::string const &pathA, std::string const &pathB) {
@@ -149,6 +153,10 @@ namespace cmdr::path {
         return access(filePath.c_str(), 0) == 0;
     }
 
+    inline bool file_exists(std::filesystem::path const &filePath) {
+        return access(filePath.u8string().c_str(), 0) == 0;
+    }
+
 } // namespace cmdr::path
 
 
@@ -163,7 +171,6 @@ namespace cmdr::path {
 
 #include <filesystem>
 
-
 #else
 #include <experimental/filesystem>
 
@@ -173,25 +180,30 @@ namespace std {
 #endif
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define VC_EXTRALEAN
+// #define _CRT_SECURE_NO_WARNINGS
 #include <windows.h> //GetModuleFileNameW
 #else
 
 #include <climits>
 #include <unistd.h> // for readlink
 
-
 #endif
 
 namespace cmdr::path {
-    std::filesystem::path executable_name();
-
-    inline std::filesystem::path executable_name() {
+    inline std::filesystem::path executable_name_as_path() {
         auto path = std::filesystem::path(get_executable_path());
         return path.filename();
+    }
+    inline std::filesystem::path executable_name() {
+        return executable_name_as_path();
+        //auto path = std::filesystem::path(get_executable_path());
+        //return path.filename().c_str();
     }
 } // namespace cmdr::path
 
 //////// for executable_name() END
 
 
-#endif //CMDR_CXX11_CMDR_PATH_HH
+#endif // CMDR11_CMDR_PATH_HH

@@ -57,6 +57,7 @@ void small_cases() {
     std::cout << "others ------------" << '\n';
 
     // cmdr::vars::variable::test();
-
+#if __clang__
     cmdr::util::fixed_array<double>::main();
+#endif
 }

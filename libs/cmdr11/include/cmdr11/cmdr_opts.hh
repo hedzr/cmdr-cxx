@@ -29,13 +29,13 @@ namespace cmdr::opt {
 
     public:
         sub_cmd &operator()(const char *long_, const char *short_ = nullptr) {
-            _cmd.template titles(long_, short_);
+            _cmd.titles(long_, short_);
             return (*this);
         }
 
         template<class... Args>
         sub_cmd &operator()(const char *long_, const char *short_, Args... args) {
-            _cmd.template titles(long_, short_, args...);
+            _cmd.titles(long_, short_, args...);
             return (*this);
         }
 
@@ -205,7 +205,7 @@ namespace cmdr::opt {
 
         template<typename... Args>
         opt &env_vars(Args... args) {
-            _arg.template env_vars(args...);
+            _arg.env_vars(args...);
             return (*this);
         }
 
@@ -216,7 +216,7 @@ namespace cmdr::opt {
         arg _arg;
         // vars::variable _value{};
     }; // class opt
-    
+
 
 } // namespace cmdr::opt
 

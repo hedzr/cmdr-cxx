@@ -25,9 +25,9 @@ target_link_libraries(${PROJECT_NAME}
                       PRIVATE
                       libs::cmdr11)
 
-if (BUILD_TESTING)
-    add_unit_test(${PROJECT_NAME} tests ${PROJECT_NAME}_tests)
-endif ()
+#if (BUILD_TESTING)
+#    add_unit_test(${PROJECT_NAME} tests ${PROJECT_NAME}_tests)
+#endif ()
 debug_print_value(ARCHIVE_NAME)
 debug_print_value(PROJECT_ARCHIVE_NAME)
 debug_print_value(BUILD_TESTING)

@@ -10,6 +10,7 @@ project(test
 
 debug_print_hbar()
 debug("  tests ")
+message("!! entering subdir: ${CMAKE_CURRENT_SOURCE_DIR}/${subdir}")
 #debug_dump_cmake_environments()
 #debug_print_hbar()
 #debug_dump_cmake_variables()
@@ -18,8 +19,10 @@ debug("  tests ")
 
 set(PROJECT_ARCHIVE_NAME ${PROJECT_NAME}s-${PROJECT_VERSION})
 
-include(deps_inc_catch2)
-# include(deps_inc_fmt)
+if (ENABLE_TESTS)
+    include(deps_inc_catch2)
+    # include(deps_inc_fmt)
+endif ()
 
 
 ## so_stuff: just a tester for ARGN
@@ -123,7 +126,7 @@ endif ()
 #
 include(loaders/yaml_loader)
 add_yaml_loader_to(test-app2-c1)
-target_compile_definitions(test-app2-c1 PRIVATE 
+target_compile_definitions(test-app2-c1 PRIVATE
                            CMDR_ENABLE_VERBOSE_LOG=1)
 
 #if (BUILD_TESTING)

@@ -30,9 +30,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
                       CXX_EXTENSIONS ON
                       )
 
-if (BUILD_TESTING)
-    add_unit_test(${PROJECT_NAME} tests ${PROJECT_NAME}_tests)
-endif ()
 debug_print_value(ARCHIVE_NAME)
 debug_print_value(PROJECT_ARCHIVE_NAME)
 debug_print_value(BUILD_TESTING)

@@ -12,6 +12,9 @@
 #include <typeinfo>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#ifndef OS_WIN
+#define OS_WIN
+#endif
 #ifdef _WIN64
 #else
 #endif
@@ -367,14 +370,17 @@ namespace cmdr::exception {
 
     protected:
         std::string msg;
+
     public:
         cmdr_exception(const char *file, int line, const std::string &arg)
             : std::runtime_error(arg) {
             std::ostringstream o;
             o << arg << "  " << file << ":" << line;
             msg = o.str();
+#if !defined(OS_WIN)
             auto v = cmdr::debug::save_stacktrace(2);
             st.swap(v);
+#endif
         }
         ~cmdr_exception() noexcept override = default;
         [[nodiscard]] const char *what() const noexcept override {
@@ -408,19 +414,27 @@ namespace cmdr::exception {
 //
 
 namespace cmdr::debug {
-    // unwrap nested exceptions, printing each nested exception to
-    // std::cerr
-    inline void dump_stacktrace(const char *file, int line, const std::exception &e, bool print_stack = true, std::size_t depth = 0) {
+    // unwrap nested exceptions, printing each nested exception to std::cerr.
+    inline void dump_stacktrace(
+            std::exception const &e,
+            bool print_stack = true,
+            std::size_t depth = 0,
+            const char *file = __FILE__,
+            int line = __LINE__) {
         std::cerr << "      [EX] [ERR] : " // << demangle(typeid(e).name()) << ", "
-                  << std::string(depth, ' ') << e.what() << '\n';
+                  << std::string(depth, ' ') << e.what();
+        if (line > 0) std::cerr << ' ' << ' ' << file << ':' << line;
+        std::cerr << '\n';
         if (print_stack) {
             if (depth == 0 && "cmdr::exception::cmdr_exception" == type(e)) {
+#if !defined(OS_WIN)
                 print_stacktrace(((cmdr::exception::cmdr_exception const *) (&e))->stacktrace());
+#endif
             }
             try {
                 std::rethrow_if_nested(e);
             } catch (const std::exception &nested) {
-                dump_stacktrace(file, line, nested, print_stack, depth + 1);
+                dump_stacktrace(nested, print_stack, depth + 1, "??", 0);
             }
         }
 #if defined(__GNUC__) || defined(__clang__)
@@ -432,8 +446,8 @@ namespace cmdr::debug {
         }
 #endif
     }
-#define CMDR_DUMP_STACK_TRACE(e) cmdr::debug::dump_stacktrace(__FILE__, __LINE__, e)
-#define CMDR_DUMP_WITHOUT_STACK_TRACE(e) cmdr::debug::dump_stacktrace(__FILE__, __LINE__, e, false)
+#define CMDR_DUMP_STACK_TRACE(e) cmdr::debug::dump_stacktrace(e)
+#define CMDR_DUMP_WITHOUT_STACK_TRACE(e) cmdr::debug::dump_stacktrace(e, false)
 
 } // namespace cmdr::debug
 
@@ -441,6 +455,7 @@ namespace cmdr::debug {
 // SIGSEGV handler
 //
 
+#if !defined(OS_WIN)
 namespace cmdr::debug {
 
     class UnhandledExceptionHookInstaller final {
@@ -528,6 +543,56 @@ namespace cmdr::debug {
 
     inline SigSegVInstaller *SigSegVInstaller::_this{nullptr};
 
+    /**
+     * @brief a SIGXXX handler Installer once only. Simple and not thread-safe but it's not point, right? You're crashing here after all.
+     */
+    template<int signal_catching = SIGBUS>
+    class SignalInstaller final {
+        std::function<void(int sig)> _f{};
+        static SignalInstaller *_this;
+
+    public:
+        SignalInstaller() {
+            signal(signal_catching, handler);
+            _this = this;
+        }
+        [[maybe_unused]] explicit SignalInstaller(std::function<void(int sig)> f)
+            : _f(std::move(f)) {
+            signal(signal_catching, handler);
+            _this = this;
+        }
+        ~SignalInstaller() = default;
+
+        static void handler(int sig_) {
+#if 0
+            void *array[10];
+            size_t size;
+
+            // get void*'s for all entries on the stack
+            size = backtrace(array, 10);
+
+            // print out all the frames to stderr
+            fprintf(stderr, "Error: signal %d:\n", sig_);
+            backtrace_symbols_fd(array, size, STDERR_FILENO);
+#else
+            fprintf(stderr, "Error: signal %d:\n", sig_);
+            print_stacktrace(stderr, 0);
+            if (_this->_f)
+                _this->_f(sig_);
+#endif
+            exit(1);
+        }
+
+        [[maybe_unused]] void baz() {
+            int *foo = (int *) -1; // make a bad pointer
+            printf("%d\n", *foo);  // causes segfault
+        }
+    }; // class SignalInstaller
+
+    template<int signal_catching>
+    inline SignalInstaller<signal_catching> *SignalInstaller<signal_catching>::_this{nullptr};
+
 } // namespace cmdr::debug
+#endif // !OS_WIN
 
 #endif //CMDR_CXX11_CMDR_DBG_HH

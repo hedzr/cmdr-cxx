@@ -255,10 +255,13 @@ namespace cmdr::opt {
         bas &titles(const_chars title_long, const_chars title_short, T... title_aliases) {
             if (title_long) this->_long = title_long;
             if (title_short) this->_short = title_short;
+#if _MSC_VER
+            this->aliases(title_aliases...);
+#else
             if (sizeof...(title_aliases) > 0) {
                 this->aliases(title_aliases...);
             }
-
+#endif
             // // must_print("%s\n", aliases...);
             // for (const_chars x : {aliases...}) {
             //     this->_aliases.push_back(x);
@@ -281,16 +284,16 @@ namespace cmdr::opt {
     public:
         bool match(std::string const &str, int &len) {
             if (string::has_prefix(str, _long)) {
-                len = _long.length();
+                len = (int) _long.length();
                 return true;
             }
             if (string::has_prefix(str, _short)) {
-                len = _short.length();
+                len = (int) _short.length();
                 return true;
             }
             for (auto const &s : _aliases) {
                 if (string::has_prefix(str, s)) {
-                    len = s.length();
+                    len = (int) s.length();
                     return true;
                 }
             }
@@ -298,7 +301,7 @@ namespace cmdr::opt {
         }
     }; // class bas
 
-    
+
     inline bool bas::_alias_right_align = false;
 
     inline int bas::_minimal_tab_width{-1};

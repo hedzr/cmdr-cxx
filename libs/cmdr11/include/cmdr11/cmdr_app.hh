@@ -161,7 +161,7 @@ namespace cmdr {
             _tail_line = line;
             return (*this);
         }
-        
+
         app &set_alias_right_align(bool b = true) {
             _alias_right_align = b;
             return (*this);
@@ -212,6 +212,7 @@ namespace cmdr {
             return (*this);
         }
 
+
         app &set_global_on_arg_added(types::on_arg_added &&cb) {
             _on_arg_added.push_back(cb);
             return (*this);
@@ -228,6 +229,8 @@ namespace cmdr {
             _on_cmd_matched.push_back(cb);
             return (*this);
         }
+
+
         app &set_global_on_loading_externals(types::on_loading_externals &&cb) {
             _on_loading_externals.push_back(cb);
             return (*this);
@@ -330,9 +333,10 @@ namespace cmdr {
         }
 
         void print_cmd(std::ostream &ss,
-                       tcolorize &c,
+                       cmdr::terminal::colors::colorize &c,
                        opt::cmd const *cc,
-                       std::string const &app_name, std::string const &exe_name);
+                       std::string const &app_name,
+                       std::filesystem::path const &exe_name);
 
         int print_debug_info_screen(opt::types::parsing_context &pc, int argc, char *argv[]);
         static int print_manual_screen(opt::types::parsing_context &pc, int argc, char *argv[]);

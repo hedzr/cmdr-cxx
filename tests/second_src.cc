@@ -57,8 +57,8 @@ void add_test_menu(cmdr::app &cli) {
                    .group("Test");
     {
         auto &t1 = *(cli.last_added_command());
-        t1 += sub_cmd{}("ueh", "ueh")
-                      .description("causes a segfault and hook it via std c++11 way")
+        t1 += sub_cmd{}("ueh", "ueh", "c++=excetion")
+                      .description("causes a runtime-error and hook it via std c++11 way")
                       .group("Test")
                       .on_invoke([](cmd const, string_array const &) -> int {
                           //
@@ -66,10 +66,10 @@ void add_test_menu(cmdr::app &cli) {
                           //
                           cmdr::debug::UnhandledExceptionHookInstaller _ueh{};
 
-                          throw std::runtime_error("hello");
+                          throw std::runtime_error("hello, this is a runtime_error");
                           return 0;
                       });
-        t1 += sub_cmd{}("ssi", "ssi")
+        t1 += sub_cmd{}("ssi", "ssi", "access-ileggal-address")
                       .description("causes a segfault and hook it via linux signal()")
                       .group("Test")
                       .on_invoke([](cmd const, string_array const &) -> int {
@@ -77,6 +77,16 @@ void add_test_menu(cmdr::app &cli) {
                           cmdr::debug::SigSegVInstaller _ssi{};
                           int *foo = (int *) -1; // make a bad pointer
                           printf("%d\n", *foo);  // causes segfault
+                          return 0;
+                      });
+        t1 += sub_cmd{}("dbz", "dbz", "divide-by-zero")
+                      .description("causes a segfault and hook it via linux signal()")
+                      .group("Test")
+                      .on_invoke([](cmd const, string_array const &) -> int {
+                          // cmdr::debug::UnhandledExceptionHookInstaller _ueh{};
+                          cmdr::debug::SignalInstaller<SIGFPE> _si{};
+                          int foo = 0;
+                          printf("%d\n", 8989 / foo); // causes segfpe
                           return 0;
                       });
     }

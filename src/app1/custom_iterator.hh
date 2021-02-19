@@ -14,6 +14,8 @@
 
 namespace cmdr::util {
 
+#if __clang__
+
     template<class T>
     class iterator_traits {
     public:
@@ -40,7 +42,8 @@ namespace cmdr::util {
     protected:
         pointer ptr_;
     };
-
+    
+    
     // https://gist.github.com/jeetsukumaran/307264
     //
     // More:
@@ -102,7 +105,6 @@ namespace cmdr::util {
             T *operator->() { return this->ptr_; }
         };
 
-
         // https://stackoverflow.com/questions/6742008/what-are-the-typical-use-cases-of-an-iterator-trait
         template<class Ty>
         struct iterator_traits {
@@ -157,7 +159,6 @@ namespace cmdr::util {
         inline asso_inserter_iterator<Con> asso_inserter(Con &con) {
             return asso_inserter_iterator<Con>(con);
         }
-
 
         explicit fixed_array(size_type size)
             : _size(size) {
@@ -226,7 +227,9 @@ namespace cmdr::util {
             return 0;
         }
     };
-
+    
+#endif
+    
 } // namespace cmdr::util
 
 #endif //CMDR_CXX11_CUSTOM_ITERATOR_HH

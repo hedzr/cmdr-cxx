@@ -85,7 +85,7 @@ namespace cmdr {
                       std::function<arg_matching_result(opt::types::parsing_context &)> const &matcher) {
         pc.title = pc.title.substr(leading_chars);
         bool value_parsed{};
-        bool extra_argv;
+        bool extra_argv{};
         auto rc{opt::Continue};
         // int matched_length = 0;
         // std::vector<arg_matching_result> tmp_amr_list;
@@ -133,7 +133,7 @@ namespace cmdr {
                 } else if (read > 0) {
                     amr.matched_length += read;
                 } else if (!extra_argv) {
-                    amr.matched_length += remains_orig_len;
+                    amr.matched_length += (int) remains_orig_len;
                 }
 
                 pc.add_matched_arg(amr.obj, val);
@@ -273,7 +273,7 @@ namespace cmdr {
                     if (_longest_first) {
                         if (itz.first.length() > static_cast<std::size_t>(amr.matched_length)) {
                             amr.matched = true;
-                            amr.matched_length = itz.first.length();
+                            amr.matched_length = (int) itz.first.length();
                             amr.matched_str = itz.first;
                             is_long |= itz.second->hit_long();
                             is_special |= itz.second->hit_special();
@@ -281,7 +281,7 @@ namespace cmdr {
                         }
                     } else {
                         amr.matched = true;
-                        amr.matched_length = itz.first.length();
+                        amr.matched_length = (int) itz.first.length();
                         amr.matched_str = itz.first;
                         is_long |= itz.second->hit_long();
                         is_special |= itz.second->hit_special();
@@ -336,7 +336,6 @@ namespace cmdr {
 
             text::jaro_winkler_distance jaro{_jaro_winkler_matching_threshold};
             std::ostringstream os;
-            os << "  Did you mean";
             do {
                 for (auto const &cc : c->_all_args) {
                     if (jaro.calculate(pc.title.c_str(), cc.title_long().c_str()).matched()) {
@@ -352,6 +351,7 @@ namespace cmdr {
                 }
             } while ((c = c->owner()) != nullptr);
             if (os.tellp() > 0) {
+                os << "  Did you mean";
                 std::cerr << os.str();
             }
         }
@@ -375,7 +375,6 @@ namespace cmdr {
 
             text::jaro_winkler_distance jaro{_jaro_winkler_matching_threshold};
             std::ostringstream os;
-            os << "  Did you mean";
             do {
                 for (auto const &cc : c->_all_args) {
                     if (jaro.calculate(pc.title.c_str(), cc.title_short().c_str()).matched()) {
@@ -385,6 +384,7 @@ namespace cmdr {
                 }
             } while ((c = c->owner()) != nullptr);
             if (os.tellp() > 0) {
+                os << "  Did you mean";
                 std::cerr << os.str();
             }
         }
@@ -407,22 +407,26 @@ namespace cmdr {
             std::cerr << '\n';
 
             text::jaro_winkler_distance jaro{_jaro_winkler_matching_threshold};
-            std::cerr << "  Did you mean";
+            std::ostringstream os;
             for (auto const &cc : c._all_commands) {
                 if (jaro.calculate(pc.title.c_str(), cc._long.c_str()).matched()) {
-                    std::cerr << '\n'
-                              << "   - " << std::quoted(cc._long) << '?';
+                    os << '\n'
+                       << "   - " << std::quoted(cc._long) << '?';
                 }
                 if (jaro.calculate(pc.title.c_str(), cc._short.c_str()).matched()) {
-                    std::cerr << '\n'
-                              << "   - " << std::quoted(cc._short) << '?';
+                    os << '\n'
+                       << "   - " << std::quoted(cc._short) << '?';
                 }
                 for (auto const &str : cc._aliases) {
                     if (jaro.calculate(pc.title.c_str(), str.c_str()).matched()) {
-                        std::cerr << '\n'
-                                  << "   - " << std::quoted(str) << '?';
+                        os << '\n'
+                           << "   - " << std::quoted(str) << '?';
                     }
                 }
+            }
+            auto msg = os.str();
+            if (!msg.empty()) {
+                std::cerr << "  Did you mean" << msg;
             }
         }
         std::cerr << '\n';
@@ -541,9 +545,11 @@ namespace cmdr {
     }
 
 
-    inline void app::print_cmd(std::ostream &ss, cmdr::terminal::colors::colorize &c,
+    inline void app::print_cmd(std::ostream &ss,
+                               cmdr::terminal::colors::colorize &c,
                                opt::cmd const *cc,
-                               std::string const &app_name, std::string const &exe_name) {
+                               std::string const &app_name,
+                               std::filesystem::path const &exe_name) {
         if (!cc->description().empty()) {
             ss << '\n'
                << "Description" << '\n'
@@ -552,11 +558,12 @@ namespace cmdr {
         if (!cc->examples().empty()) {
             ss << '\n'
                << "Examples" << '\n'
-               << string::pad_left(string::reg_replace(cc->examples(), "~", exe_name)) << '\n';
+               << string::pad_left(string::reg_replace(cc->examples(), "~", exe_name.filename().u8string())) << '\n';
         }
         ss << '\n'
            << "Usage" << '\n';
-        ss << string::pad_left(exe_name, 2) << ' ' << cc->title_sequences() << " [options] [Tail Args]" << '\n';
+        ss << string::pad_left(exe_name.filename().u8string(), 2) << ' '
+           << cc->title_sequences() << " [options] [Tail Args]" << '\n';
 
         ss << '\n'
            << "Commands" << '\n';
@@ -613,7 +620,7 @@ namespace cmdr {
     }
 
     inline void app::print_usages(opt::cmd const *start) {
-        std::string exe_name = path::executable_name();
+        auto exe_name = path::executable_name();
         auto c = cmdr::terminal::colors::colorize::create();
 
         if (is_no_color()) {
@@ -636,7 +643,8 @@ namespace cmdr {
                    << _tail_line << '\n';
             } else {
                 ss << '\n'
-                   << "Type `" << exe_name << " --help` to get help screen (this screen)." << '\n';
+                   << "Type `" << exe_name.filename().u8string()
+                   << " --help` to get help screen (this screen)." << '\n';
             }
         }
 
@@ -681,9 +689,9 @@ namespace cmdr {
     }
 
     inline void app::prepare_env_vars() {
-        setenv("APP_NAME", _name.c_str(), 1);
-        setenv("EXE_DIR", path::get_executable_dir().c_str(), 1);
-        setenv("EXE_PATH", path::get_executable_path().c_str(), 1);
+        cross::setenv("APP_NAME", _name.c_str(), 1);
+        cross::setenv("EXE_DIR", path::get_executable_dir().u8string().c_str(), 1);
+        cross::setenv("EXE_PATH", path::get_executable_path().u8string().c_str(), 1);
     }
 
     inline void app::load_externals() {
@@ -755,8 +763,11 @@ namespace cmdr {
                 pc.title = argv[i];
                 pc.index = i;
                 pc.pos = 0;
+                auto title_len = pc.title.length();
+                if (title_len == 0)
+                    continue;
 
-                if (pc.title[0] == '~' && pc.title[1] == '~') {
+                if (title_len >= 2 && pc.title[0] == '~' && pc.title[1] == '~') {
                     // special flags
                     rc = process_special_flag(pc, argc, argv);
                     if (rc < opt::OK || rc >= opt::Abortion) {
@@ -765,9 +776,9 @@ namespace cmdr {
                     continue;
                 }
 
-                if (pc.title[0] == '-') {
+                if (pc.title[0] == '-' || pc.title[0] == '/') {
                     // flag?
-                    if (pc.title[1] == '-') {
+                    if (title_len >= 2 && pc.title[0] == '-' && pc.title[1] == '-') {
                         if (pc.title[2] == 0) {
                             pc.passthru_flag = true;
                             break;

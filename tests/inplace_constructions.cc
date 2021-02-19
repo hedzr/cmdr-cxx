@@ -41,7 +41,7 @@ void test_inplace_and_emplace() {
 }
 
 void test_variant() {
-    std::variant<float, long, double> z = 0;
+    std::variant<float, long, double> z = 0L;
     z = 0.0;
 }
 

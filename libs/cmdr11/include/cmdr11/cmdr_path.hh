@@ -100,13 +100,13 @@ namespace cmdr::path {
     inline std::filesystem::path get_executable_dir() {
         auto executablePath = get_executable_path();
         // // char *executablePathStr = new char[executablePath.length() + 1];
-        /./ char executablePathStr[PATH_MAX * 2 + 1];
+        // char executablePathStr[PATH_MAX * 2 + 1];
         // strcpy(executablePathStr, executablePath.c_str());
         // char *executableDir = dirname(executablePathStr);
         // std::string ret(executableDir);
         // std::cout << "[DBG] exe path : " << executablePathStr << '\n';
         // std::cout << "[DBG] exe dir  : " << executableDir << '\n';
-        return executablPath.parent_path();
+        return executablePath.parent_path();
     }
 
     inline std::string merge(std::string pathA, std::string pathB) {

@@ -248,6 +248,7 @@ namespace cmdr::cross {
 #else
 #include <algorithm>
 #include <time.h>
+#include <ctime>
 namespace cmdr::cross {
     inline void setenv(const char *__name, const char *__value, int __overwrite = 1) {
         ::setenv(__name, __value, __overwrite);
@@ -256,8 +257,9 @@ namespace cmdr::cross {
     inline time_t time(time_t *_t = nullptr) {
         return std::time(_t);
     }
-    inline struct tm *gmtime(time_t const *_t = nullptr, struct tm *_tm = nullptr) {
-        return std::gmtime(_t ? _t : time(), _tm);
+    inline struct tm *gmtime(time_t const *_t = nullptr, struct tm *_tm_never_used = nullptr) {
+        UNUSED(_tm_never_used);
+        return std::gmtime(_t);
     }
 
     template<class T>

@@ -40,6 +40,7 @@ int main(int argc, char *argv[]) {
         assert(cc("status").valid());
         assert(cc("start").valid());
         assert(cc("run", true).valid());
+        std::cout << cc.group_name() << '\n';
 #endif
 
 #if CMDR_TEST_ON_COMMAND_NOT_HOOKED
@@ -78,6 +79,8 @@ int main(int argc, char *argv[]) {
         CMDR_DUMP_STACK_TRACE(e);
     }
 
+#if !defined(OS_WIN)
     cmdr::debug::UnhandledExceptionHookInstaller _ueh{};
+#endif
     return cli.run(argc, argv);
 }

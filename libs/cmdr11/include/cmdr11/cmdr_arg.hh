@@ -25,13 +25,13 @@ namespace cmdr::opt {
      */
     class bas : public obj {
     protected:
-        std::string _long;
-        std::string _short;
-        string_array _aliases;
-        std::string _desc_long;
-        std::string _description;
-        std::string _examples;
-        std::string _group;
+        std::string _long{};
+        std::string _short{};
+        string_array _aliases{};
+        std::string _desc_long{};
+        std::string _description{};
+        std::string _examples{};
+        std::string _group{};
 
         bool _hidden : 1;
         bool _required : 1;
@@ -44,7 +44,7 @@ namespace cmdr::opt {
         bool _hit_special : 1;
         bool _hit_env : 1;
 
-        std::string _hit_title;
+        std::string _hit_title{};
         int _hit_count{0};
 
         cmd *_owner{nullptr};
@@ -63,7 +63,14 @@ namespace cmdr::opt {
         static text::distance _jaro_winkler_matching_threshold;
 
     public:
-        bas() = default;
+        bas()
+            : _hidden{}
+            , _required{}
+            , _special{}
+            , _no_non_special{}
+            , _hit_long{}
+            , _hit_special{}
+            , _hit_env{} {}
         ~bas() override = default;
         bas(const bas &o) { _copy(o); }
         bas &operator=(const bas &o) {

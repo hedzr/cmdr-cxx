@@ -82,6 +82,7 @@ void add_test_menu(cmdr::app &cli) {
                           printf("%d\n", *foo);  // causes segfault
                           return 0;
                       });
+        static auto i_foo = 1;
         t1 += sub_cmd{}("dbz", "dbz", "divide-by-zero")
                       .description("causes a segfault and hook it via linux signal()")
                       .group("Test")
@@ -90,10 +91,14 @@ void add_test_menu(cmdr::app &cli) {
                           // cmdr::debug::UnhandledExceptionHookInstaller _ueh{};
                           cmdr::debug::SignalInstaller<SIGFPE> _si{};
 #endif
-                          int foo = 0;
-                          printf("%d\n", 8989 / foo); // causes segfpe
+                          // int foo = 0;
+                          printf("%d\n", 8989 / i_foo); // causes segfpe
                           return 0;
                       });
+        cli.set_global_pre_invoke_handler([](cmdr::opt::cmd const &, string_array const &) -> int {
+            i_foo = 0;
+            return 0;
+        });
     }
 }
 

@@ -266,16 +266,16 @@ namespace cmdr {
         struct cmd_matching_result {
             bool matched{};
             bool should_abort{};
-            opt::cmd *obj;
-            std::exception e;
+            opt::cmd *obj{};
+            std::exception e{};
         };
         struct arg_matching_result {
             bool matched{};
             bool should_abort{};
-            opt::arg *obj;
+            opt::arg *obj{};
             int matched_length{};
             std::string matched_str{};
-            std::exception e;
+            std::exception e{};
         };
 
         static string_array remain_args(opt::types::parsing_context &pc, char *argv[], int i, int argc);

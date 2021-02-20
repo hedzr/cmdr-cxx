@@ -35,11 +35,19 @@ namespace cmdr::log {
                         char const *fmt, va_list args) {
                 // auto t = cross::time(nullptr);
                 char time_buf[100];
-                std::strftime(time_buf, sizeof time_buf, "%D %T", cross::gmtime());
+#if _MSC_VER
+                struct tm tm_ {};
+                auto _tm = &tm_;
+                time_t vt = time(nullptr);
+                gmtime_s(_tm, &vt);
+#else
+                auto _tm = cross::gmtime();
+#endif
+                std::strftime(time_buf, sizeof time_buf, "%D %T", _tm);
 
                 va_list args2;
                 va_copy(args2, args);
-                std::vector<char> buf(1 + std::vsnprintf(nullptr, 0, fmt, args));
+                std::vector<char> buf((std::size_t) std::vsnprintf(nullptr, 0, fmt, args) + 1);
                 std::vsnprintf(buf.data(), buf.size(), fmt, args2);
                 va_end(args2);
 
@@ -77,13 +85,22 @@ namespace cmdr::log {
         static void debug(char const *fmt, ...) {
             // auto t = cross::time(nullptr);
             char time_buf[100];
-            std::strftime(time_buf, sizeof time_buf, "%D %T", cross::gmtime());
+            // std::strftime(time_buf, sizeof time_buf, "%D %T", cross::gmtime());
+#if _MSC_VER
+            struct tm tm_ {};
+            auto _tm = &tm_;
+            time_t vt = time(nullptr);
+            gmtime_s(_tm, &vt);
+#else
+            auto _tm = cross::gmtime();
+#endif
+            std::strftime(time_buf, sizeof time_buf, "%D %T", _tm);
 
             va_list args1;
             va_start(args1, fmt);
             va_list args2;
             va_copy(args2, args1);
-            std::vector<char> buf(1 + std::vsnprintf(nullptr, 0, fmt, args1));
+            std::vector<char> buf((std::size_t) std::vsnprintf(nullptr, 0, fmt, args1) + 1);
             va_end(args1);
             std::vsnprintf(buf.data(), buf.size(), fmt, args2);
             va_end(args2);

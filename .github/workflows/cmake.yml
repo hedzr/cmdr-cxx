@@ -22,7 +22,7 @@ jobs:
             os: windows-latest,
             cc: "cl", cxx: "cl",
             environment_script: "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Auxiliary/Build/vcvars64.bat",
-            tcf: "-D CMAKE_TOOLCHAIN_FILE=c:\vcpkg\scripts\buildsystem\vcpkg.cmake"
+            tcf: "-D CMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake"
           }
           #- {
           #  name: "Windows Latest MinGW", artifact: "Windows-MinGW.7z",

@@ -142,7 +142,7 @@ namespace cmdr::vars {
                 vs = ss.str();
             }
 
-            os << std::string(level * 2, ' ') << k << ": ";
+            os << std::string((std::size_t) level * 2, ' ') << k << ": ";
             if (c)
                 os << c->fg(dim_text_fg).dim(dim_text_dim).s(vs);
             else

@@ -408,7 +408,7 @@ namespace cmdr::opt {
                 }
                 if (i > 0) {
                     if (level >= 0)
-                        ss << std::string(level * 2, ' ') << '-' << ' ';
+                        ss << std::string((std::size_t) level * 2, ' ') << '-' << ' ';
                     else
                         ss << ' ' << ' ';
                     std::stringstream tmp;
@@ -550,12 +550,12 @@ namespace cmdr::opt {
                                      int wt_real) {
             std::ostringstream ss;
             auto d = desc;
-            auto rw = (std::size_t)((tw <= 0 ? 1000 : tw) - wt_real - 2);
+            auto rw = (std::size_t)((std::size_t)(tw <= 0 ? 1000 : tw) - wt_real - 2);
             int w = 0;
             do {
                 if (w++ != 0) {
                     ss << '\n'
-                       << std::string(wt_real + 2, ' ');
+                       << std::string((std::size_t) wt_real + 2, ' ');
                 }
                 auto t = cmdr::cross::min(rw, d.length());
                 auto s1 = d.substr(0, t);
@@ -735,7 +735,7 @@ namespace cmdr::opt {
                 int escaped_chars{0};
 
                 if (level >= 0)
-                    ss << std::string((level + level_pad) * 2, ' ') << '*' << ' ';
+                    ss << std::string(((std::size_t) level + level_pad) * 2, ' ') << '*' << ' ';
                 else
                     ss << "  " << std::left << std::setfill(' ');
                 if (!x->title_long().empty()) {
@@ -746,7 +746,7 @@ namespace cmdr::opt {
                     w = wf - w;
                     if (w > 0) ss << std::setw(w) << ' ';
                 } else
-                    ss << std::setw(wf + 2) << ' ';
+                    ss << std::setw((std::size_t) wf + 2) << ' ';
 
                 if (!x->title_short().empty()) {
                     w = (int) x->title_short().length();
@@ -756,13 +756,13 @@ namespace cmdr::opt {
                     w = ws - w;
                     if (w > 0) ss << std::setw(w) << ' ';
                 } else
-                    ss << std::setw(ws + 2) << ' ';
+                    ss << std::setw((std::size_t) ws + 2) << ' ';
 
                 ss << detail::_out_title_aliases(x, c, fg, dim, underline, _alias_right_align, wa, escaped_chars, false);
 
                 w = wf + 2 + ws + 2 + wa;
                 auto wt_real = (wt < 43 ? 43 : wt);
-                ss << std::setw(wt_real - w - (level >= 0 ? level : 0)) << ' ';
+                ss << std::setw(((std::size_t) wt_real - w - (level >= 0 ? level : 0))) << ' ';
 
                 ss << detail::_out_desc(x->descriptions(), c, fg, dim, tw, wt_real);
 
@@ -826,7 +826,7 @@ namespace cmdr::opt {
 
                     if (w > 0) ss << std::setw(w) << ' ';
                 } else
-                    ss << std::setw(wf + 2) << ' ';
+                    ss << std::setw((std::size_t) wf + 2) << ' ';
 
                 if (!x->title_short().empty()) {
                     w = (int) x->title_short().length();
@@ -836,13 +836,13 @@ namespace cmdr::opt {
                     w = ws - w - 1;
                     if (w > 0) ss << std::setw(w) << ' ';
                 } else
-                    ss << std::setw(ws + 2) << ' ';
+                    ss << std::setw((std::size_t) ws + 2) << ' ';
 
                 ss << detail::_out_title_aliases(x, c, fg, dim, underline, _alias_right_align, wa, escaped_chars);
 
                 w = wf + 2 + ws + 2 + wa;
                 auto wt_real = (wt < 43 ? 43 : wt);
-                ss << std::setw(wt_real - w - (level >= 0 ? level * 2 : 0)) << ' ';
+                ss << std::setw(((std::size_t) wt_real - w - (level >= 0 ? level * 2 : 0))) << ' ';
 
                 std::stringstream td;
                 td << x->descriptions();

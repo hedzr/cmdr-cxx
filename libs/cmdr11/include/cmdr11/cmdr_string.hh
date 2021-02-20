@@ -532,11 +532,11 @@ namespace cmdr::string {
             if (sign)
                 *c = '-';
 
-            c += size - 1;
+            c += (std::size_t) size - 1;
             while (val >= 100) {
                 int pos = val % 100;
                 val /= 100;
-                *(short *) (c - 1) = *(short *) (digit_pairs + 2 * pos);
+                *(short *) (c - 1) = *(short *) (digit_pairs + (std::size_t) 2 * pos);
                 c -= 2;
             }
             while (val > 0) {
@@ -584,11 +584,11 @@ namespace cmdr::string {
             }
 
             s.resize(size);
-            char *c = &s[size - 1];
+            char *c = &s[(std::size_t) size - 1];
             while (val >= 100) {
                 int pos = val % 100;
                 val /= 100;
-                *(short *) (c - 1) = *(short *) (digit_pairs + 2 * pos);
+                *(short *) (c - 1) = *(short *) (digit_pairs + (std::size_t) 2 * pos);
                 c -= 2;
             }
             while (val > 0) {

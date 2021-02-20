@@ -90,11 +90,11 @@ namespace cmdr {
     }
 
     inline void app::internal_register_actions() {
-        _internal_actions.emplace(opt::RequestHelpScreen, [=](opt::types::parsing_context &pc, int, char *[]) -> int {
+        _internal_actions.emplace(opt::Action::RequestHelpScreen, [=](opt::types::parsing_context &pc, int, char *[]) -> int {
             print_usages(&pc.last_matched_cmd());
             return 0;
         });
-        _internal_actions.emplace(opt::RequestVersionsScreen, [=](opt::types::parsing_context &, int, char *[]) -> int {
+        _internal_actions.emplace(opt::Action::RequestVersionsScreen, [=](opt::types::parsing_context &, int, char *[]) -> int {
             auto vs = this->_version;
             auto &vsvar = this->get_for_cli("version-sim");
             if (!vsvar.empty()) vs = vsvar.as<std::string>();
@@ -102,7 +102,7 @@ namespace cmdr {
             std::cout << vs << '\n';
             return 0;
         });
-        _internal_actions.emplace(opt::RequestBuildInfoScreen, [=](opt::types::parsing_context &, int, char *[]) -> int {
+        _internal_actions.emplace(opt::Action::RequestBuildInfoScreen, [=](opt::types::parsing_context &, int, char *[]) -> int {
             std::stringstream compiler;
             compiler
             // https://blog.kowalczyk.info/article/j/guide-to-predefined-macros-in-c-compilers-gcc-clang-msvc-etc..html
@@ -147,10 +147,10 @@ namespace cmdr {
                     << CMDR_GIT_COMMIT_HASH << '\n';
             return 0;
         });
-        _internal_actions.emplace(opt::RequestTreeScreen,
+        _internal_actions.emplace(opt::Action::RequestTreeScreen,
                                   [this](opt::types::parsing_context &pc, int argc, char *argv[]) -> int { return print_tree_screen(pc, argc, argv); });
-        _internal_actions.emplace(opt::RequestManualScreen, print_manual_screen);
-        _internal_actions.emplace(opt::RequestDebugInfoScreen,
+        _internal_actions.emplace(opt::Action::RequestManualScreen, print_manual_screen);
+        _internal_actions.emplace(opt::Action::RequestDebugInfoScreen,
                                   [=](opt::types::parsing_context &pc, int argc, char *argv[]) -> int {
                                       return print_debug_info_screen(pc, argc, argv);
                                   });
@@ -249,11 +249,11 @@ namespace cmdr {
                 using namespace cmdr::terminal::colors;
                 // auto &c = colorize::instance();
                 auto c = colorize::create();
-                std::cout << c.fg(c.Purple3).bg(c.Default).underline().bold().s("some text") << '\n';
+                std::cout << c.fg(colorize::Colors256::Purple3).bg(colorize::Colors256::Default).underline().bold().s("some text") << '\n';
                 std::cout << c.dim().s("dim text") << '\n';
-                std::cout << c.Purple3 << " << want 56" << '\n';
-                std::cout << c.MediumTurquoise << " << want 80" << '\n';
-                std::cout << c.Grey93 << " << want 255" << '\n';
+                std::cout << (int) colorize::Colors256::Purple3 << " << want 56" << '\n';
+                std::cout << (int) colorize::Colors256::MediumTurquoise << " << want 80" << '\n';
+                std::cout << (int) colorize::Colors256::Grey93 << " << want 255" << '\n';
 
                 using cmdr::terminal::colors::colorize;
                 std::cout << colorize::style::underline << colorize::fg::red << "Hello, Colorful World!" << '\n';
@@ -327,7 +327,7 @@ namespace cmdr {
                        .env_vars("HELP")
                        .on_hit([](cmdr::opt::cmd const &hit, cmdr::opt::arg const &hit_flag, string_array const &remain_args) -> cmdr::opt::Action {
                            UNUSED(hit, hit_flag, remain_args);
-                           return cmdr::opt::RequestHelpScreen;
+                           return opt::Action::RequestHelpScreen;
                        });
 
         // version
@@ -338,7 +338,7 @@ namespace cmdr {
                        .hidden(hide_sys_tools | true)
                        .on_pre_invoke([](cmdr::opt::cmd const &hit, string_array const &remain_args) -> int {
                            UNUSED(hit, remain_args);
-                           throw opt::cmdr_requests_exception(opt::RequestVersionsScreen);
+                           throw opt::cmdr_requests_exception(opt::Action::RequestVersionsScreen);
                        });
 
         cli += cmdr::opt::opt{}("version", "V", "versions", "ver")
@@ -348,7 +348,7 @@ namespace cmdr {
                        .env_vars("VERSIONS")
                        .on_hit([](cmdr::opt::cmd const &hit, cmdr::opt::arg const &hit_flag, string_array const &remain_args) -> cmdr::opt::Action {
                            UNUSED(hit, hit_flag, remain_args);
-                           return cmdr::opt::RequestVersionsScreen;
+                           return opt::Action::RequestVersionsScreen;
                        });
 
         cli += cmdr::opt::opt{""}("version-sim", "vs")
@@ -365,7 +365,7 @@ namespace cmdr {
                        .hidden(hide_sys_tools | true)
                        .on_hit([](cmdr::opt::cmd const &hit, cmdr::opt::arg const &hit_flag, string_array const &remain_args) -> cmdr::opt::Action {
                            UNUSED(hit, hit_flag, remain_args);
-                           return cmdr::opt::RequestBuildInfoScreen;
+                           return opt::Action::RequestBuildInfoScreen;
                        });
 
         // more...
@@ -404,8 +404,8 @@ namespace cmdr {
                        .on_hit([](cmdr::opt::cmd const &hit, cmdr::opt::arg const &hit_flag, string_array const &remain_args) -> cmdr::opt::Action {
                            UNUSED(hit, hit_flag, remain_args);
                            if (hit_flag.hit_special())
-                               return cmdr::opt::RequestTreeScreen;
-                           return cmdr::opt::RequestTreeScreen;
+                               return cmdr::opt::Action::RequestTreeScreen;
+                           return cmdr::opt::Action::RequestTreeScreen;
                        });
 
         cli += cmdr::opt::opt{}("debug", "D", "debug-mode")
@@ -416,8 +416,8 @@ namespace cmdr {
                        .on_hit([](cmdr::opt::cmd const &hit, cmdr::opt::arg const &hit_flag, string_array const &remain_args) -> cmdr::opt::Action {
                            UNUSED(hit, hit_flag, remain_args);
                            if (hit_flag.hit_special())
-                               return cmdr::opt::RequestDebugInfoScreen;
-                           return cmdr::opt::OK;
+                               return cmdr::opt::Action::RequestDebugInfoScreen;
+                           return cmdr::opt::Action::OK;
                        });
 
         cli += cmdr::opt::opt{}("cli")

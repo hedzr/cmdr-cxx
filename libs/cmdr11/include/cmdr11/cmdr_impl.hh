@@ -62,14 +62,14 @@ namespace cmdr {
                 auto rc = cmr.obj->on_command_hit()(
                         pc.last_matched_cmd(),
                         remain_args(argv, pc.index + 1, argc));
-                // if (rc < details::OK || rc >= details::Abortion)
+                // if (rc < opt::Action::OK || rc >= opt::Action::Abortion)
                 return rc;
             }
-            return opt::Continue;
+            return opt::Action::Continue;
         }
 
         if (cmr.should_abort) {
-            return opt::Abortion;
+            return opt::Action::Abortion;
         }
 
         pc.add_unknown_cmd(argv[pc.index]);
@@ -77,7 +77,7 @@ namespace cmdr {
             return unknown_command_found(pc, cmr);
         }
 
-        return opt::Continue;
+        return opt::Action::Continue;
     }
 
     inline opt::Action
@@ -86,7 +86,7 @@ namespace cmdr {
         pc.title = pc.title.substr(leading_chars);
         bool value_parsed{};
         bool extra_argv{};
-        auto rc{opt::Continue};
+        auto rc{opt::Action::Continue};
         // int matched_length = 0;
         // std::vector<arg_matching_result> tmp_amr_list;
 
@@ -176,7 +176,7 @@ namespace cmdr {
                         pc.last_matched_cmd(),
                         pc.last_matched_flg(),
                         remain_args(argv, pc.index + 1, argc));
-                if (rc < opt::OK || rc >= opt::Abortion) {
+                if (rc < opt::Action::OK || rc >= opt::Action::Abortion) {
                     return rc;
                 }
             }
@@ -200,11 +200,11 @@ namespace cmdr {
                     << std::quoted(os1.str());
                 std::cerr << osn.str() << '\n';
             }
-            return opt::Continue;
+            return opt::Action::Continue;
         }
 
         if (amr.should_abort) {
-            return opt::Abortion;
+            return opt::Action::Abortion;
         }
 
         pc.title_fragment = pc.title;
@@ -220,7 +220,7 @@ namespace cmdr {
             }
             // }
         }
-        return opt::Continue;
+        return opt::Action::Continue;
     }
 
     inline opt::Action app::process_special_flag(opt::types::parsing_context &pc, int argc, char *argv[]) {
@@ -324,11 +324,13 @@ namespace cmdr {
         UNUSED(pc, amr);
         if (_on_unknown_argument_found) {
             if (auto rc = _on_unknown_argument_found(pc.title, pc.last_matched_cmd(), true, false);
-                rc != opt::RunDefaultAction) {
+                rc != opt::Action::RunDefaultAction) {
                 return rc;
             }
         }
-        std::cerr << "Unknown long flag: --" << std::quoted(pc.title_fragment);
+        std::ostringstream t;
+        t << "--" << pc.title_fragment;
+        std::cerr << "Unknown long flag: " << std::quoted(t.str());
         auto *c = &pc.last_matched_cmd();
         if (c->valid()) {
             std::cerr << " under matched command: " << std::quoted(c->title_sequences());
@@ -339,13 +341,17 @@ namespace cmdr {
             do {
                 for (auto const &cc : c->_all_args) {
                     if (jaro.calculate(pc.title.c_str(), cc.title_long().c_str()).matched()) {
+                        std::ostringstream tt;
+                        tt << "--" << cc.title_long();
                         os << '\n'
-                           << "   - " << std::quoted(cc.title_long()) << ' ' << '[' << jaro.get_distance() << ']' << " (under command " << std::quoted(c->title_sequences()) << ')' << '?';
+                           << "   - " << std::quoted(tt.str()) << ' ' << '[' << jaro.get_distance() << ']' << " (under command " << std::quoted(c->title_sequences()) << ')' << '?';
                     }
                     for (auto const &str : cc.title_aliases()) {
                         if (jaro.calculate(pc.title.c_str(), str.c_str()).matched()) {
+                            std::ostringstream tt;
+                            tt << "--" << str;
                             os << '\n'
-                               << "   - " << std::quoted(str) << ' ' << '[' << jaro.get_distance() << ']' << " (under command " << std::quoted(c->title_sequences()) << ')' << '?';
+                               << "   - " << std::quoted(tt.str()) << ' ' << '[' << jaro.get_distance() << ']' << " (under command " << std::quoted(c->title_sequences()) << ')' << '?';
                         }
                     }
                 }
@@ -356,18 +362,20 @@ namespace cmdr {
             }
         }
         std::cerr << '\n';
-        return opt::Abortion;
+        return opt::Action::Abortion;
     }
 
     inline opt::Action app::unknown_short_flag_found(opt::types::parsing_context &pc, arg_matching_result &amr) {
         UNUSED(pc, amr);
         if (_on_unknown_argument_found) {
             if (auto rc = _on_unknown_argument_found(pc.title, pc.last_matched_cmd(), false, false);
-                rc != opt::RunDefaultAction) {
+                rc != opt::Action::RunDefaultAction) {
                 return rc;
             }
         }
-        std::cerr << "Unknown short flag: -" << std::quoted(pc.title_fragment);
+        std::ostringstream t;
+        t << '-' << pc.title_fragment;
+        std::cerr << "Unknown short flag: " << std::quoted(t.str());
         auto *c = &pc.last_matched_cmd();
         if (c->valid()) {
             std::cerr << " under matched command: " << std::quoted(c->title_sequences());
@@ -377,9 +385,11 @@ namespace cmdr {
             std::ostringstream os;
             do {
                 for (auto const &cc : c->_all_args) {
+                    std::ostringstream tt;
+                    tt << '-' << cc.title_short();
                     if (jaro.calculate(pc.title.c_str(), cc.title_short().c_str()).matched()) {
                         os << '\n'
-                           << "   - " << std::quoted(cc.title_short()) << ' ' << '[' << jaro.get_distance() << ']' << " (under command " << std::quoted(c->title_sequences()) << ')' << '?';
+                           << "   - " << std::quoted(tt.str()) << ' ' << '[' << jaro.get_distance() << ']' << " (under command " << std::quoted(c->title_sequences()) << ')' << '?';
                     }
                 }
             } while ((c = c->owner()) != nullptr);
@@ -389,14 +399,14 @@ namespace cmdr {
             }
         }
         std::cerr << '\n';
-        return opt::Abortion;
+        return opt::Action::Abortion;
     }
 
     inline opt::Action app::unknown_command_found(opt::types::parsing_context &pc, cmd_matching_result &cmr) {
         UNUSED(pc, cmr);
         if (_on_unknown_argument_found) {
             if (auto rc = _on_unknown_argument_found(pc.title, pc.last_matched_cmd(), false, true);
-                rc != opt::RunDefaultAction) {
+                rc != opt::Action::RunDefaultAction) {
                 return rc;
             }
         }
@@ -430,7 +440,7 @@ namespace cmdr {
             }
         }
         std::cerr << '\n';
-        return opt::Abortion;
+        return opt::Action::Abortion;
     }
 
 
@@ -669,9 +679,36 @@ namespace cmdr {
         _on_cmd_added.clear();
         _on_arg_matched.clear();
         _on_cmd_matched.clear();
-        _on_loading_externals.clear();
         _on_command_not_hooked = nullptr;
         _on_handle_exception_ptr = nullptr;
+        _on_loading_externals.clear();
+        _on_post_runs.clear();
+
+        _treat_unknown_input_command_as_error = true;
+        _treat_unknown_input_flag_as_error = true;
+
+        // clear all commands and flags
+
+        _all_args.clear();
+        _grouped_args.clear();
+        _indexed_args.clear();
+        _short_args.clear();
+        _long_args.clear();
+        _all_commands.clear();
+        _grouped_commands.clear();
+        _indexed_commands.clear();
+        _short_commands.clear();
+        _long_commands.clear();
+        _last_added_command = nullptr;
+        _last_added_arg = nullptr;
+        _on_command_hit = nullptr;
+        _on_pre_invoke = nullptr;
+        _on_invoke = nullptr;
+        _on_post_invoke = nullptr;
+
+        // rebuilt the builtin commands and flags
+
+        initialize_internal_commands();
     }
 
 
@@ -757,7 +794,7 @@ namespace cmdr {
             cmdr_verbose_debug("   - app::parsing args ...");
             opt::types::parsing_context pc{(opt::cmd *) this};
             pc.add_matched_cmd((opt::cmd *) this);
-            opt::Action rc{opt::OK};
+            opt::Action rc{opt::Action::OK};
 
             for (int i = 1; i < argc; i = pc.index + 1) {
                 pc.title = argv[i];
@@ -770,7 +807,7 @@ namespace cmdr {
                 if (title_len >= 2 && pc.title[0] == '~' && pc.title[1] == '~') {
                     // special flags
                     rc = process_special_flag(pc, argc, argv);
-                    if (rc < opt::OK || rc >= opt::Abortion) {
+                    if (rc < opt::Action::OK || rc >= opt::Action::Abortion) {
                         return 0;
                     }
                     continue;
@@ -786,7 +823,7 @@ namespace cmdr {
 
                         // long
                         rc = process_long_flag(pc, argc, argv);
-                        if (rc < opt::OK || rc >= opt::Abortion) {
+                        if (rc < opt::Action::OK || rc >= opt::Action::Abortion) {
                             return 0;
                         }
                         continue;
@@ -794,7 +831,7 @@ namespace cmdr {
 
                     // short flag
                     rc = process_short_flag(pc, argc, argv);
-                    if (rc < opt::OK || rc >= opt::Abortion) {
+                    if (rc < opt::Action::OK || rc >= opt::Action::Abortion) {
                         return 0;
                     }
                     continue;
@@ -809,7 +846,7 @@ namespace cmdr {
                     }
                 }
                 rc = process_command(pc, argc, argv);
-                if (rc < opt::OK || rc >= opt::Abortion) {
+                if (rc < opt::Action::OK || rc >= opt::Action::Abortion) {
                     return 0;
                 }
             }
@@ -852,11 +889,12 @@ namespace cmdr {
     }
 
     inline int app::after_run(opt::Action rc, opt::types::parsing_context &pc, int argc, char *argv[]) {
-        if (rc > opt::OK && rc < opt::Continue) {
+        if (rc > opt::Action::OK && rc < opt::Action::Continue) {
             return internal_action(rc, pc, argc, argv);
         }
 
-        auto &help_arg = store().get_raw_p(_long, "help");
+        auto const &prefix = _long;
+        auto &help_arg = store().get_raw_p(prefix, "help");
         if (help_arg.cast_as<bool>()) {
             print_usages(&pc.curr_command());
             return 0;

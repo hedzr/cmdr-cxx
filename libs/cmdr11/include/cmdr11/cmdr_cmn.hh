@@ -80,7 +80,7 @@ namespace cmdr::opt {
     // parsing and hitting
     //
 
-    enum Action {
+    enum class Action {
         OK = 0,
 
         // the action between OK and Continue would like to request cmdr
@@ -112,11 +112,11 @@ namespace cmdr::opt {
     class cmdr_requests_exception : public cmdr::exception::cmdr_exception {
     public:
         // using cmdr_exception::cmdr_exception;
-        explicit cmdr_requests_exception(enum Action action, char const *file = __FILE__, int line = __LINE__)
+        explicit cmdr_requests_exception(Action action, char const *file = __FILE__, int line = __LINE__)
             : cmdr_exception(file, line, "req")
             , _action(action) {
         }
-        enum Action _action;
+        Action _action;
     };
 
 

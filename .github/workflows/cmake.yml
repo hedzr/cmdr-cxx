@@ -61,7 +61,7 @@ jobs:
                sudo apt install -y libyaml-cpp-dev
           elif [ "$RUNNER_OS" == "Windows" ]; then
                # choco install yaml-cpp
-               vcpkg install yaml-cpp
+               vcpkg install yaml-cpp:x64-windows
           elif [ "$RUNNER_OS" == "Darwin" ]; then
                brew install yaml-cpp
           elif [ "$RUNNER_OS" == "macOS" ]; then

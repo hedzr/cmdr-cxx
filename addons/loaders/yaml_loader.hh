@@ -5,10 +5,24 @@
 #ifndef CMDR_CXX11_YAML_LOADER_HH
 #define CMDR_CXX11_YAML_LOADER_HH
 
+#if __clang__
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wshadow"
+#elif __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#elif _MSC_VER
+#pragma warning( push )
+#pragma warning( disable : 4251 4275 4996 26812 ) // needs to have dll-interface to be used by clients of class
+#endif
 #include <yaml-cpp/yaml.h> // https://github.com/jbeder/yaml-cpp
+#if __clang__
 #pragma clang diagnostic pop
+#elif __GNUC__
+#pragma GCC diagnostic pop
+#elif _MSC_VER
+#pragma warning( pop )
+#endif
 
 #include <cmdr-cxx.hh>
 
@@ -100,7 +114,7 @@ namespace cmdr::addons::loaders {
                                      auto file = cmdr::get_for_cli<std::string>("config");
                                      load_config_file_or_dir(file, c);
                                  }
-                                 return opt::Continue;
+                                 return opt::Action::Continue;
                              });
 
                 // load from env_var
@@ -129,7 +143,7 @@ namespace cmdr::addons::loaders {
                 if (fs::is_directory(file)) {
                     auto p = fs::path(file);
                     p /= (c.name() + ".yml");
-                    file = p;
+                    file = p.u8string();
                     if (path::file_exists(file)) {
                         load_to(file, c);
                         return;

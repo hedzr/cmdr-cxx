@@ -266,7 +266,7 @@ namespace cmdr::terminal::colors {
     public:
         // 256-colors, 88-colors
 
-        enum Colors256 {
+        enum class Colors256 {
             Black,
             Maroon,
             Green,
@@ -566,7 +566,7 @@ namespace cmdr::terminal::colors {
         }
         colorize &fg(Colors256 color256) {
             // CMDR_ASSERT(color256 >= 0 && color256 <= 256);
-            _fg = color256;
+            _fg = (int) color256;
             _true_color_enabled = false;
             return (*this);
         }
@@ -577,7 +577,7 @@ namespace cmdr::terminal::colors {
         }
         colorize &bg(Colors256 color256) {
             // CMDR_ASSERT(color256 >= 0 && color256 <= 256);
-            _bg = color256;
+            _bg = (int) color256;
             return (*this);
         }
 

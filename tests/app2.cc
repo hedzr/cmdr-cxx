@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
 
         // cli.set_minimal_tab_stop(55);
         using cmdr::terminal::colors::colorize;
-        cli.set_alternate_text_color(colorize::Green);
+        cli.set_alternate_text_color(colorize::Colors256::Green);
 
 #if defined(_DEBUG)
         auto &cc = cli("server");

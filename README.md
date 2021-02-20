@@ -571,6 +571,8 @@ If the tests are enabled, [ `Catch2`](https://github.com/catchorg/Catch2) will b
 
 In our tests, `test-app2-c1` and `yaml-loader` will request [`yaml-cpp`](https://github.com/jbeder/yaml-cpp) is present.
 
+> Optional
+
 ##### Linux
 
 ```bash

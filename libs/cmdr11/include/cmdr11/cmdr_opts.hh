@@ -102,7 +102,7 @@ namespace cmdr::opt {
     public:
         opt() = default;
         // opt(opt const *) = delete;
-        opt(opt &&o)
+        opt(opt &&o) noexcept
             : _arg(std::move(o._arg)) {}
         template<class A, typename... Args,
                  std::enable_if_t<

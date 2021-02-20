@@ -229,15 +229,21 @@ namespace cmdr::cross {
         UNUSED(__overwrite);
         std::ostringstream os;
         os << __name << '=' << __value;
-        _putenv(os.str().c_str());
+        (void) _putenv(os.str().c_str());
     }
 
     inline time_t time(time_t *_t = nullptr) {
         return ::time(_t);
     }
-    inline struct tm *gmtime(time_t const *_t = nullptr, struct tm *_tm = nullptr) {
-        gmtime_s(_tm, _t);
-        return _tm;
+    // BEWRAE: this is a thread-unsafe routine, it's just for the simple scene.
+    inline struct tm *gmtime(time_t const *_t = nullptr) {
+        static struct tm _tm {};
+        if (!_t) {
+            time_t vt = time();
+            gmtime_s(&_tm, &vt);
+        } else
+            gmtime_s(&_tm, _t);
+        return &_tm;
     }
 
     template<class T>
@@ -257,8 +263,7 @@ namespace cmdr::cross {
     inline time_t time(time_t *_t = nullptr) {
         return std::time(_t);
     }
-    inline struct tm *gmtime(time_t const *_t = nullptr, struct tm *_tm_never_used = nullptr) {
-        UNUSED(_tm_never_used);
+    inline struct tm *gmtime(time_t const *_t = nullptr) {
         if (!_t) {
             time_t vt = time();
             return std::gmtime(&vt);

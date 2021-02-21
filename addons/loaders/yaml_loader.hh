@@ -12,8 +12,8 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
 #elif _MSC_VER
-#pragma warning( push )
-#pragma warning( disable : 4251 4275 4996 26812 ) // needs to have dll-interface to be used by clients of class
+#pragma warning(push)
+#pragma warning(disable : 4251 4275 4996 26812) // needs to have dll-interface to be used by clients of class
 #endif
 #include <yaml-cpp/yaml.h> // https://github.com/jbeder/yaml-cpp
 #if __clang__
@@ -21,7 +21,7 @@
 #elif __GNUC__
 #pragma GCC diagnostic pop
 #elif _MSC_VER
-#pragma warning( pop )
+#pragma warning(pop)
 #endif
 
 #include <cmdr-cxx.hh>
@@ -155,6 +155,18 @@ namespace cmdr::addons::loaders {
         }
         void load_to(std::string const &p, cmdr::app &c) const {
             YAML::Node config = YAML::LoadFile(p);
+
+            cmdr::util::defer _upd([p]() {
+              auto &cli = cmdr::get_app();
+              cli.set("config.file.loaded", true);
+              auto const *k = "config.file.files";
+              if (!cli.has(k))
+                  cli.set(k, std::vector<std::string>{});
+              auto &vec = cli.get(k).as<std::vector<std::string> &>();
+              vec.push_back(p);
+              // cli.set(k, vec);
+            });
+
             load_node_to("", config, c);
         }
         void load_node_to(std::string const &pk, YAML::Node const &node, cmdr::app &c) const {
@@ -215,14 +227,76 @@ namespace cmdr::addons::loaders {
             }
         }
 
+        template <typename T>
+        static auto extractor(YAML::Node const &node){
+            return YAML::as_if<bool, std::optional<bool>>(node)();
+        }
+        
         static cmdr::vars::variable safe_get_value(YAML::Node const &node) {
             cmdr::vars::variable val;
-            if (std::optional<bool> as_bool = YAML::as_if<bool, std::optional<bool>>(node)(); as_bool.has_value()) {
+            if (auto as_bool = extractor<bool>(node); as_bool.has_value()) {
                 val = as_bool.value();
-            } else if (std::optional<int> as_int = YAML::as_if<int, std::optional<int>>(node)(); as_int.has_value()) {
+            } else if (auto as_short = extractor<short>(node); as_short.has_value()) {
+                val = as_short.value();
+            } else if (auto as_ushort = extractor<unsigned short>(node); as_ushort.has_value()) {
+                val = as_ushort.value();
+            } else if (auto as_int = extractor<int>(node); as_int.has_value()) {
                 val = as_int.value();
-            } else if (std::optional<double> as_double = YAML::as_if<double, std::optional<double>>(node)(); as_double.has_value()) {
+            } else if (auto as_uint = extractor<unsigned int>(node); as_uint.has_value()) {
+                val = as_uint.value();
+            } else if (auto as_long = extractor<long>(node); as_long.has_value()) {
+                val = as_long.value();
+            } else if (auto as_ulong = extractor<long>(node); as_ulong.has_value()) {
+                val = as_ulong.value();
+            } else if (auto as_longlong = extractor<long long>(node); as_longlong.has_value()) {
+                val = as_longlong.value();
+            } else if (auto as_ulonglong = extractor<unsigned long long>(node); as_ulonglong.has_value()) {
+                val = as_ulonglong.value();
+                
+            } else if (auto as_float = extractor<float>(node); as_float.has_value()) {
+                val = as_float.value();
+            } else if (auto as_double = extractor<double>(node); as_double.has_value()) {
                 val = as_double.value();
+            } else if (auto as_longdouble = extractor<long double>(node); as_longdouble.has_value()) {
+                val = as_longdouble.value();
+                
+            } else if (auto as_vecint = extractor<std::vector<int>>(node); as_vecint.has_value()) {
+                val = as_vecint.value();
+            } else if (auto as_veclong = extractor<std::vector<long>>(node); as_veclong.has_value()) {
+                val = as_veclong.value();
+            } else if (auto as_vecflt = extractor<std::vector<float>>(node); as_vecflt.has_value()) {
+                val = as_vecflt.value();
+            } else if (auto as_vecdbl = extractor<std::vector<double>>(node); as_vecdbl.has_value()) {
+                val = as_vecdbl.value();
+            } else if (auto as_vecstr = extractor<std::vector<std::string>>(node); as_vecstr.has_value()) {
+                val = as_vecstr.value();
+                
+            } else if (auto as_ns = extractor<std::chrono::nanoseconds>(node); as_ns.has_value()) {
+                val = as_ns.value();
+            } else if (auto as_us = extractor<std::chrono::microseconds>(node); as_us.has_value()) {
+                val = as_us.value();
+            } else if (auto as_ms = extractor<std::chrono::milliseconds>(node); as_ms.has_value()) {
+                val = as_ms.value();
+            } else if (auto as_sec = extractor<std::chrono::seconds>(node); as_sec.has_value()) {
+                val = as_sec.value();
+            } else if (auto as_min = extractor<std::chrono::minutes>(node); as_min.has_value()) {
+                val = as_min.value();
+            } else if (auto as_hour = extractor<std::chrono::hours>(node); as_hour.has_value()) {
+                val = as_hour.value();
+            } else if (auto as_dur_ld = extractor<std::chrono::duration<long double, std::ratio<1>>>(node); as_dur_ld.has_value()) {
+                val = as_dur_ld.value();
+            } else if (auto as_dur_ld60 = extractor<std::chrono::duration<long double, std::ratio<60>>>(node); as_dur_ld60.has_value()) {
+                val = as_dur_ld60.value();
+            } else if (auto as_dur_d60 = extractor<std::chrono::duration<double, std::ratio<60>>>(node); as_dur_d60.has_value()) {
+                val = as_dur_d60.value();
+            } else if (auto as_dur_f60 = extractor<std::chrono::duration<float, std::ratio<60>>>(node); as_dur_f60.has_value()) {
+                val = as_dur_f60.value();
+            } else if (auto as_dur_f1 = extractor<std::chrono::duration<float, std::ratio<1>>>(node); as_dur_f1.has_value()) {
+                val = as_dur_f1.value();
+
+            } else if (auto as_chars = extractor<const_chars>(node); as_chars.has_value()) {
+                val = as_chars.value();
+                
             } else { // if (std::optional<std::string> as_string = YAML::as_if<std::string, std::optional<std::string>>(node)(); as_string.has_value()) {
                 val = node.as<std::string>();
             }

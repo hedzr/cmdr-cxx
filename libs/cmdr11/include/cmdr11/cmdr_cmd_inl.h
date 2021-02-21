@@ -108,7 +108,10 @@ namespace cmdr::opt {
 
             if (_grouped_args.find(gn) == _grouped_args.end())
                 _grouped_args.emplace(gn, types::arg_pointers{});
+            DEBUG_ONLY(auto size_before = _grouped_args[gn].size());
             _grouped_args[gn].push_back(ptr);
+            DEBUG_ONLY(auto size_after = _grouped_args[gn].size());
+            DEBUG_ONLY(assert(size_after == size_before + 1));
 
             _indexed_args.insert({a.title_long(), ptr});
 
@@ -791,8 +794,7 @@ namespace cmdr::opt {
         auto [th, tw] = terminal::terminfo::get_win_size();
 
         int count_all{};
-        std::map<std::string, std::string> dotted_key_on_keys = detail::sort_keys(_grouped_commands);
-        detail::populate_tab_stop_width(dotted_key_on_keys, _grouped_commands, show_hidden_items, wt);
+        std::map<std::string, std::string> dotted_key_on_keys = detail::sort_keys(_grouped_args);
         detail::populate_tab_stop_width(dotted_key_on_keys, _grouped_args, show_hidden_items, wt);
 
         for (auto &it : dotted_key_on_keys) {

@@ -237,6 +237,20 @@ namespace cmdr::util {
     }
 #endif // defined(NEVER_USED)
 
+
+    class defer final {
+    public:
+        defer(std::function<void()> const &fn)
+            : _fn(fn) {}
+        ~defer() {
+            if (_fn) {
+                _fn();
+            }
+        }
+
+    private:
+        std::function<void()> _fn;
+    };
 } //namespace cmdr::util
 
 #endif //CMDR_CXX11_CMDR_UTILS_HH

@@ -5,6 +5,7 @@
 #ifndef CMDR_CXX11_CMDR_APP_HH
 #define CMDR_CXX11_CMDR_APP_HH
 
+#include <fstream>
 #include <utility>
 
 #include "cmdr_dbg.hh"
@@ -301,8 +302,8 @@ namespace cmdr {
 
         void initialize_internal_commands();
         void internal_register_actions();
-        static void add_global_options(app &cli);
-        static void add_generator_menu(app &cli);
+        void add_global_options(app &cli);
+        void add_generator_menu(app &cli);
 
         void prepare();
         void prepare_common_env();
@@ -339,12 +340,13 @@ namespace cmdr {
                        std::filesystem::path const &exe_name);
 
         int print_debug_info_screen(opt::types::parsing_context &pc, int argc, char *argv[]);
-        static int print_manual_screen(opt::types::parsing_context &pc, int argc, char *argv[]);
+        int print_manual_screen(opt::types::parsing_context &pc, int argc, char *argv[]);
         int print_tree_screen(opt::types::parsing_context &pc, int argc, char *argv[]);
 
         int on_invoking_print_cmd(opt::cmd const &hit, string_array const &remain_args);
         int on_generate_shell_completion(opt::cmd const &hit, string_array const &remain_args);
-        
+        int generate_bash_completion();
+
     public:
         app &operator+(opt::arg const &a) override;
         app &operator+=(opt::arg const &a) override;
@@ -370,6 +372,8 @@ namespace cmdr {
         opt::cmd &operator()(const std::string &long_title, bool extensive = false) { return find_command(long_title.c_str(), extensive); }
         const opt::cmd &operator()(const std::string &long_title, bool extensive = false) const { return const_cast<app *>(this)->find_command(long_title.c_str(), extensive); }
 
+
+        bool has(char const *key) const { return _store.has(_store_prefix.c_str(), key); }
 
         /**
          * @brief get the value without store-prefix from Option Store.
@@ -460,6 +464,9 @@ namespace cmdr {
         // std::string _description;
         std::string _tail_line;
         // std::string _examples;
+
+        std::ofstream _lf;
+        string_array _args_cache;
 
         //
         cmdr::vars::store _store;

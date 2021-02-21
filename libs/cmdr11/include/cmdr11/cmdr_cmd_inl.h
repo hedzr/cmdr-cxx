@@ -728,12 +728,13 @@ namespace cmdr::opt {
 
     //#pragma clang diagnostic push
     //#pragma ide diagnostic ignored "misc-no-recursion"
-    inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, bool show_hidden_items, int level) const {
+    inline void cmd::print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, bool show_hidden_items, bool shell_completion_mode, int level) const {
         UNUSED(grouped, level);
         auto fg = vars::store::_dim_text_fg;
         auto dim = vars::store::_dim_text_dim;
         auto underline = vars::store::_long_title_underline;
         auto [th, tw] = terminal::terminfo::get_win_size();
+        if (shell_completion_mode) tw = 9999;
 
         int count_all{};
         std::map<std::string, std::string> dotted_key_on_keys = detail::sort_keys(_grouped_commands);
@@ -751,7 +752,8 @@ namespace cmdr::opt {
                 continue;
 
             int level_pad = 0;
-            ss << detail::_out_group_name(it.second, clean_key, val, c, fg, dim, show_hidden_items, level, level_pad);
+            if (!shell_completion_mode)
+                ss << detail::_out_group_name(it.second, clean_key, val, c, fg, dim, show_hidden_items, level, level_pad);
 
             for (auto &x : val) {
                 if (!show_hidden_items && x->hidden()) continue;
@@ -788,6 +790,8 @@ namespace cmdr::opt {
                 auto wt_real = (wt < 43 ? 43 : wt);
                 ss << std::setw(((std::size_t) wt_real - w - (level >= 0 ? level : 0))) << ' ';
 
+                if (shell_completion_mode) ss << '|'; // print a delimiter char for shell completion parser
+
                 ss << detail::_out_desc(x->descriptions(), c, fg, dim, tw, wt_real);
 
                 //ss << '/' << wt << '(' << wt_real << ',' << escaped_chars << ')' << rw << '/' << tw;
@@ -801,19 +805,20 @@ namespace cmdr::opt {
             }
         }
 
-        if (count_all == 0) {
+        if (count_all == 0 && !shell_completion_mode) {
             ss << c.fg(fg).dim(dim).s("  (no sub-commands)") << '\n';
         }
     }
     //#pragma clang diagnostic pop
 
-    inline void cmd::print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, bool show_hidden_items, int level) const {
+    inline void cmd::print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, bool show_hidden_items, bool shell_completion_mode, int level) const {
         UNUSED(grouped, level);
         auto fg = vars::store::_dim_text_fg;
         auto dim = vars::store::_dim_text_dim;
         auto underline = vars::store::_long_title_underline;
         auto [th, tw] = terminal::terminfo::get_win_size();
-
+        if (shell_completion_mode) tw = 9999;
+        
         int count_all{};
         std::map<std::string, std::string> dotted_key_on_keys = detail::sort_keys(_grouped_args);
         detail::populate_tab_stop_width(dotted_key_on_keys, _grouped_args, show_hidden_items, wt);
@@ -829,7 +834,8 @@ namespace cmdr::opt {
             if (valid_count == 0)
                 continue;
 
-            ss << detail::_out_group_name(it.second, clean_key, val, c, fg, dim, show_hidden_items);
+            if (!shell_completion_mode)
+                ss << detail::_out_group_name(it.second, clean_key, val, c, fg, dim, show_hidden_items);
 
             for (auto &x : val) {
                 if (!show_hidden_items && x->hidden()) continue;
@@ -867,6 +873,8 @@ namespace cmdr::opt {
                 auto wt_real = (wt < 43 ? 43 : wt);
                 ss << std::setw(((std::size_t) wt_real - w - (level >= 0 ? level * 2 : 0))) << ' ';
 
+                if (shell_completion_mode) ss << '|'; // print a delimiter char for shell completion parser
+
                 std::stringstream td;
                 td << x->descriptions();
                 td << detail::_os_env_vars(x);
@@ -883,7 +891,7 @@ namespace cmdr::opt {
             }
         }
 
-        if (count_all == 0) {
+        if (count_all == 0 && !shell_completion_mode) {
             ss << c.fg(fg).dim(dim).s("  (no options)") << '\n';
         }
     }

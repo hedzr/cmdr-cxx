@@ -6,6 +6,7 @@
 #define CMDR_CXX11_CMDR_APP_INL_H
 
 #include <exception>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <map>
@@ -98,7 +99,7 @@ namespace cmdr {
         _internal_actions.emplace(opt::Action::RequestVersionsScreen, [=](opt::types::parsing_context &, int, char *[]) -> int {
             auto vs = this->_version;
             auto &vsvar = this->get_for_cli("version-sim");
-            if (!vsvar.empty()) vs = vsvar.as<std::string>();
+            if (!vsvar.empty()) vs = vsvar.as<const_chars>();
             if (vs.empty()) vs = this->_version;
             std::cout << vs << '\n';
             return 0;
@@ -150,7 +151,8 @@ namespace cmdr {
         });
         _internal_actions.emplace(opt::Action::RequestTreeScreen,
                                   [this](opt::types::parsing_context &pc, int argc, char *argv[]) -> int { return print_tree_screen(pc, argc, argv); });
-        _internal_actions.emplace(opt::Action::RequestManualScreen, print_manual_screen);
+        _internal_actions.emplace(opt::Action::RequestManualScreen,
+                                  [this](opt::types::parsing_context &pc, int argc, char *argv[]) -> int { return print_manual_screen(pc, argc, argv); });
         _internal_actions.emplace(opt::Action::RequestDebugInfoScreen,
                                   [=](opt::types::parsing_context &pc, int argc, char *argv[]) -> int {
                                       return print_debug_info_screen(pc, argc, argv);
@@ -382,11 +384,29 @@ namespace cmdr {
                 // .on_invoke(cli.on_invoking_print_cmd)
                 ;
 
-        cli += cmdr::opt::opt{}("no-color")
+        cli += cmdr::opt::opt{}("no-color", "nc")
                        .description("disable color text in terminal")
                        .group(SYS_MGMT_GROUP)
                        .hidden()
                        .env_vars("PLAIN", "NO_COLOR");
+
+        cli += cmdr::opt::opt{}("shell-completion", "sc")
+                       .description("disable help screen skeleton for completion")
+                       .group(SYS_MGMT_GROUP)
+                       .hidden()
+                       .env_vars("SHELL_COMPLETION")
+                       .on_hit([&](cmdr::opt::cmd const &hit, cmdr::opt::arg const &hit_flag, string_array const &remain_args) -> cmdr::opt::Action {
+                           UNUSED(hit, hit_flag, remain_args);
+                           DEBUG_ONLY(
+                                   bool shell_completion_mode = this->get_for_cli("shell-completion").as<bool>();
+                                   if (shell_completion_mode) {
+                                       this->_lf = std::ofstream(path::get_executable_path().filename().u8string() + ".log");
+                                       for (auto const &v : _args_cache)
+                                           this->_lf << v << ' ';
+                                       this->_lf << '\n';
+                                   });
+                           return cmdr::opt::Action::Continue;
+                       });
 
         cli += cmdr::opt::opt{}("tree")
                        .description("print all commands as a tree")
@@ -441,12 +461,12 @@ namespace cmdr {
 
         {
             auto &t1 = *cli.last_added_command();
-            
+
             t1 += cmdr::opt::opt{}("feel-like")
-                    .description("allows best choice")
-                    .group("Generators")
-                    .env_vars("FEEL_LIKE");
-            
+                          .description("allows best choice")
+                          .group("Generators")
+                          .env_vars("FEEL_LIKE");
+
             t1 += cmdr::opt::sub_cmd{}("doc", "d", "markdown", "docx", "pdf", "tex")
                           .description("generate a markdown document, or: pdf/TeX/...");
             // .opt(opt_dummy{}())
@@ -477,23 +497,124 @@ namespace cmdr {
             auto &csh = *t1.last_added_command();
             csh += cmdr::opt::opt{true}("bash", "b")
                            .description("prints the bash-completion scripts for this app")
-                           .group(SYS_MGMT_GROUP)
                            .toggle_group("which-shell");
             csh += cmdr::opt::opt{}("zsh", "z")
                            .description("prints the zsh-completion scripts for this app")
-                           .group(SYS_MGMT_GROUP)
                            .toggle_group("which-shell");
             csh += cmdr::opt::opt{}("fish", "f")
                            .description("prints the fish-completion scripts for this app")
-                           .group(SYS_MGMT_GROUP)
                            .toggle_group("which-shell");
+            csh += cmdr::opt::opt{""}("name", "n")
+                           .description("use this name instead of executable name");
         }
     }
 
     inline int app::on_generate_shell_completion(opt::cmd const &hit, string_array const &remain_args) {
         UNUSED(hit, remain_args);
         auto const &which_shell = hit.toggle_group("which-shell");
-        std::cout << "which-shell is the choice: " << which_shell << '\n';
+        std::ostringstream os;
+        os << "which-shell is the choice: " << which_shell;
+        std::cerr << vars::store::_c.fg(vars::store::_dim_text_fg).s(os.str()) << '\n';
+        if (which_shell == "bash") {
+            generate_bash_completion();
+        } else {
+            std::cerr << "Not implemented for " << std::quoted(which_shell) << " yet" << '\n';
+        }
+        return 0;
+    }
+
+    inline int app::generate_bash_completion() {
+        const char *tpl = R"SH-EOF(
+# bash completion wrapper for %{EXE_NAME} v%{APP_VERSION}
+# This file is generated by cmdr-cxx core.
+#
+# Put this file as /usr/local/etc/bash_completion.d/%{SAFE_APP_NAME}, and 
+# Re-login to enable the new bash completion script.
+# Or source it in your current TTY:
+#   $ source %{SAFE_APP_NAME}
+#
+
+_cmdr_cmd_help_events () {
+  $* --help -hhncsc|awk -F'|' '{print $1}'|awk -F',' '{ for (i=1;i<=NF;i++) {gsub(/^[ \t]+|[ \t]+$/, "", $i); print $i;} }'
+}
+
+
+_cmdr_cmd_%{SAFE_APP_NAME}() {
+  local cmd="%{EXE_NAME}" cur prev words
+  _get_comp_words_by_ref cur prev words
+  if [ "$prev" != "" ]; then
+    unset 'words[${#words[@]}-1]'
+  fi
+
+  COMPREPLY=()
+  #pre=${COMP_WORDS[COMP_CWORD-1]}
+  #cur=${COMP_WORDS[COMP_CWORD]}
+
+  case "$prev" in
+    --help|--version)
+      COMPREPLY=()
+      return 0
+      ;;
+    $cmd)
+      COMPREPLY=( $(compgen -W "$(_cmdr_cmd_help_events $cmd)" -- ${cur}) )
+      return 0
+      ;;
+    *)
+      COMPREPLY=( $(compgen -W "$(_cmdr_cmd_help_events ${words[@]})" -- ${cur}) )
+      return 0
+      ;;
+  esac
+
+  #opts="--help --version -q --quiet -v --verbose --system --dest="
+  #opts="--help upgrade version deploy undeploy log ls ps start stop restart"
+  opts="--help -hhncsc"
+  # grep "^  [^ \[\$\#\!/\\@\"']"|
+  # -hh --no-color --shell-completion
+  cmds=$($cmd --help -hhncsc|awk -F'|' '{print $1}'|awk -F',' '{ for (i=1;i<=NF;i++) {gsub(/^[ \t]+|[ \t]+$/, "", $i); print $i;} }')
+
+  COMPREPLY=( $(compgen -W "${opts} ${cmds}" -- ${cur}) )
+
+} # && complete -F _cmdr_cmd_%{SAFE_APP_NAME} %{EXE_NAME}
+
+#
+# [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
+#
+if type complete >/dev/null 2>&1; then
+	# bash
+	complete -F _cmdr_cmd_%{SAFE_APP_NAME} %{EXE_NAME}
+elif type compdef >/dev/null 2>&1; then
+	# zsh
+	_cmdr_cmd_${SAFE_APP_NAME}_zsh() { compadd $(_cmdr_cmd_%{SAFE_APP_NAME}); }
+	compdef _cmdr_cmd_${SAFE_APP_NAME}_zsh %{EXE_NAME}
+fi
+
+)SH-EOF";
+
+        // auto *safe_name = std::getenv("SAFE_APP_NAME");
+        auto *exe_name = std::getenv("EXE_NAME");
+        auto name = get_for_cli("generate.shell.name").as<const_chars>();
+        const_chars n = name && *name ? name : exe_name;
+        std::string sn = n;
+        string::replace(sn, "-", "_");
+        cross::setenv("SAFE_APP_NAME", sn.c_str());
+        std::filesystem::path safe_name(sn);
+
+        std::string contents = tpl;
+        string::replace_all(contents, "%{SAFE_APP_NAME}", sn);
+        string::replace_all(contents, "%{EXE_NAME}", exe_name);
+        string::replace_all(contents, "%{APP_NAME}", n);
+        string::replace_all(contents, "%{APP_VERSION}", std::getenv("APP_VERSION"));
+
+        std::ofstream out(safe_name);
+        util::defer dx_fn(std::bind(&std::ofstream::close, &out));
+        out << contents;
+        std::cerr << vars::store::dark_text(string::expand_env(R"("$SAFE_APP_NAME" was written.
+Put it into /usr/local/etc/bash_completion.d, and
+Re-login your terminal/tty to take the effects.
+Or apply it in-place:
+$ source $SAFE_APP_NAME
+
+)"));
         return 0;
     }
 

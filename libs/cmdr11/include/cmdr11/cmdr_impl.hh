@@ -577,29 +577,33 @@ namespace cmdr {
                                opt::cmd const *cc,
                                std::string const &app_name,
                                std::filesystem::path const &exe_name) {
-        if (!cc->description().empty()) {
-            ss << '\n'
-               << "Description" << '\n'
-               << string::pad_left(cc->description()) << '\n';
-        }
-        if (!cc->examples().empty()) {
-            ss << '\n'
-               << "Examples" << '\n'
-               << string::pad_left(string::reg_replace(cc->examples(), "~", exe_name.filename().u8string())) << '\n';
-        }
-        ss << '\n'
-           << "Usage" << '\n';
-        ss << string::pad_left(exe_name.filename().u8string(), 2) << ' '
-           << cc->title_sequences() << " [options] [Tail Args]" << '\n';
+        bool shell_completion_mode = get_for_cli("shell-completion").as<bool>();
 
-        ss << '\n'
-           << "Commands" << '\n';
+        if (!shell_completion_mode) {
+            if (!cc->description().empty()) {
+                ss << '\n'
+                   << "Description" << '\n'
+                   << string::pad_left(cc->description()) << '\n';
+            }
+            if (!cc->examples().empty()) {
+                ss << '\n'
+                   << "Examples" << '\n'
+                   << string::pad_left(string::reg_replace(cc->examples(), "~", exe_name.filename().u8string())) << '\n';
+            }
+            ss << '\n'
+               << "Usage" << '\n';
+            ss << string::pad_left(exe_name.filename().u8string(), 2) << ' '
+               << cc->title_sequences() << " [options] [Tail Args]" << '\n';
+
+            ss << '\n'
+               << "Commands" << '\n';
+        }
 
         auto const &help_arg = find_flag("help");
         bool show_hidden_items = help_arg.valid() && help_arg.hit_count() > 2;
 
         std::ostringstream os1;
-        cc->print_commands(os1, c, _minimal_tab_width, true, show_hidden_items, -1);
+        cc->print_commands(os1, c, _minimal_tab_width, true, show_hidden_items, shell_completion_mode, -1);
 
         std::vector<std::ostringstream *> os2;
         auto saved_minimal_tab_width = _minimal_tab_width;
@@ -607,38 +611,43 @@ namespace cmdr {
         const auto *trivial = cc;
         do {
             std::ostringstream tt;
-            if (trivial == cc) {
-                tt << "Options";
-            } else if (trivial->owner() != nullptr) {
-                tt << "Parent Options of " << std::quoted(trivial->title());
-            } else {
-                tt << "Global Options";
+            if (!shell_completion_mode) {
+                if (trivial == cc) {
+                    tt << "Options";
+                } else if (trivial->owner() != nullptr) {
+                    tt << "Parent Options of " << std::quoted(trivial->title());
+                } else {
+                    tt << "Global Options";
+                }
             }
 
             auto *os = new std::ostringstream();
-            (*os) << '\n'
-                  << tt.str() << '\n';
+            if (!shell_completion_mode) (*os) << '\n'
+                                              << tt.str() << '\n';
 
             auto mtw = _minimal_tab_width;
-            trivial->print_flags(*os, c, _minimal_tab_width, true, show_hidden_items, -1);
+            trivial->print_flags(*os, c, _minimal_tab_width, true, show_hidden_items, shell_completion_mode, -1);
             if (mtw < _minimal_tab_width) {
+                for (auto *&ptr : os2) {
+                    delete ptr;
+                }
                 os2.clear();
                 delete os;
                 goto restart;
+            } else {
+                os2.push_back(os);
             }
-
-            os2.push_back(os);
         } while ((trivial = trivial->owner()) != nullptr);
 
         if (saved_minimal_tab_width < _minimal_tab_width) {
             std::ostringstream os3;
-            cc->print_commands(os3, c, _minimal_tab_width, true, show_hidden_items, -1);
+            cc->print_commands(os3, c, _minimal_tab_width, true, show_hidden_items, shell_completion_mode, -1);
             ss << os3.str();
         } else {
             ss << os1.str();
         }
 
-        for (auto &os : os2) {
+        for (auto *&os : os2) {
             ss << os->str();
             delete os;
         }
@@ -648,38 +657,46 @@ namespace cmdr {
 
     inline void app::print_usages(opt::cmd const *start) {
         auto exe_name = path::executable_name();
+        bool shell_completion_mode = get_for_cli("shell-completion").as<bool>();
         auto c = cmdr::terminal::colors::colorize::create();
 
         if (is_no_color()) {
-            cmdr::terminal::colors::colorize::enable(false);
+            c.enable(false);
         }
 
         std::stringstream ss;
-        ss << _name << ' ' << 'v' << _version;
-        if (_header.empty()) {
-            ss << " by " << _author << '.' << ' ' << _copyright << '\n';
-        } else {
-            ss << _header << '\n';
+        if (!shell_completion_mode) {
+            ss << _name << ' ' << 'v' << _version;
+            if (_header.empty()) {
+                ss << " by " << _author << '.' << ' ' << _copyright << '\n';
+            } else {
+                ss << _header << '\n';
+            }
         }
 
         print_cmd(ss, c, start != nullptr ? start : (opt::cmd const *) this, _name, exe_name);
 
-        if (!_no_tail_line) {
-            if (!_tail_line.empty()) {
-                ss << '\n'
-                   << _tail_line << '\n';
-            } else {
-                ss << '\n'
-                   << "Type `" << exe_name.filename().u8string()
-                   << " --help` to get help screen (this screen)." << '\n';
+        if (!shell_completion_mode) {
+            if (!_no_tail_line) {
+                if (!_tail_line.empty()) {
+                    ss << '\n'
+                       << _tail_line << '\n';
+                } else {
+                    ss << '\n'
+                       << "Type `" << exe_name.filename().u8string()
+                       << " --help` to get help screen (this screen)." << '\n';
+                }
+            }
+
+            if (!_no_cmdr_ending) {
+                ss << c.dim(cmdr::vars::store::_dim_text_dim).fg(cmdr::vars::store::_dim_text_fg).s("Powered by cmdr-cxx: https://github.com/hedzr/cmdr-cxx.") << '\n';
             }
         }
 
-        if (!_no_cmdr_ending) {
-            ss << c.dim(cmdr::vars::store::_dim_text_dim).fg(cmdr::vars::store::_dim_text_fg).s("Powered by cmdr-cxx: https://github.com/hedzr/cmdr-cxx.") << '\n';
-        }
-
         std::cout << ss.str();
+        DEBUG_ONLY(if (shell_completion_mode) {
+            _lf << ss.str() << '\n';
+        })
     }
 
 
@@ -744,8 +761,14 @@ namespace cmdr {
 
     inline void app::prepare_env_vars() {
         cross::setenv("APP_NAME", _name.c_str(), 1);
+        auto safe_name = _name;
+        string::replace_all(safe_name, "-", "_");
+        cross::setenv("SAFE_APP_NAME", safe_name.c_str(), 1);
+        cross::setenv("APP_VERSION", _version.c_str(), 1);
         cross::setenv("EXE_DIR", path::get_executable_dir().u8string().c_str(), 1);
-        cross::setenv("EXE_PATH", path::get_executable_path().u8string().c_str(), 1);
+        auto exe_path = path::get_executable_path();
+        cross::setenv("EXE_PATH", exe_path.u8string().c_str(), 1);
+        cross::setenv("EXE_NAME", exe_path.filename().u8string().c_str(), 1);
     }
 
     inline void app::load_externals() {
@@ -803,9 +826,14 @@ namespace cmdr {
             }
         };
         // // optional to post_run(), for the rare exception post processing if necessary
-        post_runner post_runner([=]() { post_run(); });
+        post_runner post_runner([=]() {
+            post_run();
+            DEBUG_ONLY(_lf.close());
+        });
 
         try {
+            for (int i = 0; i < argc; i++) _args_cache.push_back(argv[i]);
+            
             prepare();
 
             cmdr_verbose_debug("   - app::parsing args ...");

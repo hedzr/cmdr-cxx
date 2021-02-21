@@ -29,7 +29,7 @@ namespace cmdr::opt {
         types::indexed_args _short_args{};
         types::indexed_args _long_args{};
         types::hit_toggle_groups _hit_toggle_groups{};
-        types::toggle_groups  _toggle_groups{};
+        types::toggle_groups _toggle_groups{};
         types::cmd_list _all_commands{};
         types::grouped_cmd_list _grouped_commands{{UNSORTED_GROUP, types::cmd_pointers{}}};
         types::indexed_commands _indexed_commands{}; // just long-titles
@@ -131,8 +131,8 @@ namespace cmdr::opt {
 
         std::string title_sequences() const;
 
-        void toggle_group_set(std::string const &key, arg* a);
-        std::string const &toggle_group(std::string const&key) const;
+        void toggle_group_set(std::string const &key, arg *a);
+        std::string const &toggle_group(std::string const &key) const;
 
     public:
         void add(arg const &a);
@@ -213,9 +213,9 @@ namespace cmdr::opt {
 
     public:
         // wt: total width for description part.
-        void print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, bool show_hidden_items, int level = -1) const;
+        void print_commands(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, bool show_hidden_items, bool shell_completion_mode, int level = -1) const;
         // wt: total width for description part.
-        void print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, bool show_hidden_items, int level = -1) const;
+        void print_flags(std::ostream &ss, cmdr::terminal::colors::colorize &c, int &wt, bool grouped, bool show_hidden_items, bool shell_completion_mode, int level = -1) const;
 
         void walk_args(std::function<void(arg &)> const &cb);
     }; // class cmd

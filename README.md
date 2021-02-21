@@ -34,6 +34,8 @@
 
   - Supports sortable command/flag groups
 
+  - Supports toggleable flags - just like a radio button group
+
   - Free style flags arrangements: `$ app main sub4 bug-bug2 zero-sub3 -vqb2r1798b2r 234 --sub4-retry1 913 --bug-bug2-shell-name=fish ~~debug --int 67 -DDD --string 'must-be' --long 789`
 
   - Smart suggestions for wrong command and flags
@@ -53,6 +55,7 @@
     - `~~debug`: print the debugging info
     - `--no-color`: disable terminal color in outputting
     - `--config <location>`: specify the location of the root config file. [only for yaml-loader]
+    
   - Verbose & Debug: `—verbose`/`-v`, `—debug`/`-D`, `—quiet`/`-q`
     
   - Supports `-I/usr/include -I=/usr/include` `-I /usr/include -I:/usr` option argument specifications Automatically allows those formats (applied to long option too):
@@ -83,7 +86,7 @@ WIP, pre-released now.
 
 
 - v0.2.10 - [WIP] MSVC (Build Tool 16.7.2+, VS2019 passed)
-- v0.2.9 - various fixes, improves
+- v0.2.9 - various fixes, improvements
 - v0.2.8 - fixed cmdr11Config.cmake for importing transparently
 - v0.2.7 - `auto &cli = cmdr::create(...)`
 - v0.2.5 - public release starts
@@ -188,6 +191,9 @@ int main(int argc, char *argv[]) {
                           std::cout << c.title() << " invoked.\n";
                           return 0;
                       });
+        auto &s1 = *t1.last_added_command();
+        s1 += cmdr::opt::opt{}("foreground", "f")
+                       .description("run at fg");
 
         t1 += sub_cmd{}("stop", "t", "shutdown")
                       .description("stop the daemon service, or stop the server");
@@ -497,7 +503,12 @@ Inside `cmdr-cxx`, there are many optimizable points and some of them in working
   CMDR_DIM=1 ./bin/test-app2-c2 main sub4 bug-bug2
   ```
 
-- [x] `--no-color`
+- [x] `--no-color`: do NOT print colorful text with [Terminal Escaped Sequences](https://en.wikipedia.org/wiki/ANSI_escape_code), envvars `PLAIN` or `NO_COLOR` available too.
+
+  ```bash
+  ./bin/test-app2-c2 --no-color
+  PLAIN=1 ./bin/test-app-c2
+  ```
 
 - [x] enable very verbose debugging
 

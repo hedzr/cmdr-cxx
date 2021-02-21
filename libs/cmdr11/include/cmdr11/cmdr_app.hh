@@ -343,7 +343,8 @@ namespace cmdr {
         int print_tree_screen(opt::types::parsing_context &pc, int argc, char *argv[]);
 
         int on_invoking_print_cmd(opt::cmd const &hit, string_array const &remain_args);
-
+        int on_generate_shell_completion(opt::cmd const &hit, string_array const &remain_args);
+        
     public:
         app &operator+(opt::arg const &a) override;
         app &operator+=(opt::arg const &a) override;

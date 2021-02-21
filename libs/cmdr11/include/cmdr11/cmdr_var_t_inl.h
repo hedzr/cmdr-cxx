@@ -79,6 +79,22 @@ namespace cmdr::vars {
         return _get_raw(sk.str());
     }
 
+
+    template<class T, class small_string>
+    inline bool nodeT<T, small_string>::has(char const *prefix, char const *key) const {
+        std::stringstream sk;
+        if (prefix && prefix[0] != 0) sk << prefix << '.';
+        sk << key;
+
+        std::shared_lock<std::shared_mutex> lock(mutex_);
+        auto it = _indexes.find(key);
+        if (it != _indexes.end()) {
+            return true;
+        }
+        return false;
+    }
+
+
     template<class T, class small_string>
     inline void nodeT<T, small_string>::
             dump_tree(std::ostream &os,

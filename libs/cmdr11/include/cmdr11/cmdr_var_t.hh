@@ -150,6 +150,11 @@ namespace cmdr::vars {
         }
 
 #if defined(_DEBUG)
+        /**
+         * @brief as() will report more error detail while type error occurred for debugging.
+         * @tparam T 
+         * @return 
+         */
         template<class T>
         T as() const { return cast_as<T>(); }
 #else
@@ -158,7 +163,7 @@ namespace cmdr::vars {
             return std::any_cast<T>(_value);
         }
 #endif
-
+        
         template<class T>
         T cast_as() const {
             try {
@@ -175,6 +180,24 @@ namespace cmdr::vars {
                 cmdr_throw_line(buf);
             }
         }
+
+        template<>
+        const_chars as<const_chars>() const { return cast_as<const_chars>(); }
+
+        template<>
+        const_chars cast_as<const_chars>() const {
+            if (_value.has_value()) {
+                if (_value.type() == typeid(std::string)) {
+                    auto const &s = std::any_cast<std::string const &>(_value);
+                    return s.c_str();
+                }
+                if (_value.type() == typeid(const_chars)) {
+                    return std::any_cast<const_chars>(_value);
+                }
+            }
+            return "";
+        }
+
 
         [[nodiscard]] bool has_value() const { return _value.has_value(); }
         [[nodiscard]] bool empty() const { return !_value.has_value(); }
@@ -819,6 +842,8 @@ namespace cmdr::vars {
         T &get_raw_p(std::string const &prefix, std::string const &key) { return _get_raw_p(prefix, key); }
         T &get_raw_p(char const *prefix, char const *key) { return _get_raw_p(prefix, key); }
 
+        bool has(char const *prefix, char const *key) const;
+
     private:
         // T &_get(std::string const &key);
         [[nodiscard]] T const &_get_raw(std::string const &key) const;
@@ -995,6 +1020,8 @@ namespace cmdr::vars {
         T &get_raw_p(std::string const &prefix, std::string const &key) { return _root.get_raw_p(prefix, key); }
 
     public:
+        bool has(char const *prefix, char const *key) const { return _root.has(prefix, key); }
+
         void dump_tree(tcolorize &c, tcolorize::Colors256 dim_text_fg, bool dim_text_dim,
                        std::ostream &os,
                        const_chars leading_title = nullptr,
@@ -1076,6 +1103,17 @@ namespace cmdr::vars {
         static tcolorize::Colors256 _dim_text_fg;
         static bool _dim_text_dim;
         static bool _long_title_underline;
+
+        static std::string dark_text(std::string const &s) {
+            std::ostringstream os;
+            os << _c.fg(_dim_text_fg).s(s);
+            return os.str();
+        }
+        static std::string dark_text(std::string &&s) {
+            std::ostringstream os;
+            os << _c.fg(_dim_text_fg).s(s);
+            return os.str();
+        }
 
         void set_dump_with_type_name(bool b) { node::dump_with_type_name = b; }
         bool get_dump_with_type_name() const { return node::dump_with_type_name; }

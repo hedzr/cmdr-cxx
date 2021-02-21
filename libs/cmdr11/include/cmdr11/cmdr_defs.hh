@@ -56,6 +56,13 @@ void UNUSED([[maybe_unused]] Args &&...args) {
 #define CMDR_ASSERT(...) UNUSED(__VA_ARGS__)
 #endif
 
+#ifndef DEBUG_ONLY
+#if defined(_DEBUG)
+#define DEBUG_ONLY(...) __VA_ARGS__
+#else
+#define DEBUG_ONLY(...) UNUSED(__VA_ARGS__)
+#endif
+#endif
 
 #ifndef __COPY
 #define __COPY(m) this->m = o.m

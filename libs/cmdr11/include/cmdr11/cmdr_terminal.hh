@@ -766,7 +766,8 @@ namespace cmdr::terminal::colors {
             //if (o._colorful) {
             // reset
             if (o._auto_reset) {
-                os << "\033[0m";
+                if (o._colorful)
+                    os << "\033[0m";
 
                 auto *xo = const_cast<colorize *>(&o);
                 xo->_st._i = 0;

@@ -6,7 +6,7 @@
 
 `cmdr-cxx` ^pre-release^ is a *header-only* command-line arguments parser in C++17 and higher. As a member of #cmdr series, it provides a fully-functional `Option Store` for your hierarchical configuration data.
 
-<img width="1003" alt="image-20210211180854495" src="https://user-images.githubusercontent.com/12786150/107623507-64fa0a80-6c94-11eb-9b9e-a273cfbca9a5.png">
+<img width="914" alt="image-20210221210442215" src="https://user-images.githubusercontent.com/12786150/108625941-8fb04400-7488-11eb-8403-afc79825745c.png">
 
 ## Features
 

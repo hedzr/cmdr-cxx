@@ -60,7 +60,15 @@ void UNUSED([[maybe_unused]] Args &&...args) {
 #if defined(_DEBUG)
 #define DEBUG_ONLY(...) __VA_ARGS__
 #else
-#define DEBUG_ONLY(...) UNUSED(__VA_ARGS__)
+#define DEBUG_ONLY(...) /* __VA_ARGS__ */
+#endif
+#endif
+
+#ifndef RELEASE_ONLY
+#if !defined(_DEBUG)
+#define RELEASE_ONLY(...) __VA_ARGS__
+#else
+#define RELEASE_ONLY(...) /* __VA_ARGS__ */
 #endif
 #endif
 

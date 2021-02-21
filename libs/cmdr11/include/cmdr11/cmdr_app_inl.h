@@ -397,8 +397,7 @@ namespace cmdr {
                        .env_vars("SHELL_COMPLETION")
                        .on_hit([&](cmdr::opt::cmd const &hit, cmdr::opt::arg const &hit_flag, string_array const &remain_args) -> cmdr::opt::Action {
                            UNUSED(hit, hit_flag, remain_args);
-#ifdef _DEBUG
-                           {
+                           DEBUG_ONLY({
                                bool shell_completion_mode = get_for_cli("shell-completion").as<bool>();
                                if (shell_completion_mode) {
                                    this->_lf = std::ofstream(path::get_executable_path().filename().u8string() + ".log");
@@ -406,8 +405,7 @@ namespace cmdr {
                                        this->_lf << v << ' ';
                                    this->_lf << '\n';
                                }
-                           }
-#endif
+                           })
                            return cmdr::opt::Action::Continue;
                        });
 

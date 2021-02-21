@@ -694,11 +694,9 @@ namespace cmdr {
         }
 
         std::cout << ss.str();
-#ifdef _DEBUG
-        if (shell_completion_mode) {
+        DEBUG_ONLY(if (shell_completion_mode) {
             _lf << ss.str() << '\n';
-        }
-#endif
+        })
     }
 
 
@@ -756,9 +754,7 @@ namespace cmdr {
     }
 
     inline void app::prepare_common_env() {
-#if !defined(_DEBUG)
-        _store.set_dump_with_type_name(false);
-#endif
+        RELEASE_ONLY(_store.set_dump_with_type_name(false));
     }
 
     inline void app::prepare_env_vars() {

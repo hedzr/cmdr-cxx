@@ -134,6 +134,19 @@ namespace cmdr::opt {
                 _long_args.insert({itz, ptr});
             }
 
+            if (ptr->is_toggleable()) {
+                if (ptr->default_value()->type() == typeid(bool)) {
+                    auto const &key = ptr->toggle_group_name();
+                    if (auto it = _hit_toggle_groups.find(key);
+                        it == _hit_toggle_groups.end() || ptr->default_value()->as<bool>() == true) {
+                        _hit_toggle_groups[key] = ptr->title_long();
+                    }
+                    if (auto it = _toggle_groups.find(key); it == _toggle_groups.end())
+                        _toggle_groups.emplace(key, types::arg_pointers{});
+                    _toggle_groups[key].push_back(ptr);
+                }
+            }
+
             _last_added_arg = ptr;
             ptr->owner(this);
 
@@ -205,6 +218,14 @@ namespace cmdr::opt {
             pcc = pcc->owner();
         }
         return string::join(commands, ' ');
+    }
+
+    inline void cmd::toggle_group_set(std::string const &key, arg *a) {
+        _hit_toggle_groups[key] = a->title_long();
+    }
+
+    inline std::string const &cmd::toggle_group(std::string const &key) const {
+        return _hit_toggle_groups.at(key);
     }
 
 

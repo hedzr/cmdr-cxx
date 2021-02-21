@@ -47,6 +47,8 @@ namespace cmdr::opt {
         using arg_pointers = std::list<arg *>;
         using grouped_arg_list = std::unordered_map<std::string, arg_pointers>; // key: group-name
         using indexed_args = std::unordered_map<std::string, arg *>;            // key: long-title
+        using hit_toggle_groups = std::unordered_map<std::string, std::string>; // key: toggle-group-name, val: which arg is last choice (by its long-title)
+        using toggle_groups = std::unordered_map<std::string, arg_pointers>;    // key: toggle-group-name
     }                                                                           // namespace types
 
     class cmd;

@@ -469,6 +469,23 @@ namespace cmdr {
         auto key = a->dotted_key();
         auto *val = value.get();
         _store.set_raw(key.c_str(), *val);
+
+        if (a->is_toggleable() && a->default_value()->type() == typeid(bool)) {
+            auto *cc = a->owner();
+            auto const &cck = a->dotted_key();
+            auto const &k = a->toggle_group_name();
+
+            for (auto *o : cc->_toggle_groups[k]) {
+                _store.set_raw_p(cck.c_str(), o->title_long().c_str(), false);
+            }
+
+            cc->toggle_group_set(k, a);
+
+            _store.set_raw_p(cck.c_str(),
+                             k.c_str(),
+                             a->title_long());
+        }
+
         for (auto &cb : _on_arg_matched) {
             if (cb) {
                 cb(a);

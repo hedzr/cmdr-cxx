@@ -85,6 +85,7 @@ namespace cmdr {
         }
     }
 
+
     inline void app::register_action(opt::Action action, opt::types::on_internal_action const &fn) {
         _internal_actions.emplace(action, fn);
     }
@@ -156,15 +157,6 @@ namespace cmdr {
                                   });
     }
 
-    // inline void app::fatal_exit(std::string const &msg) {
-    //     std::cerr << msg << '\n';
-    //     exit(-1);
-    // }
-
-    // inline void app::fatal_exit(const std::string &msg) {
-    //     std::cerr << msg << '\n';
-    //     exit(-1);
-    // }
 
     inline int app::on_invoking_print_cmd(opt::cmd const &hit, string_array const &remain_args) {
         UNUSED(hit, remain_args);
@@ -291,6 +283,7 @@ namespace cmdr {
         pc.last_matched_cmd().print_commands(std::cout, c, _minimal_tab_width, true, show_hidden_items, 0);
         return 0;
     }
+
 
     inline void app::add_global_options(app &cli) {
         // using namespace cmdr::opt;
@@ -433,6 +426,7 @@ namespace cmdr {
                        .group(SYS_MGMT_GROUP);
     }
 
+
     inline void app::add_generator_menu(app &cli) {
         // using namespace cmdr::opt;
 
@@ -444,14 +438,21 @@ namespace cmdr {
                 // .opt(opt_dummy{}())
                 // .opt(opt_dummy{}());
                 ;
+
         {
             auto &t1 = *cli.last_added_command();
+            
+            t1 += cmdr::opt::opt{}("feel-like")
+                    .description("allows best choice")
+                    .group("Generators")
+                    .env_vars("FEEL_LIKE");
+            
             t1 += cmdr::opt::sub_cmd{}("doc", "d", "markdown", "docx", "pdf", "tex")
                           .description("generate a markdown document, or: pdf/TeX/...");
             // .opt(opt_dummy{}())
             // .opt(opt_dummy{}());
 
-            auto c1 = *t1.last_added_command();
+            auto &c1 = *t1.last_added_command();
             c1 += cmdr::opt::opt{}("pages", "pg")
                           .description("set pdf pages")
                           .group("PDF");
@@ -472,10 +473,28 @@ namespace cmdr {
 
             t1 += cmdr::opt::sub_cmd{}("shell", "s", "sh", "comp", "completion")
                           .description("generate the bash/zsh auto-completion script or install it.")
-                    // .opt(opt_dummy{}())
-                    // .opt(opt_dummy{}())
-                    ;
+                          .on_invoke([&](auto &&...args) -> int { return cli.on_generate_shell_completion(args...); });
+            auto &csh = *t1.last_added_command();
+            csh += cmdr::opt::opt{true}("bash", "b")
+                           .description("prints the bash-completion scripts for this app")
+                           .group(SYS_MGMT_GROUP)
+                           .toggle_group("which-shell");
+            csh += cmdr::opt::opt{}("zsh", "z")
+                           .description("prints the zsh-completion scripts for this app")
+                           .group(SYS_MGMT_GROUP)
+                           .toggle_group("which-shell");
+            csh += cmdr::opt::opt{}("fish", "f")
+                           .description("prints the fish-completion scripts for this app")
+                           .group(SYS_MGMT_GROUP)
+                           .toggle_group("which-shell");
         }
+    }
+
+    inline int app::on_generate_shell_completion(opt::cmd const &hit, string_array const &remain_args) {
+        UNUSED(hit, remain_args);
+        auto const &which_shell = hit.toggle_group("which-shell");
+        std::cout << "which-shell is the choice: " << which_shell << '\n';
+        return 0;
     }
 
     // inline app &app::operator+(const opt::opt &o) {

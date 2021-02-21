@@ -28,6 +28,8 @@ namespace cmdr::opt {
         types::indexed_args _indexed_args{}; // just long-titles
         types::indexed_args _short_args{};
         types::indexed_args _long_args{};
+        types::hit_toggle_groups _hit_toggle_groups{};
+        types::toggle_groups  _toggle_groups{};
         types::cmd_list _all_commands{};
         types::grouped_cmd_list _grouped_commands{{UNSORTED_GROUP, types::cmd_pointers{}}};
         types::indexed_commands _indexed_commands{}; // just long-titles
@@ -63,6 +65,8 @@ namespace cmdr::opt {
             __COPY(_indexed_args);
             __COPY(_short_args);
             __COPY(_long_args);
+            __COPY(_hit_toggle_groups);
+            __COPY(_toggle_groups);
 
             __COPY(_all_commands);
             __COPY(_grouped_commands);
@@ -104,6 +108,8 @@ namespace cmdr::opt {
     }                       \
     typ const &mn() const { return _##mn; }
 
+        // PROP_SET3(hit_toggle_groups, types::hit_toggle_groups)
+
         PROP_SET3(on_command_hit, types::on_command_hit)
         PROP_SET3(on_pre_invoke, types::on_pre_invoke)
         PROP_SET3(on_invoke, types::on_invoke)
@@ -124,6 +130,9 @@ namespace cmdr::opt {
         [[nodiscard]] bool no_sub_commands() const { return _all_commands.empty(); }
 
         std::string title_sequences() const;
+
+        void toggle_group_set(std::string const &key, arg* a);
+        std::string const &toggle_group(std::string const&key) const;
 
     public:
         void add(arg const &a);

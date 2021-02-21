@@ -129,6 +129,7 @@ namespace cmdr::terminal::colors {
             _init();
             if (_colors <= 256) _true_color_enabled = false;
             if (_true_color_enabled) _fg = _bg = -1;
+            _colorful = _default_colorful;
         }
 
     protected:
@@ -168,19 +169,18 @@ namespace cmdr::terminal::colors {
         std::string _ss{};
         std::stringstream _stocked_ss{};
 
-        static bool _colorful;
+        bool _colorful;
+        static bool _default_colorful;
         static int _colors;
         static void _init() {
-            if (!_colorful) {
-                _colorful = terminfo::is_colorful();
-                _colors = terminfo::support_colors();
+            _default_colorful = terminfo::is_colorful();
+            _colors = terminfo::support_colors();
 #if defined(_DEBUG)
-                if (!_colorful) {
-                    _colorful = true;
-                    _colors = 256;
-                }
-#endif
+            if (!_default_colorful) {
+                _default_colorful = true;
+                _colors = 256;
             }
+#endif
         }
 
         std::string modifiers() const {
@@ -213,7 +213,7 @@ namespace cmdr::terminal::colors {
 
     public:
         static void debug_print() {
-            std::cout << "How many colors: " << _colors << ", " << _colorful << '\n';
+            std::cout << "How many colors: " << _colors << ", " << _default_colorful << '\n';
         }
 
     public:
@@ -659,27 +659,27 @@ namespace cmdr::terminal::colors {
         };
 
         friend std::ostream &operator<<(std::ostream &os, const enum style o) {
-            if (_colorful) os << "\033[" << (int) o << "m";
+            if (_default_colorful) os << "\033[" << (int) o << "m";
             return os;
         }
         friend std::ostream &operator<<(std::ostream &os, const enum fg o) {
-            if (_colorful) os << "\033[" << (int) o << "m";
+            if (_default_colorful) os << "\033[" << (int) o << "m";
             return os;
         }
         friend std::ostream &operator<<(std::ostream &os, const enum bg o) {
-            if (_colorful) os << "\033[" << (int) o << "m";
+            if (_default_colorful) os << "\033[" << (int) o << "m";
             return os;
         }
         friend std::ostream &operator<<(std::ostream &os, const enum fgB o) {
-            if (_colorful) os << "\033[" << (int) o << "m";
+            if (_default_colorful) os << "\033[" << (int) o << "m";
             return os;
         }
         friend std::ostream &operator<<(std::ostream &os, const enum bgB o) {
-            if (_colorful) os << "\033[" << (int) o << "m";
+            if (_default_colorful) os << "\033[" << (int) o << "m";
             return os;
         }
         friend std::ostream &operator<<(std::ostream &os, const enum reset o) {
-            if (_colorful) os << "\033[" << (int) o << ";m";
+            if (_default_colorful) os << "\033[" << (int) o << ";m";
             return os;
         }
 
@@ -712,10 +712,19 @@ namespace cmdr::terminal::colors {
          * @brief enable colored text outputting or not.
          * @param enable_colors
          */
-        [[maybe_unused]] static void enable(bool enable_colors = true) {
+        [[maybe_unused]] static void set_default_colorful(bool enable_colors = true) {
+            _default_colorful = enable_colors;
+            if (enable_colors && _colors == 0) _colors = 256;
+        }
+        /**
+         * @brief enable colored text outputting or not.
+         * @param enable_colors
+         */
+        [[maybe_unused]] void enable(bool enable_colors = true) {
             _colorful = enable_colors;
             if (enable_colors && _colors == 0) _colors = 256;
         }
+        bool is_colorful() const { return _colorful; }
 
 #define __R(x) (((x) >> 16) & 0xff)
 #define __G(x) (((x) >> 8) & 0xff)
@@ -726,7 +735,7 @@ namespace cmdr::terminal::colors {
             return os.str();
         }
         friend std::ostream &operator<<(std::ostream &os, const colorize &o) {
-            if (_colorful) {
+            if (o._colorful) {
                 os << "\033[" << o.modifiers();
                 if (o._true_color_enabled) {
                     if (o._fg != -1) {
@@ -754,26 +763,38 @@ namespace cmdr::terminal::colors {
             if (!o._ss.empty())
                 os << o._ss;
 
-            if (_colorful) {
-                // reset
-                if (o._auto_reset) {
-                    os << "\033[0m";
+            //if (o._colorful) {
+            // reset
+            if (o._auto_reset) {
+                os << "\033[0m";
 
-                    auto *xo = const_cast<colorize *>(&o);
-                    xo->_st._i = 0;
-                    xo->_st._individual._auto_reset_invoked = true;
-                    std::stringstream sz;
-                    xo->_stocked_ss.swap(sz);
-                    xo->_cc = nullptr;
-                    xo->_ss.clear();
-                    xo->_fg = xo->_bg = -1;
-                }
+                auto *xo = const_cast<colorize *>(&o);
+                xo->_st._i = 0;
+                xo->_st._individual._auto_reset_invoked = true;
+                std::stringstream sz;
+                xo->_stocked_ss.swap(sz);
+                xo->_cc = nullptr;
+                xo->_ss.clear();
+                xo->_fg = xo->_bg = -1;
             }
+            //}
             return os;
         }
 #undef __R
 #undef __G
 #undef __B
+
+        void clear() {
+            // NOTE: _colorful, _default_colorful, _colors, _true_color_enabled will be kept.
+            _fg = _bg = {};
+            _st._i = 0;
+            if (_true_color_enabled) _fg = _bg = -1;
+            _auto_reset = true;
+            _cc = {};
+            _ss.clear();
+            // _stocked_ss.clear();
+            _stocked_ss.str("");
+        }
     };
 
     // inline colorize &colorize::instance() {
@@ -781,8 +802,8 @@ namespace cmdr::terminal::colors {
     //     return *instance;
     // }
 
-    inline bool colorize::_colorful;
-    inline int colorize::_colors;
+    inline bool colorize::_default_colorful{};
+    inline int colorize::_colors{};
 
 
 } // namespace cmdr::terminal::colors

@@ -36,10 +36,10 @@ namespace cmdr {
         return app::create(name, version, author, copyright, description, examples);
     }
 
-    
+
     inline bool has(char const *key) { return get_app().has(key); }
-    
-    
+
+
     /**
      * @brief retrieve the config item value from store
      * 

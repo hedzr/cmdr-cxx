@@ -155,7 +155,7 @@ TEST_CASE("flags test", "[flags]") {
         std::cout << t1 << '\n';
         auto v1 = t1.as<std::vector<const char *>>();
         auto v2 = std::vector{"a", "Z"};
-        #if _MSC_VER
+#if _MSC_VER
         bool not_ok = false;
         if (v1.size() == v2.size()) {
             for (std::size_t i = 0; i < v1.size(); i++) {
@@ -167,9 +167,9 @@ TEST_CASE("flags test", "[flags]") {
         } else
             not_ok = true;
         REQUIRE(not_ok == false);
-        #else
+#else
         REQUIRE(v1 == v2);
-        #endif
+#endif
         REQUIRE(cli.get_for_cli("no-color").as<bool>());
     }
 

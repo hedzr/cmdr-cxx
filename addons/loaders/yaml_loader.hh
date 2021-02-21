@@ -157,14 +157,14 @@ namespace cmdr::addons::loaders {
             YAML::Node config = YAML::LoadFile(p);
 
             cmdr::util::defer _upd([p]() {
-              auto &cli = cmdr::get_app();
-              cli.set("config.file.loaded", true);
-              auto const *k = "config.file.files";
-              if (!cli.has(k))
-                  cli.set(k, std::vector<std::string>{});
-              auto &vec = cli.get(k).as<std::vector<std::string> &>();
-              vec.push_back(p);
-              // cli.set(k, vec);
+                auto &cli = cmdr::get_app();
+                cli.set("config.file.loaded", true);
+                auto const *k = "config.file.files";
+                if (!cli.has(k))
+                    cli.set(k, std::vector<std::string>{});
+                auto &vec = cli.get(k).as<std::vector<std::string> &>();
+                vec.push_back(p);
+                // cli.set(k, vec);
             });
 
             load_node_to("", config, c);
@@ -227,11 +227,11 @@ namespace cmdr::addons::loaders {
             }
         }
 
-        template <typename T>
-        static auto extractor(YAML::Node const &node){
+        template<typename T>
+        static auto extractor(YAML::Node const &node) {
             return YAML::as_if<bool, std::optional<bool>>(node)();
         }
-        
+
         static cmdr::vars::variable safe_get_value(YAML::Node const &node) {
             cmdr::vars::variable val;
             if (auto as_bool = extractor<bool>(node); as_bool.has_value()) {
@@ -252,14 +252,14 @@ namespace cmdr::addons::loaders {
                 val = as_longlong.value();
             } else if (auto as_ulonglong = extractor<unsigned long long>(node); as_ulonglong.has_value()) {
                 val = as_ulonglong.value();
-                
+
             } else if (auto as_float = extractor<float>(node); as_float.has_value()) {
                 val = as_float.value();
             } else if (auto as_double = extractor<double>(node); as_double.has_value()) {
                 val = as_double.value();
             } else if (auto as_longdouble = extractor<long double>(node); as_longdouble.has_value()) {
                 val = as_longdouble.value();
-                
+
             } else if (auto as_vecint = extractor<std::vector<int>>(node); as_vecint.has_value()) {
                 val = as_vecint.value();
             } else if (auto as_veclong = extractor<std::vector<long>>(node); as_veclong.has_value()) {
@@ -270,7 +270,7 @@ namespace cmdr::addons::loaders {
                 val = as_vecdbl.value();
             } else if (auto as_vecstr = extractor<std::vector<std::string>>(node); as_vecstr.has_value()) {
                 val = as_vecstr.value();
-                
+
             } else if (auto as_ns = extractor<std::chrono::nanoseconds>(node); as_ns.has_value()) {
                 val = as_ns.value();
             } else if (auto as_us = extractor<std::chrono::microseconds>(node); as_us.has_value()) {
@@ -296,7 +296,7 @@ namespace cmdr::addons::loaders {
 
             } else if (auto as_chars = extractor<const_chars>(node); as_chars.has_value()) {
                 val = as_chars.value();
-                
+
             } else { // if (std::optional<std::string> as_string = YAML::as_if<std::string, std::optional<std::string>>(node)(); as_string.has_value()) {
                 val = node.as<std::string>();
             }

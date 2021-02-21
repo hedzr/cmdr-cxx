@@ -31,6 +31,7 @@ sftp-config(-alt\\d?)?\\.json
 \\.sublime-(project|workspace)
 sftp-settings\\.json
 CMakeSettings.json
+cmdr11_cli
 
 
 

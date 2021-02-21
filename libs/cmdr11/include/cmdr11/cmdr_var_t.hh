@@ -163,7 +163,7 @@ namespace cmdr::vars {
             return std::any_cast<T>(_value);
         }
 #endif
-        
+
         template<class T>
         T cast_as() const {
             try {

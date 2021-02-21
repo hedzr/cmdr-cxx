@@ -156,14 +156,20 @@ namespace cmdr::addons::loaders {
         void load_to(std::string const &p, cmdr::app &c) const {
             YAML::Node config = YAML::LoadFile(p);
 
+            // auto &cli = cmdr::get_app();
+            // auto const *k1 = "config.file.files";
+            // auto& v1 = cli.get(k1).as<std::vector<std::string> &>();
+            // std::cout << k1 << ':' << v1.size() << '\n';
+                    
             cmdr::util::defer _upd([p]() {
                 auto &cli = cmdr::get_app();
                 cli.set("config.file.loaded", true);
                 auto const *k = "config.file.files";
-                if (!cli.has(k))
-                    cli.set(k, std::vector<std::string>{});
-                auto &vec = cli.get(k).as<std::vector<std::string> &>();
-                vec.push_back(p);
+                if (!cli.has(k)) {
+                    cli.set(k, std::vector<std::string>{p});
+                    return;
+                }
+                cli.get(k).as<std::vector<std::string> &>().push_back(p);
                 // cli.set(k, vec);
             });
 

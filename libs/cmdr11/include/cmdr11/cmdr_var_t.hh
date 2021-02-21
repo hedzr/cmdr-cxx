@@ -156,16 +156,41 @@ namespace cmdr::vars {
          * @return 
          */
         template<class T>
-        T as() const { return cast_as<T>(); }
+        T as() {
+            return cast_as<T>();
+        }template<class T>
+        T const as() const {
+            return cast_as<T>();
+        }
 #else
         template<class T>
-        T as() const {
+        T as() {
+            return std::any_cast<T>(_value);
+        }
+        template<class T>
+        T const as() const {
             return std::any_cast<T>(_value);
         }
 #endif
 
         template<class T>
-        T cast_as() const {
+        T cast_as() {
+            try {
+                return std::any_cast<T>(_value);
+            } catch (std::bad_cast const &e) {
+                char buf[512];
+                std::ostringstream vs;
+                vs << (*this);
+                std::sprintf(buf, "can't cast type '%s' (value: '%s') -> type '%s', (ex: %s)",
+                             _value.type().name(),
+                             vs.str().c_str(),
+                             debug::type_name<T>().data(),
+                             e.what());
+                cmdr_throw_line(buf);
+            }
+        }
+        template<class T>
+        T const cast_as() const {
             try {
                 return std::any_cast<T>(_value);
             } catch (std::bad_cast const &e) {

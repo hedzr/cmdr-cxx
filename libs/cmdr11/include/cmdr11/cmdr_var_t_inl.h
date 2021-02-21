@@ -21,7 +21,7 @@ namespace cmdr::vars {
 
     
     template<>
-    inline const_chars variable::cast_as<const_chars>() const {
+    inline const_chars variable::cast_as<const_chars>() {
         if (_value.has_value()) {
             if (_value.type() == typeid(std::string)) {
                 auto const &s = std::any_cast<std::string const &>(_value);
@@ -35,7 +35,7 @@ namespace cmdr::vars {
     }
 
     template<>
-    inline const_chars variable::as<const_chars>() const { return cast_as<const_chars>(); }
+    inline const_chars variable::as<const_chars>() { return cast_as<const_chars>(); }
 
     
     // template<class T, class small_string>

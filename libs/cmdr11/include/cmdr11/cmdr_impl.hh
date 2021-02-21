@@ -831,7 +831,7 @@ namespace cmdr {
 
         try {
             for (int i = 0; i < argc; i++) _args_cache.push_back(argv[i]);
-            
+
             prepare();
 
             cmdr_verbose_debug("   - app::parsing args ...");
@@ -905,11 +905,7 @@ namespace cmdr {
 
         } catch (std::exception const &e) {
             std::cerr << "Exception caught : " << e.what() << '\n';
-            std::cerr << "         cmdline : [";
-            for (int i = 0; i < argc; i++) {
-                std::cerr << ' ' << argv[i];
-            }
-            std::cerr << " ]" << '\n';
+            std::cerr << "         cmdline : " << string::join(_args_cache, ' ', '[', ']') << '\n';
             CMDR_DUMP_STACK_TRACE(e);
 
             // } catch (...) {

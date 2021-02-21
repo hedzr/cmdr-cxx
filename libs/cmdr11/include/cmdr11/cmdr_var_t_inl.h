@@ -19,6 +19,25 @@ namespace cmdr::vars {
         return v; // variable(v._value);
     }
 
+    
+    template<>
+    inline const_chars variable::cast_as<const_chars>() const {
+        if (_value.has_value()) {
+            if (_value.type() == typeid(std::string)) {
+                auto const &s = std::any_cast<std::string const &>(_value);
+                return s.c_str();
+            }
+            if (_value.type() == typeid(const_chars)) {
+                return std::any_cast<const_chars>(_value);
+            }
+        }
+        return "";
+    }
+
+    template<>
+    inline const_chars variable::as<const_chars>() const { return cast_as<const_chars>(); }
+
+    
     // template<class T, class small_string>
     // inline T &nodeT<T, small_string>::_get(std::string const &key) {
     //     std::ostringstream ss;

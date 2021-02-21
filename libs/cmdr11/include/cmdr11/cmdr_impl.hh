@@ -694,9 +694,11 @@ namespace cmdr {
         }
 
         std::cout << ss.str();
-        DEBUG_ONLY(if (shell_completion_mode) {
+#ifdef _DEBUG
+        if (shell_completion_mode) {
             _lf << ss.str() << '\n';
-        })
+        }
+#endif
     }
 
 

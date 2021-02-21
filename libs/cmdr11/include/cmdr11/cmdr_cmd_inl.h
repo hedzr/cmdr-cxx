@@ -108,11 +108,14 @@ namespace cmdr::opt {
 
             if (_grouped_args.find(gn) == _grouped_args.end())
                 _grouped_args.emplace(gn, types::arg_pointers{});
-            DEBUG_ONLY(auto size_before = _grouped_args[gn].size());
+#ifdef _DEBUG
+            auto size_before = _grouped_args[gn].size();
             _grouped_args[gn].push_back(ptr);
-            DEBUG_ONLY(auto size_after = _grouped_args[gn].size());
-            DEBUG_ONLY(assert(size_after == size_before + 1));
-
+            auto size_after = _grouped_args[gn].size();
+            assert(size_after == size_before + 1);
+#else
+            _grouped_args[gn].push_back(ptr);
+#endif
             _indexed_args.insert({a.title_long(), ptr});
 
             if (!a.title_short().empty()) {

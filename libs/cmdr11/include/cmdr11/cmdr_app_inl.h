@@ -279,10 +279,11 @@ namespace cmdr {
 
         auto const &help_arg = find_flag("help");
         bool show_hidden_items = help_arg.valid() && help_arg.hit_count() > 2;
+        bool sc_mode = get_for_cli("shell-completion").as<bool>();
 
         // _pr_tree(std::cout, &pc.last_matched_cmd());
         auto c = cmdr::terminal::colors::colorize::create();
-        pc.last_matched_cmd().print_commands(std::cout, c, _minimal_tab_width, true, show_hidden_items, 0);
+        pc.last_matched_cmd().print_commands(std::cout, c, _minimal_tab_width, true, show_hidden_items, sc_mode, 0);
         return 0;
     }
 

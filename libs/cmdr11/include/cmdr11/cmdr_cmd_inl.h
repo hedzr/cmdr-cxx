@@ -737,7 +737,7 @@ namespace cmdr::opt {
         auto dim = vars::store::_dim_text_dim;
         auto underline = vars::store::_long_title_underline;
         auto [th, tw] = terminal::terminfo::get_win_size();
-        if (shell_completion_mode) tw = 9999;
+        if (shell_completion_mode) tw = 9999; // don't wrap the long line
 
         int count_all{};
         std::map<std::string, std::string> dotted_key_on_keys = detail::sort_keys(_grouped_commands);
@@ -802,8 +802,8 @@ namespace cmdr::opt {
 
                 count_all++;
 
-                if (level >= 0 && !x->no_sub_commands()) {
-                    x->print_commands(ss, c, wt, grouped, show_hidden_items, level + level_pad + 1);
+                if (level >= 0 && x->has_sub_commands()) {
+                    x->print_commands(ss, c, wt, grouped, show_hidden_items, shell_completion_mode, level + level_pad + 1);
                 }
             }
         }

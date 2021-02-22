@@ -128,6 +128,7 @@ namespace cmdr::opt {
         static bool is_leading_switch_char(const std::string &flag) { return (flag[0] == '-' || flag[0] == '/'); }
 
         [[nodiscard]] bool no_sub_commands() const { return _all_commands.empty(); }
+        [[nodiscard]] bool has_sub_commands() const { return !_all_commands.empty(); }
 
         std::string title_sequences() const;
 

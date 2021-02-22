@@ -622,9 +622,11 @@ namespace cmdr {
 
         auto const &help_arg = find_flag("help");
         bool show_hidden_items = help_arg.valid() && help_arg.hit_count() > 2;
+        auto const &tree_arg = find_flag("tree");
+        bool tree_mode = tree_arg.hit_count() > 0;
 
         std::ostringstream os1;
-        cc->print_commands(os1, c, _minimal_tab_width, true, show_hidden_items, shell_completion_mode, -1);
+        cc->print_commands(os1, c, _minimal_tab_width, true, show_hidden_items, shell_completion_mode, tree_mode ? 0 : -1);
 
         std::vector<std::ostringstream *> os2;
         auto saved_minimal_tab_width = _minimal_tab_width;
@@ -647,7 +649,7 @@ namespace cmdr {
                                               << tt.str() << '\n';
 
             auto mtw = _minimal_tab_width;
-            trivial->print_flags(*os, c, _minimal_tab_width, true, show_hidden_items, shell_completion_mode, -1);
+            trivial->print_flags(*os, c, _minimal_tab_width, true, show_hidden_items, shell_completion_mode, tree_mode ? 0 : -1);
             if (mtw < _minimal_tab_width) {
                 for (auto *&ptr : os2) {
                     delete ptr;

@@ -590,7 +590,7 @@ In our tests, `test-app2-c1` and `yaml-loader` will request [`yaml-cpp`](https:/
 sudo apt install -y libyaml-cpp-dev
 ```
 
-> For CentOS or RedHat: `sudo dnf install yaml-cpp`
+> For CentOS or RedHat: `sudo dnf install yaml-cpp yaml-cpp-devel yaml-cpp-static`
 
 ##### macOS
 
@@ -615,7 +615,7 @@ vcpkg install yaml-cpp
 The example executables can be found in `./bin`. For example:
 
 ```bash
-./bin/app2
+./bin/cmdr-cli ~~tree
 ```
 
 

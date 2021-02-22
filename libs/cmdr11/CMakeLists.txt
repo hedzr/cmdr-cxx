@@ -41,7 +41,7 @@ option(CMDR_ENABLE_VERBOSE_LOG "whether or not print the matching decisions to l
 #endif ()
 
 
-## SETTINGS ######################################
+## SETTINGS ###################################################
 
 set(PROJECT_ARCHIVE_NAME ${PROJECT_NAME}-${PROJECT_VERSION})
 #if (POLICY CMP0069)
@@ -103,7 +103,7 @@ set(header_files
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_var_t_inl.h
     )
 
-## TARGETS ######################################
+## TARGETS ####################################################
 
 add_library(${PROJECT_NAME} INTERFACE)
 add_library(libs::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
@@ -155,6 +155,11 @@ endif ()
 if (ENABLE_CLI_APP)
     set(CLI_NAME cmdr11-cli)
     add_executable(${CLI_NAME} src/main.cc)
+    target_compile_definitions(${CLI_NAME} PRIVATE
+                               CMDR_ENABLE_AUTO_COMPLETION_LOGFILE=1
+                               CMDR_ENABLE_ASSERTIONS=${_cmdr_enable_assertions}
+                               CMDR_ENABLE_PRECONDITION_CHECKS=${_cmdr_enable_precondition_checks}
+                               CMDR_ENABLE_WRAPPER=${_cmdr_enable_wrapper})
     target_include_directories(${CLI_NAME} PRIVATE $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>)
     target_link_libraries(${CLI_NAME} PRIVATE libs::cmdr11)
     set_target_properties(${CLI_NAME}
@@ -166,7 +171,7 @@ if (ENABLE_CLI_APP)
 endif ()
 
 
-## TESTING ######################################
+## TESTING ####################################################
 
 if (BUILD_TESTING)
     message(STATUS trying add test with name ${PROJECT_NAME}_tests)
@@ -174,7 +179,7 @@ if (BUILD_TESTING)
 endif ()
 
 
-## INSTALLING ######################################
+## INSTALLING #################################################
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -233,7 +238,7 @@ install(FILES
 #        )
 
 
-## PACKAGING ######################################
+## PACKAGING ##################################################
 
 # https://cmake.org/cmake/help/latest/module/CPack.html
 
@@ -300,7 +305,7 @@ include(CPack)
 #endif ()
 
 
-## DEBUG ######################################
+## DEBUG ######################################################
 
 
 # debug_dump_target_inc_dirs(${PROJECT_NAME})

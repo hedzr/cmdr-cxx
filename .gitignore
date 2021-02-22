@@ -14,6 +14,7 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 
+
 .options.cmake
 
 
@@ -31,7 +32,8 @@ sftp-config(-alt\\d?)?\\.json
 \\.sublime-(project|workspace)
 sftp-settings\\.json
 CMakeSettings.json
-cmdr11_cli
+cmdr11_cli*
+cmdr11-cli*
 
 
 

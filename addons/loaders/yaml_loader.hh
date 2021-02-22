@@ -161,7 +161,7 @@ namespace cmdr::addons::loaders {
             // auto& v1 = cli.get(k1).as<std::vector<std::string> &>();
             // std::cout << k1 << ':' << v1.size() << '\n';
                     
-            cmdr::util::defer _upd([p]() {
+            cmdr::util::defer _loaded_ok([p]() {
                 auto &cli = cmdr::get_app();
                 cli.set("config.file.loaded", true);
                 auto const *k = "config.file.files";
@@ -171,6 +171,8 @@ namespace cmdr::addons::loaders {
                 }
                 cli.get(k).as<std::vector<std::string> &>().push_back(p);
                 // cli.set(k, vec);
+                
+                // TODO loading the conf.d directory if it's present.
             });
 
             load_node_to("", config, c);

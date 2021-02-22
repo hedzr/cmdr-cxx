@@ -424,8 +424,11 @@ namespace cmdr::opt {
                                     std::string &clean_key,
                                     types::cmd_pointers const &val,
                                     terminal::colors::colorize &c,
-                                    terminal::colors::colorize::Colors256 fg, bool dim,
-                                    bool show_hidden_items, int level, int &level_pad) {
+                                    terminal::colors::colorize::Colors256 fg,
+                                    bool dim,
+                                    bool show_hidden_items,
+                                    int level,
+                                    int &level_pad) {
             std::ostringstream ss;
             if (group_name != UNSORTED_GROUP) {
                 int i = 0;
@@ -490,7 +493,8 @@ namespace cmdr::opt {
                                     std::string &clean_key,
                                     types::arg_pointers const &val,
                                     terminal::colors::colorize &c,
-                                    terminal::colors::colorize::Colors256 fg, bool dim,
+                                    terminal::colors::colorize::Colors256 fg,
+                                    bool dim,
                                     bool show_hidden_items) {
             std::ostringstream ss;
             if (group_name != UNSORTED_GROUP) {
@@ -595,7 +599,8 @@ namespace cmdr::opt {
         inline std::string _out_comma_space(bool title_is_empty, bas *x,
                                             cmdr::terminal::colors::colorize &c,
                                             cmdr::terminal::colors::colorize::Colors256 fg,
-                                            bool dim, bool underline,
+                                            bool dim,
+                                            bool underline,
                                             int &escaped_chars) {
             if (title_is_empty) {
                 return "  "; // ss << ' ' << ' ';
@@ -616,7 +621,8 @@ namespace cmdr::opt {
         inline std::string _out_placeholder(arg *x,
                                             cmdr::terminal::colors::colorize &c,
                                             cmdr::terminal::colors::colorize::Colors256 fg,
-                                            bool dim, bool underline,
+                                            bool dim,
+                                            bool underline,
                                             int &escaped_chars) {
             std::ostringstream osr;
             if (!x->placeholder().empty()) {
@@ -643,7 +649,7 @@ namespace cmdr::opt {
                                               bool right_align,
                                               int wa,
                                               int &escaped_chars,
-                                              bool flag = true) {
+                                              bool flag) {
             std::ostringstream osr;
             if (!x->title_aliases().empty()) {
                 int w = 0;
@@ -677,8 +683,10 @@ namespace cmdr::opt {
         inline std::string _out_title_short(std::string const &title, bas *x,
                                             cmdr::terminal::colors::colorize &c,
                                             cmdr::terminal::colors::colorize::Colors256 fg,
-                                            bool dim, bool underline,
-                                            int &escaped_chars, bool flag = true) {
+                                            bool dim,
+                                            bool underline,
+                                            int &escaped_chars,
+                                            bool flag) {
             std::ostringstream osr;
             if (x->hidden()) {
                 std::ostringstream os1, os2;
@@ -703,8 +711,10 @@ namespace cmdr::opt {
         inline std::string _out_title_long(std::string const &title, bas *x,
                                            cmdr::terminal::colors::colorize &c,
                                            cmdr::terminal::colors::colorize::Colors256 fg,
-                                           bool dim, bool underline,
-                                           int &escaped_chars, bool flag = true) {
+                                           bool dim,
+                                           bool underline,
+                                           int &escaped_chars,
+                                           bool flag) {
             std::ostringstream os1, os2, osr;
             if (x->hidden()) {
                 if (flag) {
@@ -791,7 +801,7 @@ namespace cmdr::opt {
 
                 w = wf + 2 + ws + 2 + wa;
                 auto wt_real = (wt < 43 ? 43 : wt);
-                ss << std::setw(((std::size_t) wt_real - w - (level >= 0 ? level : 0))) << ' ';
+                ss << std::setw(((std::size_t) wt_real - w - ((level >= 0 ? level : 0) + level_pad) * 2)) << ' ';
 
                 if (shell_completion_mode) ss << '|'; // print a delimiter char for shell completion parser
 
@@ -821,7 +831,7 @@ namespace cmdr::opt {
         auto underline = vars::store::_long_title_underline;
         auto [th, tw] = terminal::terminfo::get_win_size();
         if (shell_completion_mode) tw = 9999;
-        
+
         int count_all{};
         std::map<std::string, std::string> dotted_key_on_keys = detail::sort_keys(_grouped_args);
         detail::populate_tab_stop_width(dotted_key_on_keys, _grouped_args, show_hidden_items, wt);
@@ -848,7 +858,7 @@ namespace cmdr::opt {
                 ss << ' ' << ' ' << std::left << std::setfill(' ');
                 if (!x->title_long().empty()) {
                     w = (int) x->title_long().length();
-                    ss << detail::_out_title_long(x->title_long(), x, c, fg, dim, underline, escaped_chars);
+                    ss << detail::_out_title_long(x->title_long(), x, c, fg, dim, underline, escaped_chars, true);
                     ss << detail::_out_placeholder(x, c, fg, dim, underline, escaped_chars);
                     ss << detail::_out_comma_space(x->title_short().empty() && x->title_aliases().empty(), x, c, fg, dim, underline, escaped_chars);
 
@@ -862,7 +872,7 @@ namespace cmdr::opt {
 
                 if (!x->title_short().empty()) {
                     w = (int) x->title_short().length();
-                    ss << detail::_out_title_short(x->title_short(), x, c, fg, dim, underline, escaped_chars);
+                    ss << detail::_out_title_short(x->title_short(), x, c, fg, dim, underline, escaped_chars, true);
                     ss << detail::_out_comma_space(x->title_aliases().empty(), x, c, fg, dim, underline, escaped_chars);
 
                     w = ws - w - 1;
@@ -870,7 +880,7 @@ namespace cmdr::opt {
                 } else
                     ss << std::setw((std::size_t) ws + 2) << ' ';
 
-                ss << detail::_out_title_aliases(x, c, fg, dim, underline, _alias_right_align, wa, escaped_chars);
+                ss << detail::_out_title_aliases(x, c, fg, dim, underline, _alias_right_align, wa, escaped_chars, true);
 
                 w = wf + 2 + ws + 2 + wa;
                 auto wt_real = (wt < 43 ? 43 : wt);

@@ -438,7 +438,7 @@ The values of CLI flags are ignored but `~~cli` can make them raised when dumpin
 
 This flag will print the command hierarchical structure:
 
-<img width="919" alt="image-20210211175837313" src="https://user-images.githubusercontent.com/12786150/107622691-29127580-6c93-11eb-9b80-38c73b85eb6b.png">
+<img width="895" alt="image-20210222130046734" src="https://user-images.githubusercontent.com/12786150/108664649-2246f680-750e-11eb-8e6d-0437f9797e63.png">
 
 
 

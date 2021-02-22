@@ -615,8 +615,53 @@ vcpkg install yaml-cpp
 The example executables can be found in `./bin`. For example:
 
 ```bash
-./bin/cmdr-cli ~~tree
+# print command tree (with hidden commands)
+./bin/cmdr11-cli -hhh ~~tree
 ```
+
+
+
+### Hooks in cmdr-cxx
+
+
+
+1. `auto & cli = cmdr::get_app()`
+
+2. Register actions:
+
+   `void register_action(opt::Action action, opt::types::on_internal_action const &fn);`
+
+   In your pre_invoke handler, some actions called `internal actions` could by triggered via the returned `Action` code.
+
+   The `Action` codes is extensible, followed by a `on_internal_action` handler user-customized.
+
+3. Hooks
+
+   > `xxx_handlers` or `s`(`_externals`) means you can specify it multiple times.
+
+   1. `set_global_on_arg_added_handlers`, `set_global_on_cmd_added_handlers`
+
+   2. `set_global_on_arg_matched_handlers`, `set_global_on_cmd_matched_handlers`
+
+   3. `set_global_on_loading_externals`
+
+   4. `set_global_on_command_not_hooked`
+
+      cmdr prints some hitting info for a sub-command while no `on_invoke` handler associated with it.
+
+      Or, you can specify one yours via `set_global_on_command_not_hooked`.
+
+   5. `set_global_on_post_run_handlers`
+
+   6. `set_on_handle_exception_ptr`
+
+   7. `set_global_pre_invoke_handler`, `set_global_post_invoke_handler`
+
+      
+
+   8. 
+
+
 
 
 

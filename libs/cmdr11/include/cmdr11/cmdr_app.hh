@@ -194,6 +194,15 @@ namespace cmdr {
             return (*this);
         }
 
+        app &treat_unknown_input_command_as_error(bool b) {
+            _treat_unknown_input_command_as_error = b;
+            return (*this);
+        }
+        app &treat_unknown_input_flag_as_error(bool b) {
+            _treat_unknown_input_flag_as_error = b;
+            return (*this);
+        }
+
     public:
         app &set_global_pre_invoke_handler(opt::types::on_pre_invoke &&cb) {
             _global_on_pre_invoke = std::move(cb);
@@ -204,45 +213,49 @@ namespace cmdr {
             return (*this);
         }
 
-        app &treat_unknown_input_command_as_error(bool b) {
-            _treat_unknown_input_command_as_error = b;
-            return (*this);
-        }
-        app &treat_unknown_input_flag_as_error(bool b) {
-            _treat_unknown_input_flag_as_error = b;
-            return (*this);
-        }
 
-
-        app &set_global_on_arg_added(types::on_arg_added &&cb) {
+        app &set_global_on_arg_added_handlers(types::on_arg_added &&cb) {
             _on_arg_added.push_back(cb);
             return (*this);
         }
-        app &set_global_on_cmd_added(types::on_cmd_added &&cb) {
+        app &set_global_on_cmd_added_handlers(types::on_cmd_added &&cb) {
             _on_cmd_added.push_back(cb);
             return (*this);
         }
-        app &set_global_on_arg_matched(types::on_arg_matched &&cb) {
+        app &set_global_on_arg_matched_handlers(types::on_arg_matched &&cb) {
             _on_arg_matched.push_back(cb);
             return (*this);
         }
-        app &set_global_on_cmd_matched(types::on_cmd_matched &&cb) {
+        app &set_global_on_cmd_matched_handlers(types::on_cmd_matched &&cb) {
             _on_cmd_matched.push_back(cb);
             return (*this);
         }
 
 
+        /** 
+         * @brief To load a special external source (config files, configuration 
+         * center, and so on) into `Option Store`.
+         */
         app &set_global_on_loading_externals(types::on_loading_externals &&cb) {
             _on_loading_externals.push_back(cb);
             return (*this);
         }
 
+        /**
+         * @brief cmdr prints some hitting info for a sub-command while 
+         * no `on_invoke` handler associated with it.
+         * 
+         * Or, you can specify one yours via `set_global_on_command_not_hooked`.
+         * 
+         * @param cb 
+         * @return 
+         */
         app &set_global_on_command_not_hooked(opt::types::on_invoke const &cb) {
             _on_command_not_hooked = cb;
             return (*this);
         }
 
-        app &set_global_on_post_run(types::on_post_run const &fn) {
+        app &set_global_on_post_run_handlers(types::on_post_run const &fn) {
             _on_post_runs.push_back(fn);
             return (*this);
         }

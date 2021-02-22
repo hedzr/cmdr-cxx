@@ -203,6 +203,17 @@ namespace cmdr {
             return (*this);
         }
 
+        /**
+         * @brief In feel-like mode, cmdr will pick the most alike 
+         * one and invoke it when the unknown command found.
+         * @param b 
+         * @return 
+         */
+        app &enable_feel_like_mode(bool b = true) {
+            set("feel-like", b);
+            return (*this);
+        }
+
     public:
         app &set_global_pre_invoke_handler(opt::types::on_pre_invoke &&cb) {
             _global_on_pre_invoke = std::move(cb);

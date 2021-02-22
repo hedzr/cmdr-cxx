@@ -410,35 +410,56 @@ namespace cmdr {
                 return rc;
             }
         }
-        std::cerr << "Unknown command: " << std::quoted(pc.title);
+
+        std::ostringstream os;
         auto &c = pc.last_matched_cmd();
         if (c.valid()) {
-            std::cerr << " under matched command: " << std::quoted(c.title_sequences());
-            std::cerr << '\n';
-
+            std::map<text::distance, opt::cmd const *> matched;
             text::jaro_winkler_distance jaro{_jaro_winkler_matching_threshold};
-            std::ostringstream os;
+
             for (auto const &cc : c._all_commands) {
                 if (jaro.calculate(pc.title.c_str(), cc._long.c_str()).matched()) {
+                    matched.insert({jaro.get_distance(), &cc});
                     os << '\n'
                        << "   - " << std::quoted(cc._long) << '?';
                 }
                 if (jaro.calculate(pc.title.c_str(), cc._short.c_str()).matched()) {
+                    matched.insert({jaro.get_distance(), &cc});
                     os << '\n'
                        << "   - " << std::quoted(cc._short) << '?';
                 }
                 for (auto const &str : cc._aliases) {
                     if (jaro.calculate(pc.title.c_str(), str.c_str()).matched()) {
+                        matched.insert({jaro.get_distance(), &cc});
                         os << '\n'
                            << "   - " << std::quoted(str) << '?';
                     }
                 }
             }
-            auto msg = os.str();
-            if (!msg.empty()) {
-                std::cerr << "  Did you mean" << msg;
+
+            if (!matched.empty()) {
+                auto feel_like = get_for_cli("feel-like").as<bool>();
+                if (feel_like) {
+                    auto const *hit = matched.rbegin()->second;
+
+                    cmr.matched = true;
+                    cmr.obj = const_cast<opt::cmd *>(hit);
+                    cmr.should_abort = false;
+
+                    pc.add_matched_cmd(cmr.obj);
+
+                    cmdr_verbose_debug("- feel-like [distance=%lf] for the unknown command '%s', the most alike one ('%s') picked.",
+                                       jaro.get_distance(), pc.title.c_str(),
+                                       cmr.obj->title().c_str());
+                    return opt::Action::Continue;
+                }
             }
         }
+
+        std::cerr << "Unknown command: " << std::quoted(pc.title);
+        std::cerr << " under matched command: " << std::quoted(c.title_sequences());
+        std::cerr << '\n';
+        std::cerr << "  Did you mean" << os.str();
         std::cerr << '\n';
         return opt::Action::Abortion;
     }

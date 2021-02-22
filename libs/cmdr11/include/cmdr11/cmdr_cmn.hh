@@ -43,6 +43,7 @@ namespace cmdr::opt {
     class arg;
 
     namespace types {
+        using arg_pointer = arg *;
         using arg_list = std::list<arg>;
         using arg_pointers = std::list<arg *>;
         using grouped_arg_list = std::unordered_map<std::string, arg_pointers>; // key: group-name
@@ -54,6 +55,7 @@ namespace cmdr::opt {
     class cmd;
 
     namespace types {
+        using cmd_pointer = cmd *;
         using cmd_list = std::list<cmd>;
         using cmd_pointers = std::list<cmd *>;
         using grouped_cmd_list = std::unordered_map<std::string, cmd_pointers>; // key: group-name

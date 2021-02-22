@@ -384,6 +384,12 @@ namespace cmdr {
                 // .on_invoke(cli.on_invoking_print_cmd)
                 ;
 
+        cli += cmdr::opt::opt{}("feel-like")
+                       .description("allows best choice for unknown command")
+                       .group(SYS_MGMT_GROUP)
+                       .hidden()
+                       .env_vars("FEEL_LIKE");
+        
         cli += cmdr::opt::opt{}("no-color", "nc")
                        .description("disable color text in terminal")
                        .group(SYS_MGMT_GROUP)

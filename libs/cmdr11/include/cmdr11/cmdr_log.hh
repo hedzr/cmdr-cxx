@@ -72,6 +72,7 @@ namespace cmdr::log {
         };
     } // namespace detail
 
+#if 0
     class log {
     public:
         template<class... Args>
@@ -111,7 +112,7 @@ namespace cmdr::log {
     private:
         static detail::Log &xlog() { return detail::Log::instance(); }
     }; // class log
-
+#endif
 
     class holder {
         const char *_file;

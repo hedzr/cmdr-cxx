@@ -695,7 +695,7 @@ namespace cmdr {
 
         std::cout << ss.str();
         DEBUG_ONLY(if (shell_completion_mode) {
-            _lf << ss.str() << '\n';
+            _sa_lf << ss.str() << '\n';
         })
     }
 
@@ -826,7 +826,7 @@ namespace cmdr {
         // // optional to post_run(), for the rare exception post processing if necessary
         post_runner post_runner([=]() {
             post_run();
-            DEBUG_ONLY(_lf.close());
+            DEBUG_ONLY(_sa_lf.close());
         });
 
         try {

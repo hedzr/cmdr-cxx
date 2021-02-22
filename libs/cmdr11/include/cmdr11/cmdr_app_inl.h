@@ -397,15 +397,17 @@ namespace cmdr {
                        .env_vars("SHELL_COMPLETION")
                        .on_hit([&](cmdr::opt::cmd const &hit, cmdr::opt::arg const &hit_flag, string_array const &remain_args) -> cmdr::opt::Action {
                            UNUSED(hit, hit_flag, remain_args);
+#if CMDR_ENABLE_AUTO_COMPLETION_LOGFILE == 1
                            DEBUG_ONLY({
                                bool shell_completion_mode = get_for_cli("shell-completion").as<bool>();
                                if (shell_completion_mode) {
-                                   this->_lf = std::ofstream(path::get_executable_path().filename().u8string() + ".log");
+                                   this->_sa_lf = std::ofstream(path::get_executable_path().filename().u8string() + ".log");
                                    for (auto const &v : _args_cache)
-                                       this->_lf << v << ' ';
-                                   this->_lf << '\n';
+                                       this->_sa_lf << v << ' ';
+                                   this->_sa_lf << '\n';
                                }
                            })
+#endif
                            return cmdr::opt::Action::Continue;
                        });
 

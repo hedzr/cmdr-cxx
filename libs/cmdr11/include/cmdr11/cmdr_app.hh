@@ -465,7 +465,7 @@ namespace cmdr {
         std::string _tail_line;
         // std::string _examples;
 
-        std::ofstream _lf;
+        std::ofstream _sa_lf; // logfile for shell auto-completion debugging
         string_array _args_cache;
 
         //

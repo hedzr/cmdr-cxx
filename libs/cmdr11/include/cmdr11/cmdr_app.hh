@@ -369,7 +369,7 @@ namespace cmdr {
 
         int on_invoking_print_cmd(opt::cmd const &hit, string_array const &remain_args);
         int on_generate_shell_completion(opt::cmd const &hit, string_array const &remain_args);
-        int generate_bash_completion();
+        int generate_bash_completion(bool dry_run = false, bool bet = false, bool print_to_stdout = false);
 
     public:
         app &operator+(opt::arg const &a) override;

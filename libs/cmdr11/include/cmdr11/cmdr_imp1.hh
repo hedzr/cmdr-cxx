@@ -89,13 +89,19 @@ namespace cmdr::opt {
 
     inline std::string arg::defaults() const {
         std::stringstream ss;
-        ss << ' ' << '[' << "DEFAULT";
-        if (!_placeholder.empty())
-            ss << ' ' << _placeholder;
-        ss << '=' << *_default.get() << ']';
-        // if (!std::holds_alternative<std::monostate>(_default)) {
-        //     ss << ' ' << '[' << "DEFAULT=" << variant_to_string(_default) << ']';
-        // }
+        bool tested{true};
+        if (_default->type() == typeid(bool)) {
+            tested = !(_default->as<bool>() == false);
+        }
+        if (tested) {
+            ss << ' ' << '[' << "DEFAULT";
+            if (!_placeholder.empty())
+                ss << ' ' << _placeholder;
+            ss << '=' << *_default.get() << ']';
+            // if (!std::holds_alternative<std::monostate>(_default)) {
+            //     ss << ' ' << '[' << "DEFAULT=" << variant_to_string(_default) << ']';
+            // }
+        }
         return ss.str();
     }
     inline const arg::var_type &arg::default_value() const { return _default; }

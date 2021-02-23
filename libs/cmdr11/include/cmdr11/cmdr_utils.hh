@@ -33,6 +33,15 @@
 
 #include <chrono>
 
+#ifdef __cpp_lib_filesystem
+#include <filesystem>
+#else
+#include <experimental/filesystem>
+namespace std {
+    namespace filesystem = experimental::filesystem;
+}
+#endif
+
 #include "cmdr_dbg.hh"
 
 #include "cmdr_chrono.hh"
@@ -251,6 +260,18 @@ namespace cmdr::util {
     private:
         std::function<void()> _fn;
     };
+
+
+    inline std::string detect_shell_env() {
+        auto *str = std::getenv("SHELL");
+        if (str != nullptr) {
+            auto path = std::filesystem::path(str);
+            return path.filename().u8string();
+        }
+        return "unknown";
+    }
+
+    
 } //namespace cmdr::util
 
 #endif //CMDR_CXX11_CMDR_UTILS_HH

@@ -458,6 +458,10 @@ namespace cmdr::debug {
 #if !defined(OS_WIN)
 namespace cmdr::debug {
 
+    /**
+     * @brief 
+     * @todo add supports to windows SEH
+     */
     class UnhandledExceptionHookInstaller final {
         std::function<void()> _f{};
         static UnhandledExceptionHookInstaller *_this;

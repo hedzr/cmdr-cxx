@@ -162,6 +162,7 @@ namespace cmdr {
 
     inline int app::on_invoking_print_cmd(opt::cmd const &hit, string_array const &remain_args) {
         UNUSED(hit, remain_args);
+        using Colors256 = terminal::colors::colorize::Colors256;
         std::cout << "command " << std::quoted(hit.title()) << " hit." << '\n';
         walk_args([=](opt::arg &a) {
             if (a.hit_count() > 0) {
@@ -169,14 +170,14 @@ namespace cmdr {
                 auto &v = _store.get_raw(k);
                 std::ostringstream os1, os2, os3, os4;
                 os1 << a.hit_count() << " hits: ";
-                os2 << vars::store::_c.fg(terminal::colors::colorize::Colors256::Green).s(os1.str());
+                os2 << vars::store::_c.fg(Colors256::Green).s(os1.str());
                 os3 << " (hit title: " << std::quoted(a.hit_title())
                     << ", spec:" << a.hit_special()
                     << ", long:" << a.hit_long()
                     << ", env:" << a.hit_env() << ")";
-                os4 << vars::store::_c.fg(terminal::colors::colorize::Colors256::Grey).italic().s(os3.str());
+                os4 << vars::store::_c.fg(Colors256::Grey).italic().s(os3.str());
                 std::cout << " - " << os2.str() << std::quoted(a.title())
-                          << os4.str() << " => " << v << '\n';
+                          << os4.str() << ": '" << k << "' => " << v << '\n';
             }
         });
         return 0;
@@ -355,7 +356,7 @@ namespace cmdr {
 
         // build-info
 
-        cli += cmdr::opt::opt{}("build-info", "#", "bdinf")
+        cli += cmdr::opt::opt{}("build-info", "#", "bdinfo")
                        .description("display the building information")
                        .group(SYS_MGMT_GROUP)
                        .hidden(hide_sys_tools | true)
@@ -385,12 +386,12 @@ namespace cmdr {
                 // .on_invoke(cli.on_invoking_print_cmd)
                 ;
 
-        cli += cmdr::opt::opt{}("feel-like")
-                       .description("allows best choice for unknown command")
+        cli += cmdr::opt::opt{}("feel-like", "bet", "bet")
+                       .description("best choice will be invoked for unknown command")
                        .group(SYS_MGMT_GROUP)
                        .hidden()
                        .env_vars("FEEL_LIKE");
-        
+
         cli += cmdr::opt::opt{}("no-color", "nc")
                        .description("disable color text in terminal")
                        .group(SYS_MGMT_GROUP)
@@ -472,10 +473,19 @@ namespace cmdr {
         {
             auto &t1 = *cli.last_added_command();
 
-            t1 += cmdr::opt::opt{}("feel-like")
-                          .description("allows best choice")
+            t1 += cmdr::opt::opt{}("feel-like", "bet", "bet")
+                          .description("The best choice will be applied")
                           .group("Generators")
                           .env_vars("FEEL_LIKE");
+            t1 += cmdr::opt::opt{}("dry-run", "dry", "dry")
+                          .description("Don't generate the result file(s)")
+                          .group("Generators")
+                          .env_vars("DRY_RUN");
+            t1 += cmdr::opt::opt{}("stdout", "c")
+                          .description("Prints the result file(s)")
+                          .group("Generators")
+                          .env_vars("STDOUT");
+
 
             t1 += cmdr::opt::sub_cmd{}("doc", "d", "markdown", "docx", "pdf", "tex")
                           .description("generate a markdown document, or: pdf/TeX/...");
@@ -505,7 +515,12 @@ namespace cmdr {
                           .description("generate the bash/zsh auto-completion script or install it.")
                           .on_invoke([&](auto &&...args) -> int { return cli.on_generate_shell_completion(args...); });
             auto &csh = *t1.last_added_command();
-            csh += cmdr::opt::opt{true}("bash", "b")
+            csh += cmdr::opt::opt{}("drop", "d", "remove", "uninstall")
+                           .description("Uninstall/erase the installed completion file");
+            csh += cmdr::opt::opt{true}("auto", "a")
+                           .description("prints shell-completion scripts within current shell")
+                           .toggle_group("which-shell");
+            csh += cmdr::opt::opt{}("bash", "b")
                            .description("prints the bash-completion scripts for this app")
                            .toggle_group("which-shell");
             csh += cmdr::opt::opt{}("zsh", "z")
@@ -515,25 +530,68 @@ namespace cmdr {
                            .description("prints the fish-completion scripts for this app")
                            .toggle_group("which-shell");
             csh += cmdr::opt::opt{""}("name", "n")
-                           .description("use this name instead of executable name");
+                           .description("use this name instead of executable name")
+                           .placeholder("FILENAME");
         }
     }
 
     inline int app::on_generate_shell_completion(opt::cmd const &hit, string_array const &remain_args) {
         UNUSED(hit, remain_args);
+        auto dry_run = hit.owner()->find_flag("dry-run")->hit_count() > 0;
+        auto bet = hit.owner()->find_flag("feel-like")->hit_count() > 0;
+        auto print_to_stdout = hit.owner()->find_flag("stdout")->hit_count() > 0;
         auto const &which_shell = hit.toggle_group("which-shell");
         std::ostringstream os;
-        os << "which-shell is the choice: " << which_shell;
+        os << "which-shell: " << which_shell;
         std::cerr << vars::store::_c.fg(vars::store::_dim_text_fg).s(os.str()) << '\n';
-        if (which_shell == "bash") {
-            generate_bash_completion();
+
+        std::string ws = which_shell;
+        if (which_shell == "auto") {
+            ws = util::detect_shell_env();
+            os.str("");
+            os << "which-shell detected: " << ws;
+            std::cerr << vars::store::_c.fg(vars::store::_dim_text_fg).s(os.str()) << '\n';
+        }
+
+        if (ws == "bash") {
+            generate_bash_completion(dry_run, bet, print_to_stdout);
         } else {
-            std::cerr << "Not implemented for " << std::quoted(which_shell) << " yet" << '\n';
+            std::cerr << "Not implemented for '" << std::quoted(ws) << "' yet" << '\n';
         }
         return 0;
     }
 
-    inline int app::generate_bash_completion() {
+    inline bool _write_bash_comp_file_to(std::filesystem::path &path, std::filesystem::path &safe_name, std::string &contents, bool drop, std::string const &ok_msg) {
+        bool written{};
+        try {
+            // dir /= filename;
+            if (drop) {
+                if (std::filesystem::remove(path)) {
+                    std::cerr << path << " removed" << '\n';
+                    written = true;
+                } else {
+                    std::cerr << "cannot remove " << path << '\n';
+                }
+            } else {
+                std::ofstream out(path);
+                if (out) {
+                    util::defer dx_fn(std::bind(&std::ofstream::close, &out));
+                    out << contents;
+                    if (out) {
+                        written = true;
+                        cross::setenv("TARGET", path.u8string().c_str());
+                        cross::setenv("TARGET_DIR", path.parent_path().u8string().c_str());
+                        std::cerr << vars::store::dark_text(string::expand_env(ok_msg));
+                    }
+                }
+            }
+        } catch (...) {
+            UNUSED(safe_name);
+        }
+        return written;
+    }
+
+    inline int app::generate_bash_completion(bool dry_run, bool bet, bool print_to_stdout) {
         const char *tpl = R"SH-EOF(
 # bash completion wrapper for %{EXE_NAME} v%{APP_VERSION}
 # This file is generated by cmdr-cxx core.
@@ -600,9 +658,11 @@ fi
 
 )SH-EOF";
 
+        bool drop = get_for_cli("generate.shell.drop").as<bool>();
+
         // auto *safe_name = std::getenv("SAFE_APP_NAME");
         auto *exe_name = std::getenv("EXE_NAME");
-        auto name = get_for_cli("generate.shell.name").as<const_chars>();
+        const auto *name = get_for_cli("generate.shell.name").as<const_chars>();
         const_chars n = name && *name ? name : exe_name;
         std::string sn = n;
         string::replace(sn, "-", "_");
@@ -615,18 +675,56 @@ fi
         string::replace_all(contents, "%{APP_NAME}", n);
         string::replace_all(contents, "%{APP_VERSION}", std::getenv("APP_VERSION"));
 
-        std::ofstream out(safe_name);
-        util::defer dx_fn(std::bind(&std::ofstream::close, &out));
-        out << contents;
-        std::cerr << vars::store::dark_text(string::expand_env(R"("$SAFE_APP_NAME" was written.
+        std::filesystem::path path{};
+        if (!dry_run) {
+            bool written{};
+            if (bet) {
+                for (auto const *dir : std::vector<const_chars>{
+                             "$HOME/.linuxbrew/etc/bash_completion.d",
+                             "/usr/local/etc/bash_completion.d",
+                             "/etc/bash_completion.d",
+                     }) {
+                    // if (std::filesystem::exists(path))
+                    //     if(auto st=std::filesystem::status(path);st.permissions())
+                    path = string::expand_env(dir);
+                    path /= safe_name;
+                    written = _write_bash_comp_file_to(path, safe_name,
+                                                       contents, drop,
+                                                       R"("$SAFE_APP_NAME" was written to $TARGET_DIR/.
+Re-login your terminal/tty to take the effects.
+Or apply it in-place:
+$ source $TARGET
+
+)");
+                    if (!written && !drop) {
+                        std::cerr << "can't write to " << path << ". ignored" << '\n';
+                    }
+                    if (written)
+                        break;
+                }
+            }
+
+            if (!written) {
+                path = safe_name;
+                written = _write_bash_comp_file_to(path, safe_name, contents, drop, R"("$SAFE_APP_NAME" was written.
 Put it into /usr/local/etc/bash_completion.d, and
 Re-login your terminal/tty to take the effects.
 Or apply it in-place:
-$ source $SAFE_APP_NAME
+$ source $TARGET
 
-)"));
+)");
+            }
+        }
+
+        if (print_to_stdout && !drop)
+            std::cout << contents << '\n';
+        else if (drop) {
+            if (dry_run)
+                std::cout << path << " will be removed" << '\n';
+        }
         return 0;
     }
+
 
     // inline app &app::operator+(const opt::opt &o) {
     //     cmd::operator+(a);

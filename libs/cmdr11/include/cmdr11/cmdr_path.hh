@@ -168,12 +168,9 @@ namespace cmdr::path {
 // https://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros
 //
 #ifdef __cpp_lib_filesystem
-
 #include <filesystem>
-
 #else
 #include <experimental/filesystem>
-
 namespace std {
     namespace filesystem = experimental::filesystem;
 }

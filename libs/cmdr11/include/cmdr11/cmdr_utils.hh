@@ -543,13 +543,14 @@ namespace cmdr::util {
         void push_back(T const &data) { push(data); }
         void pop_front() { _root->pop(_count); }
         T &front() { return *begin(); }
+        std::size_t size() const { return _count; }
+        bool empty() const { return _count == 0; }
 
         void push(T data) {
             _push(_root, std::move(data));
             _count++;
         }
         T &pop() { return _root->pop(_count); }
-        bool empty() const { return _count == 0; }
         static bool is_null(T const &t) { return t == element::_null; }
 
     public:

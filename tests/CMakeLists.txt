@@ -101,6 +101,8 @@ define_test_program(valarray-test valarray_test.cc)
 define_test_program(complex-test complex_test.cc)
 define_test_program(mem-singleton-1 mem_test_for_singleton.cc)
 
+define_test_program(priority-queue priority_queue.cc)
+
 define_test_program(store-c2 store_c2.cc)
 define_test_program(flags-c2 flags_c2.cc second_src.cc)
 define_test_program(jaro-c2 jaro_c2.cc)

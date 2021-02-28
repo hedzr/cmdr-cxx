@@ -36,13 +36,22 @@
 
 #include <chrono>
 
+#ifndef __FS_COMPATIBLE
+#define __FS_COMPATIBLE
 #ifdef __cpp_lib_filesystem
 #include <filesystem>
 #else
+
+#if __cplusplus < 201703L
 #include <experimental/filesystem>
 namespace std {
     namespace filesystem = experimental::filesystem;
 }
+#else
+#include <filesystem>
+#endif
+
+#endif
 #endif
 
 #include "cmdr_dbg.hh"

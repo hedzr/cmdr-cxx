@@ -9,6 +9,7 @@
 
 #include <filesystem>
 #include <string>
+#include <chrono>
 
 
 namespace cmdr::path {
@@ -167,13 +168,22 @@ namespace cmdr::path {
 //
 // https://en.cppreference.com/w/User:D41D8CD98F/feature_testing_macros
 //
+#ifndef __FS_COMPATIBLE
+#define __FS_COMPATIBLE
 #ifdef __cpp_lib_filesystem
 #include <filesystem>
 #else
+
+#if __cplusplus < 201703L
 #include <experimental/filesystem>
 namespace std {
     namespace filesystem = experimental::filesystem;
 }
+#else
+#include <filesystem>
+#endif
+
+#endif
 #endif
 
 #ifdef _WIN32

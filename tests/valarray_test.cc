@@ -22,9 +22,9 @@ namespace bet {
     class ti_queue {
     public:
         struct element {
-            T _data;
-            element *_last;
-            element *_next;
+            T _data{};
+            element *_last{};
+            element *_next{};
         };
 
     public:

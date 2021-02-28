@@ -10,7 +10,7 @@ void test_pq() {
     // vi.pop_front();
 
     struct pq_comp {
-        std::function<int(std::string const &lhs, std::string const &rhs)> pq_comp = [](std::string const &lhs, std::string const &rhs) -> int {
+        std::function<int(std::string const &lhs, std::string const &rhs)> _comp = [](std::string const &lhs, std::string const &rhs) -> int {
           if (lhs.substr(0, 4) == "CMD:") {
               if (rhs.substr(0, 4) == "CMD:")
                   return 0; // return std::less()(lhs, rhs) ? -1 : 1;
@@ -23,7 +23,7 @@ void test_pq() {
           return 0;
         };
         int operator()(std::string const &lhs, std::string const &rhs) const {
-            return pq_comp(lhs, rhs);
+            return _comp(lhs, rhs);
         }
     };
 

@@ -851,6 +851,7 @@ namespace cmdr::opt {
         auto dim = vars::store::_dim_text_dim;
         auto underline = vars::store::_long_title_underline;
         auto [th, tw] = terminal::terminfo::get_win_size();
+        auto is_zsh = util::detect_shell_env() == "zsh";
         if (shell_completion_mode) tw = 9999;
 
         int count_all{};
@@ -875,6 +876,24 @@ namespace cmdr::opt {
                 if (!show_hidden_items && x->hidden()) continue;
 
                 int escaped_chars{0};
+
+                if (shell_completion_mode && is_zsh) {
+                    std::ostringstream titles;
+                    if (!x->title_long().empty()) {
+                        titles << '-' << '-' << x->title_long() << '['
+                               << string::reg_replace(x->descriptions(), "[\\[\\]\\:\\(\\)]", "\\$&")
+                               << ']'
+                               << '\n';
+                    }
+                    if (!x->title_short().empty()) {
+                        titles << '-' << x->title_short() << '['
+                               << string::reg_replace(x->descriptions(), "[\\[\\]\\:\\(\\)]", "\\$&")
+                               << ']'
+                               << '\n';
+                    }
+                    ss << titles.str();
+                    continue;
+                }
 
                 ss << ' ' << ' ' << std::left << std::setfill(' ');
                 if (!x->title_long().empty()) {

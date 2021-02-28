@@ -607,7 +607,7 @@ namespace cmdr::util {
         auto &data = (*x);
         auto *ptr = &data;
         return ptr;
-    };
+    }
 
     template<class T,
             class PT,

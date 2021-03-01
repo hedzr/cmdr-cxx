@@ -55,6 +55,8 @@ else ()
     set(CMAKE_RELWITHDEBINFO_POSTFIX "" CACHE STRING "" FORCE)
   endif ()
 endif ()
+mark_as_advanced(CMAKE_BUILD_NAME)
+
 
 #set_target_properties(${PROJECT_NAME}
 #                      PROPERTIES
@@ -93,7 +95,7 @@ else ()
 endif ()
 
 
-option(ENABLE_CLI_APP "Enable cli apps" ON)
+option(ENABLE_HICC_CLI_APP "Enable hicc cli app" ON)
 
 
 # ############################## for testing

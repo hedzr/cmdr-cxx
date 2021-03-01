@@ -16,13 +16,15 @@
 #define _DEBUG DEBUG
 #endif
 
+#ifndef _UNUSED_DEFINED
+#define _UNUSED_DEFINED
 #ifdef __clang__
 
 //#ifndef UNUSED
 //#define UNUSED(...) [__VA_ARGS__](){}
 //#endif
 template<typename... Args>
-void UNUSED([[maybe_unused]] Args &&...args) {
+inline void UNUSED([[maybe_unused]] Args &&...args) {
     (void) (sizeof...(args));
 }
 
@@ -48,13 +50,17 @@ void UNUSED([[maybe_unused]] Args &&...args) {
 #endif
 
 #endif
+#endif //_UNUSED_DEFINED
 
 
+#ifndef CMDR_ASSERT
 #if defined(ENABLE_ASSERTS)
 #define CMDR_ASSERT(...) assert(__VA_ARGS__)
 #else
 #define CMDR_ASSERT(...) UNUSED(__VA_ARGS__)
 #endif
+#endif
+
 
 #ifndef DEBUG_ONLY
 #if defined(_DEBUG)
@@ -125,7 +131,7 @@ void UNUSED([[maybe_unused]] Args &&...args) {
 // size_t count_snd_dim = countof( arrtwo[0] ); // 6
 //
 template<typename T, size_t N>
-[[maybe_unused]] size_t countof(T (&arr)[N]) {
+[[maybe_unused]] inline size_t countof(T (&arr)[N]) {
     UNUSED(arr);
     return std::extent<T[N]>::value;
 }
@@ -134,6 +140,8 @@ template<typename T, size_t N>
 //
 
 
+#ifndef _OS_MACROS
+#define _OS_MACROS
 // https://stackoverflow.com/questions/5919996/how-to-detect-reliably-mac-os-x-ios-linux-windows-in-c-preprocessor/46177613
 // https://stackoverflow.com/questions/142508/how-do-i-check-os-with-a-preprocessor-directive/8249232
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
@@ -186,6 +194,7 @@ template<typename T, size_t N>
 //#error "Unknown compiler"
 #define OS_UNKNOWN
 #endif
+#endif //_OS_MACROS
 
 
 //
@@ -198,8 +207,14 @@ template<typename T>
 [[maybe_unused]] constexpr bool always_false_v = always_false<T>::value;
 
 
+#ifndef _CONST_CHARS_DEFINED
+#define _CONST_CHARS_DEFINED
 typedef const char *const_chars;
+#endif
+#ifndef _STRING_ARRAY_DEFINED
+#define _STRING_ARRAY_DEFINED
 typedef std::vector<std::string> string_array;
+#endif
 
 
 const char *const DEFAULT_KEY_PREFIX = "app";

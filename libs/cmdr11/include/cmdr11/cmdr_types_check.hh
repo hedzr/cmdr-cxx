@@ -25,7 +25,7 @@
 #include <memory>
 #include <string>
 
-namespace cmdr {
+namespace cmdr::checks {
 
 
     // template<class T, typename=void>

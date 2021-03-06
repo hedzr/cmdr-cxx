@@ -85,7 +85,8 @@
 WIP, pre-released now.
 
 
-- v0.2.10 - [WIP] MSVC (Build Tool 16.7.2+, VS2019 passed)
+- V0.2.11 - WIP, ...
+- v0.2.10 - MSVC (Build Tool 16.7.2+, VS2019 passed), and others improvements (bash completion, ...)
 - v0.2.9 - various fixes, improvements
 - v0.2.8 - fixed cmdr11Config.cmake for importing transparently
 - v0.2.7 - `auto &cli = cmdr::create(...)`
@@ -97,7 +98,7 @@ CXX 17 Compilers:
 
 - clang 12+: passed
 
-- vc build tool 16.7.2, 16.8.5 (VS2019 or Build Tool) passed
+- msvc build tool 16.7.2, 16.8.5 (VS2019 or Build Tool) passed
 
 
 
@@ -120,9 +121,9 @@ CXX 17 Compilers:
 
 
 
-### Integrated to your cmake script
+### Integrate to your cmake script
 
-After installed at local, `cmdr-cxx` can be integrated as your CMake module. So we might find and use it:
+After installed at local cmake repository (Modules), `cmdr-cxx` can be integrated as your CMake module. So we might find and use it:
 
 ```cmake
 find_package(cmdr11 REQUIRED)
@@ -152,75 +153,75 @@ add_cmdr_cxx_to(my-app)
 
 int main(int argc, char *argv[]) {
 
-    auto &cli = cmdr::cli("app2", xVERSION_STRING, "hedzr",
-                         "Copyright © 2021 by hedzr, All Rights Reserved.",
-                         "A demo app for cmdr-c11 library.",
-                         "$ ~ --help");
+  auto &cli = cmdr::cli("app2", xVERSION_STRING, "hedzr",
+                        "Copyright © 2021 by hedzr, All Rights Reserved.",
+                        "A demo app for cmdr-cxx library.",
+                        "$ ~ --help");
 
-    try {
-        using namespace cmdr::opt;
+  try {
+    using namespace cmdr::opt;
 
     cli += sub_cmd{}("server", "s", "svr")
-                   .description("server operations for listening")
-                   .group("TCP/UDP/Unix");
+    .description("server operations for listening")
+      .group("TCP/UDP/Unix");
     {
-        auto &t1 = *cli.last_added_command();
+      auto &t1 = *cli.last_added_command();
 
-        t1 += opt{(int16_t)(8)}("retry", "r")
-                      .description("set the retry times");
+      t1 += opt{(int16_t)(8)}("retry", "r")
+      .description("set the retry times");
 
-        t1 += opt{(uint64_t) 2}("count", "c")
-                      .description("set counter value");
+      t1 += opt{(uint64_t) 2}("count", "c")
+      .description("set counter value");
 
-        t1 += opt{"localhost"}("host", "H", "hostname", "server-name")
-                      .description("hostname or ip address")
-                      .group("TCP")
-                      .placeholder("HOST[:IP]")
-                      .env_vars("HOST");
+      t1 += opt{"localhost"}("host", "H", "hostname", "server-name")
+      .description("hostname or ip address")
+        .group("TCP")
+        .placeholder("HOST[:IP]")
+        .env_vars("HOST");
 
-        t1 += opt{(int16_t) 4567}("port", "p")
-                      .description("listening port number")
-                      .group("TCP")
-                      .placeholder("PORT")
-                      .env_vars("PORT", "SERVER_PORT");
+      t1 += opt{(int16_t) 4567}("port", "p")
+      .description("listening port number")
+        .group("TCP")
+        .placeholder("PORT")
+        .env_vars("PORT", "SERVER_PORT");
 
-        t1 += sub_cmd{}("start", "s", "startup", "run")
-                      .description("start the server as a daemon service, or run it at foreground")
-                      .on_invoke([](cmdr::opt::cmd const &c, string_array const &remain_args) -> int {
-                          UNUSED(c, remain_args);
-                          std::cout << c.title() << " invoked.\n";
-                          return 0;
-                      });
-        auto &s1 = *t1.last_added_command();
-        s1 += cmdr::opt::opt{}("foreground", "f")
-                       .description("run at fg");
+      t1 += sub_cmd{}("start", "s", "startup", "run")
+      .description("start the server as a daemon service, or run it at foreground")
+        .on_invoke([](cmdr::opt::cmd const &c, string_array const &remain_args) -> int {
+          UNUSED(c, remain_args);
+          std::cout << c.title() << " invoked.\n";
+          return 0;
+        });
+      auto &s1 = *t1.last_added_command();
+      s1 += cmdr::opt::opt{}("foreground", "f")
+      .description("run at fg");
 
-        t1 += sub_cmd{}("stop", "t", "shutdown")
-                      .description("stop the daemon service, or stop the server");
+      t1 += sub_cmd{}("stop", "t", "shutdown")
+      .description("stop the daemon service, or stop the server");
 
-        t1 += sub_cmd{}("pause", "p")
-                      .description("pause the daemon service");
+      t1 += sub_cmd{}("pause", "p")
+      .description("pause the daemon service");
 
-        t1 += sub_cmd{}("resume", "re")
-                      .description("resume the paused daemon service");
-        t1 += sub_cmd{}("reload", "r")
-                      .description("reload the daemon service");
-        t1 += sub_cmd{}("hot-reload", "hr")
-                      .description("hot-reload the daemon service without stopping the process");
-        t1 += sub_cmd{}("status", "st", "info", "details")
-                      .description("display the running status of the daemon service");
+      t1 += sub_cmd{}("resume", "re")
+      .description("resume the paused daemon service");
+      t1 += sub_cmd{}("reload", "r")
+      .description("reload the daemon service");
+      t1 += sub_cmd{}("hot-reload", "hr")
+      .description("hot-reload the daemon service without stopping the process");
+      t1 += sub_cmd{}("status", "st", "info", "details")
+      .description("display the running status of the daemon service");
     }
 
-    } catch (std::exception &e) {
-        std::cerr << "Exception caught for duplicated cmds/args: " << e.what() << '\n';
-        CMDR_DUMP_STACK_TRACE(e);
-    }
+  } catch (std::exception &e) {
+    std::cerr << "Exception caught for duplicated cmds/args: " << e.what() << '\n';
+    CMDR_DUMP_STACK_TRACE(e);
+  }
 
-    return cli.run(argc, argv);
+  return cli.run(argc, argv);
 }
 ```
 
-This is a simple program.
+It is a simple program.
 
 
 
@@ -286,9 +287,11 @@ auto verbose = cmdr::get_for_cli<bool>("verbose");
 auto hostname = cmdr::get_for_cli<std::string>("server.host");
 ```
 
-In `Option Store`, the flag value will be prefixed by `app.cli`, and get_for_cli wraps transparently.
+In `Option Store`, the flag value will be prefixed by `"app.cli."`, and get_for_cli wraps transparently.
 
-To extract the normal configuration data, `cmdr::set` and `cmdr::get` are best choice. They will wrap and unwrap the prefix `app` transparently.
+> The normal entries in `Options Store` are prefixed by string `"app."`. You could define another one of course.
+
+To extract the normal configuration data, `cmdr::set` and `cmdr::get` are best choices. They will wrap and unwrap the prefix `app` transparently.
 
 ```cpp
 auto verbose = cmdr::get<bool>("cli.verbose");
@@ -311,9 +314,9 @@ auto hostname = cmdr::get_store().get_raw_p<std::string>("app.cli", "server.host
 
 Every entry in `Option Store` that we call it a config item. The entries are hierarchical. So we locate it with a dotted key path string.
 
-A config item is free data type dynamically. That is saying, you could change the data type of a item at runtime. Such as setting one entry to integer array, from integer originally.
+A config item is free for data type dynamically. That is saying, you could change the data type of a item at runtime. Such as setting one entry to integer array, from integer originally.
 
-
+> But it is hard for coding while you're working for a c++ program.
 
 ```cpp
 cmdr::set("wudao.count", 1);
@@ -360,14 +363,14 @@ t1 += sub_cmd{}("start", "s", "startup", "run")
   });
 ```
 
-For a command without binding to `on_invoke`, `cmdr-cxx` will invoke a default one, For example:
+For those commands without binding to `on_invoke`, `cmdr-cxx` will invoke a default one, For example:
 
 ```cpp
 t1 += sub_cmd{}("pause", "p")
   .description("pause the daemon service");
 ```
 
-While the end-user is typing and will get:
+While the end-user is typing and they will got:
 
 ```bash
 ❯ ./bin/test-app2-c2 server pause
@@ -383,11 +386,11 @@ Yes you can:
 
 ```cpp
 #if CMDR_TEST_ON_COMMAND_NOT_HOOKED
-        cli.set_global_on_command_not_hooked([](cmdr::opt::cmd const &, string_array const &) {
-            cmdr::get_store().dump_full_keys(std::cout);
-            cmdr::get_store().dump_tree(std::cout);
-            return 0;
-        });
+cli.set_global_on_command_not_hooked([](cmdr::opt::cmd const &, string_array const &) {
+  cmdr::get_store().dump_full_keys(std::cout);
+  cmdr::get_store().dump_tree(std::cout);
+  return 0;
+});
 #endif
 ```
 
@@ -546,7 +549,7 @@ Inside `cmdr-cxx`, there are many optimizable points and some of them in working
 >
 > clang 12+: passed
 >
-> vc build tool 16.7.2, 16.8.5 (VS2019 or Build Tool) passed
+> msvc build tool 16.7.2, 16.8.5 (VS2019 or Build Tool) passed
 
 ```bash
 # configure
@@ -568,7 +571,7 @@ cmake --build build/ --target install
 
 ### Prerequisites
 
-To run all automated tests, or, you're trying to use `yaml-loader` add-on, some dependencies need to prepared at first.
+To run all automated tests, or, you're trying to use `yaml-loader` add-on, some dependencies need to prepared at first, by youself, maybe.
 
 
 
@@ -612,12 +615,16 @@ vcpkg install yaml-cpp
 
 ### Run the examples
 
-The example executables can be found in `./bin`. For example:
+The example executables can be found in `./bin` after built. For example:
 
 ```bash
 # print command tree (with hidden commands)
 ./bin/cmdr11-cli -hhh ~~tree
 ```
+
+1. ~~You will get them from release page~~.
+2. TODO: we will build a docker release later.
+3. Run me from a online CXX IDE.
 
 
 

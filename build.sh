@@ -25,6 +25,13 @@ version(){
 	echo $VERSION
 }
 
+docs(){
+	[ -d build ] && rm -rf build
+	cmake -DBUILD_DOCUMENTATION=ON -DCMAKE_BUILD_TYPE=Release -S . -B build 
+	cmake --build build/
+}
+
+
 
 
 osid(){      # fedora / ubuntu

@@ -35,6 +35,44 @@
 #endif
 
 
+#ifdef __clang__
+#define __FUNCTION_NAME__ __PRETTY_FUNCTION__
+#elif defined(__GNUC__)
+#define __FUNCTION_NAME__ __PRETTY_FUNCTION__
+#elif defined(_MSC_VER)
+#define __FUNCTION_NAME__ __FUNCSIG__
+#endif
+
+
+// for C++ assert:
+//    assert(print_if_false(a==b, "want a equal to b"));
+//
+inline bool print_if_false(const bool assertion, const char *msg) {
+    if (!assertion) {
+        std::cout << msg << std::endl;
+    }
+    return assertion;
+}
+inline bool print_if_false(const bool assertion, const std::string &msg) { return print_if_false(assertion, msg.c_str()); }
+
+
+// assertm(a == b, "want a equal to b");
+#ifdef _DEBUG
+#define assertm(expr, msg) \
+    __M_Assert(#expr, expr, __FILE__, __LINE__, __FUNCTION_NAME__, msg)
+inline void __M_Assert(const char *expr_str, bool expr, const char *file, int line, const char *func, const char *msg) {
+    if (!expr) {
+        std::cerr << "Assert failed:\t" << msg << "\n"
+                  << "Expected:\t" << expr_str << "\n"
+                  << "Source:\t\t" << func << " at " << file << ':' << line << "\n";
+        std::abort();
+    }
+}
+#else
+#define assertm(expr, msg) (void) 9
+#endif
+
+
 namespace cmdr::debug {
 
 #if __cplusplus < 201402
@@ -86,14 +124,7 @@ namespace cmdr::debug {
     }
 #endif
 
-#ifdef __clang__
-#define __FUNCTION_NAME__ __PRETTY_FUNCTION__;
-#elif defined(__GNUC__)
-#define __FUNCTION_NAME__ __PRETTY_FUNCTION__
-#elif defined(_MSC_VER)
-#define __FUNCTION_NAME__ __FUNCSIG__
-#endif
-
+    
     // to detect the type of a lambda function, following:
     //   https://stackoverflow.com/a/7943736/6375060
 

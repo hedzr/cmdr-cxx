@@ -309,16 +309,15 @@ jobs:
         with:
           name: upload_url
           path: ./
-      - id: set_upload_url
-        if: matrix.os != 'windows-latest'
-        run: |
-          upload_url=`cat ./upload_url`
-          echo ::set-output name=upload_url::$upload_url
-      - id: set_upload_url_for_windows
-        if: matrix.os == 'windows-latest'
-        run: |
-          upload_url=`type ./upload_url`
-          echo ::set-output name=upload_url::$upload_url
+      - uses: pCYSl5EDgo/cat@master
+        id: set_upload_url
+        with:
+          path: ./upload_url
+      # - name: set_upload_url
+      #   if: matrix.os != 'windows-latest'
+      #   run: |
+      #     upload_url=`cat ./upload_url`
+      #     echo ::set-output name=upload_url::$upload_url
       - name: Upload to Release
         id: upload_to_release
         uses: actions/upload-release-asset@v1.0.1

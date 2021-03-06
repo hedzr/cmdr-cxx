@@ -9,10 +9,6 @@ endif ()
 
 if (BUILD_DOCUMENTATION)
 
-    if (!DOXYGEN_FOUND)
-        #
-    endif ()
-
     if (NOT DOXYGEN_FOUND)
         message(FATAL_ERROR "Doxygen is needed to build the documentation.")
     else ()
@@ -51,3 +47,9 @@ if (BUILD_DOCUMENTATION)
 
     #    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION     share/doc)
 endif ()
+
+macro(attach_doxygen_to target)
+    if (CMAKE_BUILD_TYPE MATCHES "^[Rr]elease")
+        add_dependencies(${target} docs)
+    endif ()
+endmacro()

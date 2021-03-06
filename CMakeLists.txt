@@ -40,6 +40,7 @@ if (ENABLE_TESTS)
     add_subdirectory(tests)
 endif()
 add_subdirectory(docs)
+attach_doxygen_to(cmdr11)
 
 
 ## TPL ## TAIL ##########

@@ -53,7 +53,7 @@ namespace cmdr::chrono {
         return retval;
     }
 
-    
+
     /**
      * @brief a high resolution time span calculator
      * 
@@ -72,8 +72,8 @@ namespace cmdr::chrono {
     class high_res_duration {
     public:
         high_res_duration(std::function<void(std::chrono::high_resolution_clock::duration duration)> const &fn = nullptr)
-                : _then(std::chrono::high_resolution_clock::now())
-                  , _cb(fn) {}
+            : _then(std::chrono::high_resolution_clock::now())
+            , _cb(fn) {}
         ~high_res_duration() {
             _now = std::chrono::high_resolution_clock::now();
             auto duration = _now - _then;
@@ -89,7 +89,7 @@ namespace cmdr::chrono {
 
     private:
         std::chrono::time_point<std::chrono::high_resolution_clock, std::chrono::nanoseconds> _then, _now;
-        std::function<vvoid(std::chrono::high_resolution_clock::duration)> _cb;
+        std::function<void(std::chrono::high_resolution_clock::duration)> _cb;
     };
 
 

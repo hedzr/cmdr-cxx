@@ -19,7 +19,7 @@ namespace cmdr::vars {
         return v; // variable(v._value);
     }
 
-    
+
     template<>
     inline const_chars variable::cast_as<const_chars>() {
         if (_value.has_value()) {
@@ -37,7 +37,7 @@ namespace cmdr::vars {
     template<>
     inline const_chars variable::as<const_chars>() { return cast_as<const_chars>(); }
 
-    
+
     // template<class T, class small_string>
     // inline T &nodeT<T, small_string>::_get(std::string const &key) {
     //     std::ostringstream ss;

@@ -290,9 +290,8 @@ namespace cmdr::util {
         }
         return "unknown";
     }
-    
-} //namespace cmdr::util
 
+} //namespace cmdr::util
 
 
 namespace cmdr::util {
@@ -301,10 +300,10 @@ namespace cmdr::util {
     using comparer = std::function<PT(T const &lhs, T const &rhs)>;
 
     template<class T,
-            class PT = int,
-            class Comp = comparer<T, PT>,
-            class Container = std::list<T>,
-            bool ReverseComp = false>
+             class PT = int,
+             class Comp = comparer<T, PT>,
+             class Container = std::list<T>,
+             bool ReverseComp = false>
     class priority_queue {
     public:
         struct element;
@@ -322,11 +321,11 @@ namespace cmdr::util {
 
             _It() = default;
             _It(element *el, std::size_t pos)
-                    : _el(el)
-                      , _pos(pos) {}
+                : _el(el)
+                , _pos(pos) {}
             _It(const _It &o)
-                    : _el(o._el)
-                      , _pos(o._pos) {}
+                : _el(o._el)
+                , _pos(o._pos) {}
             _It &operator=(const _It &o) {
                 _el = o._el;
                 _pos = o._pos;
@@ -341,11 +340,11 @@ namespace cmdr::util {
             element() = default;
             ~element() = default;
             element(Container &&l, int m)
-                    : _list(l)
-                      , _min_value(m) {}
+                : _list(l)
+                , _min_value(m) {}
             element(value_type l, int m)
-                    : _list{}
-                      , _min_value(m) {
+                : _list{}
+                , _min_value(m) {
                 _list.push_back(std::move(l));
             }
             // pre-order traversal
@@ -494,7 +493,7 @@ namespace cmdr::util {
 
             my_iterator() = default;
             my_iterator(element *ptr, std::size_t pos = (std::size_t) -1)
-                    : _it{ptr, pos} {}
+                : _it{ptr, pos} {}
 
             reference operator*() const {
                 _It &it = const_cast<_It &>(_it);
@@ -534,8 +533,8 @@ namespace cmdr::util {
 
     public:
         priority_queue()
-                : _root{std::make_shared<element>()}
-                  , _comparer{} {}
+            : _root{std::make_shared<element>()}
+            , _comparer{} {}
         virtual ~priority_queue() {}
 
         my_iterator begin() { return my_iterator{_root.get(), 0}; }
@@ -605,10 +604,10 @@ namespace cmdr::util {
     };
 
     template<class T,
-            class PT,
-            class Comp,
-            class Container,
-            bool ReverseComp>
+             class PT,
+             class Comp,
+             class Container,
+             bool ReverseComp>
     inline typename priority_queue<T, PT, Comp, Container, ReverseComp>::value_type *
     priority_queue<T, PT, Comp, Container, ReverseComp>::_It::get() const {
         auto &z = const_cast<element *>(_el)->_list;
@@ -620,13 +619,13 @@ namespace cmdr::util {
     }
 
     template<class T,
-            class PT,
-            class Comp,
-            class Container,
-            bool ReverseComp>
+             class PT,
+             class Comp,
+             class Container,
+             bool ReverseComp>
     inline typename priority_queue<T, PT, Comp, Container, ReverseComp>::value_type priority_queue<T, PT, Comp, Container, ReverseComp>::element::_null{};
-    
-}
+
+} // namespace cmdr::util
 
 
 #endif //CMDR_CXX11_CMDR_UTILS_HH

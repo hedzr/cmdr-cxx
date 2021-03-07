@@ -7,11 +7,11 @@
 
 
 #include <chrono>
+#include <functional>
 #include <iomanip>
 #include <iostream>
 #include <string>
 #include <tuple>
-#include <functional>
 
 
 namespace cmdr::chrono {
@@ -63,7 +63,7 @@ namespace cmdr::chrono {
      *   Just make it as a stack variable, for example:
      * 
      *    void yours(){
-     *          hicc::chrono::high_res_duration hrd;
+     *          cmdr::chrono::high_res_duration hrd;
      *          
      *          //...
      *          
@@ -74,7 +74,7 @@ namespace cmdr::chrono {
      * overwritten by a false return in your callback function. Here is a
      * sample:
      * 
-     *     hicc::chrono::high_res_duration hrd([](auto duration) -> bool {
+     *     cmdr::chrono::high_res_duration hrd([](auto duration) -> bool {
      *       std::cout << "It took " << duration << '\n';
      *       return false;
      *     });
@@ -82,8 +82,8 @@ namespace cmdr::chrono {
     class high_res_duration {
     public:
         high_res_duration(std::function<bool(std::chrono::high_resolution_clock::duration duration)> const &fn = nullptr)
-                : _then(std::chrono::high_resolution_clock::now())
-                  , _cb(fn) {}
+            : _then(std::chrono::high_resolution_clock::now())
+            , _cb(fn) {}
         ~high_res_duration() {
             _now = std::chrono::high_resolution_clock::now();
             auto duration = _now - _then;

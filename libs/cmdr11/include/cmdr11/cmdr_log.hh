@@ -145,11 +145,16 @@ namespace cmdr::log {
 #define cmdr_debug(...) cmdr::log::holder(__FILE__, __LINE__, __PRETTY_FUNCTION__)(__VA_ARGS__)
 #endif
 #else
+#if defined(__GNUG__) || defined(__MSC_VER)
+#define cmdr_debug(...) \
+    (void) 0
+#else
 #define cmdr_debug(...)                                                                       \
     _Pragma("GCC diagnostic push")                                                            \
             _Pragma("GCC diagnostic ignored \"-Wunused-value\"") do { (void) (__VA_ARGS__); } \
     while (0)                                                                                 \
     _Pragma("GCC diagnostic pop")
+#endif
 #endif
 
 #if defined(CMDR_ENABLE_VERBOSE_LOG)

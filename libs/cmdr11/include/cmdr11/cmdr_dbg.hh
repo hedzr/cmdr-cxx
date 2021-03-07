@@ -5,6 +5,9 @@
 #ifndef CMDR_CXX11_CMDR_DBG_HH
 #define CMDR_CXX11_CMDR_DBG_HH
 
+#include <cassert>
+#include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
 #include <stdio.h>
@@ -124,7 +127,7 @@ namespace cmdr::debug {
     }
 #endif
 
-    
+
     // to detect the type of a lambda function, following:
     //   https://stackoverflow.com/a/7943736/6375060
 

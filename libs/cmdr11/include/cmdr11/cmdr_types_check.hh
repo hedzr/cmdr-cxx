@@ -222,7 +222,7 @@ namespace cmdr::checks {
     };
 
 
-} // namespace cmdr
+} // namespace cmdr::checks
 
 
 #if 0

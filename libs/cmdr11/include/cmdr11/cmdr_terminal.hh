@@ -15,7 +15,10 @@
 #endif
 
 #include <cstdlib>
-// #include <stdlib.h>
+#include <cstring>
+#include <iosfwd>
+#include <sstream>
+#include <string.h>
 
 
 namespace cmdr::terminal {

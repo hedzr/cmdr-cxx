@@ -158,7 +158,8 @@ namespace cmdr::vars {
         template<class T>
         T as() {
             return cast_as<T>();
-        }template<class T>
+        }
+        template<class T>
         T const as() const {
             return cast_as<T>();
         }

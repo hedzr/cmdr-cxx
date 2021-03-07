@@ -558,6 +558,7 @@ cmake -DENABLE_AUTOMATE_TESTS=OFF -S . -B build/
 cmake --build build/
 # install
 cmake --build build/ --target install
+# sometimes maybe sudo: sudo cmake --build build/ --target install
 ```
 
 ### Other Options

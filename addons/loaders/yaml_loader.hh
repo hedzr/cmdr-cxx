@@ -161,7 +161,7 @@ namespace cmdr::addons::loaders {
             // auto& v1 = cli.get(k1).as<std::vector<std::string> &>();
             // std::cout << k1 << ':' << v1.size() << '\n';
                     
-            cmdr::util::defer _loaded_ok([p]() {
+            cmdr::util::defer<bool> _loaded_ok([p]() {
                 auto &cli = cmdr::get_app();
                 cli.set("config.file.loaded", true);
                 auto const *k = "config.file.files";

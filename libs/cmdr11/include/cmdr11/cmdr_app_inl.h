@@ -575,7 +575,7 @@ namespace cmdr {
             } else {
                 std::ofstream out(path);
                 if (out) {
-                    util::defer dx_fn(std::bind(&std::ofstream::close, &out));
+                    util::defer<bool> dx_fn(std::bind(&std::ofstream::close, &out));
                     out << contents;
                     if (out) {
                         written = true;

@@ -2,6 +2,7 @@
 // Created by Hedzr Yeh on 2021/2/28.
 //
 
+#include "cmdr11/cmdr_priority_queue.hh"
 #include "cmdr11/cmdr_utils.hh"
 
 
@@ -11,23 +12,24 @@ void test_pq() {
 
     struct pq_comp {
         std::function<int(std::string const &lhs, std::string const &rhs)> _comp = [](std::string const &lhs, std::string const &rhs) -> int {
-          if (lhs.substr(0, 4) == "CMD:") {
-              if (rhs.substr(0, 4) == "CMD:")
-                  return 0; // return std::less()(lhs, rhs) ? -1 : 1;
-          } else {
-              if (rhs.substr(0, 4) == "CMD:")
-                  return -1;
+            if (lhs.substr(0, 4) == "CMD:") {
+                if (rhs.substr(0, 4) == "CMD:")
+                    return 0; // return std::less()(lhs, rhs) ? -1 : 1;
+            } else {
+                if (rhs.substr(0, 4) == "CMD:")
+                    return -1;
 
-              return std::less()(lhs, rhs) ? -1 : 1;
-          }
-          return 0;
+                return std::less()(lhs, rhs) ? -1 : 1;
+            }
+            return 0;
         };
         int operator()(std::string const &lhs, std::string const &rhs) const {
             return _comp(lhs, rhs);
         }
     };
 
-    cmdr::util::priority_queue<std::string, int, pq_comp> pq;
+    using pqueue = cmdr::queue::priority_queue<std::string, int, pq_comp>;
+    pqueue pq;
     pq.push("CMD:CONNECT TO");
     pq.push("data:a123");
     pq.push("data:a125");
@@ -38,11 +40,11 @@ void test_pq() {
     pq.push("CMD:CLOSE");
 
     std::cout << "DUMP..." << '\n';
-    pq.dump([](cmdr::util::priority_queue<std::string, int, pq_comp>::element *el) {
-      for (auto const &it : el->_list) {
-          std::cout << it << ',';
-      }
-      std::cout << '\n';
+    pq.dump([](pqueue::element *el) {
+        for (auto const &it : el->_list) {
+            std::cout << it << ',';
+        }
+        std::cout << '\n';
     });
     std::cout << "ITER..." << '\n';
     for (auto &it : pq) {
@@ -56,9 +58,9 @@ void test_pq() {
     std::cout << '\n';
     std::cout << '\n';
     std::cout << "Multi-level..." << '\n';
-    cmdr::util::priority_queue<std::string, int, pq_comp,
-            cmdr::util::priority_queue<std::string, int, pq_comp>>
-            pq2;
+    using nested_pqueue = cmdr::queue::priority_queue<std::string, int, pq_comp,
+                                                       cmdr::queue::priority_queue<std::string, int, pq_comp>>;
+    nested_pqueue pq2;
     pq2.push("CMD:CONNECT TO");
     pq2.push("data:a123");
     pq2.push("data:a125");
@@ -69,8 +71,7 @@ void test_pq() {
     pq2.push("CMD:CLOSE");
 
     std::cout << "- DUMP..." << '\n';
-    pq2.dump([](cmdr::util::priority_queue<std::string, int, pq_comp,
-            cmdr::util::priority_queue<std::string, int, pq_comp>>::element *el) {
+    pq2.dump([](nested_pqueue::element *el) {
         for (auto const &it : el->_list) {
             std::cout << it << ',';
         }

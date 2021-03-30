@@ -54,7 +54,6 @@ namespace cmdr::chrono {
         return retval;
     }
 
-
     /**
      * @brief a high resolution time span calculator
      * 

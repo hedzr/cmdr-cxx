@@ -65,12 +65,16 @@ inline bool print_if_false(const bool assertion, const std::string &msg) { retur
     __M_Assert(#expr, expr, __FILE__, __LINE__, __FUNCTION_NAME__, msg)
 inline void __M_Assert(const char *expr_str, bool expr, const char *file, int line, const char *func, const char *msg) {
     if (!expr) {
-        std::cerr << "Assert failed:\t" << msg << "\n"
-                  << "Expected:\t" << expr_str << "\n"
-                  << "Source:\t\t" << func << " at " << file << ':' << line << "\n";
+        std::cerr << std::setfill(' ')
+                  << std::setw(19) << "Assert failed : " << msg << "\n"
+                  << std::setw(19) << "Expected : " << expr_str << "\n"
+                  << std::setw(19) << "Source : " << func << " at " << file << ':' << line << "\n";
         std::abort();
     }
 }
+inline void __M_Assert(const char *expr_str, bool expr,
+                       const char *file, int line, const char *func,
+                       const std::string &msg) { __M_Assert(expr_str, expr, file, line, func, msg.c_str()); }
 #else
 #define assertm(expr, msg) (void) 9
 #endif

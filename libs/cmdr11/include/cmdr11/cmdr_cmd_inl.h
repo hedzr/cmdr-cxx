@@ -113,6 +113,7 @@ namespace cmdr::opt {
             _grouped_args[gn].push_back(ptr);
             auto size_after = _grouped_args[gn].size();
             assert(size_after == size_before + 1);
+            UNUSED(size_before, size_after);
 #else
             _grouped_args[gn].push_back(ptr);
 #endif

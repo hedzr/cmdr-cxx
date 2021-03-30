@@ -19,6 +19,7 @@
 #include <vector>
 
 
+#include "cmdr11/cmdr_defs.hh"
 #include "cmdr11/cmdr_utils.hh"
 #include "cmdr11/cmdr_var_t.hh"
 

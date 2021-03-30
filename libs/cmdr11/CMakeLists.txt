@@ -92,6 +92,7 @@ set(header_files
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_log.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_opts.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_path.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_priority_queue.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_public.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_small_string.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_string.hh

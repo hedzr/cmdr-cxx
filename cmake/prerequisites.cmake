@@ -95,7 +95,7 @@ else ()
 endif ()
 
 
-option(ENABLE_CMDR_CLI_APP "Enable cmdr cli app" ON)
+option(ENABLE_HICC_CLI_APP "Enable hicc cli app" ON)
 
 
 # ############################## for testing

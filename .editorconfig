@@ -1,18 +1,28 @@
 root = true
 
 [*]
+charset = utf-8
 end_of_line = lf
-indent_size = 2
-indent_style = tab
+indent_size = 4
+indent_style = space
 insert_final_newline = false
 trim_trailing_whitespace = false
-charset = utf-8
+max_line_length = 120
+tab_width = 4
 
-[*.{yml, yaml}]
+[{*.yaml,*.yml,.clang-format,.clang-tidy,_clang-format}]
 indent_size = 2
+tab_width = 2
 indent_style = space
 insert_final_newline = true
 trim_trailing_whitespace = true
+
+[*.{adoc, asc, asciidoc}]
+indent_size = 4
+indent_style = tab
+trim_trailing_whitespace = false
+insert_final_newline = false
+ij_any_wrap_long_lines = true
 
 [*.{md, markdown, mkd}]
 indent_size = 4
@@ -23,20 +33,23 @@ insert_final_newline = false
 [*.{sh, bash, zsh}]
 indent_size = 2
 indent_style = tab
+tab_width = 2
 trim_trailing_whitespace = false
 insert_final_newline = false
 
 [*.{h,hh,hpp,hxx,c,cc,cpp,cxx,inl}]
 indent_size = 2
 indent_style = space
+tab_width = 2
 
 [*.go]
 indent_size = 4
 indent_style = tab
 
-[*.json]
-indent_size = 4
+[{*.har,*.jsb2,*.jsb3,*.json,.babelrc,.eslintrc,.stylelintrc,bowerrc,jest.config}]
+indent_size = 2
 indent_style = space
+tab_width = 2
 
 [CMakeLists.txt]
 indent_style = tab

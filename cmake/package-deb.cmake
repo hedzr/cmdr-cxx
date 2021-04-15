@@ -4,7 +4,7 @@ set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 # https://cmake.org/cmake/help/latest/module/CPack.html
 # https://cmake.org/cmake/help/latest/cpack_gen/deb.html#cpack_gen:CPack%20DEB%20Generator
 
-set(CPACK_DEBIAN_PACKAGE_NAME "libcmdr11-dev")
+set(CPACK_DEBIAN_PACKAGE_NAME "libhicc-dev")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER ${CPACK_PACKAGE_CONTACT})
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION ${CPACK_PACKAGE_DESCRIPTION})
 

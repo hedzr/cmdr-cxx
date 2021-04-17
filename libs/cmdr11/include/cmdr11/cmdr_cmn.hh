@@ -6,6 +6,7 @@
 #define CMDR_CXX11_CMDR_CMN_HH
 
 #include "cmdr_dbg.hh"
+#include "cmdr_defs.hh"
 #include <list>
 #include <unordered_map>
 

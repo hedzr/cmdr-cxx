@@ -917,7 +917,7 @@ namespace cmdr {
                 }
             }
 
-            cmdr_verbose_debug("   - app::after_run ...");
+            cmdr_verbose_debug("   - app::after_run (cmdline args parsed, try invoking the matched command or show help screen) ...");
             return after_run(rc, pc, argc, argv);
 
         } catch (cmdr::exception::cmdr_biz_error const &e) {

@@ -85,7 +85,9 @@
 WIP, pre-released now.
 
 
-- V0.2.11 - WIP, ...
+- v0.2.15 - WIP, ...
+- v0.2.13 - any kind of fixes; added priority-queue; added `ASSERTIONS_ONLY`, `NO_ASSERTIONS_ONLY`; added `is_iterable`, added vector_to_string(vec); `defer<T>` & `defer<bool>`; many improvements merged;
+- v0.2.11 - maintained
 - v0.2.10 - MSVC (Build Tool 16.7.2+, VS2019 passed), and others improvements (bash completion, ...)
 - v0.2.9 - various fixes, improvements
 - v0.2.8 - fixed cmdr11Config.cmake for importing transparently

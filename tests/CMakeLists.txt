@@ -132,6 +132,9 @@ add_yaml_loader_to(test-app2-c1)
 target_compile_definitions(test-app2-c1 PRIVATE
                            CMDR_ENABLE_VERBOSE_LOG=1)
 
+target_compile_definitions(app1 PRIVATE
+                           CMDR_ENABLE_VERBOSE_LOG=1)
+
 #if (BUILD_TESTING)
 #    add_unit_test(${PROJECT_NAME} tests ${PROJECT_NAME}_tests)
 #endif ()

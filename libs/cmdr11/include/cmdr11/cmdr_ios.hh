@@ -8,11 +8,40 @@
 #include <iomanip>
 #include <iosfwd>
 
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <filesystem>
+
+template<class _CharT, class _Traits = std::char_traits<_CharT>>
+inline std::basic_ostream<_CharT, _Traits> &operator<<(std::basic_ostream<_CharT, _Traits> &os, std::basic_ostringstream<_CharT, _Traits> const &iss) {
+    return os << iss.str();
+}
+template<class _CharT, class _Traits = std::char_traits<_CharT>>
+inline std::basic_ostream<_CharT, _Traits> &operator<<(std::basic_ostream<_CharT, _Traits> &os, std::basic_ifstream<_CharT, _Traits> const &ifs) {
+    return os << ifs.rdbuf();
+}
+// template<class _CharT, class _Traits = std::char_traits<_CharT>>
+// inline std::basic_ostream<_CharT, _Traits> &operator<<(std::basic_ostream<_CharT, _Traits> &os, std::ifstream const &ifs) {
+//     return os << ifs.rdbuf();
+// }
+template<class _CharT, class _Traits = std::char_traits<_CharT>>
+inline std::basic_ostream<_CharT, _Traits> &operator<<(std::basic_ostream<_CharT, _Traits> &os, std::basic_istream<_CharT, _Traits> const &ifs) {
+
+    // ifs >> std::noskipws;
+    // std::copy(std::istream_iterator<char>(ifs), std::istream_iterator<char>(), std::ostream_iterator<char>(std::cout));
+
+    if (ifs.rdbuf() != nullptr)
+        os << ifs.rdbuf();
+    return os;
+}
+
+
 namespace cmdr::io {
 
-    class [[maybe_unused]] ios_flags_saver {
+    class ios_flags_saver {
     public:
-        [[maybe_unused]] explicit ios_flags_saver(std::ostream &os)
+        explicit ios_flags_saver(std::ostream &os)
             : ios(os)
             , f(os.flags()) {}
         ~ios_flags_saver() { ios.flags(f); }

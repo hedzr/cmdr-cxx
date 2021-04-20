@@ -13,6 +13,8 @@
 
 
 namespace cmdr::path {
+    
+    namespace fs = std::filesystem;
 
     std::filesystem::path get_executable_path();
 
@@ -139,16 +141,56 @@ namespace cmdr::path {
         //return std::filesystem::path(executableDir);
     }
 
+    // Join the two path, ...
     inline std::filesystem::path merge(std::string const &pathA, std::string const &pathB) {
-        return pathA + "/" + pathB;
+        auto p = fs::path(pathA);
+        p /= pathB;
+        return p;
     }
+
+#endif
+
+
+    // Join the paths...
+    template<class T, class... Args>
+    fs::path &join(fs::path &p, T const &arg, Args &...args) {
+        p /= arg;
+        if constexpr (sizeof...(Args) > 0) {
+            join(p, args...);
+        }
+        return p;
+    }
+    // Join the paths...
+    template<class A, class... Args,
+            std::enable_if_t<!std::is_same<A, std::filesystem::path>::value, int> = 0>
+    fs::path join(A const &arg, Args... args) {
+        auto p = fs::path(arg);
+        if constexpr (sizeof...(Args) > 0) {
+            join(p, args...);
+        }
+        return p;
+    }
+
+    // for '/tmp/a/b/c.txt', returns '/tmp/a/b'
+    inline std::filesystem::path dirname(std::filesystem::path &p) { return p.parent_path(); }
+    // for '/tmp/a/b/c.txt', returns 'c.txt'
+    inline std::filesystem::path basename(std::filesystem::path &p) { return p.filename(); }
+    // for '/tmp/a/b/c.txt', returns '.txt'
+    // for "foo.bar.baz.tar", the loops on extname(p) will returns: .tar, .baz, .bar.
+    inline std::filesystem::path extname(std::filesystem::path &p) { return p.extension(); }
+    // for '/tmp/a/b/c.txt', returns 'c'
+    // for '/tmp/a/b/.txt', returns '.txt'
+    inline std::filesystem::path basename_without_ext(std::filesystem::path &p) { return p.stem(); }
+
 
     inline std::filesystem::path get_current_dir() {
         return std::filesystem::current_path();
     }
 
-#endif
-
+    inline std::filesystem::path get_current_directory() { return get_current_dir(); }
+    inline std::filesystem::path get_pwd() { return get_current_dir(); }
+    inline std::filesystem::path get_cwd() { return get_current_dir(); }
+    
 
     inline bool file_exists(const std::string &filePath) {
         return access(filePath.c_str(), 0) == 0;
@@ -199,6 +241,7 @@ namespace std {
 #endif
 
 namespace cmdr::path {
+    
     inline std::filesystem::path executable_name_as_path() {
         auto path = std::filesystem::path(get_executable_path());
         return path.filename();
@@ -208,6 +251,21 @@ namespace cmdr::path {
         //auto path = std::filesystem::path(get_executable_path());
         //return path.filename().c_str();
     }
+
+    inline bool ensure_directory(std::filesystem::path name) {
+        return fs::create_directories(name);
+    }
+
+    inline std::filesystem::path tmpname() {
+        auto name1 = fs::temp_directory_path();
+        auto p = path::join(name1, "logs", "stderr.txt");
+        ensure_directory(path::dirname(p));
+        return p;
+    }
+    inline std::filesystem::path tmpdir() {
+        return fs::temp_directory_path();
+    }
+
 } // namespace cmdr::path
 
 //////// for executable_name() END

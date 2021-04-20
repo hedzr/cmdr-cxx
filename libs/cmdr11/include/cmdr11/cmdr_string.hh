@@ -759,12 +759,14 @@ namespace cmdr::text {
             // Hash for matches
             std::vector<int> hash_s1{};
             std::vector<int> hash_s2{};
-            hash_s1.reserve(len1);
-            hash_s2.reserve(len2);
-#if _MSC_VER
+//             hash_s1.reserve(len1);
+//             hash_s2.reserve(len2);
+// #if _MSC_VER
+//             hash_s1.resize(len1);
+//             hash_s2.resize(len2);
+// #endif
             hash_s1.resize(len1);
             hash_s2.resize(len2);
-#endif
             for (int i = 0; i < (int) len1; i++) hash_s1[i] = 0;
             for (int i = 0; i < (int) len2; i++) hash_s2[i] = 0;
             // int hash_s1[s1.length()] = { 0 },

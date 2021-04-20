@@ -52,6 +52,8 @@ TEST_CASE("jaro-winkler test", "[text][edit][distance]") {
     ) {
         SECTION("comparing: " + std::string(case1.s1) + std::string(" - ") + std::string(case1.s2)) {
             auto d = jaro(case1.s1, case1.s2);
+            if (d != case1.d)
+                std::cout << "expecting " << case1.d.toString() << ", but got " << d << '\n';
             CHECK(d == case1.d);
         }
     }

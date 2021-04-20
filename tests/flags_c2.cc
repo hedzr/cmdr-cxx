@@ -152,24 +152,10 @@ TEST_CASE("flags test", "[flags]") {
         REQUIRE(cli.get_for_cli("main.float").as<float>() == 2.7f);
         REQUIRE(cli.get_for_cli("main.long-long").as<long long>() == 98LL);
         auto t1 = cli.get_for_cli("main.string-array");
-        std::cout << t1 << '\n';
+        std::cout << "cli.get_for_cli(\"main.string-array\"): " << t1 << '\n';
         auto v1 = t1.as<std::vector<const char *>>();
         auto v2 = std::vector{"a", "Z"};
-#if _MSC_VER
-        bool not_ok = false;
-        if (v1.size() == v2.size()) {
-            for (std::size_t i = 0; i < v1.size(); i++) {
-                if (std::strcmp(v1[i], v2[i]) != 0) {
-                    not_ok = true;
-                    break;
-                }
-            }
-        } else
-            not_ok = true;
-        REQUIRE(not_ok == false);
-#else
-        REQUIRE(v1 == v2);
-#endif
+        REQUIRE(compare_vector_values(v1, v2));
         REQUIRE(cli.get_for_cli("no-color").as<bool>());
     }
 

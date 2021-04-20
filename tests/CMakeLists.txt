@@ -61,7 +61,18 @@ function(define_test_program name)
     if (MSVC)
         target_compile_options(${PROJECT_NAME}-${name} PRIVATE /W4 /WX /utf-8)
     else ()
-        target_compile_options(${PROJECT_NAME}-${name} PRIVATE -pedantic -Wall -Wextra -Wshadow -Werror)
+        target_compile_options(${PROJECT_NAME}-${name} PRIVATE
+                               -pedantic -Wall -Wextra -Wshadow -Werror
+                               )
+        if (DEBUG)
+            target_compile_options(${PROJECT_NAME}-${name} PRIVATE
+                                   -fsanitize=address
+                                   # address(AddressSanitizer), leak(LeakSanitizer), thread(ThreadSanitizer), undefined(UndefinedBehaviorSanitizer), memory(MemorySanitizer) 
+                                   # [additional_options]: -fno-omit-frame-pointer, fsanitize-recover/fno-sanitize-recover, -fsanitize-blacklist, etc.
+                                   # [-g] [-OX]
+                                   )
+            target_link_options(${PROJECT_NAME}-${name} PRIVATE -fsanitize=address)
+        endif ()
     endif ()
 
 
@@ -114,6 +125,9 @@ define_test_program(app2-c1 app1.cc second_src.cc)
 
 # app2 c2
 define_test_program(app2-c2 app2.cc second_src.cc)
+
+
+define_test_program(process process.cc)
 
 
 #

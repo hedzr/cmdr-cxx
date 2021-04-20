@@ -8,6 +8,7 @@
 #include <string>
 
 #include "cmdr11/cmdr_var_t.hh"
+#include "cmdr11/cmdr_process.hh"
 
 
 std::size_t allocated = 0;

@@ -23,6 +23,7 @@
 #include <iostream>
 #include <sstream>
 
+#include <cstring>
 #include <string>
 
 #include <unordered_map>

@@ -7,13 +7,13 @@
 # entries.  Run "cmake --help-policy CMP0049" for policy details.  Use the
 # cmake_policy command to set the policy and suppress this warning.
 if (POLICY CMP0049)
-  cmake_policy(SET CMP0049 NEW)
+    cmake_policy(SET CMP0049 NEW)
 endif ()
 
 if (COMMAND cmake_policy)
-  # we prefer the more strict behavior, to find out more:
-  # cmake --help-policy CMP0003
-  cmake_policy(SET CMP0003 NEW)
+    # we prefer the more strict behavior, to find out more:
+    # cmake --help-policy CMP0003
+    cmake_policy(SET CMP0003 NEW)
 endif ()
 
 
@@ -27,9 +27,9 @@ cmake_policy(SET CMP0076 NEW) # target_sources() command converts relative paths
 cmake_policy(SET CMP0077 NEW) # ENABLE CMP0077: option() honors normal variables
 
 if (POLICY CMP0068)
-  cmake_policy(SET CMP0068 NEW)
+    cmake_policy(SET CMP0068 NEW)
 endif ()
 
 if (${CMAKE_VERSION} VERSION_LESS 3.12)
-  cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
+    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
 endif ()

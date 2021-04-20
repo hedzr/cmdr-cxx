@@ -2,12 +2,12 @@
 # set LLVM base directory
 #     https://llvm.org/docs/CMake.html
 IF (MAC)
-  set(LLVM_ROOT /usr/local/opt/llvm)
-  set(LLVM_DIR "${LLVM_ROOT}/share/cmake/modules")
+    set(LLVM_ROOT /usr/local/opt/llvm)
+    set(LLVM_DIR "${LLVM_ROOT}/share/cmake/modules")
 ELSEIF (UNIX)
 ELSE ()
-  #set(LLVM_CMAKE_DIR "/usr/share/llvm-3.6/share/llvm/cmake")
-  #set(LLVM_CMAKE_DIR "${LLVM_DIR}/share/llvm/cmake")
+    #set(LLVM_CMAKE_DIR "/usr/share/llvm-3.6/share/llvm/cmake")
+    #set(LLVM_CMAKE_DIR "${LLVM_DIR}/share/llvm/cmake")
 ENDIF ()
 set(LLVM_CMAKE_DIR "${LLVM_DIR}")
 MESSAGE("LLVM_CMAKE_DIR = ${LLVM_CMAKE_DIR}")
@@ -38,21 +38,21 @@ include_directories(${LLVM_INCLUDE_DIRS} Debug Release build include src src/Mod
 message("LLVM_INCLUDE_DIRS = ${LLVM_INCLUDE_DIRS}")
 
 file(GLOB_RECURSE source_files
-     ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
-     ${CMAKE_CURRENT_SOURCE_DIR}/src/Model/*.cpp
-     ${CMAKE_CURRENT_SOURCE_DIR}/src/Macro/*.cpp
-     ${CMAKE_CURRENT_SOURCE_DIR}/src/Utils/*.cpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Model/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Macro/*.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Utils/*.cpp)
 add_executable(xxv ${source_files}
-               ${BISON_MyParser_OUTPUTS}
-               ${FLEX_MyScanner_OUTPUTS})
+        ${BISON_MyParser_OUTPUTS}
+        ${FLEX_MyScanner_OUTPUTS})
 
 install(TARGETS xxv RUNTIME DESTINATION bin)
 
 # Find the libraries that correspond to the LLVM components
 # that we wish to use
 llvm_map_components_to_libnames(llvm_libs
-                                support core irreader executionengine interpreter
-                                mc mcjit bitwriter x86codegen target)
+        support core irreader executionengine interpreter
+        mc mcjit bitwriter x86codegen target)
 
 # Link against LLVM libraries
 target_link_libraries(xxv ${llvm_libs})

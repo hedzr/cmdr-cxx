@@ -56,6 +56,8 @@
 #include "cmdr_string.hh"
 #include "cmdr_terminal.hh"
 #include "cmdr_utils.hh"
+#include "cmdr_process.hh"
+#include "cmdr_os_io_redirect.hh"
 
 #include "cmdr_priority_queue.hh"
 

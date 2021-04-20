@@ -122,23 +122,24 @@ namespace cmdr::queue {
                     _left->LRN(fn);
             }
 
-            T &pop(std::size_t &count) {
+            T pop(std::size_t &count) {
                 if (ReverseComp) {
                     if (_left) {
                         std::size_t before = count;
-                        T &t = _left->pop(count);
+                        T t = _left->pop(count);
                         if (before > count)
                             return t;
                     }
                     if (!_list.empty()) {
                         count--;
-                        T &t = _list.front();
+                        T t;
+                        std::swap(t, _list.front());
                         _list.pop_front();
                         return t;
                     }
                     if (_right) {
                         std::size_t before = count;
-                        T &t = _right->pop(count);
+                        T t = _right->pop(count);
                         if (before > count)
                             return t;
                     }
@@ -148,19 +149,20 @@ namespace cmdr::queue {
                 // normal
                 if (_right) {
                     std::size_t before = count;
-                    T &t = _right->pop(count);
+                    T t = _right->pop(count);
                     if (before > count)
                         return t;
                 }
                 if (!_list.empty()) {
                     count--;
-                    T &t = _list.front();
+                    T t;
+                    std::swap(t, _list.front());
                     _list.pop_front();
                     return t;
                 }
                 if (_left) {
                     std::size_t before = count;
-                    T &t = _left->pop(count);
+                    T t = _left->pop(count);
                     if (before > count)
                         return t;
                 }
@@ -291,7 +293,7 @@ namespace cmdr::queue {
             _push(_root, std::move(data));
             _count++;
         }
-        T &pop() { return _root->pop(_count); }
+        T pop() { return _root->pop(_count); }
         static bool is_null(T const &t) { return t == element::_null; }
 
     public:

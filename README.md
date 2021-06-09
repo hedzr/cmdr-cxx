@@ -563,6 +563,11 @@ cmake --build build/ --target install
 # sometimes maybe sudo: sudo cmake --build build/ --target install
 ```
 
+#### ninja
+
+We used ninja for fast building.
+
+
 ### Other Options
 
 1. `BUILD_DOCUMENTATION`=OFF

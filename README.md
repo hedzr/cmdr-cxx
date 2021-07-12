@@ -563,9 +563,9 @@ cmake --build build/ --target install
 # sometimes maybe sudo: sudo cmake --build build/ --target install
 ```
 
-#### ninja
+### ninja, [Optional]
 
-We used ninja for fast building.
+We used ninja for faster building.
 
 
 ### Other Options

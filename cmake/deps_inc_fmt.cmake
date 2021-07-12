@@ -1,6 +1,6 @@
 
 #find_package(Catch2)
-#if (NOT CATCH2_FOUND)
+#if (NOT Catch2_FOUND)
 include(FetchContent)
 
 FetchContent_Declare(

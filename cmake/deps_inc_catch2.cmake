@@ -1,6 +1,8 @@
 
 find_package(Catch2)
-if (NOT CATCH2_FOUND)
+message(STATUS "Catch2_FOUND = ${Catch2_FOUND}")
+message(STATUS "Catch2_VERSION = ${Catch2_VERSION}")
+if (NOT Catch2_FOUND)
     include(FetchContent)
 
     message("fetch Catch2 from github ...")

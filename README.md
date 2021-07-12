@@ -4,7 +4,7 @@
 ![CMake Build Matrix](https://github.com/hedzr/cmdr-cxx/workflows/CMake%20Build%20Matrix/badge.svg?event=release) 
 --> [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/hedzr/cmdr-cxx.svg?label=release)](https://github.com/hedzr/cmdr-cxx/releases)
 
-`cmdr-cxx` ^pre-release^ is a *header-only* command-line arguments parser in C++17 and higher. As a member of #cmdr series, it provides a fully-functional `Option Store` for your hierarchical configuration data.
+`cmdr-cxx` ^pre-release^ is a *header-only* command-line arguments parser in **C++17** and higher. As a member of #cmdr series, it provides a fully-functional `Option Store` for your hierarchical configuration data.
 
 <img width="914" alt="image-20210221210442215" src="https://user-images.githubusercontent.com/12786150/108625941-8fb04400-7488-11eb-8403-afc79825745c.png">
 
@@ -122,6 +122,31 @@ CXX 17 Compilers:
 ## Usages
 
 
+### Local Deployment
+
+#### Homebrew
+
+cmdr-cxx can be installed via homebrew:
+
+```bash
+brew install hedzr/brew/cmdr-cxx
+```
+
+#### CMake Standard
+
+cmdr-cxx is findable via CMake Modules.
+
+You could install cmdr-cxx manually:
+
+```bash
+git clone https://github.com/hedzr/cmdr-cxx.git
+cd cmdr-cxx
+cmake -S . -B build
+cmake --build build
+cmake --install build
+cd ..
+rm -rf cmdr-cxx
+```
 
 ### Integrate to your cmake script
 
@@ -132,6 +157,11 @@ find_package(cmdr11 REQUIRED)
 
 add_executable(my-app)
 target_link_libraries(my-app PRIVATE cmdr11::cmdr11)
+set_target_properties(${PROJECT_NAME} PROPERTIES
+					  CXX_STANDARD 17
+					  CXX_STANDARD_REQUIRED ON
+					  CXX_EXTENSIONS ON
+					  )
 ```
 
 Or you can download [deps-cmdr11.cmake](https://github.com/hedzr/cmdr-cxx/blob/master/cmake/deps-cmdr11.cmake) and include it:
@@ -541,7 +571,7 @@ Inside `cmdr-cxx`, there are many optimizable points and some of them in working
 
 
 
-## For Developer
+## Contribute
 
 
 

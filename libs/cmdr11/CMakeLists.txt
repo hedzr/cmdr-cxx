@@ -104,6 +104,7 @@ set(header_files
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_utils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_var_t.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_var_t_inl.h
+    # ${CMAKE_GENERATED_DIR}/cmdr-version.hh
     )
 
 ## TARGETS ####################################################

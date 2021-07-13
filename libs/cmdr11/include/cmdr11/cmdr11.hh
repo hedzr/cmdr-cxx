@@ -42,6 +42,11 @@
 // To enable internal very verbose logging, uncomment the above line.
 // see also cmdr_verbose_debug(...) in cmdr_log.hh
 
+// ## version info
+
+#include "cmdr-version.hh"
+
+// ## all headers ...
 
 #include "cmdr_defs.hh"
 #include "cmdr_types.hh"

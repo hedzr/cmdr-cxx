@@ -14,13 +14,14 @@
 #include <streambuf>
 #include <string>
 #include <thread>
-#if defined(OS_WIN) || defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#include <windows.h>
-#endif
 #include <array>
 
 #include "cmdr_defs.hh"
 #include "cmdr_path.hh"
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#include <windows.h>
+#endif
 
 
 namespace cmdr::process {
@@ -44,7 +45,7 @@ namespace cmdr::process {
             //     return traits_type::eof();
             // }
 
-#if defined(OS_WIN) || defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
             private:
             int system_and_capture(
                     std::string cmdline,     //Command Line
@@ -189,7 +190,7 @@ namespace cmdr::process {
 
         public:
             execbuf(const char *command) {
-#if defined(OS_WIN) || defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
                 // _rc = std::system(command); // execute the UNIX command "ls -l >test.txt"
                 //                            //std::cout << std::ifstream("test.txt").rdbuf();
                 //                            // std::cout << "Exit code: " << WEXITSTATUS(_rc) << std::endl;

@@ -5,7 +5,7 @@
 #ifndef CMDR_CXX11_CMDR_TERMINAL_HH
 #define CMDR_CXX11_CMDR_TERMINAL_HH
 
-#if !defined(OS_WIN) && !defined(OS_ANDROID)
+#if !OS_WIN && !OS_ANDROID
 #include <sys/ioctl.h> //ioctl() and TIOCGWINSZ
 #include <unistd.h>    // for STDOUT_FILENO
 #elif defined(_WIN32)
@@ -29,7 +29,7 @@ namespace cmdr::terminal {
         // see:
         // https://pubs.opengroup.org/onlinepubs/009695399/functions/isatty.html
         static bool isatty() {
-#if !defined(OS_WIN)
+#if !OS_WIN
             return ::isatty(0);
 #else
             return false; // for windows
@@ -37,7 +37,7 @@ namespace cmdr::terminal {
         }
 
         static const char *term() {
-#if !defined(OS_WIN)
+#if !OS_WIN
             auto *str = std::getenv("TERM");
             if (!str)
                 return "";
@@ -48,7 +48,7 @@ namespace cmdr::terminal {
         }
 
         static bool is_colorful() {
-#if defined(OS_WIN)
+#if OS_WIN
             return true;
 #else
             const auto *str = term();
@@ -63,7 +63,7 @@ namespace cmdr::terminal {
         }
 
         static int support_colors() {
-#if defined(OS_WIN)
+#if OS_WIN
             return 256;
 #else
             auto *str = std::getenv("COLORTERM");
@@ -91,14 +91,14 @@ namespace cmdr::terminal {
         }
 
         static std::tuple<int, int> get_win_size() {
-#if defined(OS_WIN)
+#if OS_WIN
             CONSOLE_SCREEN_BUFFER_INFO csbi;
             GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
             int width = (int) (csbi.dwSize.X);
             int height = (int) (csbi.dwSize.Y);
             return {height, width};
-#elif defined(__linux__) || defined(OS_MACOS) || defined(OS_MAC) || defined(OS_APPLE)
-            // #if !defined(OS_WIN) && !defined(OS_ANDROID)
+#elif OS_LINUX || OS_APPLE
+            // #if !OS_WIN && !OS_ANDROID
             struct winsize size {};
             ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
             return {size.ws_row, size.ws_col <= 0 ? 100 : size.ws_col};

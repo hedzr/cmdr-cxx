@@ -16,12 +16,13 @@
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #ifndef OS_WIN
-#define OS_WIN
+#define OS_WIN 1
 #endif
 #ifdef _WIN64
 #else
 #endif
 #else
+#define OS_WIN 0
 #include <execinfo.h>
 #endif
 
@@ -415,7 +416,7 @@ namespace cmdr::exception {
             std::ostringstream o;
             o << arg << "  " << file << ":" << line;
             msg = o.str();
-#if !defined(OS_WIN)
+#if !OS_WIN
             auto v = cmdr::debug::save_stacktrace(2);
             st.swap(v);
 #endif
@@ -465,7 +466,7 @@ namespace cmdr::debug {
         std::cerr << '\n';
         if (print_stack) {
             if (depth == 0 && "cmdr::exception::cmdr_exception" == type(e)) {
-#if !defined(OS_WIN)
+#if !OS_WIN
                 print_stacktrace(((cmdr::exception::cmdr_exception const *) (&e))->stacktrace());
 #endif
             }
@@ -493,7 +494,7 @@ namespace cmdr::debug {
 // SIGSEGV handler
 //
 
-#if !defined(OS_WIN)
+#if !OS_WIN
 namespace cmdr::debug {
 
     /**

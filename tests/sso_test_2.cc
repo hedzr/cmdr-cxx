@@ -104,9 +104,9 @@ int main() {
     std::string str1 = "body install it";
     std::cout << cmdr::string::trim_left_space(str1.substr(4)) << '\n';
 
-#if defined(OS_WIN)
+#if OS_WIN
     cmdr::process::exec r("ls -la C:/Users");
-#elif defined(OS_MACOS)
+#elif OS_APPLE
     cmdr::process::exec r("ls -la /Users");
 #else
     cmdr::process::exec r("ls -la /home");
@@ -114,7 +114,7 @@ int main() {
     std::cout << r.rdbuf();
 
     auto *str = std::getenv("CI_RUNNING");
-    if (str == nullptr)
-        cmdr::process::wait_a_key("soon to exit...");
-    std::cout << "END." << '\n';
+    // if (str == nullptr)
+    //     cmdr::process::wait_a_key("soon to exit...");
+    std::cout << "END." << (str?str:"") << '\n';
 }

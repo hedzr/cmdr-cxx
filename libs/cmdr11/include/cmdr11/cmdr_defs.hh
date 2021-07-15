@@ -112,6 +112,27 @@ inline void UNUSED([[maybe_unused]] Args &&...args) {
 #endif
 #endif
 
+#ifndef DISABLE_MSVC_WARNINGS
+#if defined(_MSC_VER)
+#define DISABLE_MSVC_WARNINGS(...) \
+    __pragma(warning(push)) \
+    __pragma(warning(disable:__VA_ARGS__)) /*disable _ctlState prefast warning*/
+#define RESTORE_MSVC_WARNINGS \
+    __pragma(warning(pop))
+#else
+#define DISABLE_MSVC_WARNINGS(...) /* __VA_ARGS__ */
+#define RESTORE_MSVC_WARNINGS
+#endif
+#endif
+
+#ifndef DISABLE_WARNINGS
+#define DISABLE_WARNINGS \
+    _Pragma("GCC diagnostic push") \
+    _Pragma("GCC diagnostic ignored \"-Wall\"")
+#define RESTORE_WARNINGS \
+    _Pragma("GCC diagnostic pop")
+#endif
+
 
 //
 
@@ -669,7 +690,11 @@ namespace cmdr::cross {
     //
     // Apple's allocation reference: http://bit.ly/malloc-small
     constexpr std::size_t max_align_v = detail::max_align_v;
+    DISABLE_MSVC_WARNINGS(4324) // structure was padded due to alignment specifier
+    // DISABLE_MSVC_WARNING(4324) // structure was padded due to alignment specifier
     struct alignas(max_align_v) max_align_t {};
+    // RESTORE_MSVC_WARNING()
+    RESTORE_MSVC_WARNINGS
     //  Memory locations within the same cache line are subject to destructive
     //  interference, also known as false sharing, which is when concurrent
     //  accesses to these different memory locations from different cores, where at
@@ -702,8 +727,9 @@ namespace cmdr::cross {
     constexpr std::size_t cacheline_align_v = has_extended_alignment
                                                       ? hardware_constructive_interference_size
                                                       : max_align_v;
+    DISABLE_MSVC_WARNINGS(4324) // structure was padded due to alignment specifier
     struct alignas(cacheline_align_v) cacheline_align_t {};
-
+    RESTORE_MSVC_WARNINGS
 
     inline constexpr std::size_t cache_line_size() {
 #ifdef KNOWN_L1_CACHE_LINE_SIZE

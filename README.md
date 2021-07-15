@@ -82,9 +82,10 @@
 
 ## Status
 
-WIP, pre-released now.
+pre-released.
 
 
+- v0.2.20 - changed OS_xxx macros; added more portability;
 - v0.2.19 - bug fixed
 - v0.2.17 - added to homebrew.
 - v0.2.15 - bug fixed

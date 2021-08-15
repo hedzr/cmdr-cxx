@@ -18,6 +18,15 @@
 #include <cstddef>
 #include <cstdint>
 
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#define WIN32_LEAN_AND_MEAN
+#define VC_EXTRALEAN
+// #define _CRT_SECURE_NO_WARNINGS
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
+
 #if !defined(_DEBUG) && defined(DEBUG)
 #define _DEBUG DEBUG
 #endif
@@ -114,9 +123,10 @@ inline void UNUSED([[maybe_unused]] Args &&...args) {
 
 #ifndef DISABLE_MSVC_WARNINGS
 #if defined(_MSC_VER)
-#define DISABLE_MSVC_WARNINGS(...) \
-    __pragma(warning(push)) \
-    __pragma(warning(disable:__VA_ARGS__)) /*disable _ctlState prefast warning*/
+#define DISABLE_MSVC_WARNINGS(...)   \
+    __pragma(warning(push))          \
+            __pragma(warning(disable \
+                             : __VA_ARGS__)) /*disable _ctlState prefast warning*/
 #define RESTORE_MSVC_WARNINGS \
     __pragma(warning(pop))
 #else
@@ -126,11 +136,131 @@ inline void UNUSED([[maybe_unused]] Args &&...args) {
 #endif
 
 #ifndef DISABLE_WARNINGS
-#define DISABLE_WARNINGS \
+#if defined(_MSC_VER)
+#define DISABLE_WARNINGS __pragma(warning(push, 1))
+#define RESTORE_WARNINGS __pragma(warning(pop))
+#else
+#define DISABLE_WARNINGS           \
     _Pragma("GCC diagnostic push") \
-    _Pragma("GCC diagnostic ignored \"-Wall\"")
+            _Pragma("GCC diagnostic ignored \"-Wall\"")
 #define RESTORE_WARNINGS \
     _Pragma("GCC diagnostic pop")
+#endif
+#endif
+
+#ifndef DISABLE_UNUSED_WARNINGS
+#if defined(_MSC_VER)
+#define DISABLE_UNUSED_WARNINGS \
+    __pragma(warning(push))     \
+            __pragma(warning(disable : 4100 4101 4102))
+#define RESTORE_UNUSED_WARNINGS __pragma(warning(pop))
+#else
+#define DISABLE_UNUSED_WARNINGS                                                             \
+    _Pragma("GCC diagnostic push")                                                          \
+            _Pragma("GCC diagnostic ignored \"-Wunused\"")                                  \
+                    _Pragma("GCC diagnostic ignored \"-Wunused-label\"")                    \
+                            _Pragma("GCC diagnostic ignored \"-Wunused-parameter\"")        \
+                                    _Pragma("GCC diagnostic ignored \"-Wunused-variable\"") \
+                                            _Pragma("GCC diagnostic ignored \"-Wunused-value\"")
+#define RESTORE_UNUSED_WARNINGS \
+    _Pragma("GCC diagnostic pop")
+#endif
+#endif
+
+#ifndef DISABLE_ALIGN_WARNINGS // structure was padded due to alignment specifier
+#if defined(_MSC_VER)
+#define DISABLE_ALIGN_WARNINGS \
+    __pragma(warning(push))    \
+            __pragma(warning(disable : 4324))
+#define RESTORE_ALIGN_WARNINGS __pragma(warning(pop))
+#else
+#define DISABLE_ALIGN_WARNINGS
+#define RESTORE_ALIGN_WARNINGS
+#endif
+#endif
+
+
+//
+
+
+#ifndef CLAZZ_NON_COPYABLE
+#define CLAZZ_NON_COPYABLE(clz)           \
+    clz(const clz &) = delete;            \
+    clz(clz &&) noexcept = delete;        \
+    clz &operator=(const clz &) = delete; \
+    clz &operator=(clz &&) noexcept = delete
+#endif
+
+
+//
+
+
+#ifndef HAS_STRING_VIEW
+#if __cplusplus >= 201703 || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#define HAS_STRING_VIEW 1
+#else
+#define HAS_STRING_VIEW 0
+#endif
+#endif // HAS_STRING_VIEW
+
+#ifndef HAS_UNCAUGHT_EXCEPTIONS
+#if __cplusplus >= 201703 || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#define HAS_UNCAUGHT_EXCEPTIONS 1
+#else
+#define HAS_UNCAUGHT_EXCEPTIONS 0
+#endif
+#endif // HAS_UNCAUGHT_EXCEPTIONS
+
+#ifndef HAS_VOID_T
+#if __cplusplus >= 201703 || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
+#define HAS_VOID_T 1
+#else
+#define HAS_VOID_T 0
+#endif
+#endif // HAS_VOID_T
+
+#ifndef ONLY_C_LOCALE
+#define ONLY_C_LOCALE 0
+#endif
+
+#if defined(_MSC_VER) && (!defined(__clang__) || (_MSC_VER < 1910))
+// MSVC
+#ifndef _SILENCE_CXX17_UNCAUGHT_EXCEPTION_DEPRECATION_WARNING
+#define _SILENCE_CXX17_UNCAUGHT_EXCEPTION_DEPRECATION_WARNING
+#endif
+#if _MSC_VER < 1910
+//   before VS2017
+#define CONSTDATA const
+#define CONSTCD11
+#define CONSTCD14
+#define NOEXCEPT _NOEXCEPT
+#else
+//   VS2017 and later
+#define CONSTDATA constexpr const
+#define CONSTCD11 constexpr
+#define CONSTCD14 constexpr
+#define NOEXCEPT noexcept
+#endif
+
+#elif defined(__SUNPRO_CC) && __SUNPRO_CC <= 0x5150
+// Oracle Developer Studio 12.6 and earlier
+#define CONSTDATA constexpr const
+#define CONSTCD11 constexpr
+#define CONSTCD14
+#define NOEXCEPT noexcept
+
+#elif __cplusplus >= 201402
+// C++14
+#define CONSTDATA constexpr const
+#define CONSTCD11 constexpr
+#define CONSTCD14 constexpr
+#define NOEXCEPT noexcept
+#else
+// C++11
+#define CONSTDATA constexpr const
+#define CONSTCD11 constexpr
+#define CONSTCD14
+#define NOEXCEPT noexcept
 #endif
 
 
@@ -691,9 +821,7 @@ namespace cmdr::cross {
     // Apple's allocation reference: http://bit.ly/malloc-small
     constexpr std::size_t max_align_v = detail::max_align_v;
     DISABLE_MSVC_WARNINGS(4324) // structure was padded due to alignment specifier
-    // DISABLE_MSVC_WARNING(4324) // structure was padded due to alignment specifier
     struct alignas(max_align_v) max_align_t {};
-    // RESTORE_MSVC_WARNING()
     RESTORE_MSVC_WARNINGS
     //  Memory locations within the same cache line are subject to destructive
     //  interference, also known as false sharing, which is when concurrent
@@ -730,6 +858,7 @@ namespace cmdr::cross {
     DISABLE_MSVC_WARNINGS(4324) // structure was padded due to alignment specifier
     struct alignas(cacheline_align_v) cacheline_align_t {};
     RESTORE_MSVC_WARNINGS
+
 
     inline constexpr std::size_t cache_line_size() {
 #ifdef KNOWN_L1_CACHE_LINE_SIZE

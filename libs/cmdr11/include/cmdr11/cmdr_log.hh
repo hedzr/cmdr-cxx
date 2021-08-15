@@ -41,7 +41,7 @@ namespace cmdr::log {
                 time_t vt = time(nullptr);
                 gmtime_s(_tm, &vt);
 #else
-                auto _tm = cross::gmtime();
+                auto *_tm = cross::gmtime();
 #endif
                 std::strftime(time_buf, sizeof time_buf, "%D %T", _tm);
 
@@ -138,6 +138,12 @@ namespace cmdr::log {
     // Logger log;
 } // namespace cmdr::log
 
+#if defined(_MSC_VER)
+#define cmdr_print(...) cmdr::log::holder(__FILE__, __LINE__, __FUNCSIG__)(__VA_ARGS__)
+#else
+#define cmdr_print(...) cmdr::log::holder(__FILE__, __LINE__, __PRETTY_FUNCTION__)(__VA_ARGS__)
+#endif
+
 #if defined(_DEBUG)
 #if defined(_MSC_VER)
 #define cmdr_debug(...) cmdr::log::holder(__FILE__, __LINE__, __FUNCSIG__)(__VA_ARGS__)
@@ -181,5 +187,6 @@ namespace cmdr::log {
 template<typename... Args>
 void cmdr_verbose_debug([[maybe_unused]] Args &&...args) { (void) (sizeof...(args)); }
 #endif
+#define cmdr_trace cmdr_verbose_debug
 
 #endif //CMDR_CXX11_CMDR_LOG_HH

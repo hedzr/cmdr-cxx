@@ -271,19 +271,19 @@ namespace cmdr::util {
      * @brief defer&lt;T&gt; provides a RAII wrapper for your lambda function.
      * @tparam T is a class which has a member function: <code>void close();</code>
      * @details For example:
-     * 
+     * @code{c++}
      *     std::ofstream ofs("aa.dot");
      *     cmdr::util::defer ofs_closer(ofs);
      *     cmdr::util::defer ofs_closer(ofs, [](){ return; });
      *     cmdr::util::defer<bool> a_closer([](){
      *         // ... your closer here
      *     });
-     *     
-     * \br The alternate approach via std::unique_ptr:
-     * 
+     * @endcode
+     * The alternate approach via std::unique_ptr:
+     * @code{c++}
      *     auto ofs = std::make_unique<std::ofstream>("aa.dot", std::ofstream::out);
      *     *ofs.get() << "1";
-     *     
+     * @endcode
      */
     template<class T, class _D = std::default_delete<T>>
     class defer final {
@@ -336,7 +336,7 @@ namespace cmdr::util {
 
 } //namespace cmdr::util
 
-template <class T>
+template<class T>
 inline bool compare_vector_values(std::vector<T> const &v1, std::vector<T> const &v2) {
     bool not_ok = false;
     if (v1.size() == v2.size()) {

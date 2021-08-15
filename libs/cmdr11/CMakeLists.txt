@@ -90,9 +90,11 @@ set(header_files
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_internals.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_ios.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_log.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_mmap.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_opts.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_os_io_redirect.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_path.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_pool.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_priority_queue.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_process.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_public.hh
@@ -104,6 +106,8 @@ set(header_files
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_utils.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_var_t.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_var_t_inl.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_x_class.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_x_test.hh
     # ${CMAKE_GENERATED_DIR}/cmdr-version.hh
     )
 

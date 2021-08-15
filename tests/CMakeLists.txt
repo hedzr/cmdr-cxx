@@ -35,6 +35,8 @@ endif ()
 #endfunction()
 #do_stuff(A B C D E)
 
+find_package(Threads)
+
 function(define_test_program name)
     #set(src_list )
     foreach (f ${ARGN})
@@ -51,6 +53,7 @@ function(define_test_program name)
                           PRIVATE
                           libs::cmdr11
                           Catch2::Catch2
+                          Threads::Threads
                           # fmt::fmt-header-only
                           )
     #    set_target_properties(${PROJECT_NAME}-${name} PROPERTIES
@@ -59,10 +62,10 @@ function(define_test_program name)
     #            CXX_EXTENSIONS OFF
     #            )
     if (MSVC)
-        target_compile_options(${PROJECT_NAME}-${name} PRIVATE /W4 /WX /utf-8)
+        target_compile_options(${PROJECT_NAME}-${name} PRIVATE /W4 /WX /utf-8 /DCMDR_CXX11_UNIT_TEST=1)
     else ()
         target_compile_options(${PROJECT_NAME}-${name} PRIVATE
-                               -pedantic -Wall -Wextra -Wshadow -Werror
+                               -pedantic -Wall -Wextra -Wshadow -Werror -DCMDR_CXX11_UNIT_TEST=1
                                )
         if (DEBUG)
             target_compile_options(${PROJECT_NAME}-${name} PRIVATE
@@ -119,6 +122,10 @@ define_test_program(flags-c2 flags_c2.cc second_src.cc)
 define_test_program(jaro-c2 jaro_c2.cc)
 
 
+define_test_program(pool pool.cc)
+define_test_program(process process.cc)
+
+
 # app2 c1
 define_test_program(app2-c1 app1.cc second_src.cc)
 
@@ -127,7 +134,6 @@ define_test_program(app2-c1 app1.cc second_src.cc)
 define_test_program(app2-c2 app2.cc second_src.cc)
 
 
-define_test_program(process process.cc)
 
 
 #

@@ -55,19 +55,38 @@
 #include "cmdr_dbg.hh"
 
 #include "cmdr_chrono.hh"
+
 #include "cmdr_ios.hh"
+#include "cmdr_os_io_redirect.hh"
+
 #include "cmdr_log.hh"
+
 #include "cmdr_path.hh"
 #include "cmdr_string.hh"
 #include "cmdr_terminal.hh"
 #include "cmdr_utils.hh"
+
+#include "cmdr_pool.hh"
 #include "cmdr_process.hh"
-#include "cmdr_os_io_redirect.hh"
 
 #include "cmdr_priority_queue.hh"
 
 #include "cmdr_small_string.hh"
 #include "cmdr_var_t.hh"
+
+#include "cmdr_mmap.hh"
+
+
+//
+
+
+#if defined(CMDR_CXX11_UNIT_TEST) && CMDR_CXX11_UNIT_TEST == 1
+#include "cmdr_x_test.hh"
+#endif
+
+
+//
+
 
 #include "cmdr_cmn.hh"
 

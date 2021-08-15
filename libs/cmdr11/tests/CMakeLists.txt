@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(cmdr11_tests)
 
+find_package(Threads)
+
 add_executable(${PROJECT_NAME}
                main.cxx
                test_store.cc
@@ -10,6 +12,7 @@ target_include_directories(${PROJECT_NAME} PRIVATE
                            )
 target_link_libraries(${PROJECT_NAME}
                       PRIVATE
+                      Threads::Threads
                       libs::cmdr11)
 
 #target_link_libraries(${PROJECT_NAME}

@@ -77,10 +77,15 @@ namespace cmdr::checks {
                             typename T::rep,
                             typename T::period,
                             decltype(std::declval<T>().count()),
-                            decltype(std::declval<T>().zero()),
+                            decltype(std::declval<T>().zero())
+#ifndef _WIN32
+                                    ,
                             decltype(std::declval<T>().min()),
-                            decltype(std::declval<T>().max())>,
-                    void>> : public std::true_type {};
+                            decltype(std::declval<T>().max())
+#endif
+                            >,
+                    void>> : public std::true_type {
+    };
 
 #endif
 

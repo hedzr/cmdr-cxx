@@ -18,19 +18,56 @@
 
 #if defined(_WIN32)
 #include <chrono>
+#include <winsock.h>
 
-inline int gettimeofday(struct timeval* tp, struct timezone* tzp) {
+inline int gettimeofday(struct timeval *tp, struct timezone * /* tzp */) {
     namespace sc = std::chrono;
     sc::system_clock::duration d = sc::system_clock::now().time_since_epoch();
     sc::seconds s = sc::duration_cast<sc::seconds>(d);
-    tp->tv_sec = s.count();
-    tp->tv_usec = sc::duration_cast<sc::microseconds>(d - s).count();
-
+    tp->tv_sec = (long) s.count();
+    tp->tv_usec = (long) sc::duration_cast<sc::microseconds>(d - s).count();
     return 0;
 }
+
+namespace cmdr::chrono::detail {
+    const __int64 exp7 = 10000000i64;           //1E+7     //C-file part
+    const __int64 exp9 = 1000000000i64;         //1E+9
+    const __int64 w2ux = 116444736000000000i64; //1.jan1601 to 1.jan1970
+} // namespace cmdr::chrono::detail
+
+inline void unix_time(struct timespec *spec) {
+    __int64 wintime;
+    ::GetSystemTimeAsFileTime((FILETIME *) &wintime);
+    wintime -= cmdr::chrono::detail::w2ux;
+    spec->tv_sec = wintime / cmdr::chrono::detail::exp7;
+    spec->tv_nsec = wintime % cmdr::chrono::detail::exp7 * 100;
+}
+inline int clock_gettime(int, timespec *spec) {
+    static struct timespec startspec;
+    static double ticks2nano;
+    static __int64 startticks, tps = 0;
+    __int64 tmp, curticks;
+    ::QueryPerformanceFrequency((LARGE_INTEGER *) &tmp); //some strange system can
+    if (tps != tmp) {
+        tps = tmp; //init ~~ONCE         //possibly change freq ?
+        ::QueryPerformanceCounter((LARGE_INTEGER *) &startticks);
+        unix_time(&startspec);
+        ticks2nano = (double) cmdr::chrono::detail::exp9 / tps;
+    }
+    ::QueryPerformanceCounter((LARGE_INTEGER *) &curticks);
+    curticks -= startticks;
+    spec->tv_sec = startspec.tv_sec + (curticks / tps);
+    spec->tv_nsec = (long) (startspec.tv_nsec + (double) (curticks % tps) * ticks2nano);
+    if (!(spec->tv_nsec < cmdr::chrono::detail::exp9)) {
+        spec->tv_sec++;
+        spec->tv_nsec -= cmdr::chrono::detail::exp9;
+    }
+    return 0;
+}
+#define CLOCK_REALTIME 0
 #else
 #include <sys/time.h> // gettimeofday
-#endif // _WIN32
+#endif                // _WIN32
 
 namespace cmdr::chrono {
 
@@ -50,10 +87,15 @@ namespace cmdr::chrono {
                             typename T::rep,
                             typename T::period,
                             decltype(std::declval<T>().count()),
-                            decltype(std::declval<T>().zero()),
+                            decltype(std::declval<T>().zero())
+#ifndef _WIN32
+                                    ,
                             decltype(std::declval<T>().min()),
-                            decltype(std::declval<T>().max())>,
-                    void>> : public std::true_type {};
+                            decltype(std::declval<T>().max())
+#endif
+                            >,
+                    void>> : public std::true_type {
+    };
 
 } // namespace cmdr::chrono
 

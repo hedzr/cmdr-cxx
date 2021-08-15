@@ -8,11 +8,15 @@
 
 #include <chrono>
 #include <functional>
-#include <iomanip>
-#include <iostream>
 #include <string>
 #include <tuple>
 
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+
+#include <sys/time.h> // gettimeofday
 
 namespace cmdr::chrono {
 
@@ -37,11 +41,60 @@ namespace cmdr::chrono {
                             decltype(std::declval<T>().max())>,
                     void>> : public std::true_type {};
 
+} // namespace cmdr::chrono
 
-    //
-    //
-    //
+namespace cmdr::chrono {
 
+    inline struct timeval get_system_clock_in_us() {
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        return tv;
+    }
+
+    inline struct timespec get_system_clock_in_ns() {
+        struct timespec ts;
+        clock_gettime(CLOCK_REALTIME, &ts);
+        return ts;
+    }
+
+    inline long get_system_clock_ns_part() {
+        struct timespec ts;
+        clock_gettime(CLOCK_REALTIME, &ts);
+        return ts.tv_nsec;
+    }
+
+    inline std::chrono::system_clock::time_point now() {
+        return std::chrono::system_clock::now();
+    }
+
+    /**
+     * @brief simple wall clock (with nanosecond accuracy) class.
+     * 
+     * In some systems, the wall clock has only millisecond or microsecond accuracy (such as darwin), not nanosecond (most of linux releases).
+     * So `clock` class is not completely ns accuracy.
+     */
+    class clock {
+    public:
+        static clock now() { return clock(); }
+        clock()
+            : _now(std::chrono::system_clock::now()) {
+            // struct timespec ts;
+            // clock_gettime(CLOCK_REALTIME, &ts);
+            // _nsec = ts.tv_nsec;
+        }
+        ~clock() {}
+        std::size_t in_nsec() const;
+        std::size_t nsec() const;
+        std::ostream &serialize(std::ostream &os, const char *format = "%Y-%m-%d %H:%M:%S") const;
+
+    private:
+        std::chrono::system_clock::time_point _now;
+        // long _nsec;
+    };
+
+} // namespace cmdr::chrono
+
+namespace cmdr::chrono {
 
     template<class... Durations, class DurationIn>
     std::tuple<Durations...> break_down_durations(DurationIn d) {
@@ -55,29 +108,32 @@ namespace cmdr::chrono {
     }
 
     /**
-     * @brief a high resolution time span calculator
-     * 
-     * @details Usage:
-     * 
-     *   Just make it as a stack variable, for example:
-     * 
-     *    void yours(){
-     *          cmdr::chrono::high_res_duration hrd;
-     *          
-     *          //...
-     *          
-     *          // at the exiting this function, hrd will print a timing log line.
-     *    }
-     * 
-     * If you post a callback at constructor, the default printer could be 
-     * overwritten by a false return in your callback function. Here is a
-     * sample:
-     * 
-     *     cmdr::chrono::high_res_duration hrd([](auto duration) -> bool {
-     *       std::cout << "It took " << duration << '\n';
-     *       return false;
-     *     });
-     */
+             * @brief a high resolution time span calculator
+             * 
+             * @details Usage:
+             * 
+             *   Just make it as a stack variable, for example:
+             * @code{c++}
+             *    void yours(){
+             *          cmdr::chrono::high_res_duration hrd;
+             *          
+             *          //...
+             *          
+             *          // at the exiting this function, hrd will print a timing log line.
+             *    }
+             * @endcode
+             * 
+             * If you post a callback at constructor, the default printer could be 
+             * overwritten by a false return in your callback function. Here is a
+             * sample:
+             * @code{c++}
+             *     cmdr::chrono::high_res_duration hrd([](auto duration) -> bool {
+             *       std::cout << "It took " << duration << '\n';
+             *       return false;
+             *     });
+             * @endcode
+             * 
+             */
     class high_res_duration {
     public:
         high_res_duration(std::function<bool(std::chrono::high_resolution_clock::duration duration)> const &fn = nullptr)
@@ -89,21 +145,31 @@ namespace cmdr::chrono {
 
             // auto [ss, ms, us] = break_down_durations<std::chrono::seconds, std::chrono::milliseconds, std::chrono::microseconds>(duration);
 
-            bool ok{};
+            bool ok{true};
             if (_cb)
                 ok = _cb(duration);
             if (ok) {
-                auto clean_duration = break_down_durations<std::chrono::seconds, std::chrono::milliseconds, std::chrono::microseconds>(duration);
+                // auto clean_duration = break_down_durations<std::chrono::seconds, std::chrono::milliseconds, std::chrono::microseconds>(duration);
                 //    auto timeInMicroSec = std::chrono::duration_cast<std::chrono::microseconds>(duration); // base in Microsec.
-                std::cout << "It took " << std::get<0>(clean_duration).count() << "::" << std::get<1>(clean_duration).count() << "::" << std::get<2>(clean_duration).count() << "\n";
+                // std::cout << "It took " << std::get<0>(clean_duration).count() << "::" << std::get<1>(clean_duration).count() << "::" << std::get<2>(clean_duration).count() << "\n";
+                auto d = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
+                print_duration(std::cout, d);
             }
         }
+
+        template<typename T,
+                 std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool> = true>
+        void print_duration(std::ostream &os, T v);
 
     private:
         std::chrono::time_point<std::chrono::high_resolution_clock, std::chrono::nanoseconds> _then, _now;
         std::function<bool(std::chrono::high_resolution_clock::duration)> _cb;
     };
 
+
+} // namespace cmdr::chrono
+
+namespace cmdr::chrono {
 
     template<class Duration>
     inline std::ostream &format_duration_simple(std::ostream &os, Duration const &ns) {
@@ -137,8 +203,9 @@ namespace cmdr::chrono {
     //     return os;
     // }
 
-    template<typename T>
-    inline std::ostream &format_duration(std::ostream &os, T timeunit) {
+    template<class Duration,
+             std::enable_if_t<is_duration<Duration>::value, bool> = true>
+    inline std::ostream &format_duration(std::ostream &os, Duration const &timeunit) {
         using namespace std;
         using namespace std::chrono;
         nanoseconds ns = duration_cast<nanoseconds>(timeunit);
@@ -183,58 +250,321 @@ namespace cmdr::chrono {
         bool z1{};
         const auto ms = duration_cast<milliseconds>(ns);
         if (ms.count() || z1) {
-            if (foundNonZero) {
-                os << std::setw(3);
-            }
-            os << ms.count();
+            if (foundNonZero)
+                os << std::setw(3) << ms.count();
+            else
+                os << ms.count();
             ns -= ms;
             z1 = true;
         }
-        bool z2{};
+        bool z2{}, zdot1{}, zdot2{};
         const auto us = duration_cast<microseconds>(ns);
         if (us.count() || z2) {
-            if (foundNonZero) {
-                os << std::setw(3);
+            if (z1) {
+                os << '.';
+                zdot1 = true;
             }
-            if (z1) os << '.';
-            os << us.count();
+            if (foundNonZero)
+                os << std::setw(3) << us.count();
+            else
+                os << us.count();
             ns -= us;
             z2 = true;
         }
         bool z3{};
         if (ns.count() || z3) {
-            if (z1 || z2) os << '.';
+            if (z1 || z2) {
+                os << '.';
+                zdot2 = true;
+            }
             os << std::setw(3) << ns.count();
             z3 = true;
         }
         if (z1 || z2 || z3) {
             if (z3)
-                os << "ns";
+                os << (zdot1 ? "ms" : zdot2 ? "us"
+                                            : "ns");
             else if (z2)
-                os << "us";
+                os << (zdot1 ? "ms" : "us");
             else
                 os << "ms";
         }
         return os; // .str();
     }
 
-
     template<class Duration,
              std::enable_if_t<is_duration<Duration>::value, bool> = true>
-    static bool parse_duration(std::istream &is, Duration &d) {
+    inline std::string format_duration(Duration const &timeunit) {
+        std::stringstream ss;
+        format_duration(ss, timeunit);
+        return ss.str();
+    }
+
+
+    // not yet
+    template<class Duration,
+             std::enable_if_t<is_duration<Duration>::value, bool> = true>
+    static bool parse_duration(std::istream &is, Duration const &d) {
         (void) (is);
         (void) (d);
         return true;
     }
 
 
+    //
+    inline bool try_parse(std::tm &tm, const std::string &expression, const std::string &format) {
+        std::stringstream ss(expression);
+        return !(ss >> std::get_time(&tm, format.c_str())).fail();
+    }
+
+    template<class _Clock, class _Duration = typename _Clock::duration>
+    inline auto time_point_get_ms(std::chrono::time_point<_Clock, _Duration> const &time) {
+        using namespace std::chrono;
+        milliseconds ms = duration_cast<milliseconds>(time.time_since_epoch());
+        // seconds s = duration_cast<seconds>(ms);
+        // std::time_t t = s.count();
+        std::size_t fractional_seconds = ms.count() % 1000;
+        return fractional_seconds;
+    }
+
+    template<class _Clock, class _Duration = typename _Clock::duration>
+    inline auto time_point_get_us(std::chrono::time_point<_Clock, _Duration> const &time) {
+        using namespace std::chrono;
+        microseconds us = duration_cast<microseconds>(time.time_since_epoch());
+        // seconds s = duration_cast<seconds>(ms);
+        // std::time_t t = s.count();
+        std::size_t fractional_seconds = us.count() % 1000;
+        return fractional_seconds;
+    }
+
+    template<class _Clock, class _Duration = typename _Clock::duration>
+    inline auto time_point_get_ns(std::chrono::time_point<_Clock, _Duration> const &time) {
+        using namespace std::chrono;
+        nanoseconds ns = duration_cast<nanoseconds>(time.time_since_epoch());
+        // seconds s = duration_cast<seconds>(ms);
+        // std::time_t t = s.count();
+        std::size_t fractional_seconds = ns.count() % 1000;
+        return fractional_seconds;
+    }
+
 } // namespace cmdr::chrono
+
+
+namespace cmdr::chrono {
+
+    /**
+     * @brief like std::ios, iom provides a set of flags for tuning the output as stream formatting.
+     * 
+     * For Example:
+     * @code{c++}
+     * using iom = cmdr::chrono::iom;
+     * std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+     * std::cout << iom::gmt << iom::ns << "time_point: os << " << now << iom::clear << '\n';
+     * @endcode
+     */
+    class iom {
+    public:
+        enum fmtflags {
+            nothing = 0x0001,
+            ms = 0x0001,
+            us = 0x0002,
+            ns = 0x0003,
+            mask_extra_fields = 0x000f,
+            gmt = 0x0010,
+            local = 0x0020,
+            clear = 0x0000,
+        };
+        // typedef u_int32_t fmtflags;
+        // static const fmtflags nothing = 0x0001;
+        // static const fmtflags ms = 0x0001;
+        // static const fmtflags us = 0x0002;
+        // static const fmtflags ns = 0x0003;
+        // static const fmtflags mask_extra_fields = 0x000f;
+        // static const fmtflags gmt = 0x0010;
+        // static const fmtflags local = 0x0020;
+        // static const fmtflags clear = 0x0000;
+        static bool has(fmtflags v) {
+            if (v == clear) {
+                return false;
+            }
+            if (v < mask_extra_fields) {
+                auto x = _flags & mask_extra_fields;
+                return (x == v);
+            }
+            return (_flags & v) == v;
+        }
+        static fmtflags flags() { return _flags; }
+        static void reset() { _flags = static_cast<fmtflags>(gmt | us); }
+        static void set_flags(fmtflags v) {
+            if (v == clear) {
+                reset();
+                return;
+            }
+            if (v < mask_extra_fields) {
+                _flags = (fmtflags) (_flags & (unsigned int) (mask_extra_fields + 1));
+                _flags = (fmtflags) (_flags | (unsigned int) (v));
+                return;
+            }
+            _flags = (fmtflags) (_flags | (unsigned int) (v));
+        }
+
+    private:
+        static fmtflags _flags; // 0:ms, 1:us, 2:ns
+        // static int gmt_or_local; //0:gmt, 1:local
+    };
+
+    inline iom::fmtflags iom::_flags = static_cast<fmtflags>(iom::gmt | iom::us);
+
+} // namespace cmdr::chrono
+
+
+inline std::ostream &operator<<(std::ostream &os, const cmdr::chrono::iom::fmtflags v) {
+    using iom = cmdr::chrono::iom;
+    iom::set_flags(v);
+    return os;
+}
+
+
+namespace cmdr::chrono {
+
+    inline std::size_t clock::nsec() const { return time_point_get_ns(_now); }
+    inline std::size_t clock::in_nsec() const {
+        std::size_t ms = time_point_get_ms(_now);
+        std::size_t us = time_point_get_us(_now);
+        std::size_t ns = time_point_get_ns(_now);
+        return (ms * 1000 + us) * 1000 + ns;
+    }
+    inline std::ostream &clock::serialize(std::ostream &os, const char *format) const {
+        using iom_ = cmdr::chrono::iom;
+        // using tp = std::chrono::time_point<_Clock, _Duration>;
+        std::time_t tt = std::chrono::system_clock::to_time_t(_now);
+        std::tm *tm;
+        if (iom_::has(iom_::gmt))
+            tm = std::gmtime(&tt); //GMT (UTC)
+        else if (iom_::has(iom_::local))
+            tm = std::localtime(&tt); //Locale time-zone, usually UTC by default.
+        else
+            tm = std::gmtime(&tt); //GMT (UTC)
+
+        if (iom_::has(iom_::ns)) {
+            auto _nsec = in_nsec();
+            os << std::put_time(tm, format) << '.' << std::setfill('0')
+               << std::setw(9) << _nsec;
+        } else if (iom_::has(iom_::us)) {
+            auto _nsec = in_nsec();
+            os << std::put_time(tm, format) << '.' << std::setfill('0')
+               << std::setw(6) << (_nsec / 1000);
+        } else if (iom_::has(iom_::ms)) {
+            auto _nsec = in_nsec();
+            os << std::put_time(tm, format) << '.' << std::setfill('0')
+               << std::setw(3) << (_nsec / 1'000'000);
+        } else {
+            os << std::put_time(tm, format);
+        }
+
+        return os;
+    }
+
+    // NOTE: just for std::chrono::system_clock
+    template<class _Clock, class _Duration = typename _Clock::duration>
+    inline std::ostream &serialize_time_point(std::ostream &os, std::chrono::time_point<_Clock, _Duration> const &time, const char *format = "%Y-%m-%d %H:%M:%S") {
+        using iom_ = cmdr::chrono::iom;
+        // using tp = std::chrono::time_point<_Clock, _Duration>;
+        std::time_t tt = std::chrono::system_clock::to_time_t(time);
+        std::tm *tm;
+        if (iom_::has(iom_::gmt))
+            tm = std::gmtime(&tt); //GMT (UTC)
+        else if (iom_::has(iom_::local))
+            tm = std::localtime(&tt); //Locale time-zone, usually UTC by default.
+        else
+            tm = std::gmtime(&tt); //GMT (UTC)
+
+        std::size_t ms = time_point_get_ms(time);
+        if (iom_::has(iom_::ns)) {
+            // auto t0 = std::chrono::high_resolution_clock::now();
+            // auto nanosec = t0.time_since_epoch();
+
+            std::size_t ns = time_point_get_ns(time);
+            std::size_t us = time_point_get_us(time);
+            // see also: `date -Ins` => 2021-08-05T11:46:39,911696444+01:00
+            // another: `date +"%T.%9N"` => 11:49:19.162813535
+            //
+            os << std::put_time(tm, format) << ',' << std::setfill('0')
+               << std::setw(3) << ms
+               << std::setw(3) << us
+               << std::setw(3) << ns
+                    // << ',' << std::setw(9) << nanosec.count()
+                    ;
+        } else if (iom_::has(iom_::us)) {
+            std::size_t fractional_seconds = time_point_get_us(time);
+            os << std::put_time(tm, format) << '.' << std::setfill('0')
+               << std::setw(3) << ms
+               << std::setw(3) << fractional_seconds;
+        } else if (iom_::has(iom_::ms)) {
+            os << std::put_time(tm, format) << '.' << std::setfill('0')
+               << std::setw(3) << ms;
+        } else {
+            os << std::put_time(tm, format);
+        }
+
+        return os;
+    }
+    template<class _Clock, class _Duration = typename _Clock::duration>
+    inline std::string format_time_point(std::chrono::time_point<_Clock, _Duration> const &time, const char *format = "%Y-%m-%d %H:%M:%S") {
+        std::stringstream ss;
+        serialize_time_point(ss, time, format);
+        return ss.str();
+    }
+
+    inline std::ostream &serialize_tm(std::ostream &os, std::tm const *tm, const char *format = "%Y-%m-%d %H:%M:%S") {
+        os << std::put_time(tm, format);
+        return os;
+    }
+    inline std::string format_tm(std::tm const *tm, const char *format = "%Y-%m-%d %H:%M:%S") {
+        std::stringstream ss;
+        ss << std::put_time(tm, format);
+        return ss.str();
+    }
+
+    // inline std::string format(std::time_t time) {
+    //     std::tm tm = *std::localtime(&time);
+    // }
+
+} // namespace cmdr::chrono
+
+
+// friends
+
 
 template<typename T,
          std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool> = true>
 inline std::ostream &operator<<(std::ostream &os, T const &v) {
-    cmdr::chrono::format_duration(os, v);
-    return os;
+    return cmdr::chrono::format_duration(os, v);
 }
 
-#endif //CMDR_CXX11_CMDR_CHRONO_HH
+template<typename T,
+         std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool>>
+inline void cmdr::chrono::high_res_duration::print_duration(std::ostream &os, T v) {
+    // cmdr::chrono::format_duration(os, v);
+    os << "It took " << v << '\n';
+}
+
+template<class _Clock, class _Duration = typename _Clock::duration>
+inline std::ostream &operator<<(std::ostream &os, std::chrono::time_point<_Clock, _Duration> const &time) {
+    // std::size_t ns = cmdr::chrono::time_point_get_ns(time);
+    return cmdr::chrono::serialize_time_point(os, time, "%F %T");
+}
+
+inline std::ostream &operator<<(std::ostream &os, std::tm const *tm) {
+    return cmdr::chrono::serialize_tm(os, tm, "%F %T");
+}
+inline std::ostream &operator<<(std::ostream &os, std::tm const &tm) {
+    return cmdr::chrono::serialize_tm(os, &tm, "%F %T");
+}
+
+inline std::ostream &operator<<(std::ostream &os, cmdr::chrono::clock const &v) {
+    return v.serialize(os, "%F %T");
+}
+
+
+#endif //CMDR_CXX_HZ_CHRONO_HH

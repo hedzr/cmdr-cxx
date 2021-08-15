@@ -14,14 +14,13 @@
 #include <streambuf>
 #include <string>
 #include <thread>
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#include <windows.h>
+#endif
 #include <array>
 
 #include "cmdr_defs.hh"
 #include "cmdr_path.hh"
-
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#include <windows.h>
-#endif
 
 
 namespace cmdr::process {
@@ -46,7 +45,7 @@ namespace cmdr::process {
             // }
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-            private:
+        private:
             int system_and_capture(
                     std::string cmdline,     //Command Line
                     std::string workdir,     //set to '.' for current directory
@@ -193,7 +192,7 @@ namespace cmdr::process {
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
                 // _rc = std::system(command); // execute the UNIX command "ls -l >test.txt"
                 //                            //std::cout << std::ifstream("test.txt").rdbuf();
-                //                            // std::cout << "Exit code: " << WEXITSTATUS(_rc) << std::endl;
+                //                            // std::cout << "Exit code: " << WEXITSTATUS(_rc) << '\n';
                 std::string str_out, str_err;
                 uint32_t rc;
                 _rc = system_and_capture(command, ".", str_out, str_err, rc);
@@ -205,7 +204,7 @@ namespace cmdr::process {
                 setg((char *) this->output.data(), (char *) this->output.data(), (char *) (this->output.data() + this->output.size()));
 
 #else // try POSIX
-                tmpfile_stderr = path::tmpname();
+                tmpfile_stderr = path::tmpname_for_stderr();
                 std::array<char, 512> cmd;
                 std::sprintf(cmd.data(), "%s 2>%s", command, tmpfile_stderr.c_str());
                 // std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command, "r"), pclose);
@@ -232,7 +231,7 @@ namespace cmdr::process {
 
                 _ef = std::ifstream(tmpfile_stderr);
 
-// auto rc = pclose(pipe);
+                // auto rc = pclose(pipe);
 #endif
             }
 
@@ -246,12 +245,12 @@ namespace cmdr::process {
     /**
      * @brief execute a shell command and capture the stdout, stderr and return code.
      * @details For example:
-     * 
-     *             cmdr::process::exec dot("dot aa.dot -T png -o aa.png -v");
-     *             std::cout &lt;&lt; dot;                     // for stdout
-     *             std::cout &lt;&lt; ex.stderr_stream();      // for stderr & stdlog
-     *             std::cout &lt;&lt; "executed: rec-code = " &lt;&lt; ex.ret_code() &lt;&lt; '\n';
-     * 
+     * @code{c++}
+     *   cmdr::process::exec dot("dot aa.dot -T png -o aa.png -v");
+     *   std::cout &lt;&lt; dot;                     // for stdout
+     *   std::cout &lt;&lt; ex.stderr_stream();      // for stderr & stdlog
+     *   std::cout &lt;&lt; "executed: rec-code = " &lt;&lt; ex.ret_code() &lt;&lt; '\n';
+     * @endcode
      * NOTE that it's not fully completed in Windows, more testing and coding needed.
      */
     class exec : public std::istream {
@@ -260,8 +259,8 @@ namespace cmdr::process {
 
     public:
         exec(char const *command)
-                : std::istream(nullptr)
-                  , buffer(command) {
+            : std::istream(nullptr)
+            , buffer(command) {
             this->rdbuf(&buffer);
         }
 

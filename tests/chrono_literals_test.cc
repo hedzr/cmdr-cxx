@@ -24,6 +24,9 @@ void test_literals() {
               << "1s = " << d2.count() << " milliseconds\n";
 
     auto aa = std::vector<std::chrono::duration<long double, std::ratio<60>>>{
+            3ns,
+            800ms,
+            59.739us,
             0.75min,
             501ns,
             730us,

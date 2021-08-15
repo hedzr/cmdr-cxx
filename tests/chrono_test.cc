@@ -8,7 +8,7 @@
 
 void test_high_resolution_duration() {
     auto then = std::chrono::high_resolution_clock::now();
-    std::this_thread::sleep_for(std::chrono::seconds(3));
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     auto now = std::chrono::high_resolution_clock::now();
     auto duration = now - then;
 

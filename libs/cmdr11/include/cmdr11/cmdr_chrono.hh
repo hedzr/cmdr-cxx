@@ -65,6 +65,7 @@ inline int clock_gettime(int, timespec *spec) {
     return 0;
 }
 #define CLOCK_REALTIME 0
+#define CLOCK_MONOTONIC 1
 #else
 #include <sys/time.h> // gettimeofday
 #endif                // _WIN32
@@ -420,7 +421,7 @@ namespace cmdr::chrono {
      */
     class iom {
     public:
-        enum fmtflags {
+        enum class fmtflags {
             nothing = 0x0001,
             ms = 0x0001,
             us = 0x0002,
@@ -440,28 +441,28 @@ namespace cmdr::chrono {
         // static const fmtflags local = 0x0020;
         // static const fmtflags clear = 0x0000;
         static bool has(fmtflags v) {
-            if (v == clear) {
+            if (v == fmtflags::clear) {
                 return false;
             }
-            if (v < mask_extra_fields) {
-                auto x = _flags & mask_extra_fields;
-                return (x == v);
+            if (v < fmtflags::mask_extra_fields) {
+                auto x = (unsigned int) _flags & (unsigned int) fmtflags::mask_extra_fields;
+                return ((fmtflags) x == v);
             }
-            return (_flags & v) == v;
+            return (fmtflags) ((unsigned int) _flags & (unsigned int) v) == v;
         }
         static fmtflags flags() { return _flags; }
-        static void reset() { _flags = static_cast<fmtflags>(gmt | us); }
+        static void reset() { _flags = static_cast<fmtflags>((unsigned int) fmtflags::gmt | (unsigned int) fmtflags::us); }
         static void set_flags(fmtflags v) {
-            if (v == clear) {
+            if (v == fmtflags::clear) {
                 reset();
                 return;
             }
-            if (v < mask_extra_fields) {
-                _flags = (fmtflags) (_flags & (unsigned int) (mask_extra_fields + 1));
-                _flags = (fmtflags) (_flags | (unsigned int) (v));
+            if (v < fmtflags::mask_extra_fields) {
+                _flags = (fmtflags) ((unsigned int) _flags & ((unsigned int) fmtflags::mask_extra_fields + 1));
+                _flags = (fmtflags) ((unsigned int) _flags | (unsigned int) (v));
                 return;
             }
-            _flags = (fmtflags) (_flags | (unsigned int) (v));
+            _flags = (fmtflags) ((unsigned int) _flags | (unsigned int) (v));
         }
 
     private:
@@ -469,7 +470,7 @@ namespace cmdr::chrono {
         // static int gmt_or_local; //0:gmt, 1:local
     };
 
-    inline iom::fmtflags iom::_flags = static_cast<fmtflags>(iom::gmt | iom::us);
+    inline iom::fmtflags iom::_flags = static_cast<fmtflags>((unsigned int) iom::fmtflags::gmt | (unsigned int) iom::fmtflags::us);
 
 } // namespace cmdr::chrono
 
@@ -495,22 +496,22 @@ namespace cmdr::chrono {
         // using tp = std::chrono::time_point<_Clock, _Duration>;
         std::time_t tt = std::chrono::system_clock::to_time_t(_now);
         std::tm *tm;
-        if (iom_::has(iom_::gmt))
+        if (iom_::has(iom_::fmtflags::gmt))
             tm = std::gmtime(&tt); //GMT (UTC)
-        else if (iom_::has(iom_::local))
+        else if (iom_::has(iom_::fmtflags::local))
             tm = std::localtime(&tt); //Locale time-zone, usually UTC by default.
         else
             tm = std::gmtime(&tt); //GMT (UTC)
 
-        if (iom_::has(iom_::ns)) {
+        if (iom_::has(iom_::fmtflags::ns)) {
             auto _nsec = in_nsec();
             os << std::put_time(tm, format) << '.' << std::setfill('0')
                << std::setw(9) << _nsec;
-        } else if (iom_::has(iom_::us)) {
+        } else if (iom_::has(iom_::fmtflags::us)) {
             auto _nsec = in_nsec();
             os << std::put_time(tm, format) << '.' << std::setfill('0')
                << std::setw(6) << (_nsec / 1000);
-        } else if (iom_::has(iom_::ms)) {
+        } else if (iom_::has(iom_::fmtflags::ms)) {
             auto _nsec = in_nsec();
             os << std::put_time(tm, format) << '.' << std::setfill('0')
                << std::setw(3) << (_nsec / 1'000'000);
@@ -528,15 +529,15 @@ namespace cmdr::chrono {
         // using tp = std::chrono::time_point<_Clock, _Duration>;
         std::time_t tt = std::chrono::system_clock::to_time_t(time);
         std::tm *tm;
-        if (iom_::has(iom_::gmt))
+        if (iom_::has(iom_::fmtflags::gmt))
             tm = std::gmtime(&tt); //GMT (UTC)
-        else if (iom_::has(iom_::local))
+        else if (iom_::has(iom_::fmtflags::local))
             tm = std::localtime(&tt); //Locale time-zone, usually UTC by default.
         else
             tm = std::gmtime(&tt); //GMT (UTC)
 
         std::size_t ms = time_point_get_ms(time);
-        if (iom_::has(iom_::ns)) {
+        if (iom_::has(iom_::fmtflags::ns)) {
             // auto t0 = std::chrono::high_resolution_clock::now();
             // auto nanosec = t0.time_since_epoch();
 
@@ -551,12 +552,12 @@ namespace cmdr::chrono {
                << std::setw(3) << ns
                     // << ',' << std::setw(9) << nanosec.count()
                     ;
-        } else if (iom_::has(iom_::us)) {
+        } else if (iom_::has(iom_::fmtflags::us)) {
             std::size_t fractional_seconds = time_point_get_us(time);
             os << std::put_time(tm, format) << '.' << std::setfill('0')
                << std::setw(3) << ms
                << std::setw(3) << fractional_seconds;
-        } else if (iom_::has(iom_::ms)) {
+        } else if (iom_::has(iom_::fmtflags::ms)) {
             os << std::put_time(tm, format) << '.' << std::setfill('0')
                << std::setw(3) << ms;
         } else {
@@ -623,4 +624,4 @@ inline std::ostream &operator<<(std::ostream &os, cmdr::chrono::clock const &v) 
 }
 
 
-#endif //CMDR_CXX_HZ_CHRONO_HH
+#endif //CMDR_CXX11_CMDR_CHRONO_HH

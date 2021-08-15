@@ -255,7 +255,7 @@ namespace cmdr::mmap {
         mmap(std::size_t size) {
             _tmpname = path::tmpname_autoincr();
             io::create_sparse_file(_tmpname, size);
-            _mm.connect(writeable, shareable, path::to_filename(_tmpname));
+            _mm.connect(writeable, shareable, path::to_filename_h(_tmpname).c_str());
         }
         ~mmap() {
             _mm.close();

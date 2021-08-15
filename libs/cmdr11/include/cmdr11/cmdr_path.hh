@@ -269,11 +269,24 @@ namespace cmdr::path {
         //return path.filename().c_str();
     }
 
+    /**
+     * @brief BUG in WIN32/WIN64
+     * @param path 
+     * @return 
+     */
     inline const char *to_filename(std::filesystem::path const &path) {
 #if defined(_WIN32)
-        return path.u8string().c_str();
+        return path.u8string().c_str(); // BUG!!
 #else
         return path.c_str();
+#endif
+    }
+
+    inline std::string to_filename_h(std::filesystem::path const &path) {
+#if defined(_WIN32)
+        return path.u8string();
+#else
+        return path;
 #endif
     }
 
@@ -360,8 +373,6 @@ namespace cmdr::io {
         CloseHandle(hSparseFile);
 
         std::filesystem::resize_file(name, size);
-
-        return true;
 #else
         std::ofstream ofs(name, std::ios_base::out | std::ios_base::binary);
         ofs.seekp(size - 1);

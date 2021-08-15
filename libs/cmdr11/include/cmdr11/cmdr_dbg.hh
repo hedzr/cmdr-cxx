@@ -13,14 +13,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <typeinfo>
+#include <vector>
+
+#include <array> // std::array
+#include <string>
+#include <string_view>
+#include <utility> // std::index_sequence
+
+#include "cmdr_defs.hh"
 
 #ifndef OS_WIN
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #ifndef OS_WIN
 #define OS_WIN 1
-#endif
-#ifdef _WIN64
-#else
 #endif
 #else
 #define OS_WIN 0
@@ -58,7 +63,7 @@
 //
 inline bool print_if_false(const bool assertion, const char *msg) {
     if (!assertion) {
-        std::cout << msg << std::endl;
+        std::cerr << msg << '\n';
     }
     return assertion;
 }
@@ -114,27 +119,97 @@ namespace cmdr::debug {
     }
 #else
     template<typename T>
-    constexpr auto type_name() noexcept {
-        std::string_view name, prefix, suffix;
+    constexpr auto type_name_1() noexcept {
+        // std::string_view name, prefix, suffix;
 #ifdef __clang__
-        name = __PRETTY_FUNCTION__;
-        prefix = "auto type_name() [T = ";
-        suffix = "]";
+        constexpr auto function = std::string_view{__PRETTY_FUNCTION__};
+        constexpr auto prefix = std::string_view{"auto type_name() [T = "};
+        constexpr auto suffix = std::string_view{"]"};
 #elif defined(__GNUC__)
-        name = __PRETTY_FUNCTION__;
-        prefix = "constexpr auto type_name() [with T = ";
-        suffix = "]";
+        constexpr auto function = std::string_view{__PRETTY_FUNCTION__};
+        constexpr auto prefix = std::string_view{"constexpr auto type_name() [with T = "};
+        constexpr auto suffix = std::string_view{"]"};
 #elif defined(_MSC_VER)
-        name = __FUNCSIG__;
-        prefix = "auto __cdecl type_name<";
-        suffix = ">(void) noexcept";
+        constexpr auto function = std::string_view{__FUNCSIG__};
+        constexpr auto prefix = std::string_view{"auto __cdecl type_name<"};
+        constexpr auto suffix = std::string_view{">(void) noexcept"};
 #else
-        name = "Error: unsupported compiler";
+        constexpr auto function = std::string_view{"Error: unsupported compiler"};
+        constexpr auto prefix = std::string_view{""};
+        constexpr auto suffix = std::string_view{""};
 #endif
-        name.remove_prefix(prefix.size());
-        name.remove_suffix(suffix.size());
+
+        //name.remove_suffix(suffix.size());
+        //name.remove_prefix(prefix.size());
+
+        constexpr auto start = function.find(prefix) + prefix.size();
+        constexpr auto end = function.rfind(suffix);
+        return function.substr(start, (end - start));
+    }
+
+    template<std::size_t... Idxs>
+    constexpr auto substring_as_array(std::string_view str, std::index_sequence<Idxs...>) {
+        return std::array{str[Idxs]..., '\n'};
+    }
+
+    template<typename T>
+    constexpr auto type_name_array() {
+#if defined(__clang__)
+        constexpr auto prefix = std::string_view{"[T = "};
+        constexpr auto suffix = std::string_view{"]"};
+        constexpr auto function = std::string_view{__PRETTY_FUNCTION__};
+#elif defined(__GNUC__)
+        constexpr auto prefix = std::string_view{"with T = "};
+        constexpr auto suffix = std::string_view{"]"};
+        constexpr auto function = std::string_view{__PRETTY_FUNCTION__};
+#elif defined(_MSC_VER)
+        constexpr auto prefix = std::string_view{"type_name_array<"};
+        constexpr auto suffix = std::string_view{">(void)"};
+        constexpr auto function = std::string_view{__FUNCSIG__};
+#else
+#error Unsupported compiler
+#endif
+
+        constexpr auto start = function.find(prefix) + prefix.size();
+        constexpr auto end = function.rfind(suffix);
+
+        static_assert(start < end);
+
+        constexpr auto name = function.substr(start, (end - start));
+        // return substring_as_array(name, std::make_index_sequence<name.size()>{});
         return name;
     }
+
+    template<typename T>
+    struct type_name_holder {
+        static inline constexpr auto value = type_name_array<T>();
+    };
+
+    /**
+     * @brief return the literal of a datatype in constexpr.
+     * @tparam T the datatype
+     * @return std::string_view
+     * @note the returning string is a string_view, make a copy before print it:
+     * 
+     * 1. use std::ostream directly:
+     * @code{c++}
+     * std::cout << cmdr::debug::type_name&lt;std::string>() << '\n';
+     * @endcode
+     * 
+     * 2. wrap the string_view into a std::string:
+     * @code{c++}
+     * std::cout << std::string(cmdr::debug::type_name&lt;std::string>()) << '\n';
+     * printf(">>> %s\n", std::string(cmdr::debug::type_name&lt;std::string>()).c_str());
+     * @endcode
+     * 
+     */
+    template<typename T>
+    constexpr auto type_name() -> std::string_view {
+        constexpr auto &value = type_name_holder<T>::value;
+        return std::string_view{value.data(), value.size()};
+    }
+
+    // https://bitwizeshift.github.io/posts/2021/03/09/getting-an-unmangled-type-name-at-compile-time/
 #endif
 
 
@@ -613,15 +688,15 @@ namespace cmdr::debug {
 
         static void handler(int sig_) {
 #if 0
-            void *array[10];
-            size_t size;
+                    void *array[10];
+                    size_t size;
 
-            // get void*'s for all entries on the stack
-            size = backtrace(array, 10);
+                    // get void*'s for all entries on the stack
+                    size = backtrace(array, 10);
 
-            // print out all the frames to stderr
-            fprintf(stderr, "Error: signal %d:\n", sig_);
-            backtrace_symbols_fd(array, size, STDERR_FILENO);
+                    // print out all the frames to stderr
+                    fprintf(stderr, "Error: signal %d:\n", sig_);
+                    backtrace_symbols_fd(array, size, STDERR_FILENO);
 #else
             fprintf(stderr, "Error: signal %d:\n", sig_);
             print_stacktrace(stderr, 0);

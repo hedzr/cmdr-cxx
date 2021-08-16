@@ -118,13 +118,13 @@ void test_cpp_style(std::chrono::system_clock::time_point &now, std::tm &now_tm)
         struct tm *aTime = localtime(&theTime);
 
         std::cout << days.count() << " days since epoch or "
-        << days.count() / 365.2524 << " years since epoch. The time is now "
-        << aTime->tm_hour << ":"
-        << minutes.count() << ":"
-        << seconds.count() << ","
-        << milliseconds.count() << ":"
-        << microseconds.count() << ":"
-        << nanoseconds.count() << '\n';
+                  << days.count() / 365.2524 << " years since epoch. The time is now "
+                  << aTime->tm_hour << ":"
+                  << minutes.count() << ":"
+                  << seconds.count() << ","
+                  << milliseconds.count() << ":"
+                  << microseconds.count() << ":"
+                  << nanoseconds.count() << '\n';
     }
 
     // std::cout << "date command: " << date_cmd << '\n';
@@ -163,11 +163,11 @@ void test_time_now() {
     std::cout << iom::fmtflags::local << iom::fmtflags::ns << "time_point (clock): " << now1 << '\n';
     std::cout << iom::fmtflags::local << iom::fmtflags::us << "time_point (clock): " << now1 << '\n';
     std::cout << 1 << '\n'
-    << '\n';
+              << '\n';
 }
 
 template<class _Rep, class _Period>
-        void echo(std::chrono::duration<_Rep, _Period> d) {
+void echo(std::chrono::duration<_Rep, _Period> d) {
     auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(d);
     std::cout << "duration " << d.count() << " (" << ns.count() << ") = " << d << '\n';
 }
@@ -175,18 +175,18 @@ template<class _Rep, class _Period>
 void test_format_duration() {
     using namespace std::literals::chrono_literals;
     for (auto d : std::vector<std::chrono::duration<long double, std::ratio<60>>>{
-        3ns,
-        800ms,
-        59.739us,
-        0.75min,
-        501ns,
-        730us,
-        233ms,
-        7s,
-        7.2s,
-        1024h,
-        89.843204843s,
-        }) {
+                 3ns,
+                 800ms,
+                 59.739us,
+                 0.75min,
+                 501ns,
+                 730us,
+                 233ms,
+                 7s,
+                 7.2s,
+                 1024h,
+                 89.843204843s,
+         }) {
         echo(d);
     }
 }
@@ -197,25 +197,28 @@ void test_high_resolution_duration() {
     auto now = std::chrono::high_resolution_clock::now();
     auto duration = now - then;
 
-    auto clean_duration = cmdr::chrono::break_down_durations<std::chrono::seconds, std::chrono::milliseconds, std::chrono::microseconds>(duration);
+    auto clean_duration = cmdr::chrono::detail::break_down_durations<std::chrono::seconds, std::chrono::milliseconds, std::chrono::microseconds>(duration);
     //    auto timeInMicroSec = std::chrono::duration_cast<std::chrono::microseconds>(duration); // base in Microsec.
     std::cout << std::get<0>(clean_duration).count() << "::" << std::get<1>(clean_duration).count() << "::" << std::get<2>(clean_duration).count() << "\n";
 }
 
-void test_try_parse_any() {
+void test_try_parse_by() {
     using Clock = std::chrono::system_clock;
-    std::tm tm = cmdr::chrono::time_point_2_tm(Clock::now());
 
-    for (auto &time_str : {"1937-1-29 3:59:59"}) {
+    for (auto &time_str : {
+                 "11:01:37",
+                 "1937-1-29 3:59:59",
+         }) {
+        std::tm tm = cmdr::chrono::time_point_2_tm(Clock::now());
         typename Clock::time_point tp;
         if (cmdr::chrono::try_parse_by(tm, time_str, "%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S")) {
             tp = cmdr::chrono::tm_2_time_point(&tm);
             cmdr_print("  - time '%s' parsed: tp = %s",
                        time_str,
                        // _twl.size(), hit, loop,
-                       // cmdr::chrono::format_duration(d).c_str(),
-                       // cmdr::chrono::format_time_point(tp).c_str(),
-                       cmdr::chrono::format_time_point(tp).c_str());
+                       // hicc::chrono::format_duration(d).c_str(),
+                       // hicc::chrono::format_time_point(tp).c_str(),
+                       cmdr::chrono::format_time_point_to_local(tp).c_str());
         }
     }
 }
@@ -223,7 +226,7 @@ void test_try_parse_any() {
 int main() {
     cmdr::chrono::high_res_duration _hrd;
 
-    CMDR_TEST_FOR(test_try_parse_any);
+    CMDR_TEST_FOR(test_try_parse_by);
     CMDR_TEST_FOR(test_time_now);
     CMDR_TEST_FOR(test_format_duration);
 
@@ -236,6 +239,6 @@ int main() {
         std::cout << ts.tv_sec << ',' << ts.tv_nsec << '\n';
     }
 #endif
-    
+
     test_high_resolution_duration();
 }

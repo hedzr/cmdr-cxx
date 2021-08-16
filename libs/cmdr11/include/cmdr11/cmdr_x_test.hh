@@ -52,7 +52,7 @@ namespace cmdr::test {
 
     private:
         void before(const char *fname) {
-            printf("--- BEGIN OF %-40s ----------------------\n", fname);
+            printf("\n--- BEGIN OF %-40s ----------------------\n", fname);
         }
         void after(const char *fname) {
             printf("--- END OF %-42s ----------------------\n\n", fname);

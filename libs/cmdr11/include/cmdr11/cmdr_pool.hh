@@ -257,10 +257,9 @@ namespace cmdr::pool {
     /**
      * @brief a c++11 thread pool with pre-created, fixed running threads and free tasks management.
      * 
-     * Each thread will try to lock the task queue and fetch the newest one for launching.
+     * @par Each thread will try to lock the task queue and fetch the newest one for launching.
      * 
-     * This pool was inspired by someone but I have no idea to find out original post. so anyone
-     * if you know could issue me.
+     * @par This pool was inspired by one or two posts at stackoverflow, the original link needed.
      */
     class thread_pool {
     public:
@@ -348,8 +347,6 @@ namespace cmdr::pool {
             }
 #if CMDR_ENABLE_THREAD_POOL_READY_SIGNAL
             _cv_started.wait();
-#endif
-#if CMDR_ENABLE_THREAD_POOL_READY_SIGNAL
             pool_debug("  . pool.started (cv.get = %d)..", _cv_started.val());
 #else
             pool_debug("  . pool.started..");
@@ -359,7 +356,6 @@ namespace cmdr::pool {
     private:
         std::vector<std::future<void>> _threads{};                           // fixed, running pool
         mutable threaded_message_queue<std::packaged_task<void()>> _tasks{}; // the futures
-
         std::atomic<std::size_t> _active{0};
 #if CMDR_ENABLE_THREAD_POOL_READY_SIGNAL
         conditional_wait_for_int _cv_started{};

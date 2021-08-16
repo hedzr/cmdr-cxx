@@ -165,32 +165,32 @@ namespace cmdr::chrono {
     }
 
     /**
-             * @brief a high resolution time span calculator
-             * 
-             * @details Usage:
-             * 
-             *   Just make it as a stack variable, for example:
-             * @code{c++}
-             *    void yours(){
-             *          cmdr::chrono::high_res_duration hrd;
-             *          
-             *          //...
-             *          
-             *          // at the exiting this function, hrd will print a timing log line.
-             *    }
-             * @endcode
-             * 
-             * If you post a callback at constructor, the default printer could be 
-             * overwritten by a false return in your callback function. Here is a
-             * sample:
-             * @code{c++}
-             *     cmdr::chrono::high_res_duration hrd([](auto duration) -> bool {
-             *       std::cout << "It took " << duration << '\n';
-             *       return false;
-             *     });
-             * @endcode
-             * 
-             */
+     * @brief a high resolution time span calculator
+     * 
+     * @details Usage:
+     * 
+     *   Just make it as a stack variable, for example:
+     * @code{c++}
+     *    void yours(){
+     *          cmdr::chrono::high_res_duration hrd;
+     *          
+     *          //...
+     *          
+     *          // at the exiting this function, hrd will print a timing log line.
+     *    }
+     * @endcode
+     * 
+     * If you post a callback at constructor, the default printer could be 
+     * overwritten by a false return in your callback function. Here is a
+     * sample:
+     * @code{c++}
+     *     cmdr::chrono::high_res_duration hrd([](auto duration) -> bool {
+     *       std::cout << "It took " << duration << '\n';
+     *       return false;
+     *     });
+     * @endcode
+     * 
+     */
     class high_res_duration {
     public:
         high_res_duration(std::function<bool(std::chrono::high_resolution_clock::duration duration)> const &fn = nullptr)
@@ -373,6 +373,36 @@ namespace cmdr::chrono {
         std::stringstream ss(expression);
         return !(ss >> std::get_time(&tm, format.c_str())).fail();
     }
+    /**
+     * @brief parse a source string as a time structure with a list of formats.
+     * @tparam _Args its type should be 'const char * const'
+     * @param tm the parsed time value will be stored in it
+     * @param source_string 
+     * @param formats lists of 'const char & const'
+     * @return true means a time parsed ok, false means cannot be parsed.
+     * 
+     * @detail For instance:
+     * @code{c++}
+     * std::tm tm;
+     * auto time_str = "1937-1-29 3:59:59";
+     * if (cmdr::chrono::try_parse_by(tm, time_str, "%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S")) {
+     *     auto tp = cmdr::chrono::tm_2_time_point(&tm);
+     *     // ...
+     * }
+     * @endcode
+     */
+    template<typename... _Args>
+    inline bool try_parse_by(std::tm &tm, std::string const &source_string, _Args const &...formats) {
+        // if (sizeof...(_Args) > 0) {
+        for (auto &format : {"%Y-%m-%d %H:%M:%S", formats...}) {
+            std::stringstream ss(source_string);
+            if (!(ss >> std::get_time(&tm, format)).fail())
+                return true;
+        }
+        // }
+        return false;
+    }
+
 
     template<class _Clock, class _Duration = typename _Clock::duration>
     inline auto time_point_get_ms(std::chrono::time_point<_Clock, _Duration> const &time) {
@@ -403,6 +433,27 @@ namespace cmdr::chrono {
         std::size_t fractional_seconds = ns.count() % 1000;
         return fractional_seconds;
     }
+
+    template<typename Clock = std::chrono::system_clock>
+    inline typename Clock::time_point tm_2_time_point(std::tm *tm) {
+        return Clock::from_time_t(std::mktime(tm));
+    }
+
+    template<typename Clock = std::chrono::system_clock, bool GMT = false>
+    inline std::tm time_point_2_tm(typename Clock::time_point const tp) {
+        auto time_now = Clock::to_time_t(tp);
+        if (GMT)
+            return *std::gmtime(&time_now);
+        return *std::localtime(&time_now);
+    }
+
+    template<typename Clock = std::chrono::system_clock, bool GMT = false>
+    inline std::tm time_t_2_tm(time_t t) {
+        if (GMT)
+            return *std::gmtime(&t);
+        return *std::localtime(&t);
+    }
+
 
 } // namespace cmdr::chrono
 

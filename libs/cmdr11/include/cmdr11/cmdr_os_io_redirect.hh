@@ -5,7 +5,7 @@
 #ifndef CMDR_CXX_CMDR_OS_IO_REDIRECT_HH
 #define CMDR_CXX_CMDR_OS_IO_REDIRECT_HH
 
-// #include "hz-process.hh"
+// #include "cmdr_process.hh"
 
 #include <cstdio>
 #include <cstring>

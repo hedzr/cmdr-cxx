@@ -9,6 +9,9 @@
 #define CMDR_ENABLE_THREAD_POOL_READY_SIGNAL 1
 #endif
 
+// To enable debugging output for thread pool, adding this definition in your cmake script:
+// -DHICC_TEST_THREAD_POOL_DBGOUT=1
+
 #include <atomic>
 #include <condition_variable>
 #include <future>
@@ -34,6 +37,14 @@
 
 namespace cmdr::pool {
 
+    /**
+     * @brief a wrapper class for using std condition variable concisely 
+     * @tparam T any type holder
+     * @tparam Pred a functor with prototype `bool()`
+     * @tparam Setter a functor with prototype `void()`
+     * @see hicc::pool::conditional_wait_for_bool
+     * @see hicc::pool::conditional_wait_for_int
+     */
     template<typename T, typename Pred = std::function<bool()>, typename Setter = std::function<void()>>
     class conditional_wait {
         Pred _p{};
@@ -54,15 +65,28 @@ namespace cmdr::pool {
         CLAZZ_NON_COPYABLE(conditional_wait);
 
     public:
+        /**
+         * @brief wait for Pred condition matched
+         */
         void wait() {
             std::unique_lock<std::mutex> lk(_m);
             _cv.wait(lk, _p);
         }
+        /**
+         * @brief wait for Pred condition matched, or a timeout arrived.
+         * @tparam R 
+         * @tparam P 
+         * @param time a timeout (std::chrono::duration)
+         * @return true if condition matched, false if timeout
+         */
         template<class R, class P>
         bool wait_for(std::chrono::duration<R, P> const &time) {
             std::unique_lock<std::mutex> lk(_m);
             return !_cv.wait_for(lk, time, _p);
         }
+        /**
+         * @brief do Setter, and trigger any one of the wating routines
+         */
         void set() {
             {
                 std::unique_lock<std::mutex> lk(_m);
@@ -70,6 +94,9 @@ namespace cmdr::pool {
             }
             _cv.notify_one();
         }
+        /**
+         * @brief do Setter, trigger and wake up all waiting routines
+         */
         void set_for_all() {
             {
                 std::unique_lock<std::mutex> lk(_m);

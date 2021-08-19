@@ -70,6 +70,8 @@ inline int clock_gettime(int, timespec *spec) {
 #include <sys/time.h> // gettimeofday
 #endif                // _WIN32
 
+
+// type checks
 namespace cmdr::chrono {
 
 
@@ -100,6 +102,7 @@ namespace cmdr::chrono {
 
 } // namespace cmdr::chrono
 
+// get_system_clock_in_us
 namespace cmdr::chrono {
 
     inline struct timeval get_system_clock_in_us() {
@@ -151,6 +154,7 @@ namespace cmdr::chrono {
 
 } // namespace cmdr::chrono
 
+// high_res_duration
 namespace cmdr::chrono {
 
     namespace detail {
@@ -217,7 +221,7 @@ namespace cmdr::chrono {
         }
 
         template<typename T,
-                 std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool> = true>
+                std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool> = true>
         void print_duration(std::ostream &os, T v);
 
     private:
@@ -228,6 +232,119 @@ namespace cmdr::chrono {
 
 } // namespace cmdr::chrono
 
+// iom
+namespace cmdr::chrono {
+
+    /**
+     * @brief like std::ios, iom provides a set of flags for tuning the output as stream formatting.
+     * 
+     * @detail For Example:
+     * @code{c++}
+     * using iom = cmdr::chrono::iom;
+     * std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+     * std::cout << iom::local << iom::ns << "time_point: os << " << now << iom::clear << '\n';
+     * @endcode
+     * 
+     * @note iom is not thread-safe.
+     */
+    class iom {
+    public:
+        enum class fmtflags {
+            nothing = 0x0001,
+            ms = 0x0001,
+            us = 0x0002,
+            ns = 0x0003,
+            mask_extra_fields = 0x000f,
+            gmt = 0x1000,
+            local = 0x2000,
+            gmt_or_local = 0x4000,
+            clear = 0x0000,
+        };
+        // typedef u_int32_t fmtflags;
+        // static const fmtflags nothing = 0x0001;
+        // static const fmtflags ms = 0x0001;
+        // static const fmtflags us = 0x0002;
+        // static const fmtflags ns = 0x0003;
+        // static const fmtflags mask_extra_fields = 0x000f;
+        // static const fmtflags gmt = 0x0010;
+        // static const fmtflags local = 0x0020;
+        // static const fmtflags clear = 0x0000;
+        static bool has(fmtflags v) {
+            if (v == fmtflags::clear) {
+                return false;
+            }
+            if (v < fmtflags::mask_extra_fields) {
+                auto x = (unsigned int) _flags & (unsigned int) fmtflags::mask_extra_fields;
+                return ((fmtflags) x == v);
+            }
+            return (fmtflags) ((unsigned int) _flags & (unsigned int) v) == v;
+        }
+        static fmtflags flags() { return _flags; }
+        static void reset() { _flags = static_cast<fmtflags>((unsigned int) fmtflags::gmt_or_local | (unsigned int) fmtflags::us); }
+        static void set_flags(fmtflags v, bool on = true) {
+            if (v == fmtflags::clear) {
+                reset();
+                return;
+            }
+            if (v < fmtflags::mask_extra_fields) {
+                _flags = (fmtflags) ((unsigned int) _flags & ((unsigned int) fmtflags::mask_extra_fields + 1));
+                _flags = (fmtflags) ((unsigned int) _flags | (unsigned int) (v));
+                return;
+            }
+
+            if (on)
+                _flags = (fmtflags) ((unsigned int) _flags | (unsigned int) (v));
+            else
+                _flags = (fmtflags) ((unsigned int) _flags & ~(unsigned int) (v));
+
+            if (v == fmtflags::gmt)
+                set_flags(fmtflags::gmt_or_local, true);
+            else if (v == fmtflags::local)
+                set_flags(fmtflags::gmt_or_local, false);
+        }
+        /**
+         * @brief `saver` is a RAII class to simplify the save/restore of iom flags.
+         * 
+         * @par For example:
+         * 
+         * @code{c++}
+         * {
+         *     using iom_ = cmdr::chrono::iom;
+         *     iom_::saver _iom_saver{}; // save point for 'iom'
+         *     iom_::set_flags(iom_::fmtflags::gmt_or_local, false);
+         *     std::stringstream ss;
+         *     cmdr::chrono::serialize_time_point(ss, time, format);
+         *     // restore point for 'iom' after _iom_saver dtor().
+         * }
+         * @endcode
+         */
+        class saver {
+            fmtflags _flags;
+
+        public:
+            saver() { _flags = iom::flags(); }
+            ~saver() { iom::set_as(_flags); }
+        };
+
+    private:
+        static void set_as(fmtflags v) { _flags = v; }
+
+    private:
+        static fmtflags _flags; // 0:ms, 1:us, 2:ns
+        // static int gmt_or_local; //0:gmt, 1:local
+    };
+
+    inline iom::fmtflags iom::_flags = static_cast<fmtflags>((unsigned int) iom::fmtflags::gmt_or_local | (unsigned int) iom::fmtflags::us);
+
+} // namespace cmdr::chrono
+
+inline std::ostream &operator<<(std::ostream &os, const cmdr::chrono::iom::fmtflags v) {
+    using iom = cmdr::chrono::iom;
+    iom::set_flags(v);
+    return os;
+}
+
+// format_duration, try_parse, duration_is_zero, ...
 namespace cmdr::chrono {
 
     template<class Duration>
@@ -360,51 +477,19 @@ namespace cmdr::chrono {
     }
 
 
-    // not yet
-    template<class Duration,
-             std::enable_if_t<is_duration<Duration>::value, bool> = true>
-    static bool parse_duration(std::istream &is, Duration const &d) {
-        (void) (is);
-        (void) (d);
-        return true;
-    }
-
-
     //
     inline bool try_parse(std::tm &tm, const std::string &expression, const std::string &format) {
         std::stringstream ss(expression);
         return !(ss >> std::get_time(&tm, format.c_str())).fail();
     }
-    /**
-     * @brief parse a source string as a time structure with a list of formats.
-     * @tparam _Args its type should be 'const char * const'
-     * @param tm the parsed time value will be stored in it
-     * @param source_string 
-     * @param formats lists of 'const char & const'
-     * @return true means a time parsed ok, false means cannot be parsed.
-     * 
-     * @detail For instance:
-     * @code{c++}
-     * std::tm tm;
-     * auto time_str = "1937-1-29 3:59:59";
-     * if (cmdr::chrono::try_parse_by(tm, time_str, "%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S")) {
-     *     auto tp = cmdr::chrono::tm_2_time_point(&tm);
-     *     // ...
-     * }
-     * @endcode
-     */
-    template<typename... _Args>
-    inline bool try_parse_by(std::tm &tm, std::string const &source_string, _Args const &...formats) {
-        // if (sizeof...(_Args) > 0) {
-        std::tm tm_local_copy = tm;
-        for (auto &format : {"%Y-%m-%d %H:%M:%S", formats...}) {
-            std::stringstream ss(source_string);
-            if (!(ss >> std::get_time(&tm, format)).fail())
-                return true;
-            tm = tm_local_copy;
-        }
-        // }
-        return false;
+
+
+    template<typename Clock = std::chrono::system_clock>
+    inline bool duration_is_zero(typename Clock::time_point const &tp) {
+        auto d = tp.time_since_epoch();
+        if (d != Clock::duration::zero())
+            return false;
+        return true;
     }
 
 
@@ -443,6 +528,11 @@ namespace cmdr::chrono {
         return Clock::from_time_t(std::mktime(tm));
     }
 
+    template<typename Clock = std::chrono::system_clock>
+    inline typename Clock::time_point tm_2_time_point(std::tm &tm) {
+        return Clock::from_time_t(std::mktime(&tm));
+    }
+
     template<typename Clock = std::chrono::system_clock, bool GMT = false>
     inline std::tm time_point_2_tm(typename Clock::time_point const tp) {
         auto time_now = Clock::to_time_t(tp);
@@ -458,163 +548,10 @@ namespace cmdr::chrono {
         return *std::localtime(&t);
     }
 
-
 } // namespace cmdr::chrono
 
-
+// serialize_time_point, serialize_tm, format_time_point, ...
 namespace cmdr::chrono {
-
-    /**
-     * @brief like std::ios, iom provides a set of flags for tuning the output as stream formatting.
-     * 
-     * @detail For Example:
-     * @code{c++}
-     * using iom = cmdr::chrono::iom;
-     * std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
-     * std::cout << iom::local << iom::ns << "time_point: os << " << now << iom::clear << '\n';
-     * @endcode
-     * 
-     * @note iom is not thread-safe.
-     */
-    class iom {
-    public:
-        enum class fmtflags {
-            nothing = 0x0001,
-            ms = 0x0001,
-            us = 0x0002,
-            ns = 0x0003,
-            mask_extra_fields = 0x000f,
-            gmt = 0x1000,
-            local = 0x2000,
-            gmt_or_local = 0x4000,
-            clear = 0x0000,
-        };
-        // typedef u_int32_t fmtflags;
-        // static const fmtflags nothing = 0x0001;
-        // static const fmtflags ms = 0x0001;
-        // static const fmtflags us = 0x0002;
-        // static const fmtflags ns = 0x0003;
-        // static const fmtflags mask_extra_fields = 0x000f;
-        // static const fmtflags gmt = 0x0010;
-        // static const fmtflags local = 0x0020;
-        // static const fmtflags clear = 0x0000;
-        static bool has(fmtflags v) {
-            if (v == fmtflags::clear) {
-                return false;
-            }
-            if (v < fmtflags::mask_extra_fields) {
-                auto x = (unsigned int) _flags & (unsigned int) fmtflags::mask_extra_fields;
-                return ((fmtflags) x == v);
-            }
-            return (fmtflags) ((unsigned int) _flags & (unsigned int) v) == v;
-        }
-        static fmtflags flags() { return _flags; }
-        static void reset() { _flags = static_cast<fmtflags>((unsigned int) fmtflags::gmt_or_local | (unsigned int) fmtflags::us); }
-        static void set_flags(fmtflags v, bool on = true) {
-            if (v == fmtflags::clear) {
-                reset();
-                return;
-            }
-            if (v < fmtflags::mask_extra_fields) {
-                _flags = (fmtflags) ((unsigned int) _flags & ((unsigned int) fmtflags::mask_extra_fields + 1));
-                _flags = (fmtflags) ((unsigned int) _flags | (unsigned int) (v));
-                return;
-            }
-
-            if (on)
-                _flags = (fmtflags) ((unsigned int) _flags | (unsigned int) (v));
-            else
-                _flags = (fmtflags) ((unsigned int) _flags & ~(unsigned int) (v));
-
-            if (v == fmtflags::gmt)
-                set_flags(fmtflags::gmt_or_local, true);
-            else if (v == fmtflags::local)
-                set_flags(fmtflags::gmt_or_local, false);
-        }
-        /**
-         * @brief `saver` is a RAII class to simplify the save/restore of iom flags.
-         * 
-         * @par For example:
-         * 
-         * @code{c++}
-         * {
-         *     using iom_ = cmdr::chrono::iom;
-         *     iom_::saver _iom_saver{}; // save point for 'iom'
-         *     iom_::set_flags(iom_::fmtflags::gmt_or_local, false);
-         *     std::stringstream ss;
-         *     cmdr::chrono::serialize_time_point(ss, time, format);
-         *     // restore point for 'iom' after _iom_saver dtor().
-         * }
-         * @endcode
-         */
-        class saver {
-            fmtflags _flags;
-
-        public:
-            saver() { _flags = iom::flags(); }
-            ~saver() { iom::set_as(_flags); }
-        };
-
-    private:
-        static void set_as(fmtflags v) { _flags = v; }
-
-    private:
-        static fmtflags _flags; // 0:ms, 1:us, 2:ns
-        // static int gmt_or_local; //0:gmt, 1:local
-    };
-
-    inline iom::fmtflags iom::_flags = static_cast<fmtflags>((unsigned int) iom::fmtflags::gmt_or_local | (unsigned int) iom::fmtflags::us);
-
-} // namespace cmdr::chrono
-
-
-inline std::ostream &operator<<(std::ostream &os, const cmdr::chrono::iom::fmtflags v) {
-    using iom = cmdr::chrono::iom;
-    iom::set_flags(v);
-    return os;
-}
-
-
-namespace cmdr::chrono {
-
-    inline std::size_t clock::nsec() const { return time_point_get_ns(_now); }
-    inline std::size_t clock::in_nsec() const {
-        std::size_t ms = time_point_get_ms(_now);
-        std::size_t us = time_point_get_us(_now);
-        std::size_t ns = time_point_get_ns(_now);
-        return (ms * 1000 + us) * 1000 + ns;
-    }
-    inline std::ostream &clock::serialize(std::ostream &os, const char *format) const {
-        using iom_ = cmdr::chrono::iom;
-        // using tp = std::chrono::time_point<_Clock, _Duration>;
-        std::time_t tt = std::chrono::system_clock::to_time_t(_now);
-        std::tm *tm;
-        if (iom_::has(iom_::fmtflags::gmt_or_local))
-            tm = std::gmtime(&tt);    //GMT (UTC)
-        else                          // if (iom_::has(iom_::fmtflags::local))
-            tm = std::localtime(&tt); //Locale time-zone, usually UTC by default.
-        // else
-        //     tm = std::gmtime(&tt); //GMT (UTC)
-
-        if (iom_::has(iom_::fmtflags::ns)) {
-            auto _nsec = in_nsec();
-            os << std::put_time(tm, format) << '.' << std::setfill('0')
-               << std::setw(9) << _nsec;
-        } else if (iom_::has(iom_::fmtflags::us)) {
-            auto _nsec = in_nsec();
-            os << std::put_time(tm, format) << '.' << std::setfill('0')
-               << std::setw(6) << (_nsec / 1000);
-        } else if (iom_::has(iom_::fmtflags::ms)) {
-            auto _nsec = in_nsec();
-            os << std::put_time(tm, format) << '.' << std::setfill('0')
-               << std::setw(3) << (_nsec / 1'000'000);
-        } else {
-            os << std::put_time(tm, format);
-        }
-
-        return os;
-    }
-
     // NOTE: just for std::chrono::system_clock
     template<class _Clock, class _Duration = typename _Clock::duration>
     inline std::ostream &serialize_time_point(std::ostream &os, std::chrono::time_point<_Clock, _Duration> const &time, const char *format = "%Y-%m-%d %H:%M:%S") {
@@ -668,8 +605,8 @@ namespace cmdr::chrono {
     template<class _Clock, class _Duration = typename _Clock::duration>
     inline std::string format_time_point_to_local(std::chrono::time_point<_Clock, _Duration> const &time, const char *format = "%Y-%m-%d %H:%M:%S") {
         using iom_ = cmdr::chrono::iom;
-        iom::saver _iom_saver{};
-        iom::set_flags(iom_::fmtflags::gmt_or_local, false);
+        iom_::saver _iom_saver{};
+        iom_::set_flags(iom_::fmtflags::gmt_or_local, false);
         std::stringstream ss;
         serialize_time_point(ss, time, format);
         return ss.str();
@@ -688,6 +625,225 @@ namespace cmdr::chrono {
     // inline std::string format(std::time_t time) {
     //     std::tm tm = *std::localtime(&time);
     // }
+} // namespace cmdr::chrono
+
+// last_day_at_this_month, last_day_at_this_year, compare_date_part
+namespace cmdr::chrono {
+    /**
+     * @brief get last 'day_offset' day of this month.
+     * @tparam Clock 
+     * @tparam GMT 
+     * @param tm 
+     * @param day_offset 1..31: get last day, others: invalid.
+     * @param month_delta 1: this mo, 2: next mo, ...
+     * @param mday the default is 1st (of next month)
+     * @return new time point
+     */
+    template<typename Clock = std::chrono::system_clock, bool GMT = false>
+    inline typename Clock::time_point last_day_at_this_month_in_time_point(std::tm const &tm, int day_offset = 1, int month_delta = 0, int mday = 1) {
+        std::tm tmp = tm;
+        if (day_offset < 1 || day_offset > 31)
+            return tm_2_time_point(tmp);
+
+        // get next month 1st
+        tmp.tm_mday = mday; // get next month 1st day
+        tmp.tm_mon += month_delta;
+        while (tmp.tm_mon > 11) {
+            tmp.tm_mon -= 12;
+            tmp.tm_year++;
+        }
+
+        // subtract day_offset
+        auto t = Clock::from_time_t(std::mktime(&tmp));
+        // printf("  . . . . got next month 1st: %s\n", format_time_point(t).c_str());
+        t -= std::chrono::hours((day_offset) *24); // and subtract 1 day, so we get the last day in this month
+        // printf("  . . . . got next month 1st - %d day: %s\n", day_offset, format_time_point(t).c_str());
+        return t;
+    }
+    /**
+     * @brief get last 'day_offset' day of this month.
+     * @tparam Clock 
+     * @tparam GMT 
+     * @param tm 
+     * @param day_offset 1..31: get last day, others: invalid.
+     * @param month_delta 
+     * @param mday the default is 1st (of next month)
+     * @return new time point in std::tm structure
+     */
+    template<typename Clock = std::chrono::system_clock, bool GMT = false>
+    inline std::tm last_day_at_this_month(std::tm const &tm, int day_offset = 1, int month_delta = 0, int mday = 1) {
+        auto t = last_day_at_this_month_in_time_point(tm, day_offset, month_delta, mday);
+        return time_point_2_tm(t);
+    }
+
+    /**
+     * @brief get last 'day_offset' day of this year.
+     * @tparam Clock 
+     * @tparam GMT 
+     * @param tm 
+     * @param day_offset 1..366: get last day, others: invalid.
+     * @return new time point
+     */
+    template<typename Clock = std::chrono::system_clock, bool GMT = false>
+    inline typename Clock::time_point last_day_at_this_year_in_time_point(std::tm const &tm, int day_offset = 1) {
+        std::tm tmp = tm;
+        if (day_offset < 1 || day_offset > 366)
+            return tm_2_time_point(tmp);
+
+        // get December 31st
+        tmp.tm_mday = 1; // get next month 1st day
+        tmp.tm_mon = 0;  // Dec 31th
+        tmp.tm_year++;
+
+        // subtract day_offset
+        auto t = Clock::from_time_t(std::mktime(&tmp));
+        // printf("  . . . . got December 31st: %s\n", format_time_point(t).c_str());
+        t -= std::chrono::hours((day_offset) *24); // and subtract 1 day, so we get the last day in this month
+        // printf("  . . . . got December 31st + 1 - %d day: %s\n", day_offset, format_time_point(t).c_str());
+        return t;
+    }
+    /**
+     * @brief get last 'day_offset' day of this year.
+     * @tparam Clock 
+     * @tparam GMT 
+     * @param tm 
+     * @param day_offset 1..366: get last day, others: invalid.
+     * @return new time point in std::tm structure
+     */
+    template<typename Clock = std::chrono::system_clock, bool GMT = false>
+    inline std::tm last_day_at_this_year(std::tm const &tm, int day_offset = 1) {
+        auto t = last_day_at_this_year_in_time_point(tm, day_offset);
+        return time_point_2_tm(t);
+    }
+
+
+    template<typename Clock = std::chrono::system_clock>
+    inline bool compare_date_part(typename Clock::time_point const &lhs, typename Clock::time_point const &rhs) {
+        std::tm tml = time_point_2_tm(lhs);
+        std::tm tmr = time_point_2_tm(rhs);
+        tml.tm_sec = tmr.tm_sec;
+        tml.tm_min = tmr.tm_min;
+        tml.tm_hour = tmr.tm_hour;
+        auto l = tm_2_time_point(tml);
+        auto r = tm_2_time_point(tmr);
+        return l == r ? 0 : l < r ? -1
+                                  : 1;
+    }
+
+} // namespace cmdr::chrono
+
+// clock class : inline functions
+namespace cmdr::chrono {
+
+    inline std::size_t clock::nsec() const { return time_point_get_ns(_now); }
+    inline std::size_t clock::in_nsec() const {
+        std::size_t ms = time_point_get_ms(_now);
+        std::size_t us = time_point_get_us(_now);
+        std::size_t ns = time_point_get_ns(_now);
+        return (ms * 1000 + us) * 1000 + ns;
+    }
+    inline std::ostream &clock::serialize(std::ostream &os, const char *format) const {
+        using iom_ = cmdr::chrono::iom;
+        // using tp = std::chrono::time_point<_Clock, _Duration>;
+        std::time_t tt = std::chrono::system_clock::to_time_t(_now);
+        std::tm *tm;
+        if (iom_::has(iom_::fmtflags::gmt_or_local))
+            tm = std::gmtime(&tt);    //GMT (UTC)
+        else                          // if (iom_::has(iom_::fmtflags::local))
+            tm = std::localtime(&tt); //Locale time-zone, usually UTC by default.
+        // else
+        //     tm = std::gmtime(&tt); //GMT (UTC)
+
+        if (iom_::has(iom_::fmtflags::ns)) {
+            auto _nsec = in_nsec();
+            os << std::put_time(tm, format) << '.' << std::setfill('0')
+               << std::setw(9) << _nsec;
+        } else if (iom_::has(iom_::fmtflags::us)) {
+            auto _nsec = in_nsec();
+            os << std::put_time(tm, format) << '.' << std::setfill('0')
+               << std::setw(6) << (_nsec / 1000);
+        } else if (iom_::has(iom_::fmtflags::ms)) {
+            auto _nsec = in_nsec();
+            os << std::put_time(tm, format) << '.' << std::setfill('0')
+               << std::setw(3) << (_nsec / 1'000'000);
+        } else {
+            os << std::put_time(tm, format);
+        }
+
+        return os;
+    }
+} // namespace cmdr::chrono
+
+namespace cmdr::chrono {
+
+    // other helpers
+
+
+    /**
+     * @brief parse a source string as a time structure with a list of formats.
+     * @tparam _Args its type should be 'const char * const'
+     * @param tm the parsed time value will be stored in it
+     * @param source_string 
+     * @param formats lists of 'const char & const'
+     * @return true means a time parsed ok, false means cannot be parsed.
+     * 
+     * @detail For instance:
+     * @code{c++}
+     * std::tm tm;
+     * auto time_str = "1937-1-29 3:59:59";
+     * if (cmdr::chrono::try_parse_by(tm, time_str, "%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S")) {
+     *     auto tp = cmdr::chrono::tm_2_time_point(&tm);
+     *     // ...
+     * }
+     * @endcode
+     */
+    template<typename... _Args>
+    inline bool try_parse_by(std::tm &tm, std::string const &source_string, _Args const &...formats) {
+        // if (sizeof...(_Args) > 0) {
+        std::tm tm_local_copy = tm;
+        for (auto &format : {"%Y-%m-%d %H:%M:%S", formats...}) {
+            std::stringstream ss(source_string);
+            if (!(ss >> std::get_time(&tm, format)).fail()) {
+                // printf("  . . . . parsed: %s\n", format_time_point(now).c_str());
+                return true;
+            }
+            tm = tm_local_copy;
+        }
+        // }
+        return false;
+    }
+
+    template<typename Clock = std::chrono::system_clock, bool GMT = false>
+    inline typename Clock::time_point parse_datetime(const char *str) {
+        typename Clock::time_point n{};
+
+        std::tm tm;
+        auto now = Clock::now();
+        auto time_now = Clock::to_time_t(now);
+        if (GMT)
+            tm = *std::gmtime(&time_now);
+        else
+            tm = *std::localtime(&time_now);
+
+        if (try_parse_by(tm, str,
+                         "%Y-%m-%d", "%Y/%m/%d", "%H:%M:%S",
+                         "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S")) {
+            n = Clock::from_time_t(std::mktime(&tm));
+            // printf("  . . . . parsed: %s\n", format_time_point(n).c_str());
+        }
+
+        return n;
+    }
+
+
+    // not yet
+    template<class Duration,
+             std::enable_if_t<is_duration<Duration>::value, bool> = true>
+    static bool parse_duration(std::istream &is, Duration const &d) {
+        (void) (is);
+        (void) (d);
+        return true;
+    }
 
 } // namespace cmdr::chrono
 
@@ -696,13 +852,13 @@ namespace cmdr::chrono {
 
 
 template<typename T,
-         std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool> = true>
+        std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool> = true>
 inline std::ostream &operator<<(std::ostream &os, T const &v) {
     return cmdr::chrono::format_duration(os, v);
 }
 
 template<typename T,
-         std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool>>
+        std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool>>
 inline void cmdr::chrono::high_res_duration::print_duration(std::ostream &os, T v) {
     // cmdr::chrono::format_duration(os, v);
     os << "It took " << v << '\n';

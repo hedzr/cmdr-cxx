@@ -11,7 +11,7 @@
 #include "cmdr11/cmdr_log.hh"
 
 void foo1() {
-    hicc_print("foo1 hit.");
+    cmdr_print("foo1 hit.");
 }
 
 void test_c_style(struct timeval &tv) {

@@ -575,8 +575,8 @@ namespace cmdr::vars {
                 return true;
             }
 #if defined(_DEBUG)
-            std::cout << "Unregistered type for parsing " << std::quoted(a.type().name()) << "\ufe0e" << '\n';
-            std::cerr << "Unregistered type for parsing " << std::quoted(a.type().name()) << "\ufe0e" << '\n';
+            std::cout << "Unregistered type for parsing " << std::quoted(a.type().name()) << "" << '\n'; // ︎︎︎\︎\ u fe0e  // ◌︎ // Variation Selector-15 (VS15)
+            std::cerr << "Unregistered type for parsing " << std::quoted(a.type().name()) << "" << '\n'; // U+FE0E
 #endif
             return false;
         }
@@ -589,8 +589,8 @@ namespace cmdr::vars {
                 return true;
             }
 #if defined(_DEBUG)
-            std::cout << "Unregistered type for visiting " << std::quoted(a.type().name()) << "\ufe0e" << '\n';
-            std::cerr << "Unregistered type for visiting " << std::quoted(a.type().name()) << "\ufe0e" << '\n';
+            std::cout << "Unregistered type for visiting " << std::quoted(a.type().name()) << "" << '\n'; // U+FE0E
+            std::cerr << "Unregistered type for visiting " << std::quoted(a.type().name()) << "" << '\n'; // U+FE0E
 #endif
             return false;
         }

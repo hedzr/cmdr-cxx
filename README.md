@@ -378,6 +378,50 @@ std::cout << ab << '\n';
 
 
 
+### Bundled Utilities or Helpers
+
+There are some common crossed helper classes. Its can be found in these headers:
+
+- cmdr_defs.hh
+
+- cmdr_types.hh
+
+- cmdr_type_checks.hh
+
+- cmdr_utils.hh
+
+---
+
+- cmdr_dbg.hh
+
+- cmdr_log.gg
+
+---
+
+- cmdr_chrono.hh
+
+- cmdr_if.hh
+
+- cmdr_ios.hh
+
+- cmdr_mmap.hh
+
+- cmdr_os_io_redirect.hh
+
+- cmdr_path.hh
+
+- cmdr_process.hh
+
+- cmdr_pool.hh
+
+- cmdr_priority_queue.hh
+
+- cmdr_string.hh
+
+- cmdr_terminal.hh
+
+
+
 
 
 ## Features to improve your app arch

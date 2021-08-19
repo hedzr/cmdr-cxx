@@ -210,8 +210,12 @@ void test_try_parse_by() {
     using Clock = std::chrono::system_clock;
 
     for (auto &time_str : {
-                 "11:01:37",
-                 "1937-1-29 3:59:59",
+             "11:01:37",
+#if OS_WIN
+                     "1973-1-29 3:59:59", // MSVC: time point before 1970-1-1 is invalid
+#else
+                        "1937-1-29 3:59:59",
+#endif
          }) {
         std::tm tm = cmdr::chrono::time_point_2_tm(Clock::now());
         typename Clock::time_point tp;

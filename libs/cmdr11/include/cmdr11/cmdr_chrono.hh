@@ -221,7 +221,7 @@ namespace cmdr::chrono {
         }
 
         template<typename T,
-                std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool> = true>
+                 std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool> = true>
         void print_duration(std::ostream &os, T v);
 
     private:
@@ -557,8 +557,10 @@ namespace cmdr::chrono {
     inline std::ostream &serialize_time_point(std::ostream &os, std::chrono::time_point<_Clock, _Duration> const &time, const char *format = "%Y-%m-%d %H:%M:%S") {
         using iom_ = cmdr::chrono::iom;
         // using tp = std::chrono::time_point<_Clock, _Duration>;
-        std::time_t tt = std::chrono::system_clock::to_time_t(time);
-        std::tm *tm;
+        std::time_t tt = _Clock::to_time_t(time);
+        if (tt == -1)
+            return os;
+        std::tm *tm{nullptr};
         if (iom_::has(iom_::fmtflags::gmt_or_local))
             tm = std::gmtime(&tt);    //GMT (UTC)
         else                          // if (iom_::has(iom_::fmtflags::local))
@@ -852,13 +854,13 @@ namespace cmdr::chrono {
 
 
 template<typename T,
-        std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool> = true>
+         std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool> = true>
 inline std::ostream &operator<<(std::ostream &os, T const &v) {
     return cmdr::chrono::format_duration(os, v);
 }
 
 template<typename T,
-        std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool>>
+         std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool>>
 inline void cmdr::chrono::high_res_duration::print_duration(std::ostream &os, T v) {
     // cmdr::chrono::format_duration(os, v);
     os << "It took " << v << '\n';

@@ -85,7 +85,8 @@
 pre-released.
 
 
-- v0.2.20 - changed OS_xxx macros; added more portability;
+- *WIP*: v0.2.21 - bug fixed; add more utilities: mmap, thread pool ...;
+- v0.2.20 - changed OS_xxx macros; added more portabilities;
 - v0.2.19 - bug fixed
 - v0.2.17 - added to homebrew.
 - v0.2.15 - bug fixed
@@ -197,7 +198,7 @@ int main(int argc, char *argv[]) {
     using namespace cmdr::opt;
 
     cli += sub_cmd{}("server", "s", "svr")
-    .description("server operations for listening")
+      .description("server operations for listening")
       .group("TCP/UDP/Unix");
     {
       auto &t1 = *cli.last_added_command();
@@ -380,7 +381,7 @@ std::cout << ab << '\n';
 
 ### Bundled Utilities or Helpers
 
-There are some common crossed helper classes. Its can be found in these headers:
+There are some common cross-platform helper classes. Its can be found in these headers:
 
 - cmdr_defs.hh
 
@@ -617,8 +618,24 @@ Inside `cmdr-cxx`, there are many optimizable points and some of them in working
 
 
 
+## Use `cmdr-cxx` As A New App Skeletion
 
-## Contribute
+That's very appreciated!
+
+### PROs
+
+- [cmdr](https://github.com/hedzr/cmdr)-like programmatical interface.
+  - See also [Short example](#short-example) and [Fast Document](#fast-document)
+  - See also test app sources
+- A fully functional Hierarchical Configurable Data Management Mechanism (so called `Option Store`) is ready for box.
+- Uses debug outputting macros: `cmdr_print`, `cmdr_debug`, `cmdr_trace` (while `CMDR_ENABLE_VERBOSE_LOG` defined), see [cmdr_log.hh](https://github.com/hedzr/cmdr-cxx/blob/master/libs/cmdr11/include/cmdr11/cmdr_log.hh)
+- 
+
+
+
+
+
+## Contributions
 
 
 
@@ -639,6 +656,16 @@ cmake --build build/
 cmake --build build/ --target install
 # sometimes maybe sudo: sudo cmake --build build/ --target install
 ```
+
+For msvs build tool, vcpkg should be present, so cmake configure command is:
+
+```bash
+cmake -DENABLE_AUTOMATE_TESTS=OFF -S . -B build/ -DCMAKE_TOOLCHAIN_FILE=%USERPROFILE%/work/vcpkg/scripts/buildsystems/vcpkg.cmake
+```
+
+>If you clone vcvpkg source and bootstrap it at: `%USERPROFILE%/work/vcpkg`.
+
+
 
 ### ninja, [Optional]
 

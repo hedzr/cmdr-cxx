@@ -66,7 +66,7 @@
 #message(STATUS "yaml_loader: defined macro add_cmdr_cxx_to")
 macro(add_yaml_loader_to target)
 
-  find_package(yaml-cpp CONFIG)
+  find_package(yaml-cpp)
   # ${YAML_CPP_INCLUDE_DIR}
   # ${YAML_CPP_LIBRARIES}
   if (NOT YAML_CPP_INCLUDE_DIR)

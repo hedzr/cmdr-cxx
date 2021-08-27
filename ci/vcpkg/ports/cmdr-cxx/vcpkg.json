@@ -1,0 +1,12 @@
+{
+  "name": "cmdr-cxx",
+  "version-string": "v0.2.21",
+  "homepage": "https://github.com/hedzr/cmdr-cxx",
+  "description": "cmdr cxx version, a C++17 header-only command-line parser with hierarchical config data manager here",
+  "dependencies": [],
+
+  "default-features": [],
+  "features": [
+    
+  ]
+}

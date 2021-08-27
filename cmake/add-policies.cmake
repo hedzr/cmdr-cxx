@@ -25,6 +25,7 @@ cmake_policy(SET CMP0069 NEW)
 #cmake_policy(SET CMP0070 NEW)
 cmake_policy(SET CMP0076 NEW) # target_sources() command converts relative paths to absolute
 cmake_policy(SET CMP0077 NEW) # ENABLE CMP0077: option() honors normal variables
+cmake_policy(SET CMP0120 NEW) # The WriteCompilerDetectionHeader module is removed
 
 if (POLICY CMP0068)
     cmake_policy(SET CMP0068 NEW)

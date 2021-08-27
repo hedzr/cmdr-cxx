@@ -10,7 +10,7 @@
 #endif
 
 // To enable debugging output for thread pool, adding this definition in your cmake script:
-// -DHICC_TEST_THREAD_POOL_DBGOUT=1
+// -DCMDR_TEST_THREAD_POOL_DBGOUT=1
 
 #include <atomic>
 #include <condition_variable>
@@ -42,8 +42,8 @@ namespace cmdr::pool {
      * @tparam T any type holder
      * @tparam Pred a functor with prototype `bool()`
      * @tparam Setter a functor with prototype `void()`
-     * @see hicc::pool::conditional_wait_for_bool
-     * @see hicc::pool::conditional_wait_for_int
+     * @see cmdr::pool::conditional_wait_for_bool
+     * @see cmdr::pool::conditional_wait_for_int
      */
     template<typename T, typename Pred = std::function<bool()>, typename Setter = std::function<void()>>
     class conditional_wait {

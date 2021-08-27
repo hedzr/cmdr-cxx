@@ -44,6 +44,17 @@
 #include "cmdr_defs.hh"
 
 
+namespace cmdr {
+
+    template<typename T>
+    inline std::string to_string(T const &t) {
+        std::stringstream ss;
+        ss << t;
+        return ss.str();
+    }
+
+} // namespace cmdr
+
 namespace cmdr::string {
 
     inline string_array tokenize(const std::string &s) {
@@ -759,12 +770,12 @@ namespace cmdr::text {
             // Hash for matches
             std::vector<int> hash_s1{};
             std::vector<int> hash_s2{};
-//             hash_s1.reserve(len1);
-//             hash_s2.reserve(len2);
-// #if _MSC_VER
-//             hash_s1.resize(len1);
-//             hash_s2.resize(len2);
-// #endif
+            //             hash_s1.reserve(len1);
+            //             hash_s2.reserve(len2);
+            // #if _MSC_VER
+            //             hash_s1.resize(len1);
+            //             hash_s2.resize(len2);
+            // #endif
             hash_s1.resize(len1);
             hash_s2.resize(len2);
             for (int i = 0; i < (int) len1; i++) hash_s1[i] = 0;

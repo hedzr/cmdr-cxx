@@ -124,6 +124,7 @@ define_test_program(jaro-c2 jaro_c2.cc)
 
 define_test_program(pool pool.cc)
 define_test_program(process process.cc)
+define_test_program(factory factory.cc)
 
 
 # app2 c1

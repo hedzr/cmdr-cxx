@@ -66,15 +66,16 @@
 #include "cmdr_terminal.hh"
 #include "cmdr_utils.hh"
 
+#include "cmdr_pool.hh"
+#include "cmdr_process.hh"
+
+#include "cmdr_priority_queue.hh"
 
 #include "cmdr_small_string.hh"
 #include "cmdr_var_t.hh"
 
 #include "cmdr_mmap.hh"
 #include "cmdr_pipeable.hh"
-#include "cmdr_pool.hh"
-#include "cmdr_priority_queue.hh"
-#include "cmdr_process.hh"
 
 //
 

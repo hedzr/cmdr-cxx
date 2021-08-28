@@ -82,10 +82,8 @@
 
 ## Status
 
-pre-released.
-
-
-- *WIP*: v0.2.21 - bug fixed; add more utilities: mmap, thread pool, factory, pipeable, ...;
+- *WIP*: v0.2.23 - ticker;
+- v0.2.21 - bug fixed; add more utilities: mmap, thread pool, factory, pipeable, ...;
 - v0.2.20 - changed OS_xxx macros; added more portabilities;
 - v0.2.19 - bug fixed
 - v0.2.17 - added to homebrew.
@@ -98,7 +96,7 @@ pre-released.
 - v0.2.7 - `auto &cli = cmdr::create(...)`
 - v0.2.5 - public release starts
 
-CXX 17 Compilers:
+### CXX 17 Compilers:
 
 - gcc 10+: passed
 

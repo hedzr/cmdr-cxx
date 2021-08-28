@@ -13,8 +13,8 @@ namespace cmdr::pipeable {
         F f;
 
     public:
-        pipeable(F &&f)
-            : f(std::forward<F>(f)) {}
+        pipeable(F &&f_)
+            : f(std::forward<F>(f_)) {}
 
         template<class... Xs>
         auto operator()(Xs &&...xs) -> decltype(std::bind(f, std::placeholders::_1, std::forward<Xs>(xs)...)) const {

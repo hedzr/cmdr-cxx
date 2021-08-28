@@ -90,22 +90,28 @@ namespace cmdr::vars {
         variable() = default;
         template<class A, typename... Args,
                  std::enable_if_t<
+#if __GNUC__ > 9
                          std::is_constructible<target_type, A, Args...>::value &&
+#endif
                                  //!std::is_same<std::decay_t<A>, variable>::value &&
                                  !std::is_same<std::decay_t<A>, std::any>::value &&
                                  !std::is_same<std::decay_t<A>, self_type>::value,
                          int> = 0>
         explicit variable(A &&a0, Args &&...args)
-            : _value(std::forward<A>(a0), std::forward<Args>(args)...) {}
+            : _value(std::forward<A>(a0), std::forward<Args>(args)...) {
+        }
         template<class A,
                  std::enable_if_t<
+#if __GNUC__ > 9
                          std::is_constructible<target_type, A>::value &&
+#endif
                                  //!std::is_same<std::decay_t<A>, variable>::value &&
                                  !std::is_same<std::decay_t<A>, std::any>::value &&
                                  !std::is_same<std::decay_t<A>, self_type>::value,
                          int> = 0>
         explicit variable(A &&a)
-            : _value(std::forward<A>(a)) {}
+            : _value(std::forward<A>(a)) {
+        }
         explicit variable(std::any &&a)
             : _value(std::move(a)) {}
         explicit variable(std::any a)
@@ -119,6 +125,11 @@ namespace cmdr::vars {
         template<typename T>
         variable &operator=(T const &o) {
             _value = o;
+            return (*this);
+        }
+        template<typename T>
+        variable &operator=(T &&o) {
+            _value = std::move(o);
             return (*this);
         }
 
@@ -957,15 +968,19 @@ namespace cmdr::vars {
     public:
         template<class A, typename... Args,
                  std::enable_if_t<
+#if __GNUC__ > 9
                          std::is_constructible<T, A, Args...>::value &&
+#endif
                                  !std::is_same<std::decay_t<A>, vars::variable>::value &&
                                  !std::is_same<std::decay_t<A>, self_type>::value,
                          int> = 0>
         void set_raw(char const *key, A &&a0, Args &&...args) {
             _root.set(key, a0, args...);
         }
-        template<class A,
-                 std::enable_if_t<std::is_constructible<T, A>::value &&
+        template<class A, std::enable_if_t<
+#if __GNUC__ > 9
+                                  std::is_constructible<T, A>::value &&
+#endif
                                           !std::is_same<std::decay_t<A>, vars::variable>::value &&
                                           !std::is_same<std::decay_t<A>, self_type>::value,
                                   int> = 0>
@@ -976,20 +991,22 @@ namespace cmdr::vars {
         void set_raw(char const *key, vars::variable const &a) { _root.set(key, a.underlying_value()); }
 
     public:
-        template<class A, typename... Args,
-                 std::enable_if_t<
-                         std::is_constructible<T, A, Args...>::value &&
-                                 !std::is_same<std::decay_t<A>, vars::variable>::value &&
-                                 !std::is_same<std::decay_t<A>, self_type>::value,
-                         int> = 0>
+        template<class A, typename... Args, std::enable_if_t<
+#if __GNUC__ > 9
+                                                    std::is_constructible<T, A, Args...>::value &&
+#endif
+                                                            !std::is_same<std::decay_t<A>, vars::variable>::value && !std::is_same<std::decay_t<A>, self_type>::value,
+                                                    int> = 0>
         void set_raw_p(char const *prefix, char const *key, A &&a0, Args &&...args) {
             std::ostringstream os;
             if (prefix && prefix[0] != 0) os << prefix << '.';
             os << key;
             _root.set(os.str().c_str(), a0, args...);
         }
-        template<class A,
-                 std::enable_if_t<std::is_constructible<T, A>::value &&
+        template<class A, std::enable_if_t<
+#if __GNUC__ > 9
+                                  std::is_constructible<T, A>::value &&
+#endif
                                           !std::is_same<std::decay_t<A>, vars::variable>::value &&
                                           !std::is_same<std::decay_t<A>, self_type>::value,
                                   int> = 0>

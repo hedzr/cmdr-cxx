@@ -111,7 +111,11 @@ namespace cmdr::opt {
         if (_default.get() == nullptr)
             _default = std::make_shared<vars::variable>(v);
         else
+#if __GNUC__ > 9
             _default->emplace(v);
+#else
+            _default->emplace(v.underlying_value());
+#endif
         return (*this);
     }
     inline arg &arg::default_value(const_chars v) {

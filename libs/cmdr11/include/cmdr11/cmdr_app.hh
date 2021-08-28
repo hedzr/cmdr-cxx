@@ -436,7 +436,9 @@ namespace cmdr {
     public:
         template<class A, typename... Args,
                  std::enable_if_t<
+#if __GNUC__ > 9
                          std::is_constructible<vars::variable, A, Args...>::value &&
+#endif
                                  !std::is_same<std::decay_t<A>, vars::variable>::value &&
                                  !std::is_same<std::decay_t<A>, app>::value,
                          int> = 0>
@@ -444,10 +446,13 @@ namespace cmdr {
             _store.set_raw_p(store_prefix().c_str(), key, a0, args...);
         }
         template<class A,
-                 std::enable_if_t<std::is_constructible<vars::variable, A>::value &&
-                                          !std::is_same<std::decay_t<A>, vars::variable>::value &&
-                                          !std::is_same<std::decay_t<A>, app>::value,
-                                  int> = 0>
+                 std::enable_if_t<
+#if __GNUC__ > 9
+                         std::is_constructible<vars::variable, A>::value &&
+#endif
+                                 !std::is_same<std::decay_t<A>, vars::variable>::value &&
+                                 !std::is_same<std::decay_t<A>, app>::value,
+                         int> = 0>
         void set(char const *key, A &&a) {
             _store.set_raw_p(store_prefix().c_str(), key, a);
         }

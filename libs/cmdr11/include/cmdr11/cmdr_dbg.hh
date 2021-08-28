@@ -115,7 +115,23 @@ namespace cmdr::debug {
             r += "&";
         else if (std::is_rvalue_reference<T>::value)
             r += "&&";
+#ifndef _MSC_VER
         return r;
+#else
+        const char *const pr1 = "struct ";
+        auto ps1 = r.find(pr1);
+        auto st1 = (ps1 != std::string::npos ? ps1 + sizeof(pr1) - 1 : 0);
+        auto name1 = r.substr(st1);
+        const char *const pr2 = "class ";
+        auto ps2 = name1.find(pr2);
+        auto st2 = (ps2 != std::string::npos ? ps2 + sizeof(pr2) - 1 : 0);
+        auto name2 = name1.substr(st2);
+        const char *const pr3 = "union ";
+        auto ps3 = name2.find(pr3);
+        auto st3 = (ps3 != std::string::npos ? ps3 + sizeof(pr3) - 1 : 0);
+        auto name3 = name2.substr(st3);
+        return name3;
+#endif
     }
 #else
     template<typename T>
@@ -176,8 +192,24 @@ namespace cmdr::debug {
         static_assert(start < end);
 
         constexpr auto name = function.substr(start, (end - start));
+#if !defined(_MSC_VER)
         // return substring_as_array(name, std::make_index_sequence<name.size()>{});
         return name;
+#else
+        constexpr auto pr1 = std::string_view{"struct "};
+        constexpr auto ps1 = r.find(pr1);
+        constexpr auto st1 = (ps1 >= 0 ? ps1 : -pr1.size()) + pr1.size();
+        constexpr auto name1 = r.substr(st1);
+        constexpr auto pr2 = std::string_view{"class "};
+        constexpr auto ps2 = name1.find(pr2);
+        constexpr auto st2 = (ps2 >= 0 ? ps2 : -pr2.size()) + pr2.size();
+        constexpr auto name2 = name1.substr(st2);
+        constexpr auto pr3 = std::string_view{"union "};
+        constexpr auto ps3 = name2.find(pr3);
+        constexpr auto st3 = (ps3 >= 0 ? ps3 : -pr3.size()) + pr3.size();
+        constexpr auto name3 = name2.substr(st3);
+        return name3;
+#endif
     }
 
     template<typename T>

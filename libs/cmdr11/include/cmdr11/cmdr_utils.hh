@@ -321,19 +321,30 @@ namespace cmdr::util {
 
 namespace cmdr::util::factory {
 
+    /**
+     * @brief a factory template class
+     * @tparam product_base 
+     * @tparam products 
+     * @see https://hedzr.com/c++/algorithm/cxx17-factory-pattern/
+     */
     template<typename product_base, typename... products>
     class factory final {
     public:
         CLAZZ_NON_COPYABLE(factory);
+#if defined(_MSC_VER)
+        using string = std::string; // or std::string_view
+#else
+        using string = std::string_view;
+#endif
         template<typename T>
         struct clz_name_t {
-            std::string_view id = debug::type_name<T>();
+            string id = debug::type_name<T>();
             T data;
         };
         using named_products = std::tuple<clz_name_t<products>...>;
 
         template<typename... Args>
-        static std::unique_ptr<product_base> create_unique_ptr(const std::string_view &id, Args &&...args) {
+        static std::unique_ptr<product_base> create_unique_ptr(const string &id, Args &&...args) {
             std::unique_ptr<product_base> result{};
 
             std::apply([](auto &&...it) {
@@ -348,7 +359,7 @@ namespace cmdr::util::factory {
             return result;
         }
         template<typename... Args>
-        static product_base *create(const std::string_view &id, Args &&...args) {
+        static product_base *create(const string &id, Args &&...args) {
             return create_unique_ptr(id, args...).release();
         }
 

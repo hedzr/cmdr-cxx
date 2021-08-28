@@ -3,13 +3,85 @@
 //
 
 #include "cmdr11/cmdr_defs.hh"
+#include "cmdr11/cmdr_dbg.hh"
 #include "cmdr11/cmdr_log.hh"
 #include "cmdr11/cmdr_pipeable.hh"
+#include "cmdr11/cmdr_pool.hh"
 #include "cmdr11/cmdr_x_test.hh"
+#include "cmdr11/cmdr_x_class.hh"
 
 #include <iostream>
-#include <string>
 #include <math.h>
+#include <string>
+
+cmdr::debug::X x_global_var;
+
+namespace test {
+    template<typename T>
+    constexpr auto ZFN() {
+        constexpr auto function = std::string_view{__FUNCTION_NAME__};
+        constexpr auto prefix = std::string_view{"auto ZFN() [T = "};
+        constexpr auto suffix = std::string_view{"]"};
+
+        constexpr auto start = function.find(prefix) + prefix.size();
+        constexpr auto end = function.rfind(suffix);
+        std::string_view name = function.substr(start, (end - start));
+        return name.substr(0, (end - start));
+        // return function;
+    }
+
+    template<typename T>
+    constexpr auto ZFS() {
+        constexpr auto function = std::string_view{__FUNCTION_NAME__};
+        constexpr auto prefix = std::string_view{"auto ZFT() [T = "};
+        // constexpr auto suffix = std::string_view{"]"};
+
+        constexpr auto start = function.find(prefix) + prefix.size();
+        // constexpr auto end = function.rfind(suffix);
+        return (unsigned long long) start; // function.substr(start, (end - start));
+        // return function;
+    }
+
+    template<typename T>
+    constexpr auto ZFT() {
+        constexpr auto function = std::string_view{__FUNCTION_NAME__};
+        // constexpr auto prefix = std::string_view{"auto ZFT() [T = "};
+        constexpr auto suffix = std::string_view{"]"};
+
+        // constexpr auto start = function.find(prefix) + prefix.size();
+        constexpr auto end = function.rfind(suffix);
+        return (unsigned long long) end; // function.substr(start, (end - start));
+        // return function;
+    }
+
+    template<typename T>
+    constexpr auto ZFZ() {
+        // auto ZFZ() [T = std::__1::basic_string<char>]
+        constexpr auto function = std::string_view{__FUNCTION_NAME__};
+        return function;
+    }
+} // namespace test
+
+void test_type_name() {
+    printf(">>Z '%s'\n", test::ZFZ<std::string>().data());
+    printf(">>Z '%s'\n", test::ZFN<std::string>().data());
+    printf(">>Z %llu, %llu\n", test::ZFS<std::string>(), test::ZFT<std::string>());
+
+#ifndef _WIN32
+    printf(">>2 '%s'\n", cmdr::debug::type_name_holder<std::string>::value.data());
+
+    printf(">>1 '%s'\n", cmdr::debug::type_name_1<cmdr::pool::conditional_wait_for_int>().data());
+    printf(">>> '%s'\n", cmdr::debug::type_name<cmdr::pool::conditional_wait_for_int>().data());
+#endif
+
+    auto fn = cmdr::debug::type_name<std::string>();
+    std::string str{fn};
+    printf(">>> '%s'\n", str.c_str());
+
+    std::cout << cmdr::debug::type_name<std::string>() << '\n';
+    std::cout << std::string(cmdr::debug::type_name<std::string>()) << '\n';
+    printf(">>> %s\n", std::string(cmdr::debug::type_name<std::string>()).c_str());
+}
 
 namespace tmp1 {
     struct Point {
@@ -46,7 +118,7 @@ void test_factory() {
     namespace fct = cmdr::util::factory;
 
     auto pp = tmp1::factory::create<tmp1::Point2D>();
-    cmdr_print("Point2D = %p", pp.get());
+    cmdr_print("Point2D = %p, typename: %s", pp.get(), cmdr::debug::type_name<tmp1::Point2D>().data());
     // pp = tmp1::factory::create<tmp1::Point3D>();
     // cmdr_print("Point2D = %p", pp.get());
 
@@ -242,6 +314,8 @@ void test_factory_abstract() {
 
 int main() {
 
+    CMDR_TEST_FOR(test_type_name);
+    
     CMDR_TEST_FOR(test_factory);
     CMDR_TEST_FOR(test_factory_inner);
     CMDR_TEST_FOR(test_factory_classical);

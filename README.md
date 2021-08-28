@@ -665,6 +665,23 @@ cmake -DENABLE_AUTOMATE_TESTS=OFF -S . -B build/ -DCMAKE_TOOLCHAIN_FILE=%USERPRO
 
 >If you clone vcvpkg source and bootstrap it at: `%USERPROFILE%/work/vcpkg`.
 
+#### Windows Server 2019 Core & VSBT
+
+```powershell
+set VCPKG_DEFAULT_TRIPLET=x64-windows
+
+mkdir %USERPROFILE%/work
+cd %USERPROFILE%/work
+git clone ...
+
+REM launch vsbt build env
+SETX PATH "%PATH%;C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\Common7\Tools"
+LaunchDevCmd.bat
+
+cd cmdr-cxx
+cmake -DENABLE_AUTOMATE_TESTS=OFF -S . -B build/ -DCMAKE_TOOLCHAIN_FILE=%USERPROFILE%/work/vcpkg/scripts/buildsystems/vcpkg.cmake
+cmake --build build/
+```
 
 
 ### ninja, [Optional]

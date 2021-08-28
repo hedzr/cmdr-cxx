@@ -1,5 +1,5 @@
 
-find_package(Catch2)
+find_package(Catch2 CONFIG)
 message(STATUS "Catch2_FOUND = ${Catch2_FOUND}")
 message(STATUS "Catch2_VERSION = ${Catch2_VERSION}")
 if (NOT Catch2_FOUND)

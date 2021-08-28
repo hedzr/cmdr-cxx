@@ -121,19 +121,19 @@ void test_factory_classical() {
     using namespace cmdr::dp::factory::classical;
     classical_factory_method f;
 
-    auto p1 = f.create_trunk(3.1, 4.2);
+    auto p1 = f.create_trunk(3.1f, 4.2f);
     std::cout << p1 << '\n';
     p1->deliver();
 
-    auto p2 = f.create_ship(3.1, 4.2);
+    auto p2 = f.create_ship(3.1f, 4.2f);
     std::cout << p2 << '\n';
     p2->deliver();
 
-    auto p3 = f.create_ship_2(3.1, 4.2);
+    auto p3 = f.create_ship_2(3.1f, 4.2f);
     std::cout << p3.get() << '\n';
     p3->deliver();
 
-    auto p4 = f.create<Ship>(3.1, 4.2);
+    auto p4 = f.create<Ship>(3.1f, 4.2f);
     std::cout << p4.get() << '\n';
     p4->deliver();
 }
@@ -150,6 +150,7 @@ namespace cmdr::dp::factory::inner {
         float x, y;
 
     public:
+        explicit Trunk(double x_, double y_) { x = (float)x_, y = (float)y_; }
         explicit Trunk(float x_, float y_) { x = x_, y = y_; }
         ~Trunk() = default;
         void deliver() override { printf("Trunk::deliver()\n"); }
@@ -163,6 +164,7 @@ namespace cmdr::dp::factory::inner {
         float x, y;
 
     public:
+        explicit Ship(double x_, double y_) { x = (float)x_, y = (float)y_; }
         explicit Ship(float x_, float y_) { x = x_, y = y_; }
         ~Ship() = default;
         void deliver() override { printf("Ship::deliver()\n"); }
@@ -182,15 +184,15 @@ namespace cmdr::dp::factory::inner {
 void test_factory_inner() {
     using namespace cmdr::dp::factory::inner;
     
-    auto p1 = create_transport<Trunk>(3.1, 4.2);
+    auto p1 = create_transport<Trunk>(3.1f, 4.2f);
     std::cout << p1.get() << '\n';
     p1->deliver();
 
-    auto p2 = create_transport<Ship>(3.1, 4.2);
+    auto p2 = create_transport<Ship>(3.1f, 4.2f);
     std::cout << p2.get() << '\n';
     p2->deliver();
     
-    auto p3 = Ship::create(3.1, 4.2);
+    auto p3 = Ship::create(3.1f, 4.2f);
     std::cout << p3.get() << '\n';
     p3->deliver();
 }

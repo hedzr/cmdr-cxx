@@ -89,7 +89,7 @@ macro(add_yaml_loader_to target)
                         # -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
                         # -DCMAKE_INSTALL_PREFIX:PATH=${EXECUTABLE_OUTPUT_PATH}
                         BUILD_COMMAND ${CMAKE_COMMAND} -E echo "Starting $<CONFIG> build"
-                        # COMMAND ${CMAKE_COMMAND} -E sudo "chmod a+w /usr/local/lib"
+                        BUILD_COMMAND ${CMAKE_COMMAND} -E sudo "chmod a+w /usr/local/lib /usr/local/include"
                         COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config $<CONFIG>
                         COMMAND ${CMAKE_COMMAND} -E echo "$<CONFIG> build complete"
                         )

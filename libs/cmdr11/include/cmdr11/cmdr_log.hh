@@ -151,7 +151,7 @@ namespace cmdr::log {
 #define cmdr_debug(...) cmdr::log::holder(__FILE__, __LINE__, __PRETTY_FUNCTION__)(__VA_ARGS__)
 #endif
 #else
-#if defined(__GNUG__) || defined(__MSC_VER)
+#if defined(__GNUG__) || defined(_MSC_VER)
 #define cmdr_debug(...) \
     (void) 0
 #else

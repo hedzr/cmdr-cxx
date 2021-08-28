@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <string>
+#include <math.h>
 
 namespace tmp1 {
     struct Point {
@@ -73,6 +74,7 @@ namespace cmdr::dp::factory::classical {
         float x, y;
 
     public:
+        explicit Trunk(double x_, double y_) { x = (float)x_, y = (float)y_; }
         explicit Trunk(float x_, float y_) { x = x_, y = y_; }
         ~Trunk() = default;
         friend class classical_factory_method;
@@ -84,6 +86,7 @@ namespace cmdr::dp::factory::classical {
         float x, y;
 
     public:
+        explicit Ship(double x_, double y_) { x = (float)x_, y = (float)y_; }
         explicit Ship(float x_, float y_) { x = x_, y = y_; }
         ~Ship() = default;
         friend class classical_factory_method;
@@ -127,11 +130,11 @@ void test_factory_classical() {
     p2->deliver();
 
     auto p3 = f.create_ship_2(3.1, 4.2);
-    std::cout << p3 << '\n';
+    std::cout << p3.get() << '\n';
     p3->deliver();
 
     auto p4 = f.create<Ship>(3.1, 4.2);
-    std::cout << p4 << '\n';
+    std::cout << p4.get() << '\n';
     p4->deliver();
 }
 
@@ -180,15 +183,15 @@ void test_factory_inner() {
     using namespace cmdr::dp::factory::inner;
     
     auto p1 = create_transport<Trunk>(3.1, 4.2);
-    std::cout << p1 << '\n';
+    std::cout << p1.get() << '\n';
     p1->deliver();
 
     auto p2 = create_transport<Ship>(3.1, 4.2);
-    std::cout << p2 << '\n';
+    std::cout << p2.get() << '\n';
     p2->deliver();
     
     auto p3 = Ship::create(3.1, 4.2);
-    std::cout << p3 << '\n';
+    std::cout << p3.get() << '\n';
     p3->deliver();
 }
 

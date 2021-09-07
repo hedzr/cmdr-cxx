@@ -379,6 +379,47 @@ template<typename T, size_t N>
 }
 
 
+//
+
+#if !defined(CMDR_HASH_COMBINE) && CMDR_HASH_COMBINE != 1
+#define CMDR_HASH_COMBINE 1
+
+namespace std {
+    /**
+     * @brief combine any hash values in a best way
+     * @see boost::hash_combine
+     * @tparam T 
+     * @tparam Rest 
+     * @param seed 
+     * @param t 
+     * @param rest 
+     * @details For example
+     * @code{c++}
+     *     std::size_t code = std::hash<std::string>("start");
+     *     std::hash_combine(code, "from", "here");
+     * @endcode
+     */
+    template<typename T, typename... Rest>
+    inline void hash_combine(std::size_t &seed, T const &t, Rest &&...rest) {
+        std::hash<T> hasher;
+        seed ^= 0x9e3779b9 + (seed << 6) + (seed >> 2) + hasher(t);
+        int i[] = {0, (hash_combine(seed, std::forward<Rest>(rest)), 0)...};
+        (void) (i);
+    }
+
+    template<typename T>
+    inline void hash_combine(std::size_t &seed, T const &v) {
+        std::hash<T> hasher;
+        seed ^= 0x9e3779b9 + (seed << 6) + (seed >> 2) + hasher(v);
+    }
+} // namespace std
+
+#endif
+
+
+//
+
+
 // PORTABILITY MACROS --------------------------------
 
 #if defined(__GNUC__)

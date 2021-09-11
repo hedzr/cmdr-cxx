@@ -115,6 +115,10 @@ inline void UNUSED([[maybe_unused]] Args &&...args) {
 #define __COPY(m) this->m = o.m
 #endif
 
+#ifndef __MOVE
+#define __MOVE(m) this->m = std::move(o.m)
+#endif
+
 #if !defined(_WIN32)
 #ifndef TEXT
 #define TEXT(x) (#x)

@@ -134,6 +134,20 @@ endif ()
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+option(USE_CCACHE "Use ccache for build" ON)
+if (USE_CCACHE)
+    find_program(CCACHE ccache)
+    if (CCACHE)
+        message(STATUS "ccache found and enabled")
+        set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE})
+        set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE})
+    else()
+        message(WARNING "ccache enabled, but not found")
+    endif()
+else()
+    message(STATUS "ccache disabled")
+endif()
+
 
 # ############################## include .options.cmake
 include(options)

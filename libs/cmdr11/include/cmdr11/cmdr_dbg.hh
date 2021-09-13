@@ -241,6 +241,18 @@ namespace cmdr::debug {
         return std::string_view{value.data(), value.size()};
     }
 
+    /**
+     * @brief remove the scoped prefix (before '::')
+     * @tparam T 
+     * @return 
+     */
+    template<typename T>
+    constexpr auto short_type_name() -> std::string_view {
+        constexpr auto &value = type_name_holder<T>::value;
+        constexpr auto end = value.rfind("::");
+        return std::string_view{value.data() + (end != std::string_view::npos ? end + 2 : 0)};
+    }
+
     // https://bitwizeshift.github.io/posts/2021/03/09/getting-an-unmangled-type-name-at-compile-time/
 #endif
 

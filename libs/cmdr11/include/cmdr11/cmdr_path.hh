@@ -313,6 +313,7 @@ namespace cmdr::io {
     inline bool delete_file(std::filesystem::path const &name) {
         // unlink(name.c_str());
         return std::remove(name.u8string().c_str()) == 0;
+        // see also: https://en.cppreference.com/w/cpp/io/c/remove
     }
     inline bool delete_file(char const *filename) {
         return std::remove(filename) == 0;

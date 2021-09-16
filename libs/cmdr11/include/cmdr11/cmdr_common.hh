@@ -396,19 +396,11 @@ namespace cmdr::util {
             _observers.push_back(wp);
             return (*this);
         }
+        observable &remove_observer(observer_t_shared &o) { return remove_observer(o.get()); }
         observable &remove_observer(observer_t_nacked *o) {
             _observers.erase(std::remove_if(_observers.begin(), _observers.end(), [o](observer_t const &rhs) {
                                  if (auto spt = rhs.lock())
                                      return spt.get() == o;
-                                 return false;
-                             }),
-                             _observers.end());
-            return (*this);
-        }
-        observable &remove_observer(observer_t_shared &o) {
-            _observers.erase(std::remove_if(_observers.begin(), _observers.end(), [o](observer_t const &rhs) {
-                                 if (auto spt = rhs.lock())
-                                     return spt.get() == o.get();
                                  return false;
                              }),
                              _observers.end());

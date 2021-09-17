@@ -121,8 +121,18 @@ inline void UNUSED([[maybe_unused]] Args &&...args) {
 
 #if !defined(_WIN32)
 #ifndef TEXT
-#define TEXT(x) (#x)
+#define TEXT_BASE(x) #x
+#define TEXT(x) TEXT_BASE(x)
 #endif
+#endif
+
+#ifndef CONCAT
+#define CONCAT_BASE(x, y) x ## y
+#define CONCAT(x, y) CONCAT_BASE(x, y)
+#endif
+
+#if !defined(EMPTY)
+#define EMPTY()
 #endif
 
 #ifndef DISABLE_MSVC_WARNINGS
@@ -265,6 +275,27 @@ inline void UNUSED([[maybe_unused]] Args &&...args) {
 
 //
 
+
+#if defined(__has_builtin)
+#define HAS_BUILTIN(...) __has_builtin(__VA_ARGS__)
+#else
+#define HAS_BUILTIN(...) 0
+#endif
+#if defined(__has_cpp_attribute)
+#if __has_cpp_attribute(nodiscard)
+#define HAS_NODISCARD [[nodiscard]]
+#endif
+#endif
+
+#if !defined HAS_NODISCARD
+#if defined(_MSC_VER) && (_MSC_VER >= 1700)
+#define HAS_NODISCARD _Check_return_
+#elif defined(__GNUC__)
+#define HAS_NODISCARD __attribute__((__warn_unused_result__))
+#else
+#define HAS_NODISCARD
+#endif
+#endif
 
 #ifndef HAS_STRING_VIEW
 #if __cplusplus >= 201703 || (defined(_MSVC_LANG) && _MSVC_LANG >= 201703L)
@@ -442,6 +473,8 @@ namespace std {
 #endif
 #endif
 
+// OS
+
 #ifndef _OS_MACROS
 #define _OS_MACROS
 
@@ -540,6 +573,8 @@ namespace std {
 #define OS_POSIX 0
 #endif
 
+// ARCH
+
 #if defined(__arm__)
 #define ARCH_ARM 1
 #else
@@ -564,26 +599,68 @@ namespace std {
 #define ARCH_PPC64 0
 #endif
 
-#if defined(__has_builtin)
-#define HAS_BUILTIN(...) __has_builtin(__VA_ARGS__)
+// Compilers
+
+// https://blog.kowalczyk.info/article/j/guide-to-predefined-macros-in-c-compilers-gcc-clang-msvc-etc..html
+// http://beefchunk.com/documentation/lang/c/pre-defined-c/precomp.html
+// and: https://github.com/arnemertz/online-compilers/blob/gh-pages/compiler_version.cpp
+#if defined(__clang__)
+#if defined(__riscv__) || defined(__riscv)
+#define _GNU_PREFIX "risc-v clang"
 #else
-#define HAS_BUILTIN(...) 0
+#define _GNU_PREFIX "clang"
 #endif
-#if defined(__has_cpp_attribute)
-#if __has_cpp_attribute(nodiscard)
-#define HAS_NODISCARD [[nodiscard]]
+#define COMPILER_NAME _GNU_PREFIX " " TEXT(__clang_major__) "." TEXT(__clang_minor__) "." TEXT(__clang_patchlevel__)
+#elif defined(__ICC) || defined(__INTEL_COMPILER)
+#define COMPILER_NAME "Intel " TEXT(__INTEL_COMPILER)
+#elif defined(__GNUC__) || defined(__GNUG__)
+#if defined(__DJGPP__)
+#define _GNU_PREFIX "djgpp gcc"
+#elif defined(__riscv__) || defined(__riscv)
+#define _GNU_PREFIX "risc-v gcc"
+#else
+#define _GNU_PREFIX "gcc"
 #endif
+#if __GNUC_PATCHLEVEL__
+#define _GNU_PATCH_PART "." TEXT(__GNUC_PATCHLEVEL__)
+#else
+#define _GNU_PATCH_PART ""
+#endif
+#define COMPILER_NAME _GNU_PREFIX " " TEXT(__GNUC__) "." TEXT(__GNUC_MINOR__) _GNU_PATCH_PART
+#elif defined(__HP_cc) || defined(__HP_aCC)
+#define COMPILER_NAME "HP " TEXT(__HP_aCC)
+#elif defined(__IBMC__) || defined(__IBMCPP__)
+#define COMPILER_NAME "IBM " TEXT(__IBMCPP__)
+#elif defined(_MSC_VER)
+#define COMPILER_NAME "MSVC " TEXT(_MSC_FULL_VER)
+#elif defined(__PGI)
+#define COMPILER_NAME "Portland PGCPP" TEXT(__VERSION__)
+#elif defined(__SUNPRO_C) || defined(__SUNPRO_CC)
+#define COMPILER_NAME "Solaris Studio" TEXT(__SUNPRO_CC)
+#elif defined(__EMSCRIPTEN__)
+#define COMPILER_NAME "emscripten "
+#elif defined(__MINGW32__)
+#define COMPILER_NAME "MinGW 32bit " TEXT(__MINGW32_MAJOR_VERSION) "." TEXT(__MINGW32_MINOR_VERSION)
+#elif defined(__MINGW64__)
+#define COMPILER_NAME "MinGW 64bit " TEXT(__MINGW64_VERSION_MAJOR) "." TEXT(__MINGW64_VERSION_MINOR)
+#else
+#define COMPILER_NAME "UNKNOWN COMPILER "
 #endif
 
-#if !defined HAS_NODISCARD
-#if defined(_MSC_VER) && (_MSC_VER >= 1700)
-#define HAS_NODISCARD _Check_return_
-#elif defined(__GNUC__)
-#define HAS_NODISCARD __attribute__((__warn_unused_result__))
-#else
-#define HAS_NODISCARD
+// boost version name
+
+#ifndef CHECK_BOOST_VERSION
+#define CHECK_BOOST_VERSION 0
 #endif
+#if CHECK_BOOST_VERSION
+#include <boost/version.hpp>
 #endif
+
+#if CHECK_BOOST_VERSION
+#define BOOST_VERSION_NAME "Boost v" ## #BOOST_LIB_VERSION
+#endif
+
+// constexpr values
 
 namespace cmdr::cross {
     constexpr bool kIsArchArm = ARCH_ARM == 1;
@@ -619,6 +696,10 @@ namespace cmdr::cross {
     constexpr auto kIsLinux = false;
 #endif
 } // namespace cmdr::cross
+namespace cmdr::cross {
+    constexpr auto kCompilerName = COMPILER_NAME;
+    constexpr auto kBoostVersion = "No boost";
+}
 
 //
 

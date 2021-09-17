@@ -127,7 +127,7 @@ inline void UNUSED([[maybe_unused]] Args &&...args) {
 #endif
 
 #ifndef CONCAT
-#define CONCAT_BASE(x, y) x ## y
+#define CONCAT_BASE(x, y) x##y
 #define CONCAT(x, y) CONCAT_BASE(x, y)
 #endif
 
@@ -657,49 +657,49 @@ namespace std {
 #endif
 
 #if CHECK_BOOST_VERSION
-#define BOOST_VERSION_NAME "Boost v" ## #BOOST_LIB_VERSION
+#define BOOST_VERSION_NAME "Boost v" TEXT(BOOST_LIB_VERSION)
 #endif
 
 // constexpr values
 
-namespace cmdr::cross {
+namespace cmdr { namespace cross {
     constexpr bool kIsArchArm = ARCH_ARM == 1;
     constexpr bool kIsArchAmd64 = ARCH_X64 == 1;
     constexpr bool kIsArchAArch64 = ARCH_AARCH64 == 1;
     constexpr bool kIsArchPPC64 = ARCH_PPC64 == 1;
-} // namespace cmdr::cross
-namespace cmdr::cross {
+}} // namespace cmdr::cross
+namespace cmdr { namespace cross {
 #ifdef NDEBUG
     constexpr auto kIsDebug = false;
 #else
     constexpr auto kIsDebug = true;
 #endif
-} // namespace cmdr::cross
-namespace cmdr::cross {
+}} // namespace cmdr::cross
+namespace cmdr { namespace cross {
 #if defined(_MSC_VER)
     constexpr bool kIsMsvc = true;
 #else
     constexpr bool kIsMsvc = false;
 #endif
-} // namespace cmdr::cross
-namespace cmdr::cross {
+}} // namespace cmdr::cross
+namespace cmdr { namespace cross {
 #if FOLLY_SANITIZE_THREAD
     constexpr bool kIsSanitizeThread = true;
 #else
     constexpr bool kIsSanitizeThread = false;
 #endif
-} // namespace cmdr::cross
-namespace cmdr::cross {
+}} // namespace cmdr::cross
+namespace cmdr { namespace cross {
 #if defined(__linux__) && !FOLLY_MOBILE
     constexpr auto kIsLinux = true;
 #else
     constexpr auto kIsLinux = false;
 #endif
-} // namespace cmdr::cross
-namespace cmdr::cross {
+}} // namespace cmdr::cross
+namespace cmdr { namespace cross {
     constexpr auto kCompilerName = COMPILER_NAME;
     constexpr auto kBoostVersion = "No boost";
-}
+}} // namespace cmdr::cross
 
 //
 
@@ -710,7 +710,7 @@ struct always_false : std::false_type {};
 template<typename T>
 [[maybe_unused]] constexpr bool always_false_v = always_false<T>::value;
 
-namespace cmdr::cross {
+namespace cmdr { namespace cross {
     template<typename T>
     constexpr T constexpr_max(T a) {
         return a;
@@ -741,7 +741,7 @@ namespace cmdr::cross {
     constexpr T constexpr_log2_ceil(T t) {
         return detail::constexpr_log2_ceil_(constexpr_log2(t), t);
     }
-} // namespace cmdr::cross
+}} // namespace cmdr::cross
 
 #ifndef _CONST_CHARS_DEFINED
 #define _CONST_CHARS_DEFINED
@@ -882,7 +882,7 @@ const char *const NOBODY_GROUP_SORTER = "3333";
 #undef min
 #undef max
 #include <time.h>
-namespace cmdr::cross {
+namespace cmdr { namespace cross {
     inline void setenv(const char *__name, const char *__value, int __overwrite = 1) {
         UNUSED(__overwrite);
         std::ostringstream os;
@@ -908,12 +908,12 @@ namespace cmdr::cross {
     inline T max(T a, T b) { return a < b ? b : a; }
     template<class T>
     inline T min(T a, T b) { return a < b ? a : b; }
-} // namespace cmdr::cross
+}} // namespace cmdr::cross
 #else
 #include <algorithm>
 #include <ctime>
 #include <time.h>
-namespace cmdr::cross {
+namespace cmdr { namespace cross {
     inline void setenv(const char *__name, const char *__value, int __overwrite = 1) {
         ::setenv(__name, __value, __overwrite);
     }
@@ -933,7 +933,7 @@ namespace cmdr::cross {
     inline T max(T a, T b) { return std::max(a, b); }
     template<class T>
     inline T min(T a, T b) { return std::min(a, b); }
-} // namespace cmdr::cross
+}} // namespace cmdr::cross
 #endif
 
 
@@ -945,7 +945,7 @@ namespace std {
 }
 #endif
 #endif
-namespace cmdr::cross {
+namespace cmdr { namespace cross {
     //  has_extended_alignment
     //
     //  True if it may be presumed that the platform has static extended alignment;
@@ -1074,7 +1074,7 @@ namespace cmdr::cross {
     //
     // inline auto now() noexcept { return std::chrono::high_resolution_clock::now(); }
 
-} // namespace cmdr::cross
+}} // namespace cmdr::cross
 
 
 #endif //CMDR_CXX11_CMDR_DEFS_HH

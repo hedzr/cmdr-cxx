@@ -30,7 +30,6 @@
 
 #include "cmdr_terminal.hh"
 
-
 namespace cmdr {
 
     inline app::app(const_chars name, const_chars version, const_chars author,
@@ -91,6 +90,48 @@ namespace cmdr {
         _internal_actions.emplace(action, fn);
     }
 
+    inline std::string compiler_name() {
+        std::stringstream compiler;
+        compiler
+        // https://blog.kowalczyk.info/article/j/guide-to-predefined-macros-in-c-compilers-gcc-clang-msvc-etc..html
+        // http://beefchunk.com/documentation/lang/c/pre-defined-c/precomp.html
+        // and: https://github.com/arnemertz/online-compilers/blob/gh-pages/compiler_version.cpp
+#if defined(__clang__)
+                << "clang " << __clang_major__ << "." << __clang_minor__ << "." << __clang_patchlevel__
+#elif defined(__ICC) || defined(__INTEL_COMPILER)
+                << "Intel " << __INTEL_COMPILER
+#elif defined(__GNUC__) || defined(__GNUG__)
+                << "gcc " << __GNUC__ << "." << __GNUC_MINOR__ // __VERSION__
+#if defined(__GNU_PATCHLEVEL__)
+                << "." << __GNUC_PATCHLEVEL__
+#endif
+#elif defined(__HP_cc) || defined(__HP_aCC)
+                << "HP " << __HP_aCC
+#elif defined(__IBMC__) || defined(__IBMCPP__)
+                << "IBM " << __IBMCPP__
+#elif defined(_MSC_VER)
+                << "MSVC " << _MSC_FULL_VER
+#elif defined(__PGI)
+                << "Portland PGCPP" << __VERSION__
+#elif defined(__SUNPRO_C) || defined(__SUNPRO_CC)
+                << "Solaris Studio" << __SUNPRO_CC
+#elif defined(__EMSCRIPTEN__)
+                << "emscripten "
+#elif defined(__MINGW32__)
+                << "MinGW 32bit " << __MINGW32_MAJOR_VERSION << "." << __MINGW32_MINOR_VERSION
+#elif defined(__MINGW64__)
+                << "MinGW 64bit " << __MINGW64_VERSION_MAJOR << "." << __MINGW64_VERSION_MINOR
+#else
+                << "UNKNOWN COMPILER "
+#endif
+
+#if CHECK_BOOST_VERSION
+                << " (Boost version: " << BOOST_LIB_VERSION << ')';
+#endif
+        ;
+        return compiler.str();
+    }
+
     inline void app::internal_register_actions() {
         _internal_actions.emplace(opt::Action::RequestHelpScreen, [=](opt::types::parsing_context &pc, int, char *[]) -> int {
             print_usages(&pc.last_matched_cmd());
@@ -105,30 +146,6 @@ namespace cmdr {
             return 0;
         });
         _internal_actions.emplace(opt::Action::RequestBuildInfoScreen, [=](opt::types::parsing_context &, int, char *[]) -> int {
-            std::stringstream compiler;
-            compiler
-            // https://blog.kowalczyk.info/article/j/guide-to-predefined-macros-in-c-compilers-gcc-clang-msvc-etc..html
-            // http://beefchunk.com/documentation/lang/c/pre-defined-c/precomp.html
-#if defined(__clang__)
-                    << "clang " << __clang_major__ << "." << __clang_minor__ << "." << __clang_patchlevel__
-#elif defined(__GNUC__)
-                        <<    "gcc " <<  __GNUC__ <<"."<<__GNUC_MINOR__ // __VERSION__
-#if defined(__GNU_PATCHLEVEL__)
-                                                                 <<"."<<__GNUC_PATCHLEVEL__
-#endif
-#elif defined(_MSC_VER)
-                            << "MSVC " << _MSC_FULL_VER
-#elif defined(__EMSCRIPTEN__)
-                            << "emscripten "
-#elif defined(__MINGW32__)
-                            << "MinGW 32bit " << __MINGW32_MAJOR_VERSION << "." << __MINGW32_MINOR_VERSION
-#elif defined(__MINGW64__)
-                            << "MinGW 64bit " << __MINGW64_VERSION_MAJOR << "." << __MINGW64_VERSION_MINOR
-#else
-                            << "UNKNOWN COMPILER "
-#endif
-                    ;
-
             std::tm t{};
             std::istringstream tsi(__TIMESTAMP__);
             // tsi.imbue(std::locale("de_DE.utf-8"));
@@ -138,10 +155,11 @@ namespace cmdr {
             // ts << std::put_time(&t, "%Y-%m-%dT%H:%M:%S");
             ts << std::put_time(&t, "%FT%T%z");
 
+            auto cn = compiler_name();
             std::cout
-                    << "Built by " << compiler.str()
+                    << "Built by " << cn
                     << " at " << ts.str() << '\n'
-                    << compiler.str() << '\n'
+                    << cn << '\n'
                     << ts.str() << '\n'
                     << CMDR_PROJECT_NAME << '\n'
                     << CMDR_ARCHIVE_NAME << '\n'

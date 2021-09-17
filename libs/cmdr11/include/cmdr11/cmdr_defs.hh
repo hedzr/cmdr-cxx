@@ -119,20 +119,18 @@ inline void UNUSED([[maybe_unused]] Args &&...args) {
 #define __MOVE(m) this->m = std::move(o.m)
 #endif
 
-#if !defined(_WIN32)
-#ifndef TEXT
-#define TEXT_BASE(x) #x
-#define TEXT(x) TEXT_BASE(x)
-#endif
+#ifndef _TEXT
+#define _TEXT_BASE(x) #x
+#define _TEXT(x) _TEXT_BASE(x)
 #endif
 
-#ifndef CONCAT
-#define CONCAT_BASE(x, y) x##y
-#define CONCAT(x, y) CONCAT_BASE(x, y)
+#ifndef _CONCAT
+#define _CONCAT_BASE(x, y) x##y
+#define _CONCAT(x, y) _CONCAT_BASE(x, y)
 #endif
 
-#if !defined(EMPTY)
-#define EMPTY()
+#if !defined(_EMPTY)
+#define _EMPTY()
 #endif
 
 #ifndef DISABLE_MSVC_WARNINGS
@@ -530,7 +528,11 @@ namespace std {
 //#error "Unknown compiler"
 #define OS_UNKNOWN
 #endif
+
 #endif //_OS_MACROS
+
+#ifndef _OS_MACROS_MORE
+#define _OS_MACROS_MORE
 
 #ifdef OS_UNIX
 #undef OS_UNIX
@@ -599,7 +601,12 @@ namespace std {
 #define ARCH_PPC64 0
 #endif
 
+#endif // _OS_MACROS_MORE
+
 // Compilers
+
+#ifndef _COMPILER_NAME
+#define _COMPILER_NAME
 
 // https://blog.kowalczyk.info/article/j/guide-to-predefined-macros-in-c-compilers-gcc-clang-msvc-etc..html
 // http://beefchunk.com/documentation/lang/c/pre-defined-c/precomp.html
@@ -610,9 +617,9 @@ namespace std {
 #else
 #define _GNU_PREFIX "clang"
 #endif
-#define COMPILER_NAME _GNU_PREFIX " " TEXT(__clang_major__) "." TEXT(__clang_minor__) "." TEXT(__clang_patchlevel__)
+#define COMPILER_NAME _GNU_PREFIX " " _TEXT(__clang_major__) "." _TEXT(__clang_minor__) "." _TEXT(__clang_patchlevel__)
 #elif defined(__ICC) || defined(__INTEL_COMPILER)
-#define COMPILER_NAME "Intel " TEXT(__INTEL_COMPILER)
+#define COMPILER_NAME "Intel " _TEXT(__INTEL_COMPILER)
 #elif defined(__GNUC__) || defined(__GNUG__)
 #if defined(__DJGPP__)
 #define _GNU_PREFIX "djgpp gcc"
@@ -622,27 +629,27 @@ namespace std {
 #define _GNU_PREFIX "gcc"
 #endif
 #if __GNUC_PATCHLEVEL__
-#define _GNU_PATCH_PART "." TEXT(__GNUC_PATCHLEVEL__)
+#define _GNU_PATCH_PART "." _TEXT(__GNUC_PATCHLEVEL__)
 #else
 #define _GNU_PATCH_PART ""
 #endif
-#define COMPILER_NAME _GNU_PREFIX " " TEXT(__GNUC__) "." TEXT(__GNUC_MINOR__) _GNU_PATCH_PART
+#define COMPILER_NAME _GNU_PREFIX " " _TEXT(__GNUC__) "." _TEXT(__GNUC_MINOR__) _GNU_PATCH_PART
 #elif defined(__HP_cc) || defined(__HP_aCC)
-#define COMPILER_NAME "HP " TEXT(__HP_aCC)
+#define COMPILER_NAME "HP " _TEXT(__HP_aCC)
 #elif defined(__IBMC__) || defined(__IBMCPP__)
-#define COMPILER_NAME "IBM " TEXT(__IBMCPP__)
+#define COMPILER_NAME "IBM " _TEXT(__IBMCPP__)
 #elif defined(_MSC_VER)
-#define COMPILER_NAME "MSVC " TEXT(_MSC_FULL_VER)
+#define COMPILER_NAME "MSVC " _TEXT(_MSC_FULL_VER)
 #elif defined(__PGI)
-#define COMPILER_NAME "Portland PGCPP" TEXT(__VERSION__)
+#define COMPILER_NAME "Portland PGCPP" _TEXT(__VERSION__)
 #elif defined(__SUNPRO_C) || defined(__SUNPRO_CC)
-#define COMPILER_NAME "Solaris Studio" TEXT(__SUNPRO_CC)
+#define COMPILER_NAME "Solaris Studio" _TEXT(__SUNPRO_CC)
 #elif defined(__EMSCRIPTEN__)
 #define COMPILER_NAME "emscripten "
 #elif defined(__MINGW32__)
-#define COMPILER_NAME "MinGW 32bit " TEXT(__MINGW32_MAJOR_VERSION) "." TEXT(__MINGW32_MINOR_VERSION)
+#define COMPILER_NAME "MinGW 32bit " _TEXT(__MINGW32_MAJOR_VERSION) "." _TEXT(__MINGW32_MINOR_VERSION)
 #elif defined(__MINGW64__)
-#define COMPILER_NAME "MinGW 64bit " TEXT(__MINGW64_VERSION_MAJOR) "." TEXT(__MINGW64_VERSION_MINOR)
+#define COMPILER_NAME "MinGW 64bit " _TEXT(__MINGW64_VERSION_MAJOR) "." _TEXT(__MINGW64_VERSION_MINOR)
 #else
 #define COMPILER_NAME "UNKNOWN COMPILER "
 #endif
@@ -654,11 +661,10 @@ namespace std {
 #endif
 #if CHECK_BOOST_VERSION
 #include <boost/version.hpp>
+#define BOOST_VERSION_NAME "Boost v" _TEXT(BOOST_LIB_VERSION)
 #endif
 
-#if CHECK_BOOST_VERSION
-#define BOOST_VERSION_NAME "Boost v" TEXT(BOOST_LIB_VERSION)
-#endif
+#endif // _COMPILER_NAME
 
 // constexpr values
 

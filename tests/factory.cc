@@ -2,13 +2,13 @@
 // Created by Hedzr Yeh on 2021/8/24.
 //
 
-#include "cmdr11/cmdr_defs.hh"
 #include "cmdr11/cmdr_dbg.hh"
+#include "cmdr11/cmdr_defs.hh"
 #include "cmdr11/cmdr_log.hh"
 #include "cmdr11/cmdr_pipeable.hh"
 #include "cmdr11/cmdr_pool.hh"
-#include "cmdr11/cmdr_x_test.hh"
 #include "cmdr11/cmdr_x_class.hh"
+#include "cmdr11/cmdr_x_test.hh"
 
 #include <iostream>
 #include <math.h>
@@ -146,7 +146,7 @@ namespace cmdr::dp::factory::classical {
         float x, y;
 
     public:
-        explicit Trunk(double x_, double y_) { x = (float)x_, y = (float)y_; }
+        explicit Trunk(double x_, double y_) { x = (float) x_, y = (float) y_; }
         explicit Trunk(float x_, float y_) { x = x_, y = y_; }
         ~Trunk() = default;
         friend class classical_factory_method;
@@ -158,7 +158,7 @@ namespace cmdr::dp::factory::classical {
         float x, y;
 
     public:
-        explicit Ship(double x_, double y_) { x = (float)x_, y = (float)y_; }
+        explicit Ship(double x_, double y_) { x = (float) x_, y = (float) y_; }
         explicit Ship(float x_, float y_) { x = x_, y = y_; }
         ~Ship() = default;
         friend class classical_factory_method;
@@ -222,7 +222,7 @@ namespace cmdr::dp::factory::inner {
         float x, y;
 
     public:
-        explicit Trunk(double x_, double y_) { x = (float)x_, y = (float)y_; }
+        explicit Trunk(double x_, double y_) { x = (float) x_, y = (float) y_; }
         explicit Trunk(float x_, float y_) { x = x_, y = y_; }
         ~Trunk() = default;
         void deliver() override { printf("Trunk::deliver()\n"); }
@@ -236,7 +236,7 @@ namespace cmdr::dp::factory::inner {
         float x, y;
 
     public:
-        explicit Ship(double x_, double y_) { x = (float)x_, y = (float)y_; }
+        explicit Ship(double x_, double y_) { x = (float) x_, y = (float) y_; }
         explicit Ship(float x_, float y_) { x = x_, y = y_; }
         ~Ship() = default;
         void deliver() override { printf("Ship::deliver()\n"); }
@@ -245,7 +245,7 @@ namespace cmdr::dp::factory::inner {
             return std::make_unique<Ship>(r_ * cos(theta_), r_ * sin(theta_));
         }
     };
-    
+
     template<typename T, typename... Args>
     inline std::unique_ptr<T> create_transport(Args &&...args) {
         return T::create(args...);
@@ -255,7 +255,7 @@ namespace cmdr::dp::factory::inner {
 
 void test_factory_inner() {
     using namespace cmdr::dp::factory::inner;
-    
+
     auto p1 = create_transport<Trunk>(3.1f, 4.2f);
     std::cout << p1.get() << '\n';
     p1->deliver();
@@ -263,7 +263,7 @@ void test_factory_inner() {
     auto p2 = create_transport<Ship>(3.1f, 4.2f);
     std::cout << p2.get() << '\n';
     p2->deliver();
-    
+
     auto p3 = Ship::create(3.1f, 4.2f);
     std::cout << p3.get() << '\n';
     p3->deliver();
@@ -315,11 +315,13 @@ void test_factory_abstract() {
 int main() {
 
     CMDR_TEST_FOR(test_type_name);
-    
+
     CMDR_TEST_FOR(test_factory);
     CMDR_TEST_FOR(test_factory_inner);
     CMDR_TEST_FOR(test_factory_classical);
     CMDR_TEST_FOR(test_factory_abstract);
 
+    std::cout << "Compiler: " << cmdr::cross::kCompilerName << '\n';
+    
     return 0;
 }

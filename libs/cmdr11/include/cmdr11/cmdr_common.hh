@@ -7,15 +7,17 @@
 
 #include "cmdr_defs.hh"
 
+#include <algorithm>
 #include <functional>
 #include <memory>
+#include <mutex>
+#include <type_traits>
+#include <vector>
 
 namespace std {
 
     template<typename T>
-    inline unique_ptr<T> to_unique(T *ptr) {
-        return unique_ptr<T>(ptr);
-    }
+    inline unique_ptr<T> to_unique(T *ptr) { return unique_ptr<T>(ptr); }
     template<typename T>
     inline unique_ptr<T> to_unique(shared_ptr<T> &&ptr) {
         auto p = ptr.get();
@@ -30,18 +32,15 @@ namespace std {
         auto pnew = unique_ptr<T>(p);
         return pnew;
     }
+
     template<typename T>
-    inline shared_ptr<T> to_shared(T *ptr) {
-        return shared_ptr<T>(ptr);
-    }
+    inline shared_ptr<T> to_shared(T *ptr) { return shared_ptr<T>(ptr); }
     template<typename T>
     inline shared_ptr<T> to_shared(shared_ptr<T> const &ptr) {
         return ptr;
     }
     template<typename T>
-    inline shared_ptr<T> to_shared(unique_ptr<T> &&ptr) {
-        return ptr;
-    }
+    inline shared_ptr<T> to_shared(unique_ptr<T> &&ptr) { return ptr; }
 
 } // namespace std
 
@@ -468,9 +467,9 @@ namespace cmdr::util {
 
     public:
         /**
-                 * @brief fire an event along the observers chain.
-                 * @param event_or_subject 
-                 */
+         * @brief fire an event along the observers chain.
+         * @param event_or_subject 
+         */
         void emit(subject_t const &event_or_subject) {
             if (AutoLock) {
                 std::lock_guard _l(_m);

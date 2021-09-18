@@ -7,8 +7,8 @@
 
 #include "cmdr_defs.hh"
 
-#include <memory>
 #include <functional>
+#include <memory>
 
 namespace std {
 
@@ -380,7 +380,14 @@ namespace cmdr::util {
         virtual void observe(subject_t const &e) = 0;
     };
 
-    template<typename S, typename Observer = observer<S>, bool Managed = false>
+    /**
+     * @brief 
+     * @tparam S 
+     * @tparam Observer 
+     * @tparam AutoLock  thread-safe even if modifying observers chain dynamically
+     * @tparam CNS       use Copy-and-Swap to shorten locking time.
+     */
+    template<typename S, bool AutoLock = true, bool CNS = true, typename Observer = observer<S>>
     class observable {
     public:
         virtual ~observable() { clear(); }
@@ -389,24 +396,71 @@ namespace cmdr::util {
         using observer_t = std::weak_ptr<observer_t_nacked>;
         using observer_t_shared = std::shared_ptr<observer_t_nacked>;
         observable &add_observer(observer_t const &o) {
-            _observers.push_back(o);
+            if (AutoLock) {
+                if (CNS) {
+                    auto copy = _observers;
+                    copy.push_back(o);
+                    std::lock_guard _l(_m);
+                    _observers.swap(copy);
+                } else {
+                    std::lock_guard _l(_m);
+                    _observers.push_back(o);
+                }
+            } else
+                _observers.push_back(o);
             return (*this);
         }
         observable &add_observer(observer_t_shared &o) {
             observer_t wp = o;
-            _observers.push_back(wp);
+            if (AutoLock) {
+                if (CNS) {
+                    auto copy = _observers;
+                    copy.push_back(wp);
+                    std::lock_guard _l(_m);
+                    _observers.swap(copy);
+                } else {
+                    std::lock_guard _l(_m);
+                    _observers.push_back(wp);
+                }
+            } else
+                _observers.push_back(wp);
             return (*this);
         }
         observable &remove_observer(observer_t_shared &o) { return remove_observer(o.get()); }
         observable &remove_observer(observer_t_nacked *o) {
-            _observers.erase(std::remove_if(_observers.begin(), _observers.end(), [o](observer_t const &rhs) {
-                                 if (auto spt = rhs.lock())
-                                     return spt.get() == o;
-                                 return false;
-                             }),
-                             _observers.end());
+            if (AutoLock) {
+                if (CNS) {
+                    auto copy = _observers;
+                    copy.erase(std::remove_if(copy.begin(), copy.end(), [o](observer_t const &rhs) {
+                                   if (auto spt = rhs.lock())
+                                       return spt.get() == o;
+                                   return false;
+                               }),
+                               copy.end());
+                    std::lock_guard _l(_m);
+                    _observers.swap(copy);
+                } else {
+                    std::lock_guard _l(_m);
+                    _observers.erase(std::remove_if(_observers.begin(), _observers.end(), [o](observer_t const &rhs) {
+                                         if (auto spt = rhs.lock())
+                                             return spt.get() == o;
+                                         return false;
+                                     }),
+                                     _observers.end());
+                }
+            } else
+                _observers.erase(std::remove_if(_observers.begin(), _observers.end(), [o](observer_t const &rhs) {
+                                     if (auto spt = rhs.lock())
+                                         return spt.get() == o;
+                                     return false;
+                                 }),
+                                 _observers.end());
             return (*this);
         }
+        friend observable &operator+(observable &lhs, observer_t_shared &o) { return lhs.add_observer(o); }
+        friend observable &operator+(observable &lhs, observer_t const &o) { return lhs.add_observer(o); }
+        friend observable &operator-(observable &lhs, observer_t_shared &o) { return lhs.remove_observer(o); }
+        friend observable &operator-(observable &lhs, observer_t_nacked *o) { return lhs.remove_observer(o); }
         observable &operator+=(observer_t_shared &o) { return add_observer(o); }
         observable &operator+=(observer_t const &o) { return add_observer(o); }
         observable &operator-=(observer_t_shared &o) { return remove_observer(o); }
@@ -418,23 +472,44 @@ namespace cmdr::util {
                  * @param event_or_subject 
                  */
         void emit(subject_t const &event_or_subject) {
-            for (auto const &wp : _observers)
-                if (auto spt = wp.lock())
-                    spt->observe(event_or_subject);
+            if (AutoLock) {
+                std::lock_guard _l(_m);
+                for (auto const &wp : _observers)
+                    if (auto spt = wp.lock())
+                        spt->observe(event_or_subject);
+            } else {
+                for (auto const &wp : _observers)
+                    if (auto spt = wp.lock())
+                        spt->observe(event_or_subject);
+            }
         }
 
     private:
         void clear() {
-            if (Managed) {
-                // for (auto &o : _observers) {
-                //     if (auto spt = o.lock())
-                //         spt.release();
-                // }
+            if (AutoLock) {
+                std::lock_guard _l(_m);
+                _observers.clear();
             }
         }
 
     private:
         std::vector<observer_t> _observers;
+        std::mutex _m;
+    };
+
+    template<typename S, bool AutoLock = true, bool CNS = true, typename Observer = observer<S>>
+    struct registerer {
+        using _Observable = observable<S, AutoLock, CNS, Observer>;
+        _Observable &_observable;
+        typename _Observable::observer_t_shared &_observer;
+        registerer(_Observable &observable, typename _Observable::observer_t_shared &observer)
+            : _observable(observable)
+            , _observer(observer) {
+            _observable += _observer;
+        }
+        ~registerer() {
+            _observable -= _observer;
+        }
     };
 
 } // namespace cmdr::util

@@ -36,9 +36,7 @@ namespace std {
     template<typename T>
     inline shared_ptr<T> to_shared(T *ptr) { return shared_ptr<T>(ptr); }
     template<typename T>
-    inline shared_ptr<T> to_shared(shared_ptr<T> const &ptr) {
-        return ptr;
-    }
+    inline shared_ptr<T> to_shared(shared_ptr<T> const &ptr) { return ptr; }
     template<typename T>
     inline shared_ptr<T> to_shared(unique_ptr<T> &&ptr) { return ptr; }
 
@@ -154,6 +152,110 @@ namespace cmdr::traits {
      */
     template<auto func>
     constexpr size_t n_args = decltype(make_ripper(func))::n_args;
+
+
+    // -------------------
+
+    template<typename Function>
+    struct function_traits : public function_traits<decltype(&Function::operator())> {};
+
+    template<typename ClassType, typename ReturnType, typename... Args>
+    struct function_traits<ReturnType (ClassType::*)(Args...) const> {
+        typedef ReturnType (*pointer)(Args...);
+        typedef const std::function<ReturnType(Args...)> function;
+    };
+
+    template<typename Function>
+    inline typename function_traits<Function>::function to_function(Function &lambda) {
+        return static_cast<typename function_traits<Function>::function>(lambda);
+    }
+
+    template<class L>
+    struct overload_lambda : L {
+        overload_lambda(L l)
+            : L(l) {}
+        template<typename... T>
+        void operator()(T &&...values) {
+            // here you can access the target std::function with
+            to_function (*(L *) this)(std::forward<T>(values)...);
+        }
+    };
+
+    /**
+     * @brief convert a lambda to std::function
+     * @tparam L 
+     * @param l 
+     * @return std::function<R(Args...)>
+     * @details For example:
+     * @code{c++}
+     *     auto fn = hicc::types::lambda([&](std::vector<std::string> const &vec){...});
+     *     fn(vec);
+     * @endcode
+     */
+    template<class L>
+    inline overload_lambda<L> lambda(L l) {
+        return overload_lambda<L>(l);
+    }
+
+
+    // -------------------
+
+    template<typename T>
+    struct memfun_type {
+        using type = void;
+    };
+
+    template<typename Ret, typename Class, typename... Args>
+    struct memfun_type<Ret (Class::*)(Args...) const> {
+        using type = std::function<Ret(Args...)>;
+    };
+
+    /**
+     * @brief wrap a lambda as a std::function<...>
+     * @tparam F 
+     * @param func 
+     * @return
+     * @see https://stackoverflow.com/a/24068396/6375060
+     */
+    template<typename F>
+    typename memfun_type<decltype(&F::operator())>::type inline lambda_to_function(F const &func) { return func; }
+    template<typename F>
+    typename memfun_type<decltype(&F::operator())>::type inline l2f(F const &func) { return func; }
+
+
+    // -------------------
+
+    /**
+     * @brief bind a lambda or function into std::function<...>
+     * @tparam _Callable 
+     * @tparam _Args 
+     * @param f 
+     * @param args 
+     * @return 
+     * @details For example:
+     * @code{c++}
+     *   struct moo {
+     *     int doit(int x, int y) { return x + y; }
+     *   };
+     *   
+     *   auto fn0 = hicc::types::bind([](int a, float b) {
+     *     std::cout &lt;&lt; a &lt;&lt; ',' &lt;&lt; b &lt;&lt; '\n';
+     *   }, _1, _2);
+     *   fn0(1, 20.f);
+     *
+     *   moo m;
+     *   auto fn1 = hicc::types::bind(&moo::doit, m, _1, 3.0f);
+     *   std::cout &lt;&lt; '\n' &lt;&lt; fn1(1);
+     *   
+     *   auto fn2 = hicc::types::bind(doit, _1, 3.0f);
+     *   std::cout &lt;&lt; '\n' &lt;&lt; fn2(9);
+     * @endcode
+     */
+    template<typename _Callable, typename... _Args>
+    inline auto bind(_Callable &&f, _Args &&...args) {
+        auto fn = std::bind(std::forward<_Callable>(f), std::forward<_Args>(args)...);
+        return fn;
+    }
 
 } // namespace cmdr::traits
 
@@ -380,8 +482,8 @@ namespace cmdr::util {
     };
 
     /**
-     * @brief 
-     * @tparam S 
+     * @brief an observable object which allows an observer registered.
+     * @tparam S         subject or event
      * @tparam Observer 
      * @tparam AutoLock  thread-safe even if modifying observers chain dynamically
      * @tparam CNS       use Copy-and-Swap to shorten locking time.
@@ -492,8 +594,8 @@ namespace cmdr::util {
         }
 
     private:
-        std::vector<observer_t> _observers;
-        std::mutex _m;
+        std::vector<observer_t> _observers{};
+        std::mutex _m{};
     };
 
     template<typename S, bool AutoLock = true, bool CNS = true, typename Observer = observer<S>>
@@ -509,6 +611,55 @@ namespace cmdr::util {
         ~registerer() {
             _observable -= _observer;
         }
+    };
+
+    /**
+     * @brief an observable object, which allows a lambda or a function to be bound as the observer.
+     * @tparam S subject or event will be emitted to all bound observers.
+     * 
+     */
+    template<typename S>
+    class observable_bindable {
+    public:
+        virtual ~observable_bindable() { clear(); }
+        using subject_t = S;
+        using FN = std::function<void(subject_t const &)>;
+
+        // template<typename _Callable, typename... _Args>
+        // auto bind(_Callable &&f, _Args &&...args) {
+        //     auto fn = std::bind(std::forward<_Callable>(f), std::forward<_Args>(args)...);
+        //     return fn;
+        // }
+        template<typename _Callable, typename... _Args>
+        observable_bindable &add_callback(_Callable &&f, _Args &&...args) {
+            FN fn = std::bind(std::forward<_Callable>(f), std::forward<_Args>(args)...);
+            _callbacks.push_back(fn);
+            return (*this);
+        }
+        // template<class L>
+        // observable_bindable &add_callback(types::overload_lambda<L> fn) {
+        //     _callbacks.push_back(fn);
+        //     return (*this);
+        // }
+        template<typename _Callable, typename... _Args>
+        observable_bindable &on(_Callable &&f, _Args &&...args) {
+            return add_callback(f, args...);
+        }
+
+        /**
+         * @brief fire an event along the observers chain.
+         * @param event_or_subject 
+         */
+        void emit(subject_t const &event_or_subject) {
+            for (auto &fn : _callbacks)
+                fn(event_or_subject);
+        }
+
+    private:
+        void clear() {}
+
+    private:
+        std::vector<FN> _callbacks{};
     };
 
 } // namespace cmdr::util

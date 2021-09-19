@@ -798,6 +798,7 @@ inline std::string vector_to_string(Container const &vec) {
         if (ix++ > 0) os << ',';
         os << v;
     }
+    os << ']';
     return os.str();
 }
 
@@ -835,6 +836,7 @@ inline std::string vector_to_string(Container<TX> const &vec) {
         if (ix++ > 0) os << ',';
         os << v;
     }
+    os << ']';
     return os.str();
 }
 
@@ -843,7 +845,7 @@ template<class TX,
          std::enable_if_t<is_iterable<Container<TX>>::value &&
                                   !std::is_same<std::decay_t<Container<TX>>, std::string>::value,
                           int> = 0>
-inline std::ostream &operator<<(std::ostream &os, Container<TX> &o) {
+inline std::ostream &operator<<(std::ostream &os, Container<TX> const &o) {
     os << vector_to_string(o);
     return os;
 }

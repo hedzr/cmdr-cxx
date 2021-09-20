@@ -776,39 +776,41 @@ typedef std::vector<std::string> string_array;
 // inline constexpr bool is_iterable(unsigned) { return false; }
 
 #if OS_WIN
-template<typename T, typename = void>
-struct is_iterable : std::false_type {};
+namespace cmdr::traits {
+    template<typename T, typename = void>
+    struct is_iterable : std::false_type {};
 
-template<typename T>
-struct is_iterable<T, std::void_t<decltype(std::declval<T>().begin()),
-                                  decltype(std::declval<T>().end())>>
-    : std::true_type {};
-
-template<class Container,
-         std::enable_if_t<
-                 is_iterable<Container>::value &&
-                         !std::is_same<Container, std::string>::value &&
-                         !std::is_same<Container, std::string_view>::value &&
-                         !std::is_same<Container, std::wstring_view>::value &&
-                         !std::is_same<Container, std::u16string_view>::value &&
-                         !std::is_same<Container, std::u32string_view>::value &&
-                         !std::is_same<Container, std::filesystem::path>::value,
-                 int> = 0>
-inline std::string vector_to_string(Container const &vec) {
-    std::ostringstream os;
-    os << '[';
-    int ix = 0;
-    for (auto const &v : vec) {
-        if (ix++ > 0) os << ',';
-        os << v;
+    template<typename T>
+    struct is_iterable<T, std::void_t<decltype(std::declval<T>().begin()),
+                                      decltype(std::declval<T>().end())>>
+        : std::true_type {};
+} // namespace cmdr::traits
+namespace detail {
+    template<class Container,
+             std::enable_if_t<
+                     cmdr::traits::is_iterable<Container>::value &&
+                             !std::is_same<Container, std::string>::value &&
+                             !std::is_same<Container, std::string_view>::value &&
+                             !std::is_same<Container, std::wstring_view>::value &&
+                             !std::is_same<Container, std::u16string_view>::value &&
+                             !std::is_same<Container, std::u32string_view>::value &&
+                             !std::is_same<Container, std::filesystem::path>::value,
+                     int> = 0>
+    inline std::string vector_to_string(Container const &vec) {
+        std::ostringstream os;
+        os << '[';
+        int ix = 0;
+        for (auto const &v : vec) {
+            if (ix++ > 0) os << ',';
+            os << v;
+        }
+        os << ']';
+        return os.str();
     }
-    os << ']';
-    return os.str();
-}
-
+} // namespace detail
 template<class Container,
          std::enable_if_t<
-                 is_iterable<Container>::value &&
+                 cmdr::traits::is_iterable<Container>::value &&
                          !std::is_same<Container, std::string>::value &&
                          !std::is_same<Container, std::string_view>::value &&
                          !std::is_same<Container, std::wstring_view>::value &&
@@ -817,44 +819,46 @@ template<class Container,
                          !std::is_same<Container, std::filesystem::path>::value,
                  int> = 0>
 inline std::ostream &operator<<(std::ostream &os, Container const &o) {
-    os << vector_to_string(o);
+    os << detail::vector_to_string(o);
     return os;
 }
 #else
-template<typename T, typename = void>
-struct is_iterable : std::false_type {};
+namespace cmdr::traits {
+    template<typename T, typename = void>
+    struct is_iterable : std::false_type {};
 
-template<typename T>
-struct is_iterable<T, std::void_t<decltype(std::begin(std::declval<T>())),
-                                  decltype(std::end(std::declval<T>()))>> : std::true_type {};
+    template<typename T>
+    struct is_iterable<T, std::void_t<decltype(std::begin(std::declval<T>())),
+                                      decltype(std::end(std::declval<T>()))>> : std::true_type {};
 
-template<typename T>
-constexpr bool is_iterable_v = is_iterable<T>::value;
-
-template<class TX,
-         template<typename, typename...> class Container = std::vector,
-         std::enable_if_t<is_iterable<Container<TX>>::value &&
-                                  !std::is_same<std::decay_t<Container<TX>>, std::string_view>::value &&
-                                  !std::is_same<std::decay_t<Container<TX>>, std::wstring_view>::value &&
-                                  !std::is_same<std::decay_t<Container<TX>>, std::u16string_view>::value &&
-                                  !std::is_same<std::decay_t<Container<TX>>, std::u32string_view>::value &&
-                                  !std::is_same<std::decay_t<Container<TX>>, std::string>::value,
-                          int> = 0>
-inline std::string vector_to_string(Container<TX> const &vec) {
-    std::ostringstream os;
-    os << '[';
-    int ix = 0;
-    for (auto const &v : vec) {
-        if (ix++ > 0) os << ',';
-        os << v;
+    template<typename T>
+    constexpr bool is_iterable_v = is_iterable<T>::value;
+} // namespace cmdr::traits
+namespace detail {
+    template<class TX,
+             template<typename, typename...> class Container = std::vector,
+             std::enable_if_t<cmdr::traits::is_iterable<Container<TX>>::value &&
+                                      !std::is_same<std::decay_t<Container<TX>>, std::string_view>::value &&
+                                      !std::is_same<std::decay_t<Container<TX>>, std::wstring_view>::value &&
+                                      !std::is_same<std::decay_t<Container<TX>>, std::u16string_view>::value &&
+                                      !std::is_same<std::decay_t<Container<TX>>, std::u32string_view>::value &&
+                                      !std::is_same<std::decay_t<Container<TX>>, std::string>::value,
+                              int> = 0>
+    inline std::string vector_to_string(Container<TX> const &vec) {
+        std::ostringstream os;
+        os << '[';
+        int ix = 0;
+        for (auto const &v : vec) {
+            if (ix++ > 0) os << ',';
+            os << v;
+        }
+        os << ']';
+        return os.str();
     }
-    os << ']';
-    return os.str();
-}
-
+} // namespace detail
 template<class TX,
          template<typename, typename...> class Container = std::vector,
-         std::enable_if_t<is_iterable<Container<TX>>::value &&
+         std::enable_if_t<cmdr::traits::is_iterable<Container<TX>>::value &&
                                   !std::is_same<std::decay_t<Container<TX>>, std::string_view>::value &&
                                   !std::is_same<std::decay_t<Container<TX>>, std::wstring_view>::value &&
                                   !std::is_same<std::decay_t<Container<TX>>, std::u16string_view>::value &&
@@ -862,11 +866,51 @@ template<class TX,
                                   !std::is_same<std::decay_t<Container<TX>>, std::string>::value,
                           int> = 0>
 inline std::ostream &operator<<(std::ostream &os, Container<TX> const &o) {
-    os << vector_to_string(o);
+    os << detail::vector_to_string(o);
     return os;
 }
 #endif //OS_WIN
 #endif //_VECTOR_TO_STRING_HELPERS_DEFINED
+
+#if !defined(_TUPLE_TO_STRING_HELPERS_DEFINED)
+#define _TUPLE_TO_STRING_HELPERS_DEFINED
+namespace detail {
+    template<std::size_t I, class... Ts>
+    inline std::ostream &print_tuple_impl(std::ostream &os, const std::tuple<Ts...> &tuples) {
+        if constexpr (I == sizeof...(Ts)) {
+            return os << ')';
+        } else {
+            std::cout << std::get<I>(tuples);
+            if constexpr (I + 1 != sizeof...(Ts)) {
+                os << ", ";
+            }
+            return print_tuple_impl<I + 1>(os, tuples);
+        }
+    }
+
+    template<class... Ts>
+    inline std::ostream &print_tuple(std::ostream &os, const std::tuple<Ts...> &tuples) {
+        os << '(';
+        return print_tuple_impl<0>(os, tuples);
+    }
+} // namespace detail
+/**
+ * @brief 
+ * @tparam Ts 
+ * @param os 
+ * @param tuples 
+ * @return 
+ * @details For example:
+ * @code{c++}
+ *   auto tup = std::make_tuple(1, "hello", 4.5);
+ *   std::cout &lt;&lt; tup &lt;&lt; '\n';
+ * @endcode
+ */
+template<class... Ts>
+inline std::ostream &operator<<(std::ostream &os, const std::tuple<Ts...> &tuples) {
+    return detail::print_tuple(os, tuples);
+}
+#endif //_TUPLE_TO_STRING_HELPERS_DEFINED
 
 
 const char *const DEFAULT_KEY_PREFIX = "app";

@@ -788,6 +788,10 @@ template<class Container,
          std::enable_if_t<
                  is_iterable<Container>::value &&
                          !std::is_same<Container, std::string>::value &&
+                         !std::is_same<Container, std::string_view>::value &&
+                         !std::is_same<Container, std::wstring_view>::value &&
+                         !std::is_same<Container, std::u16string_view>::value &&
+                         !std::is_same<Container, std::u32string_view>::value &&
                          !std::is_same<Container, std::filesystem::path>::value,
                  int> = 0>
 inline std::string vector_to_string(Container const &vec) {
@@ -806,6 +810,10 @@ template<class Container,
          std::enable_if_t<
                  is_iterable<Container>::value &&
                          !std::is_same<Container, std::string>::value &&
+                         !std::is_same<Container, std::string_view>::value &&
+                         !std::is_same<Container, std::wstring_view>::value &&
+                         !std::is_same<Container, std::u16string_view>::value &&
+                         !std::is_same<Container, std::u32string_view>::value &&
                          !std::is_same<Container, std::filesystem::path>::value,
                  int> = 0>
 inline std::ostream &operator<<(std::ostream &os, Container const &o) {
@@ -826,6 +834,10 @@ constexpr bool is_iterable_v = is_iterable<T>::value;
 template<class TX,
          template<typename, typename...> class Container = std::vector,
          std::enable_if_t<is_iterable<Container<TX>>::value &&
+                                  !std::is_same<std::decay_t<Container<TX>>, std::string_view>::value &&
+                                  !std::is_same<std::decay_t<Container<TX>>, std::wstring_view>::value &&
+                                  !std::is_same<std::decay_t<Container<TX>>, std::u16string_view>::value &&
+                                  !std::is_same<std::decay_t<Container<TX>>, std::u32string_view>::value &&
                                   !std::is_same<std::decay_t<Container<TX>>, std::string>::value,
                           int> = 0>
 inline std::string vector_to_string(Container<TX> const &vec) {
@@ -843,6 +855,10 @@ inline std::string vector_to_string(Container<TX> const &vec) {
 template<class TX,
          template<typename, typename...> class Container = std::vector,
          std::enable_if_t<is_iterable<Container<TX>>::value &&
+                                  !std::is_same<std::decay_t<Container<TX>>, std::string_view>::value &&
+                                  !std::is_same<std::decay_t<Container<TX>>, std::wstring_view>::value &&
+                                  !std::is_same<std::decay_t<Container<TX>>, std::u16string_view>::value &&
+                                  !std::is_same<std::decay_t<Container<TX>>, std::u32string_view>::value &&
                                   !std::is_same<std::decay_t<Container<TX>>, std::string>::value,
                           int> = 0>
 inline std::ostream &operator<<(std::ostream &os, Container<TX> const &o) {

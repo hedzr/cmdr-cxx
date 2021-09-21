@@ -100,6 +100,9 @@ namespace cmdr::chrono {
                     void>> : public std::true_type {
     };
 
+    template<typename T>
+    constexpr bool is_duration_v = is_duration<T>::value;
+    
 } // namespace cmdr::chrono
 
 // get_system_clock_in_us

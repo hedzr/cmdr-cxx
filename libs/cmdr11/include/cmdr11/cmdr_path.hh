@@ -276,7 +276,10 @@ namespace cmdr::path {
      */
     inline const char *to_filename(std::filesystem::path const &path) {
 #if defined(_WIN32)
+        // BEWARE! the returned pointer pointed to a destroyed instance!!!
+        DISABLE_MSVC_WARNINGS(26815)
         return path.u8string().c_str(); // BUG!!
+        RESTORE_MSVC_WARNINGS
 #else
         return path.c_str();
 #endif

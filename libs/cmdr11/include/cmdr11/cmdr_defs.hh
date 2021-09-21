@@ -877,6 +877,7 @@ inline std::ostream &operator<<(std::ostream &os, Container<TX> const &o) {
 namespace detail {
     template<std::size_t I, class... Ts>
     inline std::ostream &print_tuple_impl(std::ostream &os, const std::tuple<Ts...> &tuples) {
+        UNUSED(tuples);
         if constexpr (I == sizeof...(Ts)) {
             return os << ')';
         } else {

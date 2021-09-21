@@ -96,7 +96,9 @@ namespace tmp1 {
         static std::unique_ptr<Point2D> create_unique() { return std::make_unique<Point2D>(); }
         static Point2D *create() { return new Point2D(); }
         // Point *clone() const override { return new Point2D(*this); }
+        DISABLE_MSVC_WARNINGS(26815)
         const char *name() const override { return cmdr::debug::type_name<std::decay_t<decltype(*this)>>().data(); }
+        RESTORE_MSVC_WARNINGS
     };
 
     struct Point3D : Point {
@@ -105,7 +107,9 @@ namespace tmp1 {
         static std::unique_ptr<Point3D> create_unique() { return std::make_unique<Point3D>(); }
         static Point3D *create() { return new Point3D(); }
         // Point *clone() const override { return new Point3D(*this); }
+        DISABLE_MSVC_WARNINGS(26815)
         const char *name() const override { return cmdr::debug::type_name<std::decay_t<decltype(*this)>>().data(); }
+        RESTORE_MSVC_WARNINGS
     };
 
     struct factory {
@@ -284,7 +288,9 @@ namespace cmdr::dp::factory::abstract {
         static std::unique_ptr<Point2D> create_unique() { return std::make_unique<Point2D>(); }
         static Point2D *create() { return new Point2D(); }
         // Point *clone() const override { return new Point2D(*this); }
+        DISABLE_MSVC_WARNINGS(26815)
         const char *name() const override { return cmdr::debug::type_name<std::decay_t<decltype(*this)>>().data(); }
+        RESTORE_MSVC_WARNINGS
     };
 
     class Point3D : public Point {
@@ -294,7 +300,9 @@ namespace cmdr::dp::factory::abstract {
         static std::unique_ptr<Point3D> create_unique() { return std::make_unique<Point3D>(); }
         static Point3D *create() { return new Point3D(); }
         // Point *clone() const override { return new Point3D(*this); }
+        DISABLE_MSVC_WARNINGS(26815)
         const char *name() const override { return cmdr::debug::type_name<std::decay_t<decltype(*this)>>().data(); }
+        RESTORE_MSVC_WARNINGS
     };
 
     struct factory {

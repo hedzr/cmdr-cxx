@@ -133,6 +133,19 @@ namespace cmdr::debug {
         return name3;
 #endif
     }
+    
+    /**
+     * @brief remove the scoped prefix (before '::')
+     * @tparam T 
+     * @return 
+     */
+    template<typename T>
+    constexpr auto short_type_name() -> std::string_view {
+        const auto value = type_name<T>();
+        const auto end = value.rfind("::");
+        return std::string_view{value.data() + (end != std::string_view::npos ? end + 2 : 0)};
+    }
+    
 #else
     template<typename T>
     constexpr auto type_name_1() noexcept {

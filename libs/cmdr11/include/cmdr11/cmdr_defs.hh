@@ -236,7 +236,7 @@ inline void UNUSED([[maybe_unused]] Args &&...args) {
     inline std::ostream &operator<<(std::ostream &os, name value) { \
         std::string enumName = #name;                               \
         std::string str = #__VA_ARGS__;                             \
-        int len = str.length(), val = -1;                           \
+        int len = (int) str.length(), val = -1;                     \
         std::map<int, std::string> maps;                            \
         std::ostringstream temp;                                    \
         for (int i = 0; i < len; i++) {                             \

@@ -105,6 +105,10 @@ endfunction()
 define_test_program(sso-1 sso_test_1.cc)
 define_test_program(sso-2 sso_test_2.cc)
 define_test_program(any-1 any_1.cc)
+define_test_program(traits traits.cc)
+define_test_program(observer observer.cc)
+define_test_program(factory factory.cc)
+
 define_test_program(visit-any
                     visit_any.cc
                     second_src.cc)
@@ -121,11 +125,8 @@ define_test_program(store-c2 store_c2.cc)
 define_test_program(flags-c2 flags_c2.cc second_src.cc)
 define_test_program(jaro-c2 jaro_c2.cc)
 
-
 define_test_program(pool pool.cc)
 define_test_program(process process.cc)
-define_test_program(factory factory.cc)
-
 
 # app2 c1
 define_test_program(app2-c1 app1.cc second_src.cc)

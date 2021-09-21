@@ -43,11 +43,11 @@
 #include "cmdr11/cmdr_x_test.hh"
 
 
-namespace hicc::dp::observer::basic {
+namespace cmdr::dp::observer::basic {
 
     struct event {
         // bool operator==(const event &) const { return true; }
-        // bool operator==(const std::string_view &tn) const { return hicc::debug::type_name<event>() == tn; }
+        // bool operator==(const std::string_view &tn) const { return cmdr::debug::type_name<event>() == tn; }
     };
 
     struct mouse_move_event : public event {};
@@ -63,10 +63,10 @@ namespace hicc::dp::observer::basic {
         }
     };
 
-} // namespace hicc::dp::observer::basic
+} // namespace cmdr::dp::observer::basic
 
 void test_observer_basic() {
-    using namespace hicc::dp::observer::basic;
+    using namespace cmdr::dp::observer::basic;
 
     Store store;
     Store::observer_t_shared c = std::make_shared<Customer>(); // uses Store::observer_t_shared rather than 'auto'
@@ -134,8 +134,8 @@ void test_util_bind() {
         auto fn2 = cmdr::util::bind(doit, _1, 3.0f);
         std::cout << "fn2: " << fn2(9) << '\n';
 #else
-        // in msvc, C4244 warning will be thrown since it's converting 
-        // float(3.0f) to int (the 2nd arg of doit()), the precision 
+        // in msvc, C4244 warning will be thrown since it's converting
+        // float(3.0f) to int (the 2nd arg of doit()), the precision
         // will be lost in narrowing a number.
         moo m;
         auto fn1 = cmdr::util::bind(&moo::doit, m, _1, 3);
@@ -157,26 +157,26 @@ void test_util_bind() {
     }
 }
 
-namespace hicc::dp::observer::cb {
+namespace cmdr::dp::observer::cb {
 
     struct event {
         std::string to_string() const { return "event"; }
         // bool operator==(const event &) const { return true; }
-        // bool operator==(const std::string_view &tn) const { return hicc::debug::type_name<event>() == tn; }
+        // bool operator==(const std::string_view &tn) const { return cmdr::debug::type_name<event>() == tn; }
     };
 
     struct mouse_move_event : public event {};
 
     class Store : public cmdr::util::observable_bindable<event> {};
 
-} // namespace hicc::dp::observer::cb
+} // namespace cmdr::dp::observer::cb
 
-void fntest(hicc::dp::observer::cb::event const &e) {
+void fntest(cmdr::dp::observer::cb::event const &e) {
     cmdr_print("event CB regular function: %s", e.to_string().c_str());
 }
 
 void test_observer_cb() {
-    using namespace hicc::dp::observer::cb;
+    using namespace cmdr::dp::observer::cb;
     using namespace std::placeholders;
 
     Store store;
@@ -205,7 +205,7 @@ void test_observer_cb() {
     store.emit(mouse_move_event{});
 }
 
-namespace hicc::dp::observer::slots {
+namespace cmdr::dp::observer::slots {
 
     void f() { std::cout << "free function\n"; }
 
@@ -232,10 +232,10 @@ namespace hicc::dp::observer::slots {
         }
     };
 
-} // namespace hicc::dp::observer::slots
+} // namespace cmdr::dp::observer::slots
 
 void test_observer_slots() {
-    using namespace hicc::dp::observer::slots;
+    using namespace cmdr::dp::observer::slots;
     using namespace std::placeholders;
     {
         std::vector<int> v1 = example::foo(1, 2, 3, 4);
@@ -266,7 +266,7 @@ void test_observer_slots() {
 }
 
 void test_observer_slots_args() {
-    using namespace hicc::dp::observer::slots;
+    using namespace cmdr::dp::observer::slots;
     using namespace std::placeholders;
 
     struct foo {

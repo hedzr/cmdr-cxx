@@ -16,6 +16,20 @@
 #include <iostream>
 
 
+#ifndef DISABLE_MSVC_WARNINGS
+#if defined(_MSC_VER)
+#define DISABLE_MSVC_WARNINGS(...)   \
+    __pragma(warning(push))          \
+            __pragma(warning(disable \
+                             : __VA_ARGS__)) /*disable _ctlState prefast warning*/
+#define RESTORE_MSVC_WARNINGS \
+    __pragma(warning(pop))
+#else
+#define DISABLE_MSVC_WARNINGS(...) /* __VA_ARGS__ */
+#define RESTORE_MSVC_WARNINGS
+#endif
+#endif
+
 namespace cmdr::path {
 
     namespace fs = std::filesystem;

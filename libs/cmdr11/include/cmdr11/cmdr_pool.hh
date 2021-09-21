@@ -77,17 +77,19 @@ namespace cmdr::pool {
          * @tparam R 
          * @tparam P 
          * @param time a timeout (std::chrono::duration)
-         * @return true if condition matched, false if timeout
+         * @return true if condition matched, false while not matched
          */
         template<class R, class P>
         bool wait_for(std::chrono::duration<R, P> const &time) {
             std::unique_lock<std::mutex> lk(_m);
-            return !_cv.wait_for(lk, time, _p);
+            return _cv.wait_for(lk, time, _p);
         }
+        const bool ConditionMatched = true;
         /**
          * @brief do Setter, and trigger any one of the wating routines
          */
         void set() {
+            // cmdr_debug("%s", __FUNCTION_NAME__);
             {
                 std::unique_lock<std::mutex> lk(_m);
                 _s();
@@ -112,6 +114,17 @@ namespace cmdr::pool {
         virtual T const &_value() const { return _var; }
         virtual T &_value() { return _var; }
         virtual void _release() {}
+    };
+
+    template<typename CW>
+    class cw_setter {
+    public:
+        cw_setter(CW &cw)
+            : _cw(cw) {}
+        ~cw_setter() { _cw.set(); }
+
+    private:
+        CW &_cw;
     };
 
     class conditional_wait_for_bool : public conditional_wait<bool> {
@@ -149,7 +162,9 @@ namespace cmdr::pool {
         int _max_value;
     };
 
+} // namespace cmdr::pool
 
+namespace cmdr::pool {
     /**
      * @brief helper class for shutdown a sleep loop gracefully.
      * 
@@ -161,7 +176,7 @@ namespace cmdr::pool {
      *     static void runner(timer *_this) {
      *         using namespace std::literals::chrono_literals;
      *         auto d = 10ns;
-     *         while (_this->_tk.wait_for(d)) {
+     *         while (!_this->_tk.wait_for(d)) {
      *             // std::this_thread::sleep_for(d);
      *             std::this_thread::yield();
      *         }
@@ -195,7 +210,27 @@ namespace cmdr::pool {
         //     std::unique_lock<std::mutex> lock(_m);
         //     return !_cv.wait_for(lock, time, [&] { return _terminate; });
         // }
-        bool terminated() { return val(); }
+        bool terminated() const { return val(); }
+        /**
+         * @brief wait for Pred condition matched, or a timeout arrived.
+         * @tparam R 
+         * @tparam P 
+         * @param time a timeout (std::chrono::duration)
+         * @return true if condition matched, false while not matched
+         */
+        template<class R, class P>
+        bool wait_for(std::chrono::duration<R, P> const &time) {
+            return conditional_wait_for_bool::wait_for(time);
+        }
+        void set() {
+            // cmdr_debug("%s", __FUNCTION_NAME__);
+            conditional_wait_for_bool::set();
+        }
+        void set_for_all() {
+            // cmdr_debug("%s", __FUNCTION_NAME__);
+            conditional_wait_for_bool::set_for_all();
+        }
+
         // void kill() {
         //     bool go{false};
         //     {
@@ -209,6 +244,9 @@ namespace cmdr::pool {
         // }
     };
 
+} // namespace cmdr::pool
+
+namespace cmdr::pool {
 
     template<class T, class Coll = std::deque<T>>
     class threaded_message_queue {
@@ -341,18 +379,20 @@ namespace cmdr::pool {
         }
         void clear_threads() {
             _tasks.clear();
+            _future_ended.wait();
             _threads.clear();
         }
         void start_thread(std::size_t n = 1) {
             while (n-- > 0) {
                 _threads.push_back(
                         std::async(std::launch::async,
-                                   [this
+                                   [&
 #if CMDR_TEST_THREAD_POOL_DBGOUT
                                     ,
                                     n
 #endif
                 ] {
+                                       cw_setter cws(_future_ended);
 #if CMDR_ENABLE_THREAD_POOL_READY_SIGNAL
                                        _cv_started.set();
 #endif
@@ -387,6 +427,7 @@ namespace cmdr::pool {
 #if CMDR_ENABLE_THREAD_POOL_READY_SIGNAL
         conditional_wait_for_int _cv_started{};
 #endif
+        conditional_wait_for_int _future_ended{};
     }; // class thread_pool
 
 } // namespace cmdr::pool

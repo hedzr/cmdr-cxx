@@ -607,6 +607,7 @@ namespace cmdr::chrono {
         serialize_time_point(ss, time, format);
         return ss.str();
     }
+    inline std::string format_time_point(const char *format = "%Y-%m-%d %H:%M:%S") { return format_time_point(std::chrono::system_clock::now(), format); }
     template<class _Clock, class _Duration = typename _Clock::duration>
     inline std::string format_time_point_to_local(std::chrono::time_point<_Clock, _Duration> const &time, const char *format = "%Y-%m-%d %H:%M:%S") {
         using iom_ = cmdr::chrono::iom;
@@ -616,6 +617,7 @@ namespace cmdr::chrono {
         serialize_time_point(ss, time, format);
         return ss.str();
     }
+    inline std::string format_time_point_to_local(const char *format = "%Y-%m-%d %H:%M:%S") { return format_time_point(std::chrono::system_clock::now(), format); }
 
     inline std::ostream &serialize_tm(std::ostream &os, std::tm const *tm, const char *format = "%Y-%m-%d %H:%M:%S") {
         os << std::put_time(tm, format);

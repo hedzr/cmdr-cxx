@@ -276,6 +276,9 @@ void test_observer_slots_args() {
         void bar(double d, int i, bool b, std::string &&s) {
             std::cout << "memfn: " << s << (b ? std::to_string(i) : std::to_string(d)) << '\n';
         }
+        static void sbar(double d, int i, bool b, std::string &&s) {
+            std::cout << "static memfn: " << s << (b ? std::to_string(i) : std::to_string(d)) << '\n';
+        }
     };
 
     // Function objects can cope with default arguments and overloading.

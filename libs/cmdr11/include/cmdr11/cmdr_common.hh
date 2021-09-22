@@ -439,10 +439,10 @@ namespace cmdr::traits {
 
 } // namespace cmdr::traits
 
-// -------------------
-namespace hicc::traits {
-
+// ------------------- cxx20 head/tail/slice
+namespace cmdr::traits {
 #if __cplusplus >= 202001
+
     namespace detail {
         template<typename T, auto Start, auto Step, T... Is>
         constexpr auto make_cons_helper_impl_(std::integer_sequence<T, Is...>) {
@@ -501,7 +501,7 @@ namespace hicc::traits {
     static_assert(slice<1, 3>(1, 2.0f, "three", '4') == std::make_tuple(2.0f, "three"));
 
 #endif // C++20 or later
-} // namespace hicc::traits
+} // namespace cmdr::traits
 
 // ------------------- light-weight bind
 namespace cmdr::util {
@@ -540,6 +540,7 @@ namespace cmdr::util {
 
 } // namespace cmdr::util
 
+// ------------------- indices
 namespace cmdr::traits {
     // @see http://loungecpp.wikidot.com/tips-and-tricks:indices
 
@@ -605,6 +606,52 @@ namespace cmdr::util {
     }
 } // namespace cmdr::util
 
+// ------------------- cool::bind_tie
+namespace cmdr::util::cool {
+
+    template<typename _Callable, typename... _Args>
+    auto bind(_Callable &&f, _Args &&...args) {
+        return std::bind(std::forward<_Callable>(f), std::forward<_Args>(args)...);
+    }
+
+    template<typename Function, typename Tuple, size_t... I>
+    auto bind_N(Function &&f, Tuple &&t, std::index_sequence<I...>) {
+        return std::bind(f, std::get<I>(t)...);
+    }
+    template<int N, typename Function, typename Tuple>
+    auto bind_N(Function &&f, Tuple &&t) {
+        // static constexpr auto size = std::tuple_size<Tuple>::value;
+        return bind_N(f, t, std::make_index_sequence<N>{});
+    }
+
+    template<int N, typename _Callable, typename... _Args,
+             std::enable_if_t<!std::is_member_function_pointer_v<_Callable>, bool> = true>
+    auto bind_tie(_Callable &&f, _Args &&...args) {
+        return bind_N<N>(f, std::make_tuple(args...));
+    }
+
+    template<typename Function, typename _Instance, typename Tuple, size_t... I>
+    auto bind_N_mem(Function &&f, _Instance &&ii, Tuple &&t, std::index_sequence<I...>) {
+        return std::bind(f, ii, std::get<I>(t)...);
+    }
+    template<int N, typename Function, typename _Instance, typename Tuple>
+    auto bind_N_mem(Function &&f, _Instance &&ii, Tuple &&t) {
+        return bind_N_mem(f, ii, t, std::make_index_sequence<N>{});
+    }
+
+    template<int N, typename _Callable, typename _Instance, typename... _Args,
+             std::enable_if_t<std::is_member_function_pointer_v<_Callable>, bool> = true>
+    auto bind_tie_mem(_Callable &&f, _Instance &&ii, _Args &&...args) {
+        return bind_N_mem<N>(f, ii, std::make_tuple(args...));
+    }
+    template<int N, typename _Callable, typename... _Args,
+             std::enable_if_t<std::is_member_function_pointer_v<_Callable>, bool> = true>
+    auto bind_tie(_Callable &&f, _Args &&...args) {
+        return bind_tie_mem<N>(std::forward<_Callable>(f), std::forward<_Args>(args)...);
+    }
+
+} // namespace cmdr::util::cool
+
 // ------------------- get_template_type_t, return_type_of_t
 namespace cmdr::traits {
 
@@ -616,7 +663,7 @@ namespace cmdr::traits {
      * class baz{
      * };
      * 
-     * using ret = cmdr::util::get_template_type_t<baz>::type;
+     * using ret = cmdr::traits::get_template_type_t<baz>::type;
      */
     template<typename C>
     struct get_template_type_t;
@@ -1001,47 +1048,47 @@ namespace cmdr::util {
         std::vector<FN> _callbacks{};
     };
 
-    template<typename... Subjects>
+} // namespace cmdr::util
+
+// ------------------- signal & slot
+namespace cmdr::util {
+
+    /**
+     * @brief A covered pure C++ implementation for QT signal-slot mechanism
+     * @tparam SignalSubjects 
+     */
+    template<typename... SignalSubjects>
     class signal {
     public:
         virtual ~signal() { clear(); }
-        using FN = std::function<void(Subjects &&...)>;
-        static constexpr std::size_t SubjectCount = sizeof...(Subjects);
+        using FN = std::function<void(SignalSubjects &&...)>;
+        static constexpr std::size_t SubjectCount = sizeof...(SignalSubjects);
 
-        // template<typename _Callable, typename _Arg>
-        // auto expanded_connect(std::size_t, _Callable &&f, _Arg &&arg) {
-        //     FN fn = std::bind(std::forward<_Callable>(f), arg);
-        //     return fn;
-        // }
-        template<typename _Callable, typename... _Args>
-        auto expanded_connect(_Callable &&f, _Args &&...args) {
-            // constexpr auto Max = sizeof...(Subjects);
-            FN fn = std::bind(std::forward<_Callable>(f), std::forward<_Args>(args)...);
-            return fn;
-        }
         template<typename _Callable, typename... _Args>
         signal &connect(_Callable &&f, _Args &&...args) {
             using namespace std::placeholders;
-            FN fn = std::bind(std::forward<_Callable>(f), std::forward<_Args>(args)...); //, _1, _2, _3, _4, _5, _6, _7, _8, _9);
-            // constexpr auto Max = sizeof...(Subjects);
-            // // FN fn = expanded_connect(f, args..., _1, _2, _3, _4, _5, _6, _7, _8, _9);
-            // FN fn = std::bind(std::forward<_Callable>(f), types::head_n<Max, args..., _1, _2, _3, _4, _5, _6, _7, _8, _9>::type...);
+            FN fn = cool::bind_tie<SubjectCount>(std::forward<_Callable>(f), std::forward<_Args>(args)..., _1, _2, _3, _4, _5, _6, _7, _8, _9);
             _callbacks.push_back(fn);
             return (*this);
         }
         template<typename _Callable, typename... _Args>
-        signal &on(_Callable &&f, _Args &&...args) { return connect(f, args...); }
+        signal &on(_Callable &&f, _Args &&...args) {
+            using namespace std::placeholders;
+            FN fn = util::cool::bind_tie<SubjectCount>(std::forward<_Callable>(f), std::forward<_Args>(args)..., _1, _2, _3, _4, _5, _6, _7, _8, _9);
+            _callbacks.push_back(fn);
+            return (*this);
+        }
 
         /**
          * @brief fire an event along the observers chain.
          * @param event_or_subject 
          */
-        signal &emit(Subjects &&...event_or_subjects) {
+        signal &emit(SignalSubjects &&...event_or_subjects) {
             for (auto &fn : _callbacks)
                 fn(std::move(event_or_subjects)...);
             return (*this);
         }
-        signal &operator()(Subjects &&...event_or_subjects) { return emit(event_or_subjects...); }
+        signal &operator()(SignalSubjects &&...event_or_subjects) { return emit(event_or_subjects...); }
 
     private:
         void clear() {}

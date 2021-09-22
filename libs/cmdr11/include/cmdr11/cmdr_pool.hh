@@ -72,19 +72,44 @@ namespace cmdr::pool {
             std::unique_lock<std::mutex> lk(_m);
             _cv.wait(lk, _p);
         }
+        const bool ConditionMatched = true;
         /**
          * @brief wait for Pred condition matched, or a timeout arrived.
          * @tparam R 
          * @tparam P 
          * @param time a timeout (std::chrono::duration)
-         * @return true if condition matched, false while not matched
+         * @return true if condition matched, false while not matched.
+         * >> false if the predicate pred still evaluates to false after 
+         * the rel_time timeout expired, otherwise true.
+         * 
+         * @details blocks the current thread until the condition
+         * variable is woken up or after the specified timeout duration.
          */
         template<class R, class P>
-        bool wait_for(std::chrono::duration<R, P> const &time) {
+        bool wait_for(std::chrono::duration<R, P> const &rel_time) {
             std::unique_lock<std::mutex> lk(_m);
-            return _cv.wait_for(lk, time, _p);
+            return _cv.wait_for(lk, rel_time, _p);
         }
-        const bool ConditionMatched = true;
+        bool wait_for() { return wait_for(std::chrono::hours::max()); }
+        /**
+         * @brief wait_until causes the current thread to block until the
+         * condition variable is notified, a specific time is reached, 
+         * or a spurious wakeup occurs, optionally looping until some 
+         * predicate is satisfied.
+         * @tparam C Clock
+         * @tparam D Duration
+         * @param time 
+         * @return false if the predicate pred still evaluates to false 
+         * after the timeout_time timeout expired, otherwise true. If 
+         * the timeout had already expired, evaluates and returns the 
+         * result of pred.
+         */
+        template<class C, class D>
+        bool wait_until(std::chrono::time_point<C, D> const &timeout_time) {
+            std::unique_lock<std::mutex> lk(_m);
+            return _cv.wait_until(lk, timeout_time, _p);
+        }
+        bool wait_until() { return wait_until(std::chrono::time_point<std::chrono::system_clock>::max()); }
         /**
          * @brief do Setter, and trigger any one of the wating routines
          */
@@ -100,6 +125,7 @@ namespace cmdr::pool {
          * @brief do Setter, trigger and wake up all waiting routines
          */
         void set_for_all() {
+            // cmdr_debug("%s", __FUNCTION_NAME__);
             {
                 std::unique_lock<std::mutex> lk(_m);
                 _s();
@@ -212,25 +238,58 @@ namespace cmdr::pool {
         // }
         bool terminated() const { return val(); }
         /**
+         * @brief wait for Pred condition matched
+         */
+        void wait() {
+            return conditional_wait_for_bool::wait();
+        }
+        /**
          * @brief wait for Pred condition matched, or a timeout arrived.
          * @tparam R 
          * @tparam P 
          * @param time a timeout (std::chrono::duration)
-         * @return true if condition matched, false while not matched
+         * @return true if condition matched, false while not matched.
+         * >> false if the predicate pred still evaluates to false after 
+         * the rel_time timeout expired, otherwise true.
+         * 
+         * @details blocks the current thread until the condition
+         * variable is woken up or after the specified timeout duration.
          */
         template<class R, class P>
-        bool wait_for(std::chrono::duration<R, P> const &time) {
-            return conditional_wait_for_bool::wait_for(time);
+        bool wait_for(std::chrono::duration<R, P> const &rel_time) {
+            return conditional_wait_for_bool::wait_for(rel_time);
+        }
+        bool wait_for() {
+            return wait_for(std::chrono::hours::max());
+        }
+        /**
+         * @brief wait_until causes the current thread to block until the
+         * condition variable is notified, a specific time is reached, 
+         * or a spurious wakeup occurs, optionally looping until some 
+         * predicate is satisfied.
+         * @tparam C Clock
+         * @tparam D Duration
+         * @param time 
+         * @return false if the predicate pred still evaluates to false 
+         * after the timeout_time timeout expired, otherwise true. If 
+         * the timeout had already expired, evaluates and returns the 
+         * result of pred.
+         */
+        template<class C, class D>
+        bool wait_until(std::chrono::time_point<C, D> const &timeout_time) {
+            return conditional_wait_for_bool::wait_until(timeout_time);
+        }
+        bool wait_until() {
+            return wait_until(std::chrono::time_point<std::chrono::system_clock>::max());
         }
         void set() {
-            // cmdr_debug("%s", __FUNCTION_NAME__);
+            // cmdr_trace("%s", __FUNCTION_NAME__);
             conditional_wait_for_bool::set();
         }
         void set_for_all() {
-            // cmdr_debug("%s", __FUNCTION_NAME__);
+            // cmdr_trace("%s", __FUNCTION_NAME__);
             conditional_wait_for_bool::set_for_all();
         }
-
         // void kill() {
         //     bool go{false};
         //     {

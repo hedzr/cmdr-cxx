@@ -55,17 +55,18 @@ namespace cmdr::log {
                 std::printf("%s"
                             "%s %s:"
                             "%s"
-                            " %s  %s:%d "
+                            " %s  %s%s:%d "
                             "%s"
                             "(%s)"
                             "%s"
                             "\n",
-                            fg_light_gray,
+                            clr_magenta_bg_light,
                             time_buf,
                             // _c.dim().s("[debug]").as_string().c_str(),
                             "[debug]",
                             fg_reset_all,
                             buf.data(),
+                            clr_cyan_bg_light,
                             file, line,
                             fg_light_gray, func, fg_reset_all);
             }

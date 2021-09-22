@@ -43,7 +43,7 @@ namespace cmdr::terminal {
                 return "";
             return str;
 #else
-            return ""; // for windows
+            return "";    // for windows
 #endif
         }
 
@@ -830,7 +830,20 @@ namespace cmdr::terminal {
 
     const char *const fg_magenta = "\033[35m";
 
+
+    const char *const clr_magenta_bg_light = "\033[2;35m";
+    
     const char *const fg_cyan = "\033[36m";
+
+    const char *const clr_cyan_bg_light = "\033[2;36m";
+
+
+    const char *const clr_fatal = "\033[1;31m";
+    const char *const clr_error = "\033[0;31m";
+    const char *const clr_warn = "\033[1;33m";
+    const char *const clr_info = "\033[37m";
+    const char *const clr_debug = "\033[2;37m";
+
 
     const char *const fg_light_gray = "\033[37m";
 

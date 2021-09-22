@@ -75,9 +75,9 @@ namespace cmdr::pool {
         const bool ConditionMatched = true;
         /**
          * @brief wait for Pred condition matched, or a timeout arrived.
-         * @tparam R 
-         * @tparam P 
-         * @param time a timeout (std::chrono::duration)
+         * @tparam R _Rep
+         * @tparam P _Period
+         * @param rel_time a timeout (std::chrono::duration)
          * @return true if condition matched, false while not matched.
          * >> false if the predicate pred still evaluates to false after 
          * the rel_time timeout expired, otherwise true.
@@ -98,7 +98,7 @@ namespace cmdr::pool {
          * predicate is satisfied.
          * @tparam C Clock
          * @tparam D Duration
-         * @param time 
+         * @param timeout_time 
          * @return false if the predicate pred still evaluates to false 
          * after the timeout_time timeout expired, otherwise true. If 
          * the timeout had already expired, evaluates and returns the 
@@ -245,9 +245,9 @@ namespace cmdr::pool {
         }
         /**
          * @brief wait for Pred condition matched, or a timeout arrived.
-         * @tparam R 
-         * @tparam P 
-         * @param time a timeout (std::chrono::duration)
+         * @tparam R _Rep
+         * @tparam P _Period
+         * @param rel_time a timeout (std::chrono::duration)
          * @return true if condition matched, false while not matched.
          * >> false if the predicate pred still evaluates to false after 
          * the rel_time timeout expired, otherwise true.
@@ -269,7 +269,7 @@ namespace cmdr::pool {
          * predicate is satisfied.
          * @tparam C Clock
          * @tparam D Duration
-         * @param time 
+         * @param timeout_time 
          * @return false if the predicate pred still evaluates to false 
          * after the timeout_time timeout expired, otherwise true. If 
          * the timeout had already expired, evaluates and returns the 

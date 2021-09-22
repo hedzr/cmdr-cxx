@@ -300,11 +300,18 @@ void test_observer_slots_args() {
     cmdr::util::signal<float, int, bool, std::string> sig;
 
     // connect the slots
-    sig.connect(printer, _1, _2, _3, _4);
+    // sig.connect(printer, _1, _2, _3, _4);
+    // foo ff;
+    // sig.on(&foo::bar, ff, _1, _2, _3, _4);
+    // sig.on(obj(), _1, _2, _3, _4);
+
+    sig.connect(printer);
     foo ff;
-    sig.on(&foo::bar, ff, _1, _2, _3, _4);
-    // sig.on(&foo::bar, ff);
+    // sig.on(sig.bind(&foo::bar, ff));
+    sig.on(&foo::bar, ff);
+    sig.on(&foo::sbar);
     sig.on(obj(), _1, _2, _3, _4);
+    sig.on(obj());
 
     float f = 1.f;
 #ifdef _MSC_VER
@@ -314,7 +321,7 @@ void test_observer_slots_args() {
 #endif
     std::string s = "0";
 
-    // emit a signal
+// emit a signal
 #ifdef _MSC_VER
     sig.emit(std::move(f), std::move(i), false, std::move(s));
     sig.emit(std::move(f), std::move(i), true, std::move(s));

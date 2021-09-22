@@ -35,6 +35,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <cstring> // std::strcmp, ...
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -69,6 +70,7 @@ namespace std {
 
 } // namespace std
 
+// ------------------- arg-count, mem-arg-count, ...
 namespace cmdr::traits {
 
     // https://stackoverflow.com/questions/36797770/get-function-parameters-count
@@ -251,6 +253,7 @@ namespace cmdr::traits {
 
 } // namespace cmdr::traits
 
+// ------------------- iterate, first_of, typelist, tag
 namespace cmdr::traits {
 
     // ---------------------------
@@ -315,6 +318,7 @@ namespace cmdr::traits {
 
 } // namespace cmdr::traits
 
+// ------------------- head_n, drop_from_end
 namespace cmdr::traits {
 
     template<typename... Pack>
@@ -435,6 +439,71 @@ namespace cmdr::traits {
 
 } // namespace cmdr::traits
 
+// -------------------
+namespace hicc::traits {
+
+#if __cplusplus >= 202001
+    namespace detail {
+        template<typename T, auto Start, auto Step, T... Is>
+        constexpr auto make_cons_helper_impl_(std::integer_sequence<T, Is...>) {
+            auto eval_ = [](const T &I) consteval->T { return Start + Step * I; };
+            return std::integer_sequence<T, eval_(Is)...>{};
+        }
+
+        template<typename T, auto Start, auto Count, auto Step>
+        constexpr auto make_cons_impl_() {
+            return make_cons_helper_impl_<T, Start, Step>(std::make_integer_sequence<T, Count>{});
+        }
+    } // namespace detail
+
+    template<std::integral T, auto Start, auto Count, auto Step = 1>
+    using make_consecutive_integer_sequence = decltype(detail::make_cons_impl_<T, Start, Count, Step>());
+
+    template<auto Start, auto Count, auto Step = 1>
+    using make_consecutive_index_sequence = make_consecutive_integer_sequence<std::size_t, Start, Count, Step>;
+
+    template<std::size_t N>
+    using make_first_n_index_sequence = make_consecutive_index_sequence<0, N>;
+
+    template<std::size_t N, std::size_t S>
+    using make_last_n_index_sequence = make_consecutive_index_sequence<S - N, N>;
+
+    template<std::size_t B, std::size_t E>
+    using make_slice_index_sequence = make_consecutive_index_sequence<B, E - B>;
+    template<typename... Ts, std::size_t... Is>
+    constexpr auto get_subpack_by_seq(std::index_sequence<Is...>, Ts &&...args) {
+        return std::make_tuple(std::get<Is>(std::forward_as_tuple(args...))...);
+    }
+
+    template<std::size_t N, typename... Ts>
+    requires(N <= sizeof...(Ts)) constexpr auto head(Ts &&...args) {
+        return get_subpack_by_seq(
+                make_first_n_index_sequence<N>{},
+                std::forward<Ts>(args)...);
+    }
+
+    template<std::size_t N, typename... Ts>
+    requires(N <= sizeof...(Ts)) constexpr auto tail(Ts &&...args) {
+        return get_subpack_by_seq(
+                make_last_n_index_sequence<N, sizeof...(Ts)>{},
+                std::forward<Ts>(args)...);
+    }
+
+    template<std::size_t B, std::size_t E, typename... Ts>
+    requires(B < E && B <= sizeof...(Ts) && E <= sizeof...(Ts)) constexpr auto slice(Ts &&...args) {
+        return get_subpack_by_seq(
+                make_slice_index_sequence<B, E>{},
+                std::forward<Ts>(args)...);
+    }
+
+    static_assert(head<3>(1, 2.0f, "three", '4') == std::make_tuple(1, 2.0f, "three"));
+    static_assert(tail<2>(1, 2.0f, "three", '4') == std::make_tuple("three", '4'));
+    static_assert(slice<1, 3>(1, 2.0f, "three", '4') == std::make_tuple(2.0f, "three"));
+
+#endif // C++20 or later
+} // namespace hicc::traits
+
+// ------------------- light-weight bind
 namespace cmdr::util {
 
     /**
@@ -506,6 +575,7 @@ namespace std {
     struct is_placeholder<cmdr::traits::placeholder<I>> : std::integral_constant<int, I> {};
 } // namespace std
 
+// ------------------- easy_bind, bind_this
 namespace cmdr::util {
     // ------------------- easy bind
     using namespace cmdr::traits;
@@ -535,6 +605,7 @@ namespace cmdr::util {
     }
 } // namespace cmdr::util
 
+// ------------------- get_template_type_t, return_type_of_t
 namespace cmdr::traits {
 
     /**
@@ -592,6 +663,7 @@ namespace cmdr::traits {
 
 } // namespace cmdr::traits
 
+// ------------------- singleton
 namespace cmdr::util {
 
     template<typename T>
@@ -654,6 +726,7 @@ namespace cmdr::util {
 
 #define CMDR_SINGLETON(t) cmdr::util::singleton<t>
 
+// ------------------- defer
 namespace cmdr::util {
 
     /**
@@ -719,6 +792,7 @@ namespace cmdr::util {
 
 } // namespace cmdr::util
 
+// ------------------- visitor
 namespace cmdr::util {
 
     struct base_visitor {
@@ -747,6 +821,7 @@ namespace cmdr::util {
 
 } // namespace cmdr::util
 
+// ------------------- observer
 namespace cmdr::util {
 
     template<typename S>
@@ -977,6 +1052,7 @@ namespace cmdr::util {
 
 } // namespace cmdr::util
 
+// ------------------- detect_shell_env
 namespace cmdr::util {
 
     inline std::string detect_shell_env() {
@@ -990,6 +1066,7 @@ namespace cmdr::util {
 
 } // namespace cmdr::util
 
+// ------------------- is_in
 namespace cmdr::util {
 
     /**

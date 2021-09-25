@@ -3,7 +3,12 @@
 #mark_as_advanced(CMAKE_BACKWARDS_COMPATIBILITY)
 
 # saner control structure syntax
-set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true)
+set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)
+
+# Use the following command-line to write compile_commands.json:
+#     cmake -S . -B build/ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+# Or, we enable it by default:
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 
 # /usr/local/lib/cmake
@@ -23,7 +28,7 @@ endif ()
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
     set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
-            STRING "Choose the type of build." FORCE)
+        STRING "Choose the type of build." FORCE)
 endif ()
 if (NOT CMAKE_CONFIGURATION_TYPES)
     # Set the possible values of build type for cmake-gui
@@ -35,12 +40,12 @@ endif ()
 if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT WIN32)
     # In non-win32 debug build, debug_malloc is on by default
     option(USE_DEBUG_MALLOC "Building with memory leak detection capability." ON)
-    option(DEBUG "Building with DEBUG Mode" ON)
+    option(USE_DEBUG "Building with DEBUG Mode" ON)
     set(CMAKE_BUILD_NAME "dbg" CACHE STRING "" FORCE)
 else ()
     # In win32 or non-debug builds, debug_malloc is off by default
     option(USE_DEBUG_MALLOC "Building with memory leak detection capability." OFF)
-    option(DEBUG "Building with NON-DEBUG Mode" OFF)
+    option(USE_DEBUG "Building with NON-DEBUG Mode" OFF)
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
         set(CMAKE_BUILD_NAME "dbg" CACHE STRING "" FORCE)
         set(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "" FORCE)
@@ -55,6 +60,7 @@ else ()
         set(CMAKE_RELWITHDEBINFO_POSTFIX "" CACHE STRING "" FORCE)
     endif ()
 endif ()
+message(STATUS "USE_DEBUG_MALLOC = ${USE_DEBUG_MALLOC} ...")
 mark_as_advanced(CMAKE_BUILD_NAME)
 
 
@@ -68,7 +74,7 @@ mark_as_advanced(CMAKE_BUILD_NAME)
 # ############################## for compiling
 
 #
-# CPU bits
+# CCache
 #
 
 option(ENABLE_CCACHE "enable ccache optimizations" ON)
@@ -81,22 +87,6 @@ if (ENABLE_CCACHE)
     endif ()
 endif ()
 
-#
-# CPU bits
-#
-
-if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
-    set(CPU_ARCH "x64" CACHE STRING "ARCH x86_64" FORCE)
-    #set(CPU_ARCH_NAME "x86_64" CACHE STRING "ARCH x86_64" FORCE)
-    set(CPU_ARCH_NAME "amd64" CACHE STRING "ARCH x86_64" FORCE)
-else ()
-    set(CPU_ARCH "x86" CACHE STRING "ARCH x86" FORCE)
-    set(CPU_ARCH_NAME "x86" CACHE STRING "ARCH x86_64" FORCE)
-endif ()
-
-
-option(ENABLE_CMDR_CLI_APP "Enable cmdr cli app" ON)
-
 
 # ############################## for testing
 set(ENV{CTEST_OUTPUT_ON_FAILURE} 1)
@@ -104,7 +94,7 @@ set_property(GLOBAL PROPERTY UNIT_TEST_TARGETS)
 mark_as_advanced(UNIT_TEST_TARGETS)
 #
 option(ENABLE_TESTS "Enable tests" ON)
-option(ENABLE_AUTOMATE_TESTS "Enable automated tests at local" ON)
+option(ENABLE_AUTOMATE_TESTS "Enable automated tests at local" OFF)
 if ($ENV{CI_RUNNING})
     set(ENABLE_AUTOMATE_TESTS OFF)
 endif ()
@@ -117,7 +107,7 @@ endif ()
 #include(GNUInstallDirs)
 
 
-if ((CMAKE_VERBOSE_DEBUG AND DEBUG) OR ($ENV{CI_RUNNING}))
+if ((CMAKE_VERBOSE_DEBUG AND USE_DEBUG) OR ($ENV{CI_RUNNING}))
     # Enable verbose output from Makefile builds.
     # This variable is a cache entry initialized (to FALSE) by the project() command.
     # Users may enable the option in their local build tree to get more verbose
@@ -141,13 +131,15 @@ if (USE_CCACHE)
         message(STATUS "ccache found and enabled")
         set(CMAKE_C_COMPILER_LAUNCHER ${CCACHE})
         set(CMAKE_CXX_COMPILER_LAUNCHER ${CCACHE})
-    else()
+    else ()
         message(WARNING "ccache enabled, but not found")
-    endif()
-else()
+    endif ()
+else ()
     message(STATUS "ccache disabled")
-endif()
+endif ()
 
+
+# option(ENABLE_CMDR_CLI_APP "Enable hicc cli app" ON)
 
 # ############################## include .options.cmake
 include(options)

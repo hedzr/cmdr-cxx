@@ -17,6 +17,10 @@ if (DEFINED xVERSION_IN)
 else ()
     set(xVERSION_IN ${CMAKE_SOURCE_DIR}/${CMAKE_SCRIPTS}/version.h.in)
 endif ()
+if (DEFINED xCONFIG_BASE_IN)
+else ()
+    set(xCONFIG_BASE_IN ${CMAKE_SOURCE_DIR}/${CMAKE_SCRIPTS}/config-base.h.in)
+endif ()
 message("Using version.in file: ${xVERSION_IN}, ARCHIVE_NAME = ${ARCHIVE_NAME}")
 
 if (EXISTS "${CMAKE_SOURCE_DIR}/.git")
@@ -63,6 +67,15 @@ if (EXISTS ${xVERSION_IN})
     message(STATUS "Generated: ${CMAKE_GENERATED_DIR}/${VERSION_H_NAME}")
 endif ()
 
+
+if (EXISTS ${xCONFIG_BASE_IN})
+    message(STATUS "Generating config-base.h from ${xCONFIG_BASE_IN} to ${CMAKE_GENERATED_DIR} - Version ${PROJECT_VERSION}...")
+    configure_file(
+            ${xCONFIG_BASE_IN}
+            ${CMAKE_GENERATED_DIR}/cmdr-config-base.hh
+    )
+    message(STATUS "Generated: ${CMAKE_GENERATED_DIR}/cmdr-config-base.hh")
+endif ()
 
 
 

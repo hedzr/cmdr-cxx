@@ -30,18 +30,18 @@ else ()
     message("> ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} FOUND")
 endif ()
 
-if (DEBUG AND MINGW)
+if (USE_DEBUG AND MINGW)
     add_link_options(--allow-multiple-definition)
 endif ()
 
-if (DEBUG)
+if (USE_DEBUG)
     add_compile_options(-D_DEBUG -DDEBUG=1)
 else ()
     add_compile_options(-DNDEBUG=1)
 endif ()
 
-if (DEBUG)
-    add_compile_options(-DUSE_DEBUG_MALLOC=${USE_DEBUG_MALLOC})
+if (USE_DEBUG)
+    #add_compile_options(-DUSE_DEBUG_MALLOC=${USE_DEBUG_MALLOC})
 
     # enable google sanitizer
     # add_compile_options(-fsanitize=[sanitizer_name] [additional_options] [-g] [-OX])

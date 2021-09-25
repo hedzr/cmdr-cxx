@@ -45,6 +45,8 @@
 // ## version info
 
 #include "cmdr-version.hh"
+#include "cmdr-config-base.hh"
+
 
 // ## all headers ...
 

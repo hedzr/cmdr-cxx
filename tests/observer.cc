@@ -36,6 +36,11 @@
 
 #include <math.h>
 
+
+#include "cmdr-version.hh"
+#include "cmdr-config-base.hh"
+
+
 #include "cmdr11/cmdr_defs.hh"
 #include "cmdr11/cmdr_utils.hh"
 #include "cmdr11/cmdr_var_t.hh"

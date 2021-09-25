@@ -232,6 +232,11 @@ install(FILES
         ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
 
 install(FILES
+        ${CMAKE_BINARY_DIR}/generated/cmdr-config-base.hh
+        DESTINATION
+        ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
+
+install(FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/include/cmdr-cxx.hh
         DESTINATION
         ${CMAKE_INSTALL_INCLUDEDIR})

@@ -146,6 +146,16 @@ cd cmdr-cxx
 cmake -S . -B build
 cmake --build build
 cmake --install build
+cmake --install build/
+# Or:
+#   cmake --build build/ --target install
+#
+# Sometimes sudo it:
+#   sudo cmake --build build/ --target install
+# Or:
+#   cmake --install build/ --prefix ./install --strip
+#   sudo cp -R ./install/include/* /usr/local/include/
+#   sudo cp -R ./install/lib/cmake/cmdr11 /usr/local/lib/cmake/
 cd ..
 rm -rf cmdr-cxx
 ```

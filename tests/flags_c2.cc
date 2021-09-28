@@ -155,7 +155,7 @@ TEST_CASE("flags test", "[flags]") {
         std::cout << "cli.get_for_cli(\"main.string-array\"): " << t1 << '\n';
         auto v1 = t1.as<std::vector<const char *>>();
         auto v2 = std::vector{"a", "Z"};
-        REQUIRE(compare_vector_values(v1, v2));
+        REQUIRE(cmdr::util::compare_vector_values(v1, v2));
         REQUIRE(cli.get_for_cli("no-color").as<bool>());
     }
 

@@ -274,6 +274,47 @@ inline void UNUSED([[maybe_unused]] Args &&...args) {
 //
 
 
+#ifndef __named
+/**
+ * @brief To partially simulate the labeled loop feature found in other languages
+ * @details For example:
+ * @code{c++}
+ * struct test {
+ *   std::string str;
+ *   test (std::string s) : str(s) { 
+ *     std::cout &lt;&lt; "test::test()::" &lt;&lt; str &lt;&lt; "\n"; 
+ *   }
+ *   ~test () { 
+ *     std::cout &lt;&lt; "~test::" &lt;&lt; str &lt;&lt; "\n"; 
+ *   }
+ * };
+ * 
+ * int main(void) {
+ *   __named (outer) 
+ *   for (int i = 0; i &lt; 10; i++) {
+ *     test t1("t1");
+ *     int j = 0;
+ *     __named(inner)
+ *     for (test t2("t2"); j &lt; 5; j++) {
+ *       test t3("t3");
+ *       if (j == 1) __break(outer);
+ *       if (j == 3) __break(inner);
+ *       test t4("t4");
+ *     }
+ *     std::cout &lt;&lt; "after inner\n";
+ *   }
+ *   return 0;
+ * }
+ * @endcode
+ */
+#define __named(blockname) \
+    goto blockname;        \
+    blockname##_skip : if (0) blockname:
+
+#define __break(blockname) goto blockname##_skip
+#endif
+
+
 #if defined(__has_builtin)
 #define HAS_BUILTIN(...) __has_builtin(__VA_ARGS__)
 #else

@@ -1134,19 +1134,212 @@ namespace cmdr::util {
 
 } // namespace cmdr::util
 
-template<class T>
-inline bool compare_vector_values(std::vector<T> const &v1, std::vector<T> const &v2) {
-    bool not_ok = false;
-    if (v1.size() == v2.size()) {
-        for (std::size_t i = 0; i < v1.size(); i++) {
-            if (std::strcmp(v1[i], v2[i]) != 0) {
-                not_ok = true;
-                break;
+namespace cmdr::util {
+    template<class T>
+    inline bool compare_vector_values(std::vector<T> const &v1, std::vector<T> const &v2) {
+        bool not_ok = false;
+        if (v1.size() == v2.size()) {
+            for (std::size_t i = 0; i < v1.size(); i++) {
+                if (std::strcmp(v1[i], v2[i]) != 0) {
+                    not_ok = true;
+                    break;
+                }
             }
+        } else
+            not_ok = true;
+        return (not_ok == false);
+    }
+} // namespace cmdr::util
+
+// ------------------- safe_bool
+namespace cmdr {
+    class safe_bool_base {
+    public:
+        typedef void (safe_bool_base::*bool_type)() const;
+        void this_type_does_not_support_comparisons() const {}
+
+    protected:
+        safe_bool_base() {}
+        safe_bool_base(const safe_bool_base &) {}
+        safe_bool_base &operator=(const safe_bool_base &) { return *this; }
+        ~safe_bool_base() {}
+    };
+
+    // For testability without virtual function.
+    /**
+     * @brief 
+     * @tparam T 
+     * @note For C++11 or later, use explicit keyword, for instance:
+     * @code{c++}
+     * struct Testable {
+     *   explicit operator bool() const {
+     *     return false;
+     *   }
+     * };
+     * @endcode
+     * @details For example:
+     * @code{c++}
+     * #include <iostream>
+     * 
+     * class Testable_with_virtual : public safe_bool&lt;&gt; {
+     * public:
+     *     virtual ~Testable_with_virtual () {}
+     * protected:
+     *     virtual bool boolean_test() const {
+     *         // Perform Boolean logic here
+     *         return true;
+     *     }
+     * };
+     * 
+     * class Testable_without_virtual : 
+     *     public safe_bool &lt;Testable_without_virtual&gt; // CRTP idiom
+     * {
+     * public:
+     *     bool boolean_test() const { // NOT virtual
+     *         // Perform Boolean logic here
+     *         return false;
+     *     }
+     * };
+     * 
+     * int main (void) {
+     *     Testable_with_virtual t1, t2;
+     *     Testable_without_virtual p1, p2;
+     *     if (t1) {}
+     *     if (p1 == false) {
+     *         std::cout &lt;&lt; "p1 == false\n";
+     *     }
+     *     if (p1 == p2) {} // Does not compile, as expected
+     *     if (t1 != t2) {} // Does not compile, as expected
+     * 
+     *     return 0;
+     * }
+     * @endcode
+     */
+    template<typename T = void>
+    class safe_bool : private safe_bool_base {
+        // private or protected inheritance is very important here as it triggers the
+        // access control violation in main.
+    public:
+        operator bool_type() const {
+            return (static_cast<const T *>(this))->boolean_test()
+                           ? &safe_bool_base::this_type_does_not_support_comparisons
+                           : 0;
         }
-    } else
-        not_ok = true;
-    return (not_ok == false);
-}
+
+    protected:
+        ~safe_bool() {}
+    };
+
+
+    // For testability with a virtual function.
+    template<>
+    class safe_bool<void> : private safe_bool_base {
+        // private or protected inheritance is very important here as it triggers the
+        // access control violation in main.
+    public:
+        operator bool_type() const {
+            return boolean_test()
+                           ? &safe_bool_base::this_type_does_not_support_comparisons
+                           : 0;
+        }
+
+    protected:
+        virtual bool boolean_test() const = 0;
+        virtual ~safe_bool() {}
+    };
+
+    template<typename T>
+    bool operator==(const safe_bool<T> &lhs, bool b) {
+        return b == static_cast<bool>(lhs);
+    }
+
+    template<typename T>
+    bool operator==(bool b, const safe_bool<T> &rhs) {
+        return b == static_cast<bool>(rhs);
+    }
+
+
+    template<typename T, typename U>
+    bool operator==(const safe_bool<T> &lhs, const safe_bool<U> &rhs) {
+        lhs.this_type_does_not_support_comparisons();
+        return false;
+    }
+
+    template<typename T, typename U>
+    bool operator!=(const safe_bool<T> &lhs, const safe_bool<U> &rhs) {
+        lhs.this_type_does_not_support_comparisons();
+        return false;
+    }
+} // namespace cmdr
+
+// ------------------- heap_only, no_heap
+namespace cmdr {
+
+    template<typename T>
+    class heap_only {
+    public:
+        heap_only() {}
+
+        void destroy() const { delete this; }
+        static T *create() { return new T{}; }
+
+    protected:
+        ~heap_only() {}
+    };
+
+    class VO : public heap_only<VO> {
+    public:
+        ~VO() {}
+    };
+
+    class no_heap {
+    protected:
+        static void *operator new(std::size_t);   // #1: To prevent allocation of scalar objects
+        static void *operator new[](std::size_t); // #2: To prevent allocation of array of objects
+    };
+
+} // namespace cmdr
+
+// ------------------- non_copyable
+namespace cmdr {
+
+    /**
+     * @brief To prevent objects of a class from being copy-constructed or assigned to each other.
+     * @code{c++}
+     * class cant_copy : private non_copyable<cant_copy> {};
+     * @endcode
+     * @see macro CLAZZ_NON_COPYABLE(clz) and CLAZZ_NON_MOVEABLE(clz)
+     */
+    template<class T>
+    class non_copyable {
+    public:
+        non_copyable(const non_copyable &) = delete;
+        // non_copyable &operator=(const non_copyable &) = delete;
+        T &operator=(const T &) = delete;
+
+    protected:
+        non_copyable() = default;
+        ~non_copyable() = default; /// Protected non-virtual destructor
+    };
+
+    /**
+     * @brief To prevent RVO or pass-and-copy value as function parameter
+     * @code{c++}
+     * no_implicit_copy foo() { // Compiler error because copy-constructor must be invoked implicitly to return by value.
+     *     no_implicit_copy n;
+     *     return n;
+     * }
+     * 
+     * void bar(no_implicit_copy n) { // Compiler error because copy-constructor must be invoked implicitly to pass by value.
+     * }
+     * @endcode
+     */
+    struct no_implicit_copy {
+        no_implicit_copy() = default;
+        explicit no_implicit_copy(const no_implicit_copy &) = default;
+    };
+
+} // namespace cmdr
+
 
 #endif //CMDR_CXX_CMDR_COMMON_HH

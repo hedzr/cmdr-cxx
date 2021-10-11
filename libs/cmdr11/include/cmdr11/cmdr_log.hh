@@ -8,7 +8,7 @@
 #include "cmdr_defs.hh"
 
 #include "cmdr_terminal.hh"
-#include "cmdr_utils.hh"
+#include "cmdr_common.hh"
 
 #include <cstdarg>
 #include <cstdio>

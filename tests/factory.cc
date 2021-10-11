@@ -2,11 +2,14 @@
 // Created by Hedzr Yeh on 2021/8/24.
 //
 
-#include "cmdr11/cmdr_dbg.hh"
 #include "cmdr11/cmdr_defs.hh"
+
+#include "cmdr11/cmdr_common.hh"
+#include "cmdr11/cmdr_dbg.hh"
 #include "cmdr11/cmdr_log.hh"
 #include "cmdr11/cmdr_pipeable.hh"
 #include "cmdr11/cmdr_pool.hh"
+#include "cmdr11/cmdr_utils.hh"
 #include "cmdr11/cmdr_x_class.hh"
 #include "cmdr11/cmdr_x_test.hh"
 
@@ -330,6 +333,6 @@ int main() {
     CMDR_TEST_FOR(test_factory_abstract);
 
     std::cout << "Compiler: " << cmdr::cross::kCompilerName << '\n';
-    
+
     return 0;
 }

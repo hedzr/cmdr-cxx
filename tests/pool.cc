@@ -53,12 +53,12 @@ struct BoldPen {
 };
 
 template<class PenPolicy>
-        class Writer : private PenPolicy {
-        public:
-            void StartWriting() {
-                PenPolicy::Write();
-            }
-        };
+class Writer : private PenPolicy {
+public:
+    void StartWriting() {
+        PenPolicy::Write();
+    }
+};
 
 void test_policy_1() {
     Writer<InkPen> writer;
@@ -187,7 +187,7 @@ void test_cv() {
         }
         std::cout << "wait for cv" << '\n';
         cv.wait(); // waiting for all threads ended.
-        
+
         std::cout << "end of cv test, join ..." << '\n';
         for (auto it = waits.begin(); it != waits.end(); it++) {
             auto &t = (*it);
@@ -217,15 +217,15 @@ void foo() {
 void test_thread_basics() {
     std::thread t;
     std::cout << "- before starting, joinable: " << std::boolalpha << t.joinable()
-    << '\n';
+              << '\n';
 
     t = std::thread(foo);
     std::cout << "- after starting, joinable: " << t.joinable() << ", id: " << t.get_id()
-    << '\n';
+              << '\n';
 
     t.join();
     std::cout << "- after joining, joinable: " << t.joinable()
-    << '\n';
+              << '\n';
 }
 
 void test_pool() {
@@ -258,6 +258,12 @@ void test_pool() {
     std::cout << "_tasks ended\n";
 }
 
+void test_pool_x() {
+    cmdr::pool::thread_pool_lite pool(5);
+    auto result = pool.enqueue([](int answer) { return answer; }, 42);
+    std::cout << result.get() << std::endl;
+}
+
 int main() {
     // {
     //     unsigned int n = std::thread::hardware_concurrency();
@@ -273,9 +279,10 @@ int main() {
 
     CMDR_TEST_FOR(test_cv_0);
     // CMDR_TEST_FOR(test_cv_1);
-    
-    CMDR_TEST_FOR(test_pool);
 
     CMDR_TEST_FOR(test_mq);
 
+    CMDR_TEST_FOR(test_pool);
+
+    CMDR_TEST_FOR(test_pool_x);
 }

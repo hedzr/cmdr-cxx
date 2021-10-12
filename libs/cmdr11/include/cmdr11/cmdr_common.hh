@@ -662,26 +662,25 @@ namespace cmdr::util::cool {
 
     template<class T, typename... Args>
     using can_invoke_t = decltype(std::declval<T>()(std::declval<Args>()...));
-    
+
     template<typename T, typename... Args>
     using can_invoke = is_detected<can_invoke_t, T, Args...>;
 
-    template <typename F, typename...Arguments>
+    template<typename F, typename... Arguments>
     struct curry_t {
-        template <typename...Args>
-        constexpr decltype(auto) operator()(Args&&...a)  const {
-            curry_t<F, Arguments..., Args...> cur = { f_,
-                                                     std::tuple_cat(args_, std::make_tuple(std::forward<Args>(a)...)) };
+        template<typename... Args>
+        constexpr decltype(auto) operator()(Args &&...a) const {
+            curry_t<F, Arguments..., Args...> cur = {f_,
+                                                     std::tuple_cat(args_, std::make_tuple(std::forward<Args>(a)...))};
 
             if constexpr (!can_invoke<F, Arguments..., Args...>::value) {
                 return cur;
-            }
-            else {
+            } else {
                 return cur();
             }
         }
 
-        constexpr decltype(auto) operator () () const {
+        constexpr decltype(auto) operator()() const {
             return std::apply(f_, args_);
         }
 
@@ -690,10 +689,10 @@ namespace cmdr::util::cool {
     };
 
     template<typename F>
-    constexpr curry_t<F> curry(F&& f) {
-        return { std::forward<F>(f) };
+    constexpr curry_t<F> curry(F &&f) {
+        return {std::forward<F>(f)};
     }
-}
+} // namespace cmdr::util::cool
 
 // ------------------- cool::bind_tie
 namespace cmdr::util::cool {
@@ -742,7 +741,7 @@ namespace cmdr::util::cool {
 } // namespace cmdr::util::cool
 
 // ------------------- cool::lock_guard
-namespace fsm_cxx::util::cool {
+namespace cmdr::util::cool {
     template<typename _Mutex>
     class lock_guard {
     public:
@@ -761,7 +760,7 @@ namespace fsm_cxx::util::cool {
         void lock() {}
         void unlock() {}
     };
-} // namespace fsm_cxx::util::cool
+} // namespace cmdr::util::cool
 
 // ------------------- get_template_type_t, return_type_of_t
 namespace cmdr::traits {

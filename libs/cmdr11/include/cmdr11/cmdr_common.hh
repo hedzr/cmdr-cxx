@@ -606,6 +606,50 @@ namespace cmdr::util {
     }
 } // namespace cmdr::util
 
+// ------------------- partial_t & partial
+namespace cmdr::util::cool {
+    template<typename F, typename... Args>
+    class partial_t {
+    public:
+        constexpr partial_t(F &&f, Args &&...args)
+            : f_(std::forward<F>(f))
+            , args_(std::forward_as_tuple(args...)) {
+        }
+
+        template<typename... RestArgs>
+        constexpr decltype(auto) operator()(RestArgs &&...rest_args) {
+            return std::apply(f_, std::tuple_cat(args_,
+                                                 std::forward_as_tuple(std::forward<RestArgs>(rest_args)...)));
+        }
+
+    private:
+        F f_;
+        std::tuple<Args...> args_;
+    };
+
+    /**
+     * @brief partial bind version of std::bind
+     * @tparam Fn 
+     * @tparam Args 
+     * @param fn 
+     * @param args 
+     * @return 
+     * @details For example:
+     * @code{c++}
+     * auto f = partial(test, 5, 3);
+     * std::cout << f(7) << '\n';
+     * 
+     * std::cout << partial(test)(5, 3, 7) << '\n';
+     * std::cout << partial(test, 5)(3, 7) << '\n';
+     * std::cout << partial(test, 5, 3)(7) << '\n';
+     * @endcode
+     */
+    template<typename Fn, typename... Args>
+    constexpr decltype(auto) partial(Fn &&fn, Args &&...args) {
+        return partial_t<Fn, Args...>(std::forward<Fn>(fn), std::forward<Args>(args)...);
+    }
+} // namespace cmdr::util::cool
+
 // ------------------- cool::bind_tie
 namespace cmdr::util::cool {
 

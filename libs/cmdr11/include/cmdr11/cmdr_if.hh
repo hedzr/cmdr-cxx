@@ -33,6 +33,8 @@
 #include <string>
 
 
+#if !defined(__TRAITS_VOIT_T_DEFINED)
+#define __TRAITS_VOIT_T_DEFINED
 // ------------------------- void_t
 namespace cmdr::traits {
 #if (__cplusplus > 201402L)
@@ -47,8 +49,11 @@ namespace cmdr::traits {
     using void_t = typename make_void<T...>::type;
 #endif
 } // namespace cmdr::traits
+#endif // __TRAITS_VOIT_T_DEFINED
 
 
+#if !defined(__TRAITS_IS_DETECTED_DEFINED)
+#define __TRAITS_IS_DETECTED_DEFINED
 // ------------------------- is_detected
 namespace cmdr::traits {
     template<class, template<class> class, class = void_t<>>
@@ -108,8 +113,6 @@ namespace cmdr::traits {
     template<template<class...> class Op, class... Args>
     constexpr bool is_detected_v = is_detected<Op, Args...>::value;
 
-#define __TRAITS_IS_DETECTED_DEFINED
-
     template<class T, template<class...> class Op, class... Args>
     using is_detected_exact = std::is_same<T, detected_t<Op, Args...>>;
 
@@ -145,6 +148,7 @@ namespace cmdr::traits {
 #endif
 
 } // namespace cmdr::traits
+#endif // __TRAITS_IS_DETECTED_DEFINED
 
 
 // ------------------------- has_string
@@ -280,18 +284,22 @@ namespace cmdr::traits {
     // template<class T, class Index = std::size_t>
     // constexpr bool has_op_subscript<T, void_t<subscript_t<T,Index>>>{true};
 
+#if !defined(__GNUC__) // gcc 10.x failed, 11.x ok,
     template<typename T, typename Ret, typename Index>
     using subscript_t = std::integral_constant < Ret (T::*)(Index),
           &T::operator[]>;
-
+    
     template<typename T, typename Ret, typename Index>
-    using has_subscript = is_detected<subscript_t, T, Ret, Index>;
+    using has_subscript = std::experimental::is_detected<subscript_t, T, Ret, Index>;
 
     template<typename T, typename Ret, typename Index>
     constexpr bool has_subscript_v = has_subscript<T, Ret, Index>::value;
 
-    static_assert(has_subscript<std::vector<int>, int &, std::size_t>::value);
+#if !defined(__GNUC__) // gcc 10.x failed, 11.x ok,
+    static_assert(has_subscript<std::vector<int>, int &, size_t>::value == true);
+#endif
     static_assert(!has_subscript<std::vector<int>, int &, int>::value);
+#endif
 
 
     // template <typename T, typename = void>

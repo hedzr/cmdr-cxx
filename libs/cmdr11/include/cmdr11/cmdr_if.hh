@@ -5,9 +5,6 @@
 #ifndef _PRIVATE_VAR_FOLDERS_0K_1RQY3K4X7_5B_73SW5PY2BW00000GN_T_CLION_CLANG_TIDY_CMDR_IF_HH
 #define _PRIVATE_VAR_FOLDERS_0K_1RQY3K4X7_5B_73SW5PY2BW00000GN_T_CLION_CLANG_TIDY_CMDR_IF_HH
 
-#include <list>
-#include <vector>
-
 #include <type_traits>
 
 #if (__cplusplus > 201402L)
@@ -17,20 +14,21 @@
 #include <chrono>
 #include <deque>
 #include <forward_list>
+#include <list>
 #include <map>
 #include <queue>
 #include <set>
 #include <stack>
 #include <string>
 #include <tuple>
-#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
-#include <utility>
+#include <vector>
 
 #include <cstdlib>
 #include <memory>
 #include <string>
+#include <utility>
 
 
 #if !defined(__TRAITS_VOIT_T_DEFINED)
@@ -288,7 +286,7 @@ namespace cmdr::traits {
     template<typename T, typename Ret, typename Index>
     using subscript_t = std::integral_constant < Ret (T::*)(Index),
           &T::operator[]>;
-    
+
     template<typename T, typename Ret, typename Index>
     using has_subscript = std::experimental::is_detected<subscript_t, T, Ret, Index>;
 
@@ -399,15 +397,40 @@ namespace cmdr::traits {
     template<typename T>
     constexpr bool has_emplace_v = has_emplace<T>::value;
 
-    template<typename T, typename = void>
-    struct has_emplace_variadic : std::false_type {};
+    // template<typename T, typename = void>
+    // struct has_emplace_variadic : std::false_type {};
+    //
+    // /**
+    //  * @brief not yet!!
+    //  * @tparam T
+    //  */
+    // template<typename T>
+    // struct has_emplace_variadic<T, void_t<decltype(std::declval<T>().emplace(std::declval<typename T::value_type>()))>> : std::true_type {};
 
+
+    template<class T, typename... Arguments>
+    using emplace_variadic_t = std::conditional_t<
+            true,
+            decltype(std::declval<T>().emplace(std::declval<Arguments>()...)),
+            std::integral_constant<
+                    decltype(std::declval<T>().emplace(std::declval<Arguments>()...)) (T::*)(Arguments...),
+                    &T::emplace>>;
     /**
-     * @brief not yet!!
+     * @brief test member function `emplace()` with variadic params
      * @tparam T 
+     * @tparam Arguments 
+     * @details For example:
+     * @code{c++}
+     * using C = std::list&lt;int>;
+     * static_assert(has_emplace_variadic_v&lt;C, C::const_iterator, int &&>);
+     * @endcode
      */
-    template<typename T>
-    struct has_emplace_variadic<T, void_t<decltype(std::declval<T>().emplace(std::declval<typename T::value_type>()))>> : std::true_type {};
+    template<class T, typename... Arguments>
+    constexpr bool has_emplace_variadic_v = is_detected_v<emplace_variadic_t, T, Arguments...>;
+    namespace detail {
+        using C = std::list<int>;
+        static_assert(has_emplace_variadic_v<C, C::const_iterator, int &&>);
+    } // namespace detail
 
 
     //

@@ -282,13 +282,13 @@ namespace cmdr::traits {
     // template<class T, class Index = std::size_t>
     // constexpr bool has_op_subscript<T, void_t<subscript_t<T,Index>>>{true};
 
-#if !defined(__GNUC__) // gcc 10.x failed, 11.x ok,
+#if defined(__clang__) // gcc 10.x failed, 11.x ok; msvc failed;
     template<typename T, typename Ret, typename Index>
     using subscript_t = std::integral_constant < Ret (T::*)(Index),
           &T::operator[]>;
 
     template<typename T, typename Ret, typename Index>
-    using has_subscript = std::experimental::is_detected<subscript_t, T, Ret, Index>;
+    using has_subscript = is_detected<subscript_t, T, Ret, Index>;
 
     template<typename T, typename Ret, typename Index>
     constexpr bool has_subscript_v = has_subscript<T, Ret, Index>::value;

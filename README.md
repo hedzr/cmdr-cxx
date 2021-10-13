@@ -4,7 +4,9 @@
 ![CMake Build Matrix](https://github.com/hedzr/cmdr-cxx/workflows/CMake%20Build%20Matrix/badge.svg?event=release) 
 --> [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/hedzr/cmdr-cxx.svg?label=release)](https://github.com/hedzr/cmdr-cxx/releases)
 
-`cmdr-cxx` ^pre-release^ is a *header-only* command-line arguments parser in **C++17** and higher. As a member of #cmdr series, it provides a fully-functional `Option Store` for your hierarchical configuration data.
+`cmdr-cxx` ^pre-release^ is a C++17 *header-only* command-line arguments parser and application framework. As a member of [#cmdr series](https://github.com/topics/cmdr), it provides a fully-functional `Option Store` for your hierarchical configuration data.
+
+See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 
 <img width="914" alt="image-20210221210442215" src="https://user-images.githubusercontent.com/12786150/108625941-8fb04400-7488-11eb-8403-afc79825745c.png">
 
@@ -99,9 +101,7 @@
 ### CXX 17 Compilers:
 
 - gcc 10+: passed
-
 - clang 12+: passed
-
 - msvc build tool 16.7.2, 16.8.5 (VS2019 or Build Tool) passed
 
 
@@ -114,7 +114,7 @@
 
 ### Bonus
 
-- golang: [cmdr](https:://github.com/hedzr/cmdr)
+- golang: [cmdr](https://github.com/hedzr/cmdr)
 - .netCore: [Cmdr.Core](https://github.com/hedzr/Cmdr.Core)
 
 
@@ -143,9 +143,8 @@ You could install cmdr-cxx manually:
 ```bash
 git clone https://github.com/hedzr/cmdr-cxx.git
 cd cmdr-cxx
-cmake -S . -B build
-cmake --build build
-cmake --install build
+cmake -S . -B build/
+cmake --build build/
 cmake --install build/
 # Or:
 #   cmake --build build/ --target install

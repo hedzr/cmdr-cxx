@@ -213,6 +213,7 @@ namespace cmdr::util::factory {
 
     /**
      * @brief a factory template class
+     * @tparam unique 
      * @tparam product_base 
      * @tparam products 
      * @see https://hedzr.com/c++/algorithm/cxx17-factory-pattern/
@@ -232,9 +233,10 @@ namespace cmdr::util::factory {
             T data;
         };
         using named_products = std::tuple<clz_name_t<products>...>;
+        // using _T = typename std::conditional<unique, std::unique_ptr<product_base>, std::shared_ptr<product_base>>::type;
 
         template<typename... Args>
-        static std::unique_ptr<product_base> create_unique_ptr(const string &id, Args &&...args) {
+        static auto create(const string &id, Args &&...args) {
             std::unique_ptr<product_base> result{};
 
             std::apply([](auto &&...it) {
@@ -249,8 +251,17 @@ namespace cmdr::util::factory {
             return result;
         }
         template<typename... Args>
-        static product_base *create(const string &id, Args &&...args) {
-            return create_unique_ptr(id, args...).release();
+        static std::shared_ptr<product_base> make_shared(const string &id, Args &&...args) {
+            std::shared_ptr<product_base> ptr = create(id, args...);
+            return ptr;
+        }
+        template<typename... Args>
+        static std::unique_ptr<product_base> make_unique(const string &id, Args &&...args) {
+            return create(id, args...);
+        }
+        template<typename... Args>
+        static product_base *create_nacked_ptr(const string &id, Args &&...args) {
+            return create(id, args...).release();
         }
 
     private:

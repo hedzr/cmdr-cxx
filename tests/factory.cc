@@ -130,10 +130,10 @@ void test_factory() {
     // cmdr_print("Point2D = %p", pp.get());
 
     using shape_factory = fct::factory<tmp1::Point, tmp1::Point2D, tmp1::Point3D>;
-    auto *ptr = shape_factory::create("tmp1::Point2D");
-    cmdr_print("shape_factory: Point2D = %p, %s", ptr, ptr->name());
+    auto ptr = shape_factory::create("tmp1::Point2D");
+    cmdr_print("shape_factory: Point2D = %p, %s", ptr.get(), ptr->name());
     ptr = shape_factory::create("tmp1::Point3D");
-    cmdr_print("shape_factory: Point3D = %p, %s", ptr, ptr->name());
+    cmdr_print("shape_factory: Point3D = %p, %s", ptr.get(), ptr->name());
 
     std::unique_ptr<tmp1::Point> smt = std::make_unique<tmp1::Point3D>();
     cmdr_print("name = %s", smt->name()); // ok

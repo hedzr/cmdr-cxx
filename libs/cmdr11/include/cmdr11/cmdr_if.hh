@@ -254,7 +254,7 @@ namespace cmdr::traits {
      * @endcode
      */
     template<typename T>
-    constexpr bool has_begin_v = has_begin<T>::value;
+    constexpr inline bool has_begin_v = has_begin<T>::value;
 
     template<typename T, typename = void>
     struct has_end : std::false_type {};
@@ -263,7 +263,7 @@ namespace cmdr::traits {
     struct has_end<T, decltype(void(std::declval<T &>().end()))> : std::true_type {};
 
     template<typename T>
-    constexpr bool has_end_v = has_end<T>::value;
+    constexpr inline bool has_end_v = has_end<T>::value;
 
 
     /**
@@ -291,7 +291,7 @@ namespace cmdr::traits {
     using has_subscript = is_detected<subscript_t, T, Ret, Index>;
 
     template<typename T, typename Ret, typename Index>
-    constexpr bool has_subscript_v = has_subscript<T, Ret, Index>::value;
+    constexpr inline bool has_subscript_v = has_subscript<T, Ret, Index>::value;
 
 #if !defined(__GNUC__) // gcc 10.x failed, 11.x ok,
     static_assert(has_subscript<std::vector<int>, int &, size_t>::value == true);
@@ -342,17 +342,17 @@ namespace cmdr::traits {
     // constexpr bool has_toString = std::is_detected_v<toString_t, T>;
 
     template<class T, class = void>
-    constexpr bool has_push_v{false};
+    constexpr inline bool has_push_v{false};
 
     template<class T>
-    constexpr bool has_push_v<T, void_t<decltype(std::declval<T>().push(std::declval<typename std::decay_t<T>::value_type>()))>>{true};
+    constexpr inline bool has_push_v<T, void_t<decltype(std::declval<T>().push(std::declval<typename std::decay_t<T>::value_type>()))>>{true};
 
 
     template<class T, class = void>
-    constexpr bool has_pop_v{false};
+    constexpr inline bool has_pop_v{false};
 
     template<class T>
-    constexpr bool has_pop_v<T, void_t<decltype(std::declval<T>().pop())>>{true};
+    constexpr inline bool has_pop_v<T, void_t<decltype(std::declval<T>().pop())>>{true};
 
     template<typename T>
     struct has_top_func {
@@ -367,17 +367,17 @@ namespace cmdr::traits {
     };
 
     template<class T, class = void>
-    constexpr bool has_top_v{false};
+    constexpr inline bool has_top_v{false};
 
     template<class T>
-    constexpr bool has_top_v<T, void_t<decltype(std::declval<T>().top())>>{true};
+    constexpr inline bool has_top_v<T, void_t<decltype(std::declval<T>().top())>>{true};
 
 
     // template<class T, class = void>
-    // constexpr bool has_emplace{false};
+    // constexpr inline bool has_emplace{false};
     //
     // template<class T>
-    // constexpr bool has_emplace<T, void_t<decltype(std::declval<T>().has_emplace(std::declval<typename std::decay_t<T>::value_type>()))>>{true};
+    // constexpr inline bool has_emplace<T, void_t<decltype(std::declval<T>().has_emplace(std::declval<typename std::decay_t<T>::value_type>()))>>{true};
 
     template<typename T, typename = void>
     struct has_emplace_back : std::false_type {};
@@ -386,7 +386,7 @@ namespace cmdr::traits {
     struct has_emplace_back<T, void_t<decltype(std::declval<T>().emplace_back(std::declval<typename T::value_type>()))>> : std::true_type {};
 
     template<typename T>
-    constexpr bool has_emplace_back_v = has_emplace_back<T>::value;
+    constexpr inline bool has_emplace_back_v = has_emplace_back<T>::value;
 
     template<typename T, typename = void>
     struct has_emplace : std::false_type {};
@@ -395,7 +395,7 @@ namespace cmdr::traits {
     struct has_emplace<T, void_t<decltype(std::declval<T>().emplace(std::declval<typename T::value_type>()))>> : std::true_type {};
 
     template<typename T>
-    constexpr bool has_emplace_v = has_emplace<T>::value;
+    constexpr inline bool has_emplace_v = has_emplace<T>::value;
 
     // template<typename T, typename = void>
     // struct has_emplace_variadic : std::false_type {};
@@ -426,7 +426,7 @@ namespace cmdr::traits {
      * @endcode
      */
     template<class T, typename... Arguments>
-    constexpr bool has_emplace_variadic_v = is_detected_v<emplace_variadic_t, T, Arguments...>;
+    constexpr inline bool has_emplace_variadic_v = is_detected_v<emplace_variadic_t, T, Arguments...>;
     namespace detail {
         using C = std::list<int>;
         static_assert(has_emplace_variadic_v<C, C::const_iterator, int &&>);
@@ -439,31 +439,59 @@ namespace cmdr::traits {
 
 
     template<class T, class = void>
-    constexpr bool has_push_back_v{false};
+    constexpr inline bool has_push_back_v{false};
 
     template<class T>
-    constexpr bool has_push_back_v<T, void_t<decltype(std::declval<T>().push_back(std::declval<typename std::decay_t<T>::value_type>()))>>{true};
+    constexpr inline bool has_push_back_v<T, void_t<decltype(std::declval<T>().push_back(std::declval<typename std::decay_t<T>::value_type>()))>>{true};
 
 
     template<class T, class = void>
-    constexpr bool has_pop_back_v{false};
+    constexpr inline bool has_pop_back_v{false};
 
     template<class T>
-    constexpr bool has_pop_back_v<T, void_t<decltype(std::declval<T>().pop_back())>>{true};
+    constexpr inline bool has_pop_back_v<T, void_t<decltype(std::declval<T>().pop_back())>>{true};
 
 
     template<class T, class = void>
-    constexpr bool has_size_v{false};
+    constexpr inline bool has_push_front_v{false};
 
     template<class T>
-    constexpr bool has_size_v<T, void_t<decltype(std::declval<T>().size())>>{true};
+    constexpr inline bool has_push_front_v<T, void_t<decltype(std::declval<T>().push_front(std::declval<typename std::decay_t<T>::value_type>()))>>{true};
 
 
     template<class T, class = void>
-    constexpr bool has_empty_v{false};
+    constexpr inline bool has_pop_front_v{false};
 
     template<class T>
-    constexpr bool has_empty_v<T, void_t<decltype(std::declval<T>().empty())>>{true};
+    constexpr inline bool has_pop_front_v<T, void_t<decltype(std::declval<T>().pop_front())>>{true};
+
+
+    template<class T, class = void>
+    constexpr inline bool has_max_size_v{false};
+
+    template<class T>
+    constexpr inline bool has_max_size_v<T, void_t<decltype(std::declval<T>().max_size())>>{true};
+
+
+    template<class T, class = void>
+    constexpr inline bool has_max_size_set_v{false};
+
+    template<class T>
+    constexpr inline bool has_max_size_set_v<T, void_t<decltype(std::declval<T>().max_size(std::declval<std::size_t>()))>>{true};
+
+
+    template<class T, class = void>
+    constexpr inline bool has_size_v{false};
+
+    template<class T>
+    constexpr inline bool has_size_v<T, void_t<decltype(std::declval<T>().size())>>{true};
+
+
+    template<class T, class = void>
+    constexpr inline bool has_empty_v{false};
+
+    template<class T>
+    constexpr inline bool has_empty_v<T, void_t<decltype(std::declval<T>().empty())>>{true};
 
 #if 0
     namespace detail {

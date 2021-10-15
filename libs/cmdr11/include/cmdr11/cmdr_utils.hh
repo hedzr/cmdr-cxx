@@ -209,6 +209,52 @@ namespace cmdr::util {
 
 } // namespace cmdr::util
 
+
+#if !defined(__ID_SYSTEM_DEFINED)
+#define __ID_SYSTEM_DEFINED
+#include <string_view>
+#include <type_traits>
+#include <utility>
+// ------------------- id
+namespace cmdr::util {
+
+#if defined(_MSC_VER)
+    using id_type = std::string; // or std::string_view
+#else
+    using id_type = std::string_view;
+#endif
+
+    namespace detail {
+        template<class T, bool = std::is_enum<T>::value>
+        struct __enum_id_gen : public std::unary_function<T, id_type> {
+            id_type operator()(T) const {
+                // typedef typename std::underlying_type<T>::type type;
+                constexpr id_type v = debug::type_name<T>();
+                constexpr auto end = v.find('<');
+                if (end != v.npos)
+                    return v.substr(0, end);
+                return v;
+            }
+        };
+    } // namespace detail
+
+    template<typename T>
+    struct id_gen : public detail::__enum_id_gen<T> {};
+
+    template<typename T>
+    constexpr auto id_name() -> id_type {
+        constexpr id_type v = debug::type_name<T>();
+        constexpr auto end = v.find('<');
+        if (end != v.npos)
+            return v.substr(0, end);
+        return v;
+    }
+
+} // namespace cmdr::util
+#endif // __ID_SYSTEM_DEFINED
+
+#if !defined(__FACTORY_T_DEFINED)
+#define __FACTORY_T_DEFINED
 namespace cmdr::util::factory {
 
     /**
@@ -222,15 +268,20 @@ namespace cmdr::util::factory {
     class factory final {
     public:
         CLAZZ_NON_COPYABLE(factory);
-#if defined(_MSC_VER)
-        using string = std::string; // or std::string_view
-#else
-        using string = std::string_view;
-#endif
+        using string = id_type;
         template<typename T>
         struct clz_name_t {
-            string id = debug::type_name<T>();
-            T data;
+            string id = id_name<T>();
+            typedef T type;
+            typedef product_base base_type;
+            static void static_check() {
+                static_assert(std::is_base_of<product_base, T>::value, "all products must inherit from product_base");
+            }
+            template<typename... Args>
+            std::unique_ptr<base_type> gen(Args &&...args) const {
+                return std::make_unique<T>(args...);
+            }
+            // T data;
         };
         using named_products = std::tuple<clz_name_t<products>...>;
         // using _T = typename std::conditional<unique, std::unique_ptr<product_base>, std::shared_ptr<product_base>>::type;
@@ -239,13 +290,14 @@ namespace cmdr::util::factory {
         static auto create(const string &id, Args &&...args) {
             std::unique_ptr<product_base> result{};
 
-            std::apply([](auto &&...it) {
-                ((static_check<decltype(it.data)>()), ...);
-            },
-                       named_products{});
+            // std::apply([](auto &&...it) {
+            //     ((static_check<decltype(it.data)>()), ...);
+            // },
+            //            named_products{});
 
             std::apply([&](auto &&...it) {
-                ((it.id == id ? result = std::make_unique<decltype(it.data)>(args...) : result), ...);
+                // ((it.id == id ? result = std::make_unique<decltype(it.data)>(args...) : result), ...);
+                ((it.id == id ? result = (it.static_check(), it.gen(args...)) : result), ...);
             },
                        named_products{});
             return result;
@@ -265,12 +317,14 @@ namespace cmdr::util::factory {
         }
 
     private:
-        template<typename product>
-        static void static_check() {
-            static_assert(std::is_base_of<product_base, product>::value, "all products must inherit from product_base");
-        }
+        // template<typename product>
+        // static void static_check() {
+        //     static_assert(std::is_base_of<product_base, product>::value, "all products must inherit from product_base");
+        // }
     }; // class factory
 
 } // namespace cmdr::util::factory
+#endif //__FACTORY_T_DEFINED
+
 
 #endif //CMDR_CXX11_CMDR_UTILS_HH

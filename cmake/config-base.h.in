@@ -15,8 +15,12 @@
 #define CMDR_CPU_ARCH               xT("@CPU_ARCH@")
 #define CMDR_CPU_ARCH_NAME          xT("@CPU_ARCH_NAME@")
 
+#ifndef USE_DEBUG_MALLOC
 #cmakedefine01 USE_DEBUG_MALLOC
-#cmakedefine01 DEBUG           
+#endif
+#ifndef DEBUG
+#cmakedefine01 DEBUG
+#endif           
 
 #define CMDR_BUILD_NAME             xT("@CMAKE_BUILD_NAME@")
 

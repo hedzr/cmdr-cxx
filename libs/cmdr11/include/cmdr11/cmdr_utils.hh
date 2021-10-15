@@ -210,8 +210,8 @@ namespace cmdr::util {
 } // namespace cmdr::util
 
 
-#if !defined(__ID_SYSTEM_DEFINED)
-#define __ID_SYSTEM_DEFINED
+#if !defined(__CMDR_ID_SYSTEM_DEFINED)
+#define __CMDR_ID_SYSTEM_DEFINED
 #include <string_view>
 #include <type_traits>
 #include <utility>
@@ -251,10 +251,10 @@ namespace cmdr::util {
     }
 
 } // namespace cmdr::util
-#endif // __ID_SYSTEM_DEFINED
+#endif // __CMDR_ID_SYSTEM_DEFINED
 
-#if !defined(__FACTORY_T_DEFINED)
-#define __FACTORY_T_DEFINED
+#if !defined(__CMDR_FACTORY_T_DEFINED)
+#define __CMDR_FACTORY_T_DEFINED
 namespace cmdr::util::factory {
 
     /**
@@ -324,7 +324,7 @@ namespace cmdr::util::factory {
     }; // class factory
 
 } // namespace cmdr::util::factory
-#endif //__FACTORY_T_DEFINED
+#endif // __CMDR_FACTORY_T_DEFINED
 
 
 #endif //CMDR_CXX11_CMDR_UTILS_HH

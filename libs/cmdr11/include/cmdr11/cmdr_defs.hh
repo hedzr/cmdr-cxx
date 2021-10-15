@@ -31,7 +31,7 @@
 #endif
 
 #if !defined(DEBUG) && defined(USE_DEBUG) && USE_DEBUG
-#define DEBUG
+#define DEBUG  1
 #endif
 
 #if !defined(_DEBUG) && defined(DEBUG)

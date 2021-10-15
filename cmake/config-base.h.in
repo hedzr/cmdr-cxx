@@ -18,8 +18,8 @@
 #ifndef USE_DEBUG_MALLOC
 #cmakedefine01 USE_DEBUG_MALLOC
 #endif
-#ifndef DEBUG
-#cmakedefine01 DEBUG
+#ifndef USE_DEBUG
+#cmakedefine01 USE_DEBUG
 #endif           
 
 #define CMDR_BUILD_NAME             xT("@CMAKE_BUILD_NAME@")

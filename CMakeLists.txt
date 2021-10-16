@@ -41,12 +41,14 @@ debug_print_top_vars()
 
 # add_library(study_cmake library.cxx library.h)
 add_subdirectory(libs)
-add_subdirectory(src)
-if (ENABLE_TESTS)
+if (${ENABLE_TESTS} OR (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR))
     add_subdirectory(tests)
-endif()
+endif ()
 add_subdirectory(docs)
 attach_doxygen_to(cmdr11)
+if (${ENABLE_EXAMPLES} OR (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR))
+    add_subdirectory(examples)
+endif ()
 
 
 ## TPL ## TAIL ##########

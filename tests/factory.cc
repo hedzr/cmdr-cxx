@@ -71,9 +71,9 @@ void test_type_name() {
     printf(">>Z %llu, %llu\n", test::ZFS<std::string>(), test::ZFT<std::string>());
 
 #ifndef _WIN32
-    printf(">>2 '%s'\n", cmdr::debug::type_name_holder<std::string>::value.data());
+    // printf(">>2 '%s'\n", cmdr::debug::type_name_holder<std::string>::value.data());
 
-    printf(">>1 '%s'\n", cmdr::debug::type_name_1<cmdr::pool::conditional_wait_for_int>().data());
+    // printf(">>1 '%s'\n", cmdr::debug::type_name_1<cmdr::pool::conditional_wait_for_int>().data());
     printf(">>> '%s'\n", cmdr::debug::type_name<cmdr::pool::conditional_wait_for_int>().data());
 #endif
 

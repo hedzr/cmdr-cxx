@@ -20,7 +20,7 @@ message("!! entering subdir: ${CMAKE_CURRENT_SOURCE_DIR}/${subdir}")
 set(PROJECT_ARCHIVE_NAME ${PROJECT_NAME}s-${PROJECT_VERSION})
 
 if (ENABLE_TESTS)
-    include(deps_inc_catch2)
+    # include(deps_inc_catch2)
     # include(deps_inc_fmt)
 endif ()
 
@@ -52,8 +52,8 @@ function(define_test_program name)
     target_link_libraries(${PROJECT_NAME}-${name}
                           PRIVATE
                           libs::cmdr11
-                          Catch2::Catch2
                           Threads::Threads
+                          # Catch2::Catch2
                           # fmt::fmt-header-only
                           )
     #    set_target_properties(${PROJECT_NAME}-${name} PROPERTIES
@@ -121,11 +121,14 @@ define_test_program(mem-singleton-1 mem_test_for_singleton.cc)
 
 define_test_program(priority-queue priority_queue.cc)
 
-define_test_program(store-c2 store_c2.cc)
-define_test_program(flags-c2 flags_c2.cc second_src.cc)
-define_test_program(jaro-c2 jaro_c2.cc)
+# skip Catch2-deps tests
+#define_test_program(store-c2 store_c2.cc)
+#define_test_program(flags-c2 flags_c2.cc second_src.cc)
+#define_test_program(jaro-c2 jaro_c2.cc)
 
-define_test_program(pool pool.cc)
+if (${ENABLE_LONG_TESTS})
+    define_test_program(pool pool.cc)
+endif()
 define_test_program(process process.cc)
 
 # app2 c1
@@ -134,8 +137,6 @@ define_test_program(app2-c1 app1.cc second_src.cc)
 
 # app2 c2
 define_test_program(app2-c2 app2.cc second_src.cc)
-
-
 
 
 #
@@ -154,7 +155,7 @@ add_yaml_loader_to(test-app2-c1)
 target_compile_definitions(test-app2-c1 PRIVATE
                            CMDR_ENABLE_VERBOSE_LOG=1)
 
-target_compile_definitions(app1 PRIVATE
+target_compile_definitions(test-app2-c2 PRIVATE
                            CMDR_ENABLE_VERBOSE_LOG=1)
 
 #if (BUILD_TESTING)

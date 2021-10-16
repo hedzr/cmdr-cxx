@@ -30,16 +30,16 @@ jobs:
           #  os: windows-latest,
           #  cc: "gcc", cxx: "g++"
           #}
-          #  - {
-          #    name: "Ubuntu Latest GCC", artifact: "Linux.7z",
-          #    os: ubuntu-latest,
-          #    cc: "gcc-10", cxx: "g++-10"
-          #  }
-          #  - {
-          #    name: "macOS Latest Clang", artifact: "macOS.7z",
-          #    os: macos-latest,
-          #    cc: "clang", cxx: "clang++"
-          #  }
+          - {
+            name: "Ubuntu Latest GCC", artifact: "Linux.7z",
+            os: ubuntu-latest,
+            cc: "gcc-10", cxx: "g++-10"
+          }
+          - {
+            name: "macOS Latest Clang", artifact: "macOS.7z",
+            os: macos-latest,
+            cc: "clang", cxx: "clang++"
+          }
 
     steps:
       - uses: actions/checkout@v1

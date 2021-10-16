@@ -52,7 +52,7 @@ message(STATUS "- Git current branch: ${GIT_BRANCH}")
 message(STATUS "- Git commit hash:    ${GIT_COMMIT_HASH}")
 message(STATUS "- Git rev:            ${GIT_REV}")
 
-if ("${CMAKE_GENERATED_DIR}" STREQUAL "")
+if (NOT "${CMAKE_GENERATED_DIR}")
 else ()
     message(FATAL " >> ERROR: please include target-dirs.cmake at first.")
     # we need CMAKE_GENERATED_DIR at present.

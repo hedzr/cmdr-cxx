@@ -257,6 +257,13 @@ namespace cmdr::util {
 
 #if !defined(__CMDR_FACTORY_T_DEFINED)
 #define __CMDR_FACTORY_T_DEFINED
+namespace cmdr::util{
+#if defined(_MSC_VER)
+    using id_type = std::string; // or std::string_view
+#else
+    using id_type = std::string_view;
+#endif
+}
 namespace cmdr::util::factory {
 
     /**

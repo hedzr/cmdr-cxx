@@ -139,7 +139,7 @@ else ()
 endif ()
 
 
-# option(ENABLE_CMDR_CLI_APP "Enable hicc cli app" ON)
+# option(ENABLE_CMDR_CLI_APP "Enable cmdr cli app" ON)
 
 # ############################## include .options.cmake
 include(options)

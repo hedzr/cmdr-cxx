@@ -721,7 +721,7 @@ namespace cmdr::traits {
 // https://stackoverflow.com/questions/40439909/c98-03-stdis-constructible-implementation
 // https://godbolt.org/#g:!((g:!((g:!((h:codeEditor,i:(fontScale:14,j:1,lang:c%2B%2B,selection:(endColumn:2,endLineNumber:20,positionColumn:1,positionLineNumber:2,selectionStartColumn:2,selectionStartLineNumber:20,startColumn:1,startLineNumber:2),source:%27%23define+_LIBCPP_TESTING_FALLBACK_IS_CONSTRUCTIBLE%0A%23include+%3Ctype_traits%3E%0A%0Astruct+D1%3B%0Astruct+D2%3B%0Astruct+Base+%7B%0A++++explicit+operator+D1%26()%3B%0A%7D%3B%0A%0Astruct+D1+:+Base+%7B%0A++++D1(const+D1%26)+%3D+delete%3B%0A%7D%3B%0Astruct+D2+:+Base+%7B%7D%3B%0A%0Aint+BtoD1()+%7B%0A++++return+std::is_constructible%3CD1%26,+Base%26%3E::value%3B%0A%7D%0Aint+BtoD2()+%7B%0A++++return+std::is_constructible%3CD2%26,+Base%26%3E::value%3B%0A%7D%0A%0A%23if+defined(__clang__)+%7C%7C+(__GNUC__+%3E%3D+8)%0Aint+BtoD1_builtin()+%7B%0A++++return+__is_constructible(D1%26,+Base%26)%3B%0A%7D%0Aint+BtoD2_builtin()+%7B%0A++++return+__is_constructible(D2%26,+Base%26)%3B%0A%7D%0A%23endif%0A%0A%23ifdef+_LIBCPP_VERSION%0Aint+BtoD1_lib()+%7B%0A++++return+std::__libcpp_is_constructible%3CD1%26,+Base%26%3E::value%3B%0A%7D%0Aint+BtoD2_lib()+%7B%0A++++return+std::__libcpp_is_constructible%3CD2%26,+Base%26%3E::value%3B%0A%7D%0A%23endif%27),l:%275%27,n:%270%27,o:%27C%2B%2B+source+%231%27,t:%270%27)),k:50,l:%274%27,n:%270%27,o:%27%27,s:0,t:%270%27),(g:!((g:!((h:compiler,i:(compiler:clang400,filters:(b:%270%27,binary:%271%27,commentOnly:%270%27,demangle:%270%27,directives:%270%27,execute:%271%27,intel:%270%27,libraryCode:%271%27,trim:%271%27),fontScale:14,j:1,lang:c%2B%2B,libs:!(),options:%27-O2+-std%3Dc%2B%2B11+-stdlib%3Dlibc%2B%2B%27,selection:(endColumn:1,endLineNumber:1,positionColumn:1,positionLineNumber:1,selectionStartColumn:1,selectionStartLineNumber:1,startColumn:1,startLineNumber:1),source:1),l:%275%27,n:%270%27,o:%27x86-64+clang+4.0.0+(Editor+%231,+Compiler+%231)+C%2B%2B%27,t:%270%27)),k:50,l:%274%27,m:68.14159292035397,n:%270%27,o:%27%27,s:0,t:%270%27),(g:!((h:output,i:(compiler:1,editor:1,fontScale:14,wrap:%271%27),l:%275%27,n:%270%27,o:%27%231+with+x86-64+clang+4.0.0%27,t:%270%27)),header:(),l:%274%27,m:31.85840707964602,n:%270%27,o:%27%27,s:0,t:%270%27)),k:50,l:%273%27,n:%270%27,o:%27%27,t:%270%27)),l:%272%27,n:%270%27,o:%27%27,t:%270%27)),version:4
 //
-namespace hicc::traits {
+namespace cmdr::traits {
 
 #if __GNUC__ < 10
 
@@ -897,7 +897,7 @@ namespace hicc::traits {
     using is_constructible = std::is_constructible;
 #endif
 
-} // namespace hicc::traits
+} // namespace cmdr::traits
 
 #endif // 0
 

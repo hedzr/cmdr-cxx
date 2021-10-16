@@ -159,6 +159,7 @@ jobs:
           set(path_separator ":")
           if ("${{ runner.os }}" STREQUAL "Windows")
             set(path_separator ";")
+            message(STATUS "VCPKG: ENV{VCPKG_TARGET_TRIPLET} | ${{ matrix.config.tcf }}")
           endif()
           set(ENV{PATH} "$ENV{GITHUB_WORKSPACE}${path_separator}$ENV{PATH}")
           execute_process(

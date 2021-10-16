@@ -20,7 +20,7 @@ message("!! entering subdir: ${CMAKE_CURRENT_SOURCE_DIR}/${subdir}")
 set(PROJECT_ARCHIVE_NAME ${PROJECT_NAME}s-${PROJECT_VERSION})
 
 if (ENABLE_TESTS)
-    include(deps_inc_catch2)
+    # include(deps_inc_catch2)
     # include(deps_inc_fmt)
 endif ()
 

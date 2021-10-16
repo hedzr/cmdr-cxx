@@ -219,6 +219,7 @@ namespace cmdr::debug {
         return std::string_view{value.data() + (end != std::string_view::npos ? end + 2 : 0)};
     }
 
+    // https://stackoverflow.com/questions/81870/is-it-possible-to-print-a-variables-type-in-standard-c
 #else
 
 #if __cplusplus < 201402

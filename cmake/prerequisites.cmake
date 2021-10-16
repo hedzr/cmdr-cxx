@@ -25,19 +25,19 @@ set(default_build_type "Release")
 if (EXISTS "${CMAKE_SOURCE_DIR}/.git")
     set(default_build_type "Debug")
 endif ()
-if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+if (NOT ${CMAKE_BUILD_TYPE} AND NOT ${CMAKE_CONFIGURATION_TYPES})
     message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
     set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
         STRING "Choose the type of build." FORCE)
 endif ()
-if (NOT CMAKE_CONFIGURATION_TYPES)
+if (NOT ${CMAKE_CONFIGURATION_TYPES})
     # Set the possible values of build type for cmake-gui
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY HELPSTRING "Choose the type of build")
     # set(CMAKE_CONFIGURATION_TYPES "Debug;Release;MinSizeRel;RelWithDebInfo" CACHE STRING "" FORCE)
 endif ()
 
-if (CMAKE_BUILD_TYPE STREQUAL "Debug" AND NOT WIN32)
+if (${CMAKE_BUILD_TYPE} STREQUAL "Debug" AND NOT ${WIN32})
     # In non-win32 debug build, debug_malloc is on by default
     option(USE_DEBUG_MALLOC "Building with memory leak detection capability." ON)
     option(USE_DEBUG "Building with DEBUG Mode" ON)

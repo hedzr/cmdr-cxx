@@ -64,12 +64,12 @@ macro(add_install_chapter target)
                 ${CMAKE_INSTALL_LIBDIR}/cmake/${target})
 
         # install(FILES
-    #         ${CMAKE_BINARY_DIR}/generated/cmdr-version.hh
+        #         ${CMAKE_BINARY_DIR}/generated/cmdr-version.hh
         #         DESTINATION
         #         ${CMAKE_INSTALL_INCLUDEDIR}/${target})
         # 
         # install(FILES
-    #         ${CMAKE_CURRENT_SOURCE_DIR}/include/cmdr-cxx.hh
+        #         ${CMAKE_CURRENT_SOURCE_DIR}/include/cmdr-cxx.hh
         #         DESTINATION
         #         ${CMAKE_INSTALL_INCLUDEDIR})
 
@@ -98,24 +98,24 @@ macro(add_cpack_chapter target)
     set(CPACK_PACKAGE_DESCRIPTION "${CMAKE_PROJECT_DESCRIPTION}")
     set(CPACK_PACKAGE_HOMEPAGE "${CMAKE_PROJECT_HOMEPAGE_URL}")
     set(CPACK_SOURCE_IGNORE_FILES
-            ${PROJECT_SOURCE_DIR}/build
-            ${PROJECT_SOURCE_DIR}/cmake-build-debug
-            ${PROJECT_SOURCE_DIR}/dist
-            ${PROJECT_SOURCE_DIR}/.idea
-            ${PROJECT_SOURCE_DIR}/.DS_Store
-            ${PROJECT_SOURCE_DIR}/.git
-            ${PROJECT_SOURCE_DIR}/.gitignore
-            ${PROJECT_SOURCE_DIR}/.vscode
-            ${PROJECT_SOURCE_DIR}/.PIC
-            ${PROJECT_SOURCE_DIR}/ref
-            ${PROJECT_SOURCE_DIR}/_assets/*)
+        ${PROJECT_SOURCE_DIR}/build
+        ${PROJECT_SOURCE_DIR}/cmake-build-debug
+        ${PROJECT_SOURCE_DIR}/dist
+        ${PROJECT_SOURCE_DIR}/.idea
+        ${PROJECT_SOURCE_DIR}/.DS_Store
+        ${PROJECT_SOURCE_DIR}/.git
+        ${PROJECT_SOURCE_DIR}/.gitignore
+        ${PROJECT_SOURCE_DIR}/.vscode
+        ${PROJECT_SOURCE_DIR}/.PIC
+        ${PROJECT_SOURCE_DIR}/ref
+        ${PROJECT_SOURCE_DIR}/_assets/*)
     #set(CPACK_SOURCE_GENERATOR "TXZ")
     #set(CPACK_SOURCE_PACKAGE_FILE_NAME ${ARCHIVE_NAME})
     #  set(CPACK_PACKAGE_DESCRIPTION "A C++17 header-only command-line parser with hierarchical config data manager")
     #set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "")
     #  set(CPACK_PACKAGE_CONTACT "Hedzr Yeh <hedzrz@gmail.com>")
     #  set(CPACK_PACKAGE_VENDOR "Hedzr Studio")
-  #  set(CPACK_PACKAGE_HOMEPAGE "https://github.com/hedzr/cmdr-cxx")
+    #  set(CPACK_PACKAGE_HOMEPAGE "https://github.com/hedzr/cmdr-cxx")
 
     get_target_property(target_type ${target} TYPE)
 

@@ -35,7 +35,7 @@ if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "Darwin" OR APPLE)
     mark_as_advanced(MACOSX MACOS macOS DARWIN MAC Mac)
 endif ()
 
-if (UNIX AND NOT macOS)
+if (${UNIX} AND NOT ${macOS})
     # for Linux, BSD, Solaris, Minix
     if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "Linux")
         set(LINUX TRUE)

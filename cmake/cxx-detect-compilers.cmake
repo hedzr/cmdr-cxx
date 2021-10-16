@@ -10,7 +10,7 @@ if (${CMAKE_VERSION} VERSION_GREATER "3.2")
         include(WriteCompilerDetectionHeader OPTIONAL RESULT_VARIABLE WriterCompilerDetectionHeaderFound)
     endif ()
 endif ()
-if (WriterCompilerDetectionHeaderFound)
+if (${WriterCompilerDetectionHeaderFound})
     write_compiler_detection_header(
             FILE ${CMAKE_GENERATED_DIR}/the-compiler.h
             PREFIX The
@@ -26,9 +26,9 @@ endif ()
 # CMAKE_POSITION_INDEPENDENT_CODE
 #
 include(TestBigEndian)
-if (NOT WIN32)
+if (NOT ${WIN32})
     TEST_BIG_ENDIAN(_bigendian)
-    if ((CMAKE_SIZEOF_VOID_P GREATER 4) OR (_bigendian))
+    if ((${CMAKE_SIZEOF_VOID_P} GREATER 4) OR (${_bigendian}))
         message(
                 STATUS ">> Setting PIC (${CMAKE_CXX_COMPILE_OPTIONS_PIC}) for machine ${CMAKE_HOST_SYSTEM_PROCESSOR}"
         )
@@ -39,7 +39,7 @@ endif ()
 #
 # CPU bits
 #
-#if (CMAKE_SYSTEM_PROCESSOR MATCHES "amd64.*|x86_64.*|AMD64.*")
+#if (${CMAKE_SYSTEM_PROCESSOR} MATCHES "amd64.*|x86_64.*|AMD64.*")
 #  set(CPU_ARCH x64)
 #else ()
 #  set(CPU_ARCH x86)

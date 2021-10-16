@@ -14,7 +14,7 @@
 #debug_print_hbar_long()
 
 #message("  -> CMAKE_CURRENT_BINARY_DIR: " ${CMAKE_CURRENT_BINARY_DIR})
-cmake_subdir_list(SUBDIRS "${CMAKE_CURRENT_SOURCE_DIR}")
+cmake_subdir_list(SUBDIRS ".")
 foreach (subdir ${SUBDIRS})
     message("")
     message("!! entering subdir: ${CMAKE_CURRENT_SOURCE_DIR}/${subdir}")

@@ -4,7 +4,7 @@
 ![CMake Build Matrix](https://github.com/hedzr/cmdr-cxx/workflows/CMake%20Build%20Matrix/badge.svg?event=release) 
 --> [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/hedzr/cmdr-cxx.svg?label=release)](https://github.com/hedzr/cmdr-cxx/releases)
 
-`cmdr-cxx` ^pre-release^ is a C++17 *header-only* command-line arguments parser and application framework. As a member of [#cmdr series](https://github.com/topics/cmdr), it provides a fully-functional `Option Store` for your hierarchical configuration data.
+`cmdr-cxx` ^pre-release^ is a C++17 *header-only* command-line arguments parser, config manager, and application framework. As a member of [#cmdr series](https://github.com/topics/cmdr), it provides a fully-functional `Option Store` (Configuration Manager) for your hierarchical configuration data.
 
 See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 

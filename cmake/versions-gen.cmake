@@ -44,7 +44,7 @@ endif (EXISTS "${CMAKE_SOURCE_DIR}/.git")
 
 # get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 string(SUBSTRING "${GIT_COMMIT_HASH}" 0 12 GIT_REV)
-if (NOT GIT_COMMIT_HASH)
+if (NOT ${GIT_COMMIT_HASH})
     set(GIT_REV "0")
 endif ()
 
@@ -52,7 +52,7 @@ message(STATUS "- Git current branch: ${GIT_BRANCH}")
 message(STATUS "- Git commit hash:    ${GIT_COMMIT_HASH}")
 message(STATUS "- Git rev:            ${GIT_REV}")
 
-if (CMAKE_GENERATED_DIR)
+if ("${CMAKE_GENERATED_DIR}" STREQUAL "")
 else ()
     message(FATAL " >> ERROR: please include target-dirs.cmake at first.")
     # we need CMAKE_GENERATED_DIR at present.

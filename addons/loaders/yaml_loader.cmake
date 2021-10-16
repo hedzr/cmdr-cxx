@@ -26,7 +26,7 @@
 #
 #
 #macro(add_yaml_loader target)
-#  if (MACOS)
+#  if (${MACOS})
 #    target_include_directories(${target} PRIVATE
 #                               $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
 #                               $<INSTALL_INTERFACE:include>
@@ -66,69 +66,69 @@
 #message(STATUS "yaml_loader: defined macro add_cmdr_cxx_to")
 macro(add_yaml_loader_to target)
 
-  find_package(yaml-cpp CONFIG QUIET)
-  # ${YAML_CPP_INCLUDE_DIR}
-  # ${YAML_CPP_LIBRARIES}
-  if (NOT YAML_CPP_INCLUDE_DIR)
-    message(STATUS "yaml_loader: yaml-cpp not found, try to pick one...")
+    find_package(yaml-cpp CONFIG REQUIRED)
+    # ${YAML_CPP_INCLUDE_DIR}
+    # ${YAML_CPP_LIBRARIES}
+    if (NOT ${yaml-cppFOUND})
+        message(STATUS "yaml_loader: yaml-cpp not found, try to pick one...")
 
-    set(YAML_PP_TGT_NAME "third-yaml-cpp")
-    include(ExternalProject)
-    ExternalProject_Add(${YAML_PP_TGT_NAME}
-                        GIT_REPOSITORY https://github.com/jbeder/yaml-cpp
-                        GIT_TAG yaml-cpp-0.6.3
-                        GIT_SHALLOW 1
-                        GIT_PROGRESS ON
-                        # STEP_TARGETS build
-                        # SOURCE_DIR "${PROJECT_SOURCE_DIR}/third-party/cmdr-cxx-src"
-                        # BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/cmdr-cxx-build"
-                        CMAKE_ARGS
-                        -DYAML_CPP_BUILD_TESTS=OFF
-                        --no-warn-unused-cli
-                        -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-                        # -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-                        # -DCMAKE_INSTALL_PREFIX:PATH=${EXECUTABLE_OUTPUT_PATH}
-                        BUILD_COMMAND ${CMAKE_COMMAND} -E echo "Starting $<CONFIG> build"
-                        BUILD_COMMAND ${CMAKE_COMMAND} -E sudo "chmod a+w /usr/local/lib /usr/local/include"
-                        COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config $<CONFIG>
-                        COMMAND ${CMAKE_COMMAND} -E echo "$<CONFIG> build complete"
-                        )
-    #    set(CMDR11_FOUND ON)
+        set(YAML_PP_TGT_NAME "third-yaml-cpp")
+        include(ExternalProject)
+        ExternalProject_Add(${YAML_PP_TGT_NAME}
+                            GIT_REPOSITORY https://github.com/jbeder/yaml-cpp
+                            GIT_TAG yaml-cpp-0.6.3
+                            GIT_SHALLOW 1
+                            GIT_PROGRESS ON
+                            # STEP_TARGETS build
+                            # SOURCE_DIR "${PROJECT_SOURCE_DIR}/third-party/cmdr-cxx-src"
+                            # BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/cmdr-cxx-build"
+                            CMAKE_ARGS
+                            -DYAML_CPP_BUILD_TESTS=OFF
+                            --no-warn-unused-cli
+                            -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+                            # -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+                            # -DCMAKE_INSTALL_PREFIX:PATH=${EXECUTABLE_OUTPUT_PATH}
+                            BUILD_COMMAND ${CMAKE_COMMAND} -E echo "Starting $<CONFIG> build"
+                            BUILD_COMMAND ${CMAKE_COMMAND} -E sudo "chmod a+w /usr/local/lib /usr/local/include"
+                            COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config $<CONFIG>
+                            COMMAND ${CMAKE_COMMAND} -E echo "$<CONFIG> build complete"
+                            )
+        #    set(CMDR11_FOUND ON)
 
-    message(STATUS "yaml_loader: add ${YAML_PP_TGT_NAME} module to '${target}' from building dir.")
-    if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "Darwin" OR APPLE)
-      target_include_directories(${target} PRIVATE
-                                 $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
-                                 $<INSTALL_INTERFACE:include>
-                                 /usr/local/include
-                                 )
-      target_link_directories(${target} PRIVATE
-                              /usr/local/lib
-                              # ${CMAKE_CURRENT_BINARY_DIR}/${YAML_PP_TGT_NAME}-prefix/src/${YAML_PP_TGT_NAME}-build
+        message(STATUS "yaml_loader: add ${YAML_PP_TGT_NAME} module to '${target}' from building dir.")
+        if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "Darwin" OR APPLE)
+            target_include_directories(${target} PRIVATE
+                                       $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
+                                       $<INSTALL_INTERFACE:include>
+                                       /usr/local/include
+                                       )
+            target_link_directories(${target} PRIVATE
+                                    /usr/local/lib
+                                    # ${CMAKE_CURRENT_BINARY_DIR}/${YAML_PP_TGT_NAME}-prefix/src/${YAML_PP_TGT_NAME}-build
+                                    )
+            # target_link_libraries(${target}
+            #         PRIVATE
+            #         cmdr11::cmdr11
+            #         )
+        endif ()
+
+        message(STATUS "yaml_loader: add_dependencies")
+        add_dependencies(${target} ${YAML_PP_TGT_NAME})
+        target_link_libraries(${target}
+                              PRIVATE
+                              yaml-cpp
                               )
-      # target_link_libraries(${target}
-      #         PRIVATE
-      #         cmdr11::cmdr11
-      #         )
+        #    endif ()
+
+    else ()
+
+        message(STATUS "yaml_loader: cmake package found at ${YAML_CPP_INCLUDE_DIR}, LIBS: ${YAML_CPP_LIBRARIES}")
+        message(STATUS "yaml_loader: add ${YAML_PP_TGT_NAME} module to '${target}' from CMake Modules registry.")
+        target_link_libraries(${target}
+                              PRIVATE
+                              yaml-cpp
+                              )
+
     endif ()
-
-    message(STATUS "yaml_loader: add_dependencies")
-    add_dependencies(${target} ${YAML_PP_TGT_NAME})
-    target_link_libraries(${target}
-                          PRIVATE
-                          yaml-cpp
-                          )
-    #    endif ()
-
-  else ()
-
-    message(STATUS "yaml_loader: cmake package found at ${YAML_CPP_INCLUDE_DIR}, LIBS: ${YAML_CPP_LIBRARIES}")
-    message(STATUS "yaml_loader: add ${YAML_PP_TGT_NAME} module to '${target}' from CMake Modules registry.")
-    target_link_libraries(${target}
-                          PRIVATE
-                          yaml-cpp
-                          )
-
-  endif ()
 
 endmacro()

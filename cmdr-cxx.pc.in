@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+includedir=${prefix}/@CMAKE_INSTALL_INCLUDEDIR@
+libdir=${exec_prefix}/@CMAKE_INSTALL_LIBDIR@
+
+Name: cmdr-cxx
+Description: A C++17 header-only command-line arguments parser, config manager, and application framework
+Version: @VERSION@
+Requires:
+Libs: -L${libdir}
+Cflags: -I${includedir}

@@ -3,6 +3,8 @@
 # https://stackoverflow.com/questions/57092692/how-to-fix-vcpkg-cmake-is-unable-to-determine-target-architecture-windows10-v
 if (DEFINED ENV{VCPKG_DEFAULT_TRIPLET} AND NOT DEFINED VCPKG_TARGET_TRIPLET)
     set(VCPKG_TARGET_TRIPLET "$ENV{VCPKG_DEFAULT_TRIPLET}" CACHE STRING "")
+    message(STATUS ">> CMAKE_TOOLCHAIN_FILE = ${CMAKE_TOOLCHAIN_FILE}")
+    message(STATUS ">> VCPKG_TARGET_TRIPLET = $ENV{VCPKG_TARGET_TRIPLET}, ${VCPKG_TARGET_TRIPLET}")
 endif ()
 
 

@@ -24,7 +24,7 @@
 # MacOSX                        Darwin
 
 # for MacOS X or iOS, watchOS, tvOS (since 3.10.3)
-if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "Darwin" OR APPLE)
+if (("${CMAKE_HOST_SYSTEM_NAME}" MATCHES "Darwin") OR (${APPLE}))
     #MESSAGE("** Darwin detected.")
     SET(MACOSX TRUE)
     SET(MACOS TRUE)
@@ -35,7 +35,7 @@ if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "Darwin" OR APPLE)
     mark_as_advanced(MACOSX MACOS macOS DARWIN MAC Mac)
 endif ()
 
-if (${UNIX} AND NOT ${macOS})
+if ((${UNIX}==ON) AND (NOT ${macOS}))
     # for Linux, BSD, Solaris, Minix
     if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "Linux")
         set(LINUX TRUE)
@@ -49,15 +49,15 @@ if (${UNIX} AND NOT ${macOS})
     mark_as_advanced(LINUX Linux BSD Minix MINUX)
 endif ()
 
-if (WIN32)
-    #do something
-endif (WIN32)
+#if ((${WIN32}))
+#    #do something
+#endif (WIN32)
 
-if (MSVC OR MSYS OR MINGW)
+if ((${MSVC}) OR (${MSYS}) OR (${MINGW}))
     # for detecting Windows compilers
 endif ()
 
-if (LINUX)
+if (${LINUX})
     #file(READ "/etc/issue" ETC_ISSUE)
     #string(REGEX MATCH "Debian|Ubuntu" DIST ${ETC_ISSUE})
     file(STRINGS /etc/os-release distro REGEX "^NAME=")
@@ -81,20 +81,20 @@ endif ()
 
 message(STATUS ">>> CMAKE_HOST_SYSTEM_NAME = ${CMAKE_HOST_SYSTEM_NAME}")
 message(STATUS ">>> DISTRO_NAME = ${DISTRO_NAME}")
-if (LINUX)
+if (${LINUX})
     message(STATUS ">>> Linux" " (Distro: ${DISTRO_NAME})" " FOUND")
-elseif (MAC)
+elseif (${MAC})
     message(STATUS ">>> macOS" " FOUND")
-elseif (UNIX)
+elseif (${UNIX})
     message(STATUS ">>> Unix (BSD+,Unix+)" " FOUND")
-elseif (MSVC)
+elseif (${MSVC})
     message(STATUS ">>> MSVC" " FOUND")
-elseif (WIN32)
+elseif (${WIN32})
     message(STATUS ">>> Win32" " FOUND")
 else ()
     message(STATUS ">>> Unknown" " FOUND")
 endif ()
-if (MINGW)
+if (${MINGW})
     message(STATUS ">>> MinGW" " FOUND")
 endif ()
 

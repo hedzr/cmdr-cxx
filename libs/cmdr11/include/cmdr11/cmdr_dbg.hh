@@ -98,7 +98,128 @@ inline void __M_Assert(const char *expr_str, bool expr,
 #endif
 
 
+namespace cmdr {
+
+    template<std::string_view const &...Strings>
+    struct join {
+        // Join all strings into a single std::array of chars
+        static constexpr auto impl() noexcept {
+            constexpr std::size_t len = (Strings.size() + ... + 0);
+            std::array<char, len + 1> arr1{};
+            auto append = [i = 0, &arr1](auto const &s) mutable {
+                for (auto c : s) arr[i++] = c;
+            };
+            (append(Strings), ...);
+            arr1[len] = 0;
+            return arr1;
+        }
+        // Give the joined string static storage
+        static constexpr auto arr = impl();
+        // View as a std::string_view
+        static constexpr std::string_view value{arr.data(), arr.size() - 1};
+    };
+    // Helper to get the value out
+    template<std::string_view const &...Strings>
+    static constexpr auto join_v = join<Strings...>::value;
+
+} // namespace cmdr
 namespace cmdr::debug {
+
+#if 1
+    template<typename T>
+    constexpr std::string_view type_name();
+
+    template<>
+    constexpr std::string_view type_name<void>() { return "void"; }
+
+    namespace detail {
+
+        using type_name_prober = void;
+
+        template<typename T>
+        constexpr std::string_view wrapped_type_name() {
+#ifdef __clang__
+            return __PRETTY_FUNCTION__;
+#elif defined(__GNUC__)
+            return __PRETTY_FUNCTION__;
+#elif defined(_MSC_VER)
+            return __FUNCSIG__;
+#else
+#error "Unsupported compiler"
+#endif
+        }
+
+        constexpr std::size_t wrapped_type_name_prefix_length() {
+            return wrapped_type_name<type_name_prober>().find(type_name<type_name_prober>());
+        }
+
+        constexpr std::size_t wrapped_type_name_suffix_length() {
+            return wrapped_type_name<type_name_prober>().length() - wrapped_type_name_prefix_length() - type_name<type_name_prober>().length();
+        }
+
+        template<typename T>
+        constexpr std::string_view type_name() {
+            constexpr auto wrapped_name = wrapped_type_name<T>();
+            constexpr auto prefix_length = wrapped_type_name_prefix_length();
+            constexpr auto suffix_length = wrapped_type_name_suffix_length();
+            constexpr auto type_name_length = wrapped_name.length() - prefix_length - suffix_length;
+            return wrapped_name.substr(prefix_length, type_name_length);
+        }
+
+    } // namespace detail
+
+    /**
+     * @brief return the literal of a datatype in constexpr.
+     * @tparam T the datatype
+     * @return std::string_view
+     * @note the returning string is a string_view, make a copy before print it:
+     * 
+     * 1. use std::ostream directly:
+     * @code{c++}
+     * std::cout << cmdr::debug::type_name&lt;std::string>() << '\n';
+     * @endcode
+     * 
+     * 2. wrap the string_view into a std::string:
+     * @code{c++}
+     * std::cout &lt;&lt; std::string(cmdr::debug::type_name&lt;std::string>()) &lt;&lt; '\n';
+     * printf(">>> %s\n", std::string(cmdr::debug::type_name&lt;std::string>()).c_str());
+     * @endcode
+     * 
+     */
+    template<typename T>
+    constexpr std::string_view type_name() {
+        constexpr auto r = detail::type_name<T>();
+
+        using namespace std::string_view_literals;
+        constexpr auto pr1 = "struct "sv;
+        auto ps1 = r.find(pr1);
+        auto st1 = (ps1 == 0 ? pr1.length() : 0);
+        auto name1 = r.substr(st1);
+        constexpr auto pr2 = "class "sv;
+        auto ps2 = name1.find(pr2);
+        auto st2 = (ps2 == 0 ? pr2.length() : 0);
+        auto name2 = name1.substr(st2);
+        constexpr auto pr3 = "union "sv;
+        auto ps3 = name2.find(pr3);
+        auto st3 = (ps3 == 0 ? pr3.length() : 0);
+        auto name3 = name2.substr(st3);
+
+        return name3;
+    }
+
+    /**
+     * @brief remove the scoped prefix (before '::')
+     * @tparam T 
+     * @return 
+     */
+    template<typename T>
+    constexpr auto short_type_name() -> std::string_view {
+        constexpr auto &value = type_name<T>();
+        constexpr auto end = value.rfind("::");
+        return std::string_view{value.data() + (end != std::string_view::npos ? end + 2 : 0)};
+    }
+
+#else
 
 #if __cplusplus < 201402
     template<class T>
@@ -275,6 +396,7 @@ namespace cmdr::debug {
 
     // https://bitwizeshift.github.io/posts/2021/03/09/getting-an-unmangled-type-name-at-compile-time/
 #endif
+#endif // 1 or 0
 
 
     // to detect the type of a lambda function, following:

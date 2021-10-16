@@ -84,9 +84,10 @@ See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 
 ## Status
 
-- *WIP*: v0.2.23 - ticker;
+- *WIP*: v0.2.25 - ticker;
+- v0.2.23 - improved ci scripts, traits, detections, and more for better cross-platform portability;
 - v0.2.21 - bug fixed; add more utilities: mmap, thread pool, factory, pipeable, ...;
-- v0.2.20 - changed OS_xxx macros; added more portabilities;
+- v0.2.20 - changed OS_xxx macros; added more portability;
 - v0.2.19 - bug fixed
 - v0.2.17 - added to homebrew.
 - v0.2.15 - bug fixed

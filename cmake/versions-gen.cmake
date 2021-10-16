@@ -37,10 +37,10 @@ if (EXISTS "${CMAKE_SOURCE_DIR}/.git")
             OUTPUT_VARIABLE GIT_COMMIT_HASH
             OUTPUT_STRIP_TRAILING_WHITESPACE
     )
-else (EXISTS "${CMAKE_SOURCE_DIR}/.git")
+else ()
     set(GIT_BRANCH "")
     set(GIT_COMMIT_HASH "")
-endif (EXISTS "${CMAKE_SOURCE_DIR}/.git")
+endif ()
 
 # get_git_head_revision(GIT_REFSPEC GIT_SHA1)
 string(SUBSTRING "${GIT_COMMIT_HASH}" 0 12 GIT_REV)

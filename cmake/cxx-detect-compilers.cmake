@@ -26,7 +26,7 @@ endif ()
 # CMAKE_POSITION_INDEPENDENT_CODE
 #
 include(TestBigEndian)
-if (NOT ${WIN32})
+if (NOT (${WIN32}))
     TEST_BIG_ENDIAN(_bigendian)
     if ((${CMAKE_SIZEOF_VOID_P} GREATER 4) OR (${_bigendian}))
         message(STATUS ">> Setting PIC (${CMAKE_CXX_COMPILE_OPTIONS_PIC}) for machine ${CMAKE_HOST_SYSTEM_PROCESSOR}")

@@ -31,7 +31,11 @@ if (NOT (${WIN32}))
     if ((${CMAKE_SIZEOF_VOID_P} GREATER 4) OR (${_bigendian}))
         message(STATUS ">> Setting PIC (${CMAKE_CXX_COMPILE_OPTIONS_PIC}) for machine ${CMAKE_HOST_SYSTEM_PROCESSOR}")
         set(CMAKE_POSITION_INDEPENDENT_CODE 1)
+        #else ()
+        #    message(STATUS ">> BigEndian is ${_bigendian} for machine ${CMAKE_HOST_SYSTEM_PROCESSOR}")
     endif ()
+    #else()
+    #    message(STATUS ">> BigEndian skipped for machine ${CMAKE_HOST_SYSTEM_PROCESSOR}")
 endif ()
 
 #

@@ -220,6 +220,7 @@ inline void UNUSED([[maybe_unused]] Args &&...args) {
 //
 
 
+#ifndef AWESOME_MAKE_ENUM
 /**
  * @brief declare enum class with its string literals.
  * @details For examples:
@@ -279,6 +280,7 @@ inline void UNUSED([[maybe_unused]] Args &&...args) {
 
 
 //
+#endif
 
 
 #ifndef __named
@@ -462,8 +464,8 @@ template<typename T, size_t N>
 
 //
 
-#if !defined(CMDR_HASH_COMBINE) && CMDR_HASH_COMBINE != 1
-#define CMDR_HASH_COMBINE 1
+#if !defined(HZ_HASH_COMBINE) && HZ_HASH_COMBINE != 1
+#define HZ_HASH_COMBINE 1
 
 namespace std {
     /**

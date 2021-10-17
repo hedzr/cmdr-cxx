@@ -232,6 +232,9 @@ namespace cmdr::util {
                 // typedef typename std::underlying_type<T>::type type;
                 constexpr id_type v = debug::type_name<T>();
                 constexpr auto end = v.find('<');
+                // if (end != v.npos)
+                //     return v.substr(0, end);
+                // return v;
                 return (end != v.npos) ? v.substr(0, end) : v;
             }
         };
@@ -243,9 +246,11 @@ namespace cmdr::util {
 
     template<typename T>
     constexpr auto id_name() -> id_type {
-        constexpr auto v = debug::type_name<T>();
+        constexpr id_type v = debug::type_name<T>();
+        constexpr auto begin = v.find("()::");
         constexpr auto end = v.find('<');
-        return (end != v.npos) ? v.substr(0, end) : v;
+        constexpr auto begin1 = begin != v.npos ? begin + 4 : 0;
+        return v.substr(begin1, (end != v.npos ? end : v.length()) - begin1);
     }
 
 } // namespace cmdr::util
@@ -256,12 +261,10 @@ namespace cmdr::util {
 namespace cmdr::util::factory {
 
     /**
-     * @brief a factory template class
-     * @tparam unique 
-     * @tparam product_base 
-     * @tparam products 
-     * @see https://hedzr.com/c++/algorithm/cxx17-factory-pattern/
-     */
+       * @brief a factory template class
+       * @tparam product_base   such as `Shape`
+       * @tparam products       such as `Rect`, `Ellipse`, ...
+       */
     template<typename product_base, typename... products>
     class factory final {
     public:
@@ -270,8 +273,8 @@ namespace cmdr::util::factory {
         template<typename T>
         struct clz_name_t {
             string id = id_name<T>();
-            typedef T type;
-            typedef product_base base_type;
+            using type = T;
+            using base_type = product_base;
             static void static_check() {
                 static_assert(std::is_base_of<product_base, T>::value, "all products must inherit from product_base");
             }
@@ -283,34 +286,34 @@ namespace cmdr::util::factory {
         };
         using named_products = std::tuple<clz_name_t<products>...>;
         // using _T = typename std::conditional<unique, std::unique_ptr<product_base>, std::shared_ptr<product_base>>::type;
-
+        
+        factory() {
+            std::apply([](auto &&...it) {
+                ((it.static_check() /*static_check<decltype(it.data)>()*/), ...);
+            },
+                       named_products{});
+        }
+        
         template<typename... Args>
-        static auto create(const string &id, Args &&...args) {
+        static auto create(string const &id, Args &&...args) {
             std::unique_ptr<product_base> result{};
-
-            // std::apply([](auto &&...it) {
-            //     ((static_check<decltype(it.data)>()), ...);
-            // },
-            //            named_products{});
-
             std::apply([&](auto &&...it) {
-                // ((it.id == id ? result = std::make_unique<decltype(it.data)>(args...) : result), ...);
-                ((it.id == id ? result = (it.static_check(), it.gen(args...)) : result), ...);
+                ((it.id == id ? result = it.gen(args...) : result), ...);
             },
                        named_products{});
             return result;
         }
         template<typename... Args>
-        static std::shared_ptr<product_base> make_shared(const string &id, Args &&...args) {
+        static std::shared_ptr<product_base> make_shared(string const &id, Args &&...args) {
             std::shared_ptr<product_base> ptr = create(id, args...);
             return ptr;
         }
         template<typename... Args>
-        static std::unique_ptr<product_base> make_unique(const string &id, Args &&...args) {
+        static std::unique_ptr<product_base> make_unique(string const &id, Args &&...args) {
             return create(id, args...);
         }
         template<typename... Args>
-        static product_base *create_nacked_ptr(const string &id, Args &&...args) {
+        static product_base *create_nacked_ptr(string const &id, Args &&...args) {
             return create(id, args...).release();
         }
 

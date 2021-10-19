@@ -280,23 +280,20 @@ namespace cmdr::util::factory {
             }
             template<typename... Args>
             std::unique_ptr<base_type> gen(Args &&...args) const {
-                return std::make_unique<T>(args...);
+                return std::make_unique<type>(args...);
             }
             // T data;
         };
         using named_products = std::tuple<clz_name_t<products>...>;
         // using _T = typename std::conditional<unique, std::unique_ptr<product_base>, std::shared_ptr<product_base>>::type;
         
-        factory() {
+        template<typename... Args>
+        static auto create(string const &id, Args &&...args) {
+            std::unique_ptr<product_base> result{};
             std::apply([](auto &&...it) {
                 ((it.static_check() /*static_check<decltype(it.data)>()*/), ...);
             },
                        named_products{});
-        }
-        
-        template<typename... Args>
-        static auto create(string const &id, Args &&...args) {
-            std::unique_ptr<product_base> result{};
             std::apply([&](auto &&...it) {
                 ((it.id == id ? result = it.gen(args...) : result), ...);
             },

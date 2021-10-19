@@ -424,13 +424,9 @@ namespace cmdr::debug {
     }
 #endif
 
+}
 
-    //
-
-    //
-
-    //
-
+namespace cmdr::debug {
 
     std::string demangle(const char *name);
 

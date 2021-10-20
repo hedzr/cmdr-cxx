@@ -703,7 +703,7 @@ namespace cmdr::vars {
         static bool dump_with_type_name;
 
         void reset() {
-            std::shared_lock<std::shared_mutex> lock(mutex_);
+            std::unique_lock<std::shared_mutex> lock(mutex_);
             _children.clear();
             _indexes.clear();
             _parent = nullptr;
@@ -797,7 +797,7 @@ namespace cmdr::vars {
                                           !std::is_same<std::decay_t<A>, self_type>::value,
                                   int> = 0>
         void _set(char const *key, update_parent_index const &cb, A &&a) {
-            std::shared_lock<std::shared_mutex> lock(mutex_);
+            std::unique_lock<std::shared_mutex> lock(mutex_);
             char const *part = std::strchr(key, '.');
             if (part) {
                 small_string base(key);

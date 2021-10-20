@@ -568,6 +568,7 @@ namespace cmdr::traits {
     }
 } // namespace cmdr::traits
 
+// ------------------- placeholder
 namespace cmdr::traits {
     template<int I>
     struct placeholder {};
@@ -685,7 +686,7 @@ namespace cmdr::util::cool {
         }
 
         F f_;
-        std::tuple<Arguments...> args_;
+        std::tuple<Arguments...> args_{};
     };
 
     template<typename F>

@@ -1264,7 +1264,7 @@ namespace cmdr::util {
 } // namespace cmdr::util
 
 // ------------------- safe_bool
-namespace cmdr {
+namespace cmdr::util {
     class safe_bool_base {
     public:
         typedef void (safe_bool_base::*bool_type)() const;
@@ -1382,10 +1382,10 @@ namespace cmdr {
         lhs.this_type_does_not_support_comparisons();
         return false;
     }
-} // namespace cmdr
+} // namespace cmdr::util
 
 // ------------------- heap_only, no_heap
-namespace cmdr {
+namespace cmdr::util {
 
     template<typename T>
     class heap_only {
@@ -1410,9 +1410,9 @@ namespace cmdr {
         static void *operator new[](std::size_t); // #2: To prevent allocation of array of objects
     };
 
-} // namespace cmdr
+} // namespace cmdr::util
 
-// ------------------- non_copyable
+// ------------------- non_copyable, no_implicit_copy
 namespace cmdr {
 
     /**
@@ -1452,6 +1452,28 @@ namespace cmdr {
     };
 
 } // namespace cmdr
+
+// ------------------- equal_comparable: Barton–Nackman trick
+namespace cmdr::util {
+    /**
+     * @brief A class template to express an equality comparison interface.
+     * @tparam T 
+     * @details For examples
+     * @code{c++}
+     * // Class value_type wants to have == and !=, so it derives from
+     * // equal_comparable with itself as argument (which is the CRTP).
+     * class value_type : private equal_comparable&lt;value_type> {
+     *  public:
+     *    bool equal_to(value_type const& rhs) const; // to be defined
+     * };
+     * @endcode
+     */
+    template<typename T>
+    class equal_comparable {
+        friend bool operator==(T const &a, T const &b) { return a.equal_to(b); }
+        friend bool operator!=(T const &a, T const &b) { return !a.equal_to(b); }
+    };
+} // namespace cmdr::util
 
 
 #endif //CMDR_CXX_CMDR_COMMON_HH

@@ -35,6 +35,19 @@ debug_print_top_vars()
 ## TPL ## HEAD END ##########
 
 
+set(PROJECT_MACRO_NAME cmdr-cxx)
+set(PROJECT_MACRO_SHORT_NAME cmdr)
+set(PROJECT_MACRO_MID_NAME cmdr11)
+set(PROJECT_MACRO_PREFIX "CMDR")
+gen_versions(${PROJECT_MACRO_NAME} ${PROJECT_MACRO_PREFIX}
+             ${PROJECT_MACRO_SHORT_NAME}-version.hh
+             ${PROJECT_MACRO_SHORT_NAME}-config-base.hh
+             ${PROJECT_MACRO_SHORT_NAME}-${PROJECT_VERSION}
+             ${CMAKE_SOURCE_DIR}/${CMAKE_SCRIPTS}/version.h.in
+             ${CMAKE_SOURCE_DIR}/${CMAKE_SCRIPTS}/config-base.h.in
+             )
+
+
 #
 # add more subdirectories as submodules and sub-submodules HERE
 #
@@ -45,7 +58,7 @@ if (${ENABLE_TESTS} OR (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR))
     add_subdirectory(tests)
 endif ()
 add_subdirectory(docs)
-attach_doxygen_to(cmdr11)
+attach_doxygen_to(${PROJECT_MACRO_MID_NAME})
 if (${ENABLE_EXAMPLES} OR (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR))
     add_subdirectory(examples)
 endif ()

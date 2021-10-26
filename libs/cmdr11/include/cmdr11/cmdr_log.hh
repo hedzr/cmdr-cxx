@@ -5,9 +5,8 @@
 #ifndef CMDR_CXX11_CMDR_LOG_HH
 #define CMDR_CXX11_CMDR_LOG_HH
 
-#include "cmdr_defs.hh"
-
-#include "cmdr_terminal.hh"
+// #include "cmdr_defs.hh"
+// #include "cmdr_terminal.hh"
 #include "cmdr_common.hh"
 
 #include <cstdarg>
@@ -51,7 +50,10 @@ namespace cmdr::log {
                 std::vsnprintf(buf.data(), buf.size(), fmt, args2);
                 va_end(args2);
 
-                using namespace cmdr::terminal;
+                const char *const fg_reset_all = "\033[0m";
+                const char *const clr_magenta_bg_light = "\033[2;35m";
+                const char *const clr_cyan_bg_light = "\033[2;36m";
+                const char *const fg_light_gray = "\033[37m";
                 std::printf("%s"
                             "%s %s:"
                             "%s"

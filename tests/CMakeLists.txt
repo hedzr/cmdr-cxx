@@ -45,6 +45,14 @@ function(define_test_program name)
 
     add_executable(${PROJECT_NAME}-${name} ${src_list})
     #target_compile_features(${PROJECT_NAME}-${name} PRIVATE cxx_std_11)
+    target_compile_definitions(${PROJECT_NAME}-${name} INTERFACE
+                               CMDR_ENABLE_ASSERTIONS=${_cmdr_enable_assertions}
+                               CMDR_ENABLE_PRECONDITION_CHECKS=${_cmdr_enable_precondition_checks}
+                               CMDR_ENABLE_WRAPPER=${_cmdr_enable_wrapper}
+                               CMDR_TEST_THREAD_POOL_DBGOUT=${_cmdr_test_thread_pool_dbgout}
+                               CMDR_UNIT_TEST=${_cmdr_enable_unit_test}
+                               CMDR_ENABLE_VERBOSE_LOG=1
+                               )
     target_include_directories(${PROJECT_NAME}-${name} PRIVATE
                                $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
                                ${CMAKE_SOURCE_DIR}
@@ -101,6 +109,8 @@ function(define_test_program name)
     endif ()
 endfunction()
 
+
+define_test_program(basic basic.cc)
 
 define_test_program(sso-1 sso_test_1.cc)
 define_test_program(sso-2 sso_test_2.cc)

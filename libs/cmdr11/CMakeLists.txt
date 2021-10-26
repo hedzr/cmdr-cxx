@@ -34,11 +34,20 @@ else ()
 endif ()
 
 option(CMDR_ENABLE_VERBOSE_LOG "whether or not print the matching decisions to logging output in running" OFF)
-#if (${CMDR_ENABLE_VERBOSE_LOG})
-#    set(_cmdr_enable_verbose_log 1)
-#else ()
-#    set(_cmdr_enable_verbose_log 0)
-#endif ()
+
+option(CMDR_TEST_THREAD_POOL_DBGOUT "Enable `pool_debug` macro definition" OFF)
+if (${CMDR_TEST_THREAD_POOL_DBGOUT} OR ${USE_DEBUG})
+    set(_cmdr_test_thread_pool_dbgout 1)
+else ()
+    set(_cmdr_test_thread_pool_dbgout 0)
+endif ()
+
+option(CMDR_UNIT_TEST "Enable the extra unit-tests" OFF)
+if (${CMDR_UNIT_TEST} OR ${USE_DEBUG})
+    set(_cmdr_enable_unit_test 1)
+else ()
+    set(_cmdr_enable_unit_test 0)
+endif ()
 
 
 ## SETTINGS ###################################################
@@ -110,6 +119,7 @@ set(header_files
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_var_t_inl.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_x_class.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_x_test.hh
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_z_test.hh
     # ${CMAKE_GENERATED_DIR}/cmdr-version.hh
     )
 
@@ -121,7 +131,7 @@ add_library(libs::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 #set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "libs/${PROJECT_NAME}")
 
 
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_11)
+#target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_11)
 #target_sources(${PROJECT_NAME} PRIVATE src/${PROJECT_NAME}.cc src/private.cc)
 target_sources(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${detail_header_files};${header_files}>")
 #set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -140,7 +150,10 @@ target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE $<INSTALL_INTERFACE:
 target_compile_definitions(${PROJECT_NAME} INTERFACE
                            CMDR_ENABLE_ASSERTIONS=${_cmdr_enable_assertions}
                            CMDR_ENABLE_PRECONDITION_CHECKS=${_cmdr_enable_precondition_checks}
-                           CMDR_ENABLE_WRAPPER=${_cmdr_enable_wrapper})
+                           CMDR_ENABLE_WRAPPER=${_cmdr_enable_wrapper}
+                           CMDR_TEST_THREAD_POOL_DBGOUT=${_cmdr_test_thread_pool_dbgout}
+                           CMDR_UNIT_TEST=${_cmdr_enable_unit_test}
+                           )
 if (${CMDR_ENABLE_VERBOSE_LOG})
     target_compile_definitions(${PROJECT_NAME} INTERFACE
                                CMDR_ENABLE_VERBOSE_LOG=1)
@@ -156,7 +169,13 @@ if (CMDR_ENABLE_VERBOSE_LOG)
 endif ()
 
 if (MSVC)
-    target_compile_options(${PROJECT_NAME} INTERFACE /wd4800) # truncation to bool warning
+    target_compile_options(${PROJECT_NAME} INTERFACE /wd4800 # truncation to bool warning
+                           #/DCMDR_UNIT_TEST=${_cmdr_enable_unit_test}
+                           )
+else ()
+    target_compile_options(${PROJECT_NAME} INTERFACE
+                           #-DCMDR_UNIT_TEST=${_cmdr_enable_unit_test}
+                           )
 endif ()
 
 

@@ -83,6 +83,7 @@
 #if defined(CMDR_CXX11_UNIT_TEST) && CMDR_CXX11_UNIT_TEST == 1
 #include "cmdr_x_test.hh"
 #endif
+#include "cmdr_z_test.hh"
 
 
 //

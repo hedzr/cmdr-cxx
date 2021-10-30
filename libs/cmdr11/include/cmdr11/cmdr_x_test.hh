@@ -14,6 +14,7 @@
 
 #include "cmdr_chrono.hh"
 #include "cmdr_dbg.hh"
+#include "cmdr_log.hh"
 
 
 namespace cmdr::test {

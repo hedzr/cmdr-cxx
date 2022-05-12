@@ -13,5 +13,5 @@
 #include <iostream>
 
 int main() {
-    cmdr::test::test_for_macros();
+  cmdr::test::test_for_macros();
 }

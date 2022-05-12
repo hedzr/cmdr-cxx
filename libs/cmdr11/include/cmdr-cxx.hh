@@ -11,4 +11,4 @@
 #include "cmdr11/cmdr_if.hh"
 #endif
 
-#endif //CMDR_CXX11_CMDR_CXX_HH
+#endif // CMDR_CXX11_CMDR_CXX_HH

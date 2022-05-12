@@ -18,62 +18,62 @@
 
 namespace cmdr::log {
 
-    namespace detail {
-        class Log final : public util::singleton<Log> {
-        public:
-            explicit Log(typename util::singleton<Log>::token) {}
-            ~Log() = default;
+  namespace detail {
+    class Log final : public util::singleton<Log> {
+    public:
+      explicit Log(typename util::singleton<Log>::token) {}
+      ~Log() = default;
 
-            // [[maybe_unused]] cmdr::terminal::colors::colorize _c;
+      // [[maybe_unused]] cmdr::terminal::colors::colorize _c;
 
-            template<class... Args>
-            void log([[maybe_unused]] const char *fmt, [[maybe_unused]] Args const &...args) {
-                // std::fprintf(std::stderr)
-            }
-            void vdebug(const char *file, int line, const char *func,
-                        char const *fmt, va_list args) {
-                // auto t = cross::time(nullptr);
-                char time_buf[100];
+      template<class... Args>
+      void log([[maybe_unused]] const char *fmt, [[maybe_unused]] Args const &...args) {
+        // std::fprintf(std::stderr)
+      }
+      void vdebug(const char *file, int line, const char *func,
+                  char const *fmt, va_list args) {
+        // auto t = cross::time(nullptr);
+        char time_buf[100];
 #if _MSC_VER
-                struct tm tm_ {};
-                auto _tm = &tm_;
-                time_t vt = time(nullptr);
-                gmtime_s(_tm, &vt);
+        struct tm tm_ {};
+        auto _tm  = &tm_;
+        time_t vt = time(nullptr);
+        gmtime_s(_tm, &vt);
 #else
-                auto *_tm = cross::gmtime();
+        auto *_tm = cross::gmtime();
 #endif
-                std::strftime(time_buf, sizeof time_buf, "%D %T", _tm);
+        std::strftime(time_buf, sizeof time_buf, "%D %T", _tm);
 
-                va_list args2;
-                va_copy(args2, args);
-                std::vector<char> buf((std::size_t) std::vsnprintf(nullptr, 0, fmt, args) + 1);
-                std::vsnprintf(buf.data(), buf.size(), fmt, args2);
-                va_end(args2);
+        va_list args2;
+        va_copy(args2, args);
+        std::vector<char> buf((std::size_t) std::vsnprintf(nullptr, 0, fmt, args) + 1);
+        std::vsnprintf(buf.data(), buf.size(), fmt, args2);
+        va_end(args2);
 
-                const char *const fg_reset_all = "\033[0m";
-                const char *const clr_magenta_bg_light = "\033[2;35m";
-                const char *const clr_cyan_bg_light = "\033[2;36m";
-                const char *const fg_light_gray = "\033[37m";
-                std::printf("%s"
-                            "%s %s:"
-                            "%s"
-                            " %s  %s%s:%d "
-                            "%s"
-                            "(%s)"
-                            "%s"
-                            "\n",
-                            clr_magenta_bg_light,
-                            time_buf,
-                            // _c.dim().s("[debug]").as_string().c_str(),
-                            "[debug]",
-                            fg_reset_all,
-                            buf.data(),
-                            clr_cyan_bg_light,
-                            file, line,
-                            fg_light_gray, func, fg_reset_all);
-            }
-        };
-    } // namespace detail
+        const char *const fg_reset_all         = "\033[0m";
+        const char *const clr_magenta_bg_light = "\033[2;35m";
+        const char *const clr_cyan_bg_light    = "\033[2;36m";
+        const char *const fg_light_gray        = "\033[37m";
+        std::printf("%s"
+                    "%s %s:"
+                    "%s"
+                    " %s  %s%s:%d "
+                    "%s"
+                    "(%s)"
+                    "%s"
+                    "\n",
+                    clr_magenta_bg_light,
+                    time_buf,
+                    // _c.dim().s("[debug]").as_string().c_str(),
+                    "[debug]",
+                    fg_reset_all,
+                    buf.data(),
+                    clr_cyan_bg_light,
+                    file, line,
+                    fg_light_gray, func, fg_reset_all);
+      }
+    };
+  } // namespace detail
 
 #if 0
     class log {
@@ -117,28 +117,28 @@ namespace cmdr::log {
     }; // class log
 #endif
 
-    class holder {
-        const char *_file;
-        int _line;
-        const char *_func;
+  class holder {
+    const char *_file;
+    int _line;
+    const char *_func;
 
-    public:
-        holder(const char *file, int line, const char *func)
-            : _file(file)
-            , _line(line)
-            , _func(func) {}
+  public:
+    holder(const char *file, int line, const char *func)
+        : _file(file)
+        , _line(line)
+        , _func(func) {}
 
-        void operator()(char const *fmt, ...) {
-            va_list va;
-            va_start(va, fmt);
-            xlog().vdebug(_file, _line, _func, fmt, va);
-            va_end(va);
-        }
+    void operator()(char const *fmt, ...) {
+      va_list va;
+      va_start(va, fmt);
+      xlog().vdebug(_file, _line, _func, fmt, va);
+      va_end(va);
+    }
 
-    private:
-        static detail::Log &xlog() { return detail::Log::instance(); }
-    };
-    // Logger log;
+  private:
+    static detail::Log &xlog() { return detail::Log::instance(); }
+  };
+  // Logger log;
 } // namespace cmdr::log
 
 #if defined(_MSC_VER)
@@ -156,13 +156,13 @@ namespace cmdr::log {
 #else
 #if defined(__GNUG__) || defined(_MSC_VER)
 #define cmdr_debug(...) \
-    (void) 0
+  (void) 0
 #else
-#define cmdr_debug(...)                                                                       \
-    _Pragma("GCC diagnostic push")                                                            \
-            _Pragma("GCC diagnostic ignored \"-Wunused-value\"") do { (void) (__VA_ARGS__); } \
-    while (0)                                                                                 \
-    _Pragma("GCC diagnostic pop")
+#define cmdr_debug(...)                                                                 \
+  _Pragma("GCC diagnostic push")                                                        \
+      _Pragma("GCC diagnostic ignored \"-Wunused-value\"") do { (void) (__VA_ARGS__); } \
+  while (0)                                                                             \
+  _Pragma("GCC diagnostic pop")
 #endif
 #endif
 
@@ -192,4 +192,4 @@ void cmdr_verbose_debug([[maybe_unused]] Args &&...args) { (void) (sizeof...(arg
 #endif
 #define cmdr_trace cmdr_verbose_debug
 
-#endif //CMDR_CXX11_CMDR_LOG_HH
+#endif // CMDR_CXX11_CMDR_LOG_HH

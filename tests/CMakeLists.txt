@@ -138,7 +138,7 @@ define_test_program(priority-queue priority_queue.cc)
 
 if (${ENABLE_LONG_TESTS})
     define_test_program(pool pool.cc)
-endif()
+endif ()
 define_test_program(process process.cc)
 
 # app2 c1

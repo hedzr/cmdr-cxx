@@ -44,8 +44,8 @@
 
 // ## version info
 
-#include "cmdr-version.hh"
 #include "cmdr-config-base.hh"
+#include "cmdr-version.hh"
 
 
 // ## all headers ...
@@ -108,4 +108,4 @@
 #include "cmdr_impl.hh"
 
 
-#endif //CMDR_CXX11_CMDR11_HH
+#endif // CMDR_CXX11_CMDR11_HH

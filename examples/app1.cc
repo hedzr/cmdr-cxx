@@ -25,68 +25,68 @@
 
 
 int main(int argc, char *argv[]) {
-    auto &cli = cmdr::cli("app1", CMDR_VERSION_STRING, "hedzr",
-                          "Copyright © 2021 by hedzr, All Rights Reserved.",
-                          "A demo app for cmdr-c11 library.",
-                          "$ ~ --help");
+  auto &cli = cmdr::cli("app1", CMDR_VERSION_STRING, "hedzr",
+                        "Copyright © 2021 by hedzr, All Rights Reserved.",
+                        "A demo app for cmdr-c11 library.",
+                        "$ ~ --help");
 
-    try {
-        using namespace cmdr::opt;
+  try {
+    using namespace cmdr::opt;
 
-        // cli.opt(opt_dummy<support_types>{}());
+    // cli.opt(opt_dummy<support_types>{}());
 
-        add_server_menu(cli);
-        add_test_menu(cli);
+    add_server_menu(cli);
+    add_test_menu(cli);
 
 #if defined(_DEBUG)
-        auto &cc = cli("server");
-        assert(cc.valid());
-        assert(cc["count"].valid());
-        assert(cc["host"].valid());
-        assert(cc("status").valid());
-        assert(cc("start").valid());
-        assert(cc("run", true).valid());
-        std::cout << cc.group_name() << '\n';
+    auto &cc = cli("server");
+    assert(cc.valid());
+    assert(cc["count"].valid());
+    assert(cc["host"].valid());
+    assert(cc("status").valid());
+    assert(cc("start").valid());
+    assert(cc("run", true).valid());
+    std::cout << cc.group_name() << '\n';
 #endif
 
 #if CMDR_TEST_ON_COMMAND_NOT_HOOKED
-        cli.set_global_on_command_not_hooked([](cmdr::opt::cmd const &, string_array const &) {
-            cmdr::get_store().dump_full_keys(std::cout);
-            cmdr::get_store().dump_tree(std::cout);
-            return 0;
-        });
+    cli.set_global_on_command_not_hooked([](cmdr::opt::cmd const &, string_array const &) {
+      cmdr::get_store().dump_full_keys(std::cout);
+      cmdr::get_store().dump_tree(std::cout);
+      return 0;
+    });
 #endif
 
 #if 1
-        {
-            using namespace cmdr::addons::loaders;
-            cli.set_global_on_loading_externals(yaml_loader{}());
-        }
-#endif
-
-#if 1
-        cli += sub_cmd{}("dup-test", "dup")
-                       .description("dup command/flag for testing")
-                       .group("Test");
-        {
-            auto &t1 = *cli.last_added_command();
-
-            t1 += opt{""}("string", "str")
-                          .description("set the string-value");
-            t1 += opt{10}("int", "i")
-                          .description("set the int-value");
-            t1 += opt{10}("int", "i")
-                          .description("set the int-value");
-        }
-#endif
-
-    } catch (std::exception &e) {
-        std::cerr << "Exception caught for testing (NOT BUG) : " << e.what() << '\n';
-        CMDR_DUMP_STACK_TRACE(e);
+    {
+      using namespace cmdr::addons::loaders;
+      cli.set_global_on_loading_externals(yaml_loader{}());
     }
+#endif
+
+#if 1
+    cli += sub_cmd{}("dup-test", "dup")
+               .description("dup command/flag for testing")
+               .group("Test");
+    {
+      auto &t1 = *cli.last_added_command();
+
+      t1 += opt{""}("string", "str")
+                .description("set the string-value");
+      t1 += opt{10}("int", "i")
+                .description("set the int-value");
+      t1 += opt{10}("int", "i")
+                .description("set the int-value");
+    }
+#endif
+
+  } catch (std::exception &e) {
+    std::cerr << "Exception caught for testing (NOT BUG) : " << e.what() << '\n';
+    CMDR_DUMP_STACK_TRACE(e);
+  }
 
 #if !defined(OS_WIN)
-    cmdr::debug::UnhandledExceptionHookInstaller _ueh{};
+  cmdr::debug::UnhandledExceptionHookInstaller _ueh{};
 #endif
-    return cli.run(argc, argv);
+  return cli.run(argc, argv);
 }

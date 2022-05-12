@@ -47,7 +47,7 @@
 #if __cplusplus < 201703L
 #include <experimental/filesystem>
 namespace std {
-    namespace filesystem = experimental::filesystem;
+  namespace filesystem = experimental::filesystem;
 }
 #else
 #include <filesystem>
@@ -65,7 +65,7 @@ namespace std {
 
 namespace cmdr::util {
 
-    //
+  //
 #if 0
     template<typename T>
     class Nullable {
@@ -192,20 +192,20 @@ namespace cmdr::util {
 #endif
 
 
-    template<class Visitor>
-    inline void visit_any_as(std::any const &, Visitor &&) {
-        cmdr_throw_line("std::any contained no suitable type, unable to visit");
-    }
+  template<class Visitor>
+  inline void visit_any_as(std::any const &, Visitor &&) {
+    cmdr_throw_line("std::any contained no suitable type, unable to visit");
+  }
 
-    template<class First, class... Rest, class Visitor>
-    inline void visit_any_as(std::any const &any, Visitor &&visitor) {
-        First const *value = std::any_cast<First>(&any);
-        if (value) {
-            visitor(*value);
-        } else {
-            visit_any_as<Rest...>(any, std::forward<Visitor>(visitor));
-        }
+  template<class First, class... Rest, class Visitor>
+  inline void visit_any_as(std::any const &any, Visitor &&visitor) {
+    First const *value = std::any_cast<First>(&any);
+    if (value) {
+      visitor(*value);
+    } else {
+      visit_any_as<Rest...>(any, std::forward<Visitor>(visitor));
     }
+  }
 
 } // namespace cmdr::util
 
@@ -219,39 +219,39 @@ namespace cmdr::util {
 namespace cmdr::util {
 
 #if defined(_MSC_VER)
-    using id_type = std::string_view; // or std::string_view
+  using id_type = std::string_view; // or std::string_view
 #else
-    using id_type = std::string_view;
+  using id_type = std::string_view;
 #endif
 
 #if !defined(_MSC_VER)
-    namespace detail {
-        template<class T, bool = std::is_enum<T>::value>
-        struct __enum_id_gen : public std::unary_function<T, id_type> {
-            id_type operator()(T) const {
-                // typedef typename std::underlying_type<T>::type type;
-                constexpr id_type v = debug::type_name<T>();
-                constexpr auto end = v.find('<');
-                // if (end != v.npos)
-                //     return v.substr(0, end);
-                // return v;
-                return (end != v.npos) ? v.substr(0, end) : v;
-            }
-        };
-    } // namespace detail
+  namespace detail {
+    template<class T, bool = std::is_enum<T>::value>
+    struct __enum_id_gen : public std::unary_function<T, id_type> {
+      id_type operator()(T) const {
+        // typedef typename std::underlying_type<T>::type type;
+        constexpr id_type v = debug::type_name<T>();
+        constexpr auto end  = v.find('<');
+        // if (end != v.npos)
+        //     return v.substr(0, end);
+        // return v;
+        return (end != v.npos) ? v.substr(0, end) : v;
+      }
+    };
+  } // namespace detail
 
-    template<typename T>
-    struct id_gen : public detail::__enum_id_gen<T> {};
+  template<typename T>
+  struct id_gen : public detail::__enum_id_gen<T> {};
 #endif
 
-    template<typename T>
-    constexpr auto id_name() -> id_type {
-        constexpr id_type v = debug::type_name<T>();
-        constexpr auto begin = v.find("()::");
-        constexpr auto end = v.find('<');
-        constexpr auto begin1 = begin != v.npos ? begin + 4 : 0;
-        return v.substr(begin1, (end != v.npos ? end : v.length()) - begin1);
-    }
+  template<typename T>
+  constexpr auto id_name() -> id_type {
+    constexpr id_type v   = debug::type_name<T>();
+    constexpr auto begin  = v.find("()::");
+    constexpr auto end    = v.find('<');
+    constexpr auto begin1 = begin != v.npos ? begin + 4 : 0;
+    return v.substr(begin1, (end != v.npos ? end : v.length()) - begin1);
+  }
 
 } // namespace cmdr::util
 #endif // __CMDR_ID_SYSTEM_DEFINED
@@ -260,69 +260,69 @@ namespace cmdr::util {
 #define __CMDR_FACTORY_T_DEFINED
 namespace cmdr::util::factory {
 
-    /**
-       * @brief a factory template class
-       * @tparam product_base   such as `Shape`
-       * @tparam products       such as `Rect`, `Ellipse`, ...
-       */
-    template<typename product_base, typename... products>
-    class factory final {
-    public:
-        CLAZZ_NON_COPYABLE(factory);
-        using string = id_type;
-        template<typename T>
-        struct clz_name_t {
-            string id = id_name<T>();
-            using type = T;
-            using base_type = product_base;
-            static void static_check() {
-                static_assert(std::is_base_of<product_base, T>::value, "all products must inherit from product_base");
-            }
-            template<typename... Args>
-            std::unique_ptr<base_type> gen(Args &&...args) const {
-                return std::make_unique<type>(args...);
-            }
-            // T data;
-        };
-        using named_products = std::tuple<clz_name_t<products>...>;
-        // using _T = typename std::conditional<unique, std::unique_ptr<product_base>, std::shared_ptr<product_base>>::type;
-        
-        template<typename... Args>
-        static auto create(string const &id, Args &&...args) {
-            std::unique_ptr<product_base> result{};
-            std::apply([](auto &&...it) {
-                ((it.static_check() /*static_check<decltype(it.data)>()*/), ...);
-            },
-                       named_products{});
-            std::apply([&](auto &&...it) {
-                ((it.id == id ? result = it.gen(args...) : result), ...);
-            },
-                       named_products{});
-            return result;
-        }
-        template<typename... Args>
-        static std::shared_ptr<product_base> make_shared(string const &id, Args &&...args) {
-            std::shared_ptr<product_base> ptr = create(id, args...);
-            return ptr;
-        }
-        template<typename... Args>
-        static std::unique_ptr<product_base> make_unique(string const &id, Args &&...args) {
-            return create(id, args...);
-        }
-        template<typename... Args>
-        static product_base *create_nacked_ptr(string const &id, Args &&...args) {
-            return create(id, args...).release();
-        }
+  /**
+   * @brief a factory template class
+   * @tparam product_base   such as `Shape`
+   * @tparam products       such as `Rect`, `Ellipse`, ...
+   */
+  template<typename product_base, typename... products>
+  class factory final {
+  public:
+    CLAZZ_NON_COPYABLE(factory);
+    using string = id_type;
+    template<typename T>
+    struct clz_name_t {
+      string id       = id_name<T>();
+      using type      = T;
+      using base_type = product_base;
+      static void static_check() {
+        static_assert(std::is_base_of<product_base, T>::value, "all products must inherit from product_base");
+      }
+      template<typename... Args>
+      std::unique_ptr<base_type> gen(Args &&...args) const {
+        return std::make_unique<type>(args...);
+      }
+      // T data;
+    };
+    using named_products = std::tuple<clz_name_t<products>...>;
+    // using _T = typename std::conditional<unique, std::unique_ptr<product_base>, std::shared_ptr<product_base>>::type;
 
-    private:
-        // template<typename product>
-        // static void static_check() {
-        //     static_assert(std::is_base_of<product_base, product>::value, "all products must inherit from product_base");
-        // }
-    }; // class factory
+    template<typename... Args>
+    static auto create(string const &id, Args &&...args) {
+      std::unique_ptr<product_base> result{};
+      std::apply([](auto &&...it) {
+        ((it.static_check() /*static_check<decltype(it.data)>()*/), ...);
+      },
+                 named_products{});
+      std::apply([&](auto &&...it) {
+        ((it.id == id ? result = it.gen(args...) : result), ...);
+      },
+                 named_products{});
+      return result;
+    }
+    template<typename... Args>
+    static std::shared_ptr<product_base> make_shared(string const &id, Args &&...args) {
+      std::shared_ptr<product_base> ptr = create(id, args...);
+      return ptr;
+    }
+    template<typename... Args>
+    static std::unique_ptr<product_base> make_unique(string const &id, Args &&...args) {
+      return create(id, args...);
+    }
+    template<typename... Args>
+    static product_base *create_nacked_ptr(string const &id, Args &&...args) {
+      return create(id, args...).release();
+    }
+
+  private:
+    // template<typename product>
+    // static void static_check() {
+    //     static_assert(std::is_base_of<product_base, product>::value, "all products must inherit from product_base");
+    // }
+  }; // class factory
 
 } // namespace cmdr::util::factory
 #endif // __CMDR_FACTORY_T_DEFINED
 
 
-#endif //CMDR_CXX11_CMDR_UTILS_HH
+#endif // CMDR_CXX11_CMDR_UTILS_HH

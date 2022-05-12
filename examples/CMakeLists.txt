@@ -91,8 +91,6 @@ define_example_program(app1 app1.cc second_src.cc)
 define_example_program(app2 app2.cc second_src.cc)
 
 
-
-
 #
 #if (MSVC)
 #    # target_compile_options(test-sso-1 PRIVATE /W4 /WX /utf-8)

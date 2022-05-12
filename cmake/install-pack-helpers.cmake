@@ -23,18 +23,18 @@ macro(add_install_chapter target)
     message(STATUS " * PROJECT_VERSION = ${PROJECT_VERSION}")
 
     write_basic_package_version_file(
-            ${CMAKE_CURRENT_BINARY_DIR}/${target}-config-version.cmake
-            VERSION ${PROJECT_VERSION}
-            COMPATIBILITY SameMajorVersion
+        ${CMAKE_CURRENT_BINARY_DIR}/${target}-config-version.cmake
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMajorVersion
     )
 
     install(TARGETS ${target}
-            EXPORT ${target}Targets
-            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-            DESTINATION ${CMAKE_INSTALL_BINDIR}
-            )
+        EXPORT ${target}Targets
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        DESTINATION ${CMAKE_INSTALL_BINDIR}
+        )
 
     message(STATUS "configure install section for ${target_type} ${target}")
     if (target_type STREQUAL "EXECUTABLE")
@@ -52,18 +52,18 @@ macro(add_install_chapter target)
         #         )
 
         install(EXPORT ${target}Targets
-                FILE ${target}Targets.cmake
-                NAMESPACE ${target}::
-                DESTINATION ${CONFIG_PACKAGE_INSTALL_DIR})
+            FILE ${target}Targets.cmake
+            NAMESPACE ${target}::
+            DESTINATION ${CONFIG_PACKAGE_INSTALL_DIR})
 
         install(DIRECTORY include/${target}
-                DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-                )
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            )
 
         install(FILES
-                ${CMAKE_CURRENT_LIST_DIR}/cmake/${target}Config.cmake
-                DESTINATION
-                ${CMAKE_INSTALL_LIBDIR}/cmake/${target})
+            ${CMAKE_CURRENT_LIST_DIR}/cmake/${target}Config.cmake
+            DESTINATION
+            ${CMAKE_INSTALL_LIBDIR}/cmake/${target})
 
         # install(FILES
         #         ${CMAKE_BINARY_DIR}/generated/cmdr-version.hh

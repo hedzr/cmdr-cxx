@@ -12,13 +12,13 @@ if ("${CMAKE_VERSION}" VERSION_GREATER "3.2")
 endif ()
 if (${WriterCompilerDetectionHeaderFound})
     write_compiler_detection_header(
-            FILE ${CMAKE_GENERATED_DIR}/the-compiler.h
-            PREFIX The
-            COMPILERS GNU Clang MSVC Intel AppleClang     #  SunPro
-            FEATURES
-            cxx_variadic_templates cxx_final cxx_override
-            cxx_static_assert cxx_constexpr cxx_extern_templates
-            cxx_noexcept cxx_thread_local
+        FILE ${CMAKE_GENERATED_DIR}/the-compiler.h
+        PREFIX The
+        COMPILERS GNU Clang MSVC Intel AppleClang     #  SunPro
+        FEATURES
+        cxx_variadic_templates cxx_final cxx_override
+        cxx_static_assert cxx_constexpr cxx_extern_templates
+        cxx_noexcept cxx_thread_local
     )
 endif ()
 

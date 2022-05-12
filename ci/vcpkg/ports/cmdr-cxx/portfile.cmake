@@ -35,7 +35,7 @@
 #find_program(GIT git)
 # find git
 vcpkg_find_acquire_program(
-        GIT
+    GIT
 )
 #https://gitmemory.com/issue/microsoft/vcpkg/18422/863245438
 get_filename_component(GIT_EXE_PATH ${GIT} DIRECTORY)
@@ -46,7 +46,7 @@ vcpkg_download_distfile(ARCHIVE
     URLS "https://github.com/hedzr/cmdr-cxx/archive/refs/tags/v0.2.20.zip"
     FILENAME "cmdr-cxx-v0.2.20.zip"
     SHA512 805175d185fc2fc61b316eff0714fad1d50e9fb3619e319481a474fc1800e2594ef005e9fcb5998b16fe62a6996bed14c8a12800e75539e393866f9f20f280f9
-)
+    )
 
 message(STATUS "extracting ...")
 vcpkg_extract_source_archive_ex(

@@ -4,9 +4,9 @@
 include(FetchContent)
 
 FetchContent_Declare(
-        spdlog
-        GIT_REPOSITORY https://github.com/gabime/spdlog.git
-        GIT_TAG v1.8.2)
+    spdlog
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG v1.8.2)
 
 FetchContent_MakeAvailable(spdlog)
 #endif ()

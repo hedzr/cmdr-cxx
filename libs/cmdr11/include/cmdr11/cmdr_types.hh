@@ -29,38 +29,38 @@
 
 namespace cmdr {
 
-    class obj {
-    public:
-        virtual ~obj() = default;
-    };
+  class obj {
+  public:
+    virtual ~obj() = default;
+  };
 
-    // old cmdr,
-    using support_types = std::variant<std::monostate,
-                                       bool, char,
-                                       int, unsigned int, int8_t, int16_t,
-                                       //int32_t, int64_t,
-                                       uint8_t, uint16_t,
-                                       long, long long, unsigned long, unsigned long long,
-                                       float, double,
-                                       std::chrono::nanoseconds,
-                                       std::chrono::microseconds,
-                                       std::chrono::milliseconds,
-                                       std::chrono::seconds,
-                                       std::chrono::minutes,
-                                       std::chrono::hours,
+  // old cmdr,
+  using support_types = std::variant<std::monostate,
+                                     bool, char,
+                                     int, unsigned int, int8_t, int16_t,
+                                     // int32_t, int64_t,
+                                     uint8_t, uint16_t,
+                                     long, long long, unsigned long, unsigned long long,
+                                     float, double,
+                                     std::chrono::nanoseconds,
+                                     std::chrono::microseconds,
+                                     std::chrono::milliseconds,
+                                     std::chrono::seconds,
+                                     std::chrono::minutes,
+                                     std::chrono::hours,
 #if __cplusplus > 201703L
-                                       std::chrono::days,
-                                       std::chrono::weeks,
-                                       std::chrono::months,
-                                       std::chrono::years,
+                                     std::chrono::days,
+                                     std::chrono::weeks,
+                                     std::chrono::months,
+                                     std::chrono::years,
 
-                                       // std::chrono::time_zone,
-                                       std::chrono::system_clock,
+                                     // std::chrono::time_zone,
+                                     std::chrono::system_clock,
 #endif
-                                       std::byte,
-                                       std::vector<std::string>,
-                                       const char *,
-                                       std::string>;
+                                     std::byte,
+                                     std::vector<std::string>,
+                                     const char *,
+                                     std::string>;
 
 #if 0
     // from:
@@ -95,86 +95,86 @@ namespace cmdr {
 #endif
 
 
-    // new cmdr,
-    using base_type [[maybe_unused]] = std::any;
-    // helper constant for the visitor #3
-    template<class>
-    [[maybe_unused]] inline constexpr bool always_false_v = false;
+  // new cmdr,
+  using base_type [[maybe_unused]] = std::any;
+  // helper constant for the visitor #3
+  template<class>
+  [[maybe_unused]] inline constexpr bool always_false_v = false;
 
-    [[maybe_unused]] inline std::string variant_to_string(const support_types &v) {
-        std::stringstream ss;
+  [[maybe_unused]] inline std::string variant_to_string(const support_types &v) {
+    std::stringstream ss;
 
-        std::visit([&ss](auto &&arg) {
-            using T = std::decay_t<decltype(arg)>;
-            if constexpr (std::is_same_v<T, bool>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, char>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, int>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, int8_t>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, int16_t>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, int32_t>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, int64_t>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, unsigned int>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, uint8_t>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, uint16_t>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, uint32_t>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, uint64_t>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, long>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, long long>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, unsigned long>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, unsigned long long>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, float>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, double>)
-                ss << arg;
-            else if constexpr (std::is_same_v<T, std::string>)
-                ss << std::quoted(arg);
-            else if constexpr (std::is_same_v<T, std::chrono::nanoseconds>)
-                chrono::format_duration(ss, arg);
-            else if constexpr (std::is_same_v<T, std::chrono::microseconds>)
-                chrono::format_duration(ss, arg);
-            else if constexpr (std::is_same_v<T, std::chrono::milliseconds>)
-                chrono::format_duration(ss, arg);
-            else if constexpr (std::is_same_v<T, std::chrono::seconds>)
-                chrono::format_duration(ss, arg);
-            else if constexpr (std::is_same_v<T, std::chrono::minutes>)
-                chrono::format_duration(ss, arg);
-            else if constexpr (std::is_same_v<T, std::chrono::hours>)
-                chrono::format_duration(ss, arg);
+    std::visit([&ss](auto &&arg) {
+      using T = std::decay_t<decltype(arg)>;
+      if constexpr (std::is_same_v<T, bool>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, char>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, int>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, int8_t>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, int16_t>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, int32_t>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, int64_t>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, unsigned int>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, uint8_t>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, uint16_t>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, uint32_t>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, uint64_t>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, long>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, long long>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, unsigned long>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, unsigned long long>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, float>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, double>)
+        ss << arg;
+      else if constexpr (std::is_same_v<T, std::string>)
+        ss << std::quoted(arg);
+      else if constexpr (std::is_same_v<T, std::chrono::nanoseconds>)
+        chrono::format_duration(ss, arg);
+      else if constexpr (std::is_same_v<T, std::chrono::microseconds>)
+        chrono::format_duration(ss, arg);
+      else if constexpr (std::is_same_v<T, std::chrono::milliseconds>)
+        chrono::format_duration(ss, arg);
+      else if constexpr (std::is_same_v<T, std::chrono::seconds>)
+        chrono::format_duration(ss, arg);
+      else if constexpr (std::is_same_v<T, std::chrono::minutes>)
+        chrono::format_duration(ss, arg);
+      else if constexpr (std::is_same_v<T, std::chrono::hours>)
+        chrono::format_duration(ss, arg);
 #if __cplusplus > 201703L
-            else if constexpr (std::is_same_v<T, std::chrono::days>)
-                chrono::format_duration(ss, arg);
-            else if constexpr (std::is_same_v<T, std::chrono::weeks>)
-                chrono::format_duration(ss, arg);
-            else if constexpr (std::is_same_v<T, std::chrono::months>)
-                chrono::format_duration(ss, arg);
-            else if constexpr (std::is_same_v<T, std::chrono::years>)
-                chrono::format_duration(ss, arg);
-            else if constexpr (std::is_same_v<T, std::chrono::system_clock>)
-                chrono::format_duration(ss, arg);
+      else if constexpr (std::is_same_v<T, std::chrono::days>)
+        chrono::format_duration(ss, arg);
+      else if constexpr (std::is_same_v<T, std::chrono::weeks>)
+        chrono::format_duration(ss, arg);
+      else if constexpr (std::is_same_v<T, std::chrono::months>)
+        chrono::format_duration(ss, arg);
+      else if constexpr (std::is_same_v<T, std::chrono::years>)
+        chrono::format_duration(ss, arg);
+      else if constexpr (std::is_same_v<T, std::chrono::system_clock>)
+        chrono::format_duration(ss, arg);
 #endif
-            //else
-            //    static_assert(always_false_v<T>, "non-exhaustive visitor!");
-        },
-                   v);
-        return ss.str();
-    }
+      // else
+      //     static_assert(always_false_v<T>, "non-exhaustive visitor!");
+    },
+               v);
+    return ss.str();
+  }
 } // namespace cmdr
 
 
-#endif //CMDR_CXX11_CMDR_TYPES_HH
+#endif // CMDR_CXX11_CMDR_TYPES_HH

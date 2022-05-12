@@ -7,9 +7,9 @@ if (NOT ${Catch2_FOUND})
 
     message("fetch Catch2 from github ...")
     FetchContent_Declare(
-            Catch2
-            GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-            GIT_TAG v2.13.3)
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG v2.13.3)
 
     message(STATUS "Downloading Catch2 and make it available (FetchContent) ")
     FetchContent_MakeAvailable(Catch2)

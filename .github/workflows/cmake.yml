@@ -118,7 +118,7 @@ jobs:
 
 
       - name: Install yaml-cpp
-        run:   |
+        run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
                sudo apt install -y libyaml-cpp-dev
           elif [ "$RUNNER_OS" == "Windows" ]; then
@@ -289,10 +289,10 @@ jobs:
             name: "Windows Latest MSVC", artifact: "Windows-MSVC.7z",
             os: windows-latest
           }
-#          - {
-#            name: "Windows Latest MinGW", artifact: "Windows-MinGW.7z",
-#            os: ubuntu-latest
-#          }
+          #          - {
+          #            name: "Windows Latest MinGW", artifact: "Windows-MinGW.7z",
+          #            os: ubuntu-latest
+          #          }
           - {
             name: "Ubuntu Latest GCC", artifact: "Linux.7z",
             os: ubuntu-latest

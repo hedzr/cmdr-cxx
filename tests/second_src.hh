@@ -15,4 +15,4 @@ void add_main_menu(cmdr::app &cli);
 void add_server_menu(cmdr::app &cli);
 
 
-#endif //CMDR_CXX11_SECOND_SRC_HH
+#endif // CMDR_CXX11_SECOND_SRC_HH

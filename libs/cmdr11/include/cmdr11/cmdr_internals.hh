@@ -10,33 +10,33 @@
 
 namespace cmdr {
 
-    class app;
+  class app;
 
-    /**
-     * @brief to hold the last app* instance.
-     */
-    class app_holder final : public util::singleton<app_holder> {
-    public:
-        explicit app_holder(typename util::singleton<app_holder>::token) {}
-        ~app_holder() = default;
+  /**
+   * @brief to hold the last app* instance.
+   */
+  class app_holder final : public util::singleton<app_holder> {
+  public:
+    explicit app_holder(typename util::singleton<app_holder>::token) {}
+    ~app_holder() = default;
 
-        //#pragma clang diagnostic push
-        //#pragma ide diagnostic ignored "readability-convert-member-functions-to-static"
-        [[maybe_unused]] void use() const { std::cout << "in use" << '\n'; }
-        //#pragma clang diagnostic pop
+    //#pragma clang diagnostic push
+    //#pragma ide diagnostic ignored "readability-convert-member-functions-to-static"
+    [[maybe_unused]] void use() const { std::cout << "in use" << '\n'; }
+    //#pragma clang diagnostic pop
 
-    public:
-        app *get_ptr() { return _app; }
-        app &operator*() { return *_app; }
-        app *operator->() { return _app; }
-        // explicit operator app() { return _app; }
+  public:
+    app *get_ptr() { return _app; }
+    app &operator*() { return *_app; }
+    app *operator->() { return _app; }
+    // explicit operator app() { return _app; }
 
-    private:
-        app *_app{};
-        void put(app *ptr) { _app = ptr; }
-        friend class app;
-    };
+  private:
+    app *_app{};
+    void put(app *ptr) { _app = ptr; }
+    friend class app;
+  };
 
 } // namespace cmdr
 
-#endif //CMDR_CXX11_CMDR_INTERNALS_HH
+#endif // CMDR_CXX11_CMDR_INTERNALS_HH

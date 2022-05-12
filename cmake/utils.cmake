@@ -268,17 +268,17 @@ macro(apply_all_unit_tests tests_name)
         get_property(tmp GLOBAL PROPERTY UNIT_TEST_TARGETS)
         # message("UNIT_TEST_TARGETS: ${tmp}")
         add_custom_target(${tests_name} ALL
-                          DEPENDS ${tmp}
-                          )
+            DEPENDS ${tmp}
+            )
         add_custom_command(TARGET ${tests_name}
-                           POST_BUILD COMMAND echo ARGS "   CONFIG = $<CONFIG>, CI_RUNNING = $ENV{CI_RUNNING}, ENABLE_AUTOMATE_TESTS = ${ENABLE_AUTOMATE_TESTS}"
-                           WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                           )
+            POST_BUILD COMMAND echo ARGS "   CONFIG = $<CONFIG>, CI_RUNNING = $ENV{CI_RUNNING}, ENABLE_AUTOMATE_TESTS = ${ENABLE_AUTOMATE_TESTS}"
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            )
         add_custom_command(TARGET ${tests_name}
-                           COMMENT ">> Run tests for: ${tmp} ..."
-                           POST_BUILD COMMAND ctest ARGS --output-on-failure --extra-verbose
-                           WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-                           )
+            COMMENT ">> Run tests for: ${tmp} ..."
+            POST_BUILD COMMAND ctest ARGS --output-on-failure --extra-verbose
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+            )
     else ()
         message(STATUS "* ENABLE_AUTOMATE_TESTS = ${ENABLE_AUTOMATE_TESTS}, automated tests disabled *")
     endif ()
@@ -333,19 +333,19 @@ macro(with_flex_bison libName prefixName outputDir)
     if (BISON_FOUND)
         message(STATUS "BISON ${BISON_VERSION} FOUND: " ${BISON_EXECUTABLE})
         bison_target(${prefixName}Parser
-                     ${CMAKE_CURRENT_SOURCE_DIR}/parser.yy
-                     ${TARGET_DIR}/${prefixName}.parser.cc
-                     COMPILE_FLAGS "--xml"
-                     DEFINES_FILE ${TARGET_DIR}/${prefixName}.parser.hh
-                     VERBOSE ${TARGET_DIR}/${prefixName}.parser.grammer.txt
-                     REPORT_FILE ${TARGET_DIR}/${prefixName}.parser.grammer.rpt
-                     )
+            ${CMAKE_CURRENT_SOURCE_DIR}/parser.yy
+            ${TARGET_DIR}/${prefixName}.parser.cc
+            COMPILE_FLAGS "--xml"
+            DEFINES_FILE ${TARGET_DIR}/${prefixName}.parser.hh
+            VERBOSE ${TARGET_DIR}/${prefixName}.parser.grammer.txt
+            REPORT_FILE ${TARGET_DIR}/${prefixName}.parser.grammer.rpt
+            )
         if (FLEX_FOUND)
             message(STATUS "FLEX ${FLEX_VERSION} FOUND: " ${FLEX_EXECUTABLE} ", INC: " ${FLEX_INCLUDE_DIRS} "|" ${FLEX_INCLUDE_DIR}", LIBS: " ${FLEX_LIBRARIES})
             # message(STATUS "FLEX ${FLEX_VERSION} FOUND: " ${FLEX_EXECUTABLE} ". LIBS: " ${FLEX_LIBRARIES})
             flex_target(${prefixName}Scanner
-                        ${CMAKE_CURRENT_SOURCE_DIR}/scanner.ll
-                        ${TARGET_DIR}/${prefixName}.scanner.cc)
+                ${CMAKE_CURRENT_SOURCE_DIR}/scanner.ll
+                ${TARGET_DIR}/${prefixName}.scanner.cc)
             add_flex_bison_dependency(${prefixName}Scanner ${prefixName}Parser)
             set_source_files_properties(${prefixName}.scanner.cc PROPERTIES COMPILE_FLAGS "-Wno-error=conversion -Wno-conversion -Wno-sign-conversion -Wno-sign-compare")  # -Wno-int-conversion
         endif ()
@@ -356,15 +356,15 @@ macro(with_flex_bison libName prefixName outputDir)
     ####################################
 
     add_library(${libName} STATIC
-                #${THELIB_SRCS}
-                ${BISON_${prefixName}Parser_OUTPUTS}
-                ${FLEX_${prefixName}Scanner_OUTPUTS}
-                )
+        #${THELIB_SRCS}
+        ${BISON_${prefixName}Parser_OUTPUTS}
+        ${FLEX_${prefixName}Scanner_OUTPUTS}
+        )
     target_link_libraries(${libName}
-                          #${THELIB_LIBS}
-                          #pthread
-                          #${FLEX_LIBRARIES}
-                          )
+        #${THELIB_LIBS}
+        #pthread
+        #${FLEX_LIBRARIES}
+        )
 
 endmacro()
 
@@ -372,8 +372,8 @@ endmacro()
 # Macro to declare a dependent option with more convenient syntax
 macro(vg_option NAME DEFAULT_VALUE DOCSTRING DEPENDENCIES)
     cmake_dependent_option(
-            ${NAME} ${DOCSTRING} ${DEFAULT_VALUE}
-            "${DEPENDENCIES}" OFF
+        ${NAME} ${DOCSTRING} ${DEFAULT_VALUE}
+        "${DEPENDENCIES}" OFF
     )
 endmacro()
 
@@ -501,8 +501,8 @@ function(find_multi_configuration_library VAR NAME)
         endif ()
     else (CMAKE_CONFIGURATION_TYPES OR CMAKE_BUILD_TYPE)
         find_library(${VAR}_LIBRARY ${NAME}
-                     PATHS ${ARGN}
-                     )
+            PATHS ${ARGN}
+            )
     endif (CMAKE_CONFIGURATION_TYPES OR CMAKE_BUILD_TYPE)
 endfunction()
 
@@ -597,14 +597,14 @@ function(vg_include_library_sdk_directories)
     if (NOT "x_${_interface_targets}" STREQUAL "x_")
         if ("x_${_target}" STREQUAL "x_")
             message(FATAL_ERROR "vg_include_library_sdk_directories:"
-                    " INTERFACE includes specified,"
-                    " but no TARGET specified")
+                " INTERFACE includes specified,"
+                " but no TARGET specified")
         endif ()
 
         # Handle interface include directories
         foreach (_interface ${_interface_targets})
             vg_target_include_directories(
-                    ${_target} "${${_interface}_INCLUDE_DIRS}"
+                ${_target} "${${_interface}_INCLUDE_DIRS}"
             )
             include_directories(${${_interface}_INCLUDE_DIRS})
         endforeach ()
@@ -629,8 +629,8 @@ function(vg_add_dependencies TARGET)
 
     # Add include directories
     vg_include_library_sdk_directories(
-            ${_private_targets}
-            TARGET ${TARGET} INTERFACE ${_public_targets}
+        ${_private_targets}
+        TARGET ${TARGET} INTERFACE ${_public_targets}
     )
 
     # Link libraries
@@ -653,7 +653,7 @@ function(copy_files_target TARGET DESTINATION)
         get_filename_component(_out "${file}" NAME)
         set(_out "${DESTINATION}/${_out}")
         add_custom_command(OUTPUT "${_out}" DEPENDS "${_in}"
-                           COMMAND ${CMAKE_COMMAND} -E copy "${_in}" "${_out}")
+            COMMAND ${CMAKE_COMMAND} -E copy "${_in}" "${_out}")
         list(APPEND _target_depends "${_out}")
     endforeach ()
     add_custom_target(${TARGET} ALL DEPENDS ${_target_depends})
@@ -665,18 +665,18 @@ function(install_executable_target NAME COMPONENT)
         get_target_property(_type ${NAME} TYPE)
         if (_type STREQUAL "EXECUTABLE")
             install(TARGETS ${NAME}
-                    RUNTIME COMPONENT ${COMPONENT} DESTINATION bin
-                    BUNDLE COMPONENT ${COMPONENT} DESTINATION .
-                    )
+                RUNTIME COMPONENT ${COMPONENT} DESTINATION bin
+                BUNDLE COMPONENT ${COMPONENT} DESTINATION .
+                )
         else ()
             message(WARNING
-                    "install_executable_target given non-executable target '${NAME}'"
-                    )
+                "install_executable_target given non-executable target '${NAME}'"
+                )
         endif ()
     else ()
         message(WARNING
-                "install_executable_target given non-target name '${NAME}'"
-                )
+            "install_executable_target given non-target name '${NAME}'"
+            )
     endif ()
 endfunction()
 
@@ -690,11 +690,11 @@ function(install_library_targets)
             get_target_property(_type ${_target} TYPE)
             if (_type MATCHES "(SHARED|STATIC|MODULE)_LIBRARY")
                 install(TARGETS ${_target}
-                        EXPORT VisGUI
-                        RUNTIME COMPONENT Runtime DESTINATION bin
-                        LIBRARY COMPONENT Runtime DESTINATION lib${LIB_SUFFIX}
-                        ARCHIVE COMPONENT Development DESTINATION lib${LIB_SUFFIX}
-                        )
+                    EXPORT VisGUI
+                    RUNTIME COMPONENT Runtime DESTINATION bin
+                    LIBRARY COMPONENT Runtime DESTINATION lib${LIB_SUFFIX}
+                    ARCHIVE COMPONENT Development DESTINATION lib${LIB_SUFFIX}
+                    )
                 if (_type STREQUAL "SHARED_LIBRARY")
                     export(TARGETS ${_target} APPEND FILE "${VisGUI_EXPORT_FILE}")
                 endif ()
@@ -703,13 +703,13 @@ function(install_library_targets)
                 set_property(GLOBAL APPEND PROPERTY VisGUI_EXPORT_TARGETS ${_target})
             else ()
                 message(WARNING
-                        "install_library_targets given non-library target '${_target}'"
-                        )
+                    "install_library_targets given non-library target '${_target}'"
+                    )
             endif ()
         else ()
             message(WARNING
-                    "install_library_targets given non-target name '${_target}'"
-                    )
+                "install_library_targets given non-target name '${_target}'"
+                )
         endif ()
     endforeach ()
 endfunction()
@@ -736,28 +736,28 @@ function(vg_add_qt_plugin NAME)
     get_target_property(_type ${NAME} TYPE)
     add_targets_definitions(${NAME} SYMBOLS QT_PLUGIN QT_SHARED)
     set_target_properties(${NAME} PROPERTIES
-                          LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
-                          RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
-                          )
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/plugins
+        )
     foreach (config ${CMAKE_CONFIGURATION_TYPES})
         string(TOUPPER "${config}" config_upper)
         set_target_properties(${NAME} PROPERTIES
-                              LIBRARY_OUTPUT_DIRECTORY_${config_upper}
-                              ${CMAKE_BINARY_DIR}/${config}/plugins
-                              RUNTIME_OUTPUT_DIRECTORY_${config_upper}
-                              ${CMAKE_BINARY_DIR}/${config}/plugins
-                              )
+            LIBRARY_OUTPUT_DIRECTORY_${config_upper}
+            ${CMAKE_BINARY_DIR}/${config}/plugins
+            RUNTIME_OUTPUT_DIRECTORY_${config_upper}
+            ${CMAKE_BINARY_DIR}/${config}/plugins
+            )
     endforeach ()
 endfunction()
 
 # Function to install files with (optionally) their respective path prefixes
 function(vg_install_files_with_prefix)
     cmake_parse_arguments(_install
-                          "STRIP_PATH"
-                          "SOURCE;TARGET;DESTINATION"
-                          "FILES"
-                          ${ARGN}
-                          )
+        "STRIP_PATH"
+        "SOURCE;TARGET;DESTINATION"
+        "FILES"
+        ${ARGN}
+        )
     list(APPEND _install_FILES ${_install_UNPARSED_ARGUMENTS})
 
     set(_path)
@@ -776,13 +776,13 @@ function(vg_install_files_with_prefix)
         set(_out "${visGUI_BINARY_DIR}/${_install_DESTINATION}/${_path}/${_name}")
 
         add_custom_command(OUTPUT "${_out}" DEPENDS "${_in}"
-                           COMMAND ${CMAKE_COMMAND} -E copy "${_in}" "${_out}")
+            COMMAND ${CMAKE_COMMAND} -E copy "${_in}" "${_out}")
         list(APPEND _target_depends "${_out}")
 
         install(FILES "${_in_prefix}${file}"
-                DESTINATION ${_install_DESTINATION}/${_path}
-                COMPONENT Web
-                )
+            DESTINATION ${_install_DESTINATION}/${_path}
+            COMPONENT Web
+            )
     endforeach ()
 
     add_custom_target(${_install_TARGET} ALL DEPENDS ${_target_depends})
@@ -822,8 +822,8 @@ function(install_headers)
             set(_wrapper "${CMAKE_BINARY_DIR}/${_dest}/${_subdir}/${_name}")
             file(WRITE "${_wrapper}.tmp" "#include \"${_realpath}\"\n")
             execute_process(
-                    COMMAND ${CMAKE_COMMAND}
-                    -E copy_if_different "${_wrapper}.tmp" "${_wrapper}"
+                COMMAND ${CMAKE_COMMAND}
+                -E copy_if_different "${_wrapper}.tmp" "${_wrapper}"
             )
             file(REMOVE "${_wrapper}.tmp")
         endforeach ()
@@ -832,21 +832,21 @@ function(install_headers)
         foreach (_dir ${_dirs})
             if ("x_${_dir}" STREQUAL "x_.")
                 vg_target_include_directories(
-                        ${_target} "${CMAKE_BINARY_DIR}/${_dest}"
+                    ${_target} "${CMAKE_BINARY_DIR}/${_dest}"
                 )
                 install(FILES ${_dir__}
-                        COMPONENT Development
-                        DESTINATION "${_dest}"
-                        )
+                    COMPONENT Development
+                    DESTINATION "${_dest}"
+                    )
             else ()
                 string(REGEX REPLACE "[^A-Za-z0-9]" "_" _dirvar "${_dir}")
                 vg_target_include_directories(
-                        ${_target} "${CMAKE_BINARY_DIR}/${_dest}/${_dir}"
+                    ${_target} "${CMAKE_BINARY_DIR}/${_dest}/${_dir}"
                 )
                 install(FILES ${_dir_${_dirvar}}
-                        COMPONENT Development
-                        DESTINATION "${_dest}/${_dir}"
-                        )
+                    COMPONENT Development
+                    DESTINATION "${_dest}/${_dir}"
+                    )
             endif ()
         endforeach ()
     endif ()
@@ -866,9 +866,9 @@ function(install_plugin_targets)
             get_target_property(_type ${_target} TYPE)
             if (NOT _type STREQUAL "STATIC_LIBRARY")
                 install(TARGETS ${_target}
-                        COMPONENT Plugins
-                        RUNTIME DESTINATION plugins
-                        LIBRARY DESTINATION plugins)
+                    COMPONENT Plugins
+                    RUNTIME DESTINATION plugins
+                    LIBRARY DESTINATION plugins)
             endif ()
         endif ()
     endforeach ()
@@ -902,8 +902,8 @@ endfunction()
 function(cmake_subdir_list result curdir)
     # message("curdir = ${curdir}")
     file(GLOB children
-         LIST_DIRECTORIES true
-         RELATIVE ${curdir} ${curdir}/*)
+        LIST_DIRECTORIES true
+        RELATIVE ${curdir} ${curdir}/*)
     set(dirlist "")
     foreach (child ${children})
         if (EXISTS ${curdir}/${child}/CMakeLists.txt)

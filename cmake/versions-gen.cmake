@@ -45,37 +45,37 @@ macro(gen_versions PROJ_NAME PROJECT_MACRO_PREFIX VERSION_H_NAME CONFIG_H_NAME A
         # git describe --tags              # 0.1.0-dev-93-g1416689
         # git describe --abbrev=0          # to get the most recent annotated tag
         execute_process(
-                COMMAND git describe --abbrev=0 --tags
-                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                OUTPUT_VARIABLE GIT_LAST_TAG
-                OUTPUT_STRIP_TRAILING_WHITESPACE
+            COMMAND git describe --abbrev=0 --tags
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_LAST_TAG
+            OUTPUT_STRIP_TRAILING_WHITESPACE
         )
         execute_process(
-                COMMAND git describe --tags
-                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                OUTPUT_VARIABLE GIT_LAST_TAG_LONG
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-
-        execute_process(
-                COMMAND git rev-parse --abbrev-ref HEAD
-                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                OUTPUT_VARIABLE GIT_BRANCH
-                OUTPUT_STRIP_TRAILING_WHITESPACE
+            COMMAND git describe --tags
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_LAST_TAG_LONG
+            OUTPUT_STRIP_TRAILING_WHITESPACE
         )
 
         execute_process(
-                COMMAND git rev-parse HEAD
-                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                OUTPUT_VARIABLE GIT_COMMIT_HASH
-                OUTPUT_STRIP_TRAILING_WHITESPACE
+            COMMAND git rev-parse --abbrev-ref HEAD
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_BRANCH
+            OUTPUT_STRIP_TRAILING_WHITESPACE
         )
 
         execute_process(
-                COMMAND git log -1 --format=%h
-                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                OUTPUT_VARIABLE GIT_COMMIT_REV
-                OUTPUT_STRIP_TRAILING_WHITESPACE
+            COMMAND git rev-parse HEAD
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_COMMIT_HASH
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+
+        execute_process(
+            COMMAND git log -1 --format=%h
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE GIT_COMMIT_REV
+            OUTPUT_STRIP_TRAILING_WHITESPACE
         )
     else ()
         set(GIT_BRANCH "")
@@ -105,8 +105,8 @@ macro(gen_versions PROJ_NAME PROJECT_MACRO_PREFIX VERSION_H_NAME CONFIG_H_NAME A
     if (EXISTS ${xVERSION_IN})
         message(STATUS "Generating version.h from ${xVERSION_IN} to ${CMAKE_GENERATED_DIR} - Version ${PROJECT_VERSION}...")
         configure_file(
-                ${xVERSION_IN}
-                ${CMAKE_GENERATED_DIR}/${VERSION_H_NAME}
+            ${xVERSION_IN}
+            ${CMAKE_GENERATED_DIR}/${VERSION_H_NAME}
         )
         message(STATUS "Generated: ${CMAKE_GENERATED_DIR}/${VERSION_H_NAME}")
     endif ()
@@ -114,8 +114,8 @@ macro(gen_versions PROJ_NAME PROJECT_MACRO_PREFIX VERSION_H_NAME CONFIG_H_NAME A
     if (EXISTS ${xCONFIG_BASE_IN})
         message(STATUS "Generating ${CONFIG_H_NAME} from ${xCONFIG_BASE_IN} to ${CMAKE_GENERATED_DIR} - Version ${PROJECT_VERSION}...")
         configure_file(
-                ${xCONFIG_BASE_IN}
-                ${CMAKE_GENERATED_DIR}/${CONFIG_H_NAME}
+            ${xCONFIG_BASE_IN}
+            ${CMAKE_GENERATED_DIR}/${CONFIG_H_NAME}
         )
         message(STATUS "Generated: ${CMAKE_GENERATED_DIR}/${CONFIG_H_NAME}")
     endif ()

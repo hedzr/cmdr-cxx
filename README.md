@@ -86,7 +86,8 @@ See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 
 ## Status
 
-- *WIP*: v0.2.25 - ticker;
+- *WIP*: v0.3.0 - ticker, and more;
+- v0.2.25 - follow windows virtual environment changed in adaptation; format codes with better style 
 - v0.2.23 - improved ci scripts, traits, detections, and more for better cross-platform portability;
 - v0.2.21 - bug fixed; add more utilities: mmap, thread pool, factory, pipeable, ...;
 - v0.2.20 - changed OS_xxx macros; added more portability;
@@ -105,7 +106,9 @@ See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 
 - gcc 10+: passed
 - clang 12+: passed
-- msvc build tool 16.7.2, 16.8.5 (VS2019 or Build Tool) passed
+- msvc build tool:
+  - 17.2.32505.173 (VS2022 or Build Tool) passed
+  - OLD: 16.7.2, 16.8.5 (VS2019 or Build Tool) passed
 
 
 

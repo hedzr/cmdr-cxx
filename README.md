@@ -4,7 +4,9 @@
 ![CMake Build Matrix](https://github.com/hedzr/cmdr-cxx/workflows/CMake%20Build%20Matrix/badge.svg?event=release) 
 --> [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/hedzr/cmdr-cxx.svg?label=release)](https://github.com/hedzr/cmdr-cxx/releases)
 
-`cmdr-cxx` ^pre-release^ is a C++17 *header-only* command-line arguments parser, config manager, and application framework. As a member of [#cmdr series](https://github.com/topics/cmdr), it provides a fully-functional `Option Store` (Configuration Manager) for your hierarchical configuration data.
+`cmdr-cxx` ^pre-release^ is a C++17 *header-only* command-line arguments parser, config manager, and application
+framework. As a member of [#cmdr series](https://github.com/topics/cmdr), it provides a
+fully-functional `Option Store` (Configuration Manager) for your hierarchical configuration data.
 
 See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 
@@ -109,9 +111,8 @@ See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 
 ### Snapshots
 
-`cmdr-cxx` prints an evident, clear, and logical help-screen. Please proceed the more snapshots at [#1 - Gallery](https://github.com/hedzr/cmdr-cxx/issues/1).
-
-
+`cmdr-cxx` prints an evident, clear, and logical help-screen. Please proceed the more snapshots
+at [#1 - Gallery](https://github.com/hedzr/cmdr-cxx/issues/1).
 
 ### Bonus
 
@@ -162,7 +163,8 @@ rm -rf cmdr-cxx
 
 ### Integrate to your cmake script
 
-After installed at local cmake repository (Modules), `cmdr-cxx` can be integrated as your CMake module. So we might find and use it:
+After installed at local cmake repository (Modules), `cmdr-cxx` can be integrated as your CMake module. So we might find
+and use it:
 
 ```cmake
 find_package(cmdr11 REQUIRED)
@@ -176,7 +178,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 					  )
 ```
 
-Or you can download [deps-cmdr11.cmake](https://github.com/hedzr/cmdr-cxx/blob/master/cmake/deps-cmdr11.cmake) and include it:
+Or you can download [deps-cmdr11.cmake](https://github.com/hedzr/cmdr-cxx/blob/master/cmake/deps-cmdr11.cmake) and
+include it:
 
 ```cmake
 add_executable(my-app)
@@ -275,7 +278,8 @@ It is a simple program.
 
 ### Lookup a command and its flags
 
-The operator `()` (`cli("cmd1.sub-cmd2.sub-sub-cmd")` ) could be used for retrieving a command (`cmdr::opt::cmd& cc`) from `cli`:
+The operator `()` (`cli("cmd1.sub-cmd2.sub-sub-cmd")` ) could be used for retrieving a command (`cmdr::opt::cmd& cc`)
+from `cli`:
 
 ```cpp
 auto &cc = cli("server");
@@ -324,7 +328,8 @@ CMDR_ASSERT(cc.hit_title() == "server");        // if 'server' command given
 
 ```
 
-The value of a flag from command-line will be saved into `Option Store`, and extracted by shortcut `cmdr::get_for_cli()` . For example:
+The value of a flag from command-line will be saved into `Option Store`, and extracted by shortcut `cmdr::get_for_cli()`
+. For example:
 
 ```cpp
 auto verbose = cmdr::get_for_cli<bool>("verbose");
@@ -335,7 +340,8 @@ In `Option Store`, the flag value will be prefixed by `"app.cli."`, and get_for_
 
 > The normal entries in `Options Store` are prefixed by string `"app."`. You could define another one of course.
 
-To extract the normal configuration data, `cmdr::set` and `cmdr::get` are best choices. They will wrap and unwrap the prefix `app` transparently.
+To extract the normal configuration data, `cmdr::set` and `cmdr::get` are best choices. They will wrap and unwrap the
+prefix `app` transparently.
 
 ```cpp
 auto verbose = cmdr::get<bool>("cli.verbose");
@@ -356,9 +362,11 @@ auto hostname = cmdr::get_store().get_raw_p<std::string>("app.cli", "server.host
 
 ### Set the value of a config item
 
-Every entry in `Option Store` that we call it a config item. The entries are hierarchical. So we locate it with a dotted key path string.
+Every entry in `Option Store` that we call it a config item. The entries are hierarchical. So we locate it with a dotted
+key path string.
 
-A config item is free for data type dynamically. That is saying, you could change the data type of a item at runtime. Such as setting one entry to integer array, from integer originally.
+A config item is free for data type dynamically. That is saying, you could change the data type of a item at runtime.
+Such as setting one entry to integer array, from integer originally.
 
 > But it is hard for coding while you're working for a c++ program.
 
@@ -509,7 +517,8 @@ Another one in [Gallary](https://github.com/hedzr/cmdr-cxx/issues/1):
 
 #### `-DDD`
 
-Triple `D` means `--debug --debug --debug`. In `~~debug` mode,  triple `D` can dump more underlying value structure inside `Option Store`.
+Triple `D` means `--debug --debug --debug`. In `~~debug` mode, triple `D` can dump more underlying value structure
+inside `Option Store`.
 
 > The duplicated-flag exception there among others, is expecting because we're in testing.
 
@@ -519,8 +528,8 @@ Triple `D` means `--debug --debug --debug`. In `~~debug` mode,  triple `D` can d
 
 #### `~~debug --cli -DDD`
 
-The values of CLI flags are ignored but `~~cli` can make them raised when dumping. See the snapshot at [#1 - Gallary](https://github.com/hedzr/cmdr-cxx/issues/1).
-
+The values of CLI flags are ignored but `~~cli` can make them raised when dumping. See the snapshot
+at [#1 - Gallary](https://github.com/hedzr/cmdr-cxx/issues/1).
 
 
 
@@ -553,13 +562,16 @@ I knew this option is what you want:
             .set_no_tail_line(true);
 ```
 
-The "Type `...` ..." line could be customized by `set_tail_line(str)`, so called `tail line`,. Or, you can disable the `tail line`  by `set_no_tail_line(bool)`.
+The "Type `...` ..." line could be customized by `set_tail_line(str)`, so called `tail line`,. Or, you can disable
+the `tail line`  by `set_no_tail_line(bool)`.
 
 The `Powered by ...` line can be disabled by `set_no_cmdr_ending`, so-called `cmdr-ending` line.
 
 ## External Loaders
 
-There is a builtin addon `yaml-loader` for loading the external config files in the pre-defined directory locations. As a sample to show you how to write a external loader, `yaml-loader` will load and parse the yaml config file and merge it into `Option Store`.
+There is a builtin addon `yaml-loader` for loading the external config files in the pre-defined directory locations. As
+a sample to show you how to write a external loader, `yaml-loader` will load and parse the yaml config file and merge it
+into `Option Store`.
 
 > TODO: `conf.d` not processed now.
 
@@ -594,7 +606,9 @@ Inside `cmdr-cxx`, there are many optimizable points and some of them in working
   CMDR_DIM=1 ./bin/test-app2-c2 main sub4 bug-bug2
   ```
 
-- [x] `--no-color`: do NOT print colorful text with [Terminal Escaped Sequences](https://en.wikipedia.org/wiki/ANSI_escape_code), envvars `PLAIN` or `NO_COLOR` available too.
+- [x] `--no-color`: do NOT print colorful text
+  with [Terminal Escaped Sequences](https://en.wikipedia.org/wiki/ANSI_escape_code), envvars `PLAIN` or `NO_COLOR`
+  available too.
 
   ```bash
   ./bin/test-app2-c2 --no-color
@@ -616,11 +630,13 @@ Inside `cmdr-cxx`, there are many optimizable points and some of them in working
   return cli.run(argc, argv);
   ```
 
-- [x] `-hhh` (i.e. `--help --help --help`) will print the help screen with those invisible items (the hidden commands and flags).
+- [x] `-hhh` (i.e. `--help --help --help`) will print the help screen with those invisible items (the hidden commands
+  and flags).
 
 - [x] Tab-stop position is adjustable based the options automatically
 
-- [x] The right-side of a line, in the help screen, command/flag decriptions usually, can be wrapped and aligned along the tab-stop width.
+- [x] The right-side of a line, in the help screen, command/flag decriptions usually, can be wrapped and aligned along
+  the tab-stop width.
 
 - [ ] More...
 
@@ -636,7 +652,8 @@ That's very appreciated!
   - See also [Short example](#short-example) and [Fast Document](#fast-document)
   - See also test app sources
 - A fully functional Hierarchical Configurable Data Management Mechanism (so called `Option Store`) is ready for box.
-- Uses debug outputting macros: `cmdr_print`, `cmdr_debug`, `cmdr_trace` (while `CMDR_ENABLE_VERBOSE_LOG` defined), see [cmdr_log.hh](https://github.com/hedzr/cmdr-cxx/blob/master/libs/cmdr11/include/cmdr11/cmdr_log.hh)
+- Uses debug outputting macros: `cmdr_print`, `cmdr_debug`, `cmdr_trace` (while `CMDR_ENABLE_VERBOSE_LOG` defined),
+  see [cmdr_log.hh](https://github.com/hedzr/cmdr-cxx/blob/master/libs/cmdr11/include/cmdr11/cmdr_log.hh)
 - 
 
 
@@ -671,7 +688,7 @@ For msvs build tool, vcpkg should be present, so cmake configure command is:
 cmake -DENABLE_AUTOMATE_TESTS=OFF -S . -B build/ -DCMAKE_TOOLCHAIN_FILE=%USERPROFILE%/work/vcpkg/scripts/buildsystems/vcpkg.cmake
 ```
 
->If you clone vcvpkg source and bootstrap it at: `%USERPROFILE%/work/vcpkg`.
+> If you clone vcvpkg source and bootstrap it at: `%USERPROFILE%/work/vcpkg`.
 
 #### Windows Server 2019 Core & VSBT
 
@@ -708,13 +725,13 @@ We used ninja for faster building.
 
 ### Prerequisites
 
-To run all automated tests, or, you're trying to use `yaml-loader` add-on, some dependencies need to prepared at first, by youself, maybe.
-
-
+To run all automated tests, or, you're trying to use `yaml-loader` add-on, some dependencies need to prepared at first,
+by youself, maybe.
 
 #### Catch2
 
-If the tests are enabled, [ `Catch2`](https://github.com/catchorg/Catch2) will be downloaded while cmake configuring and building automatically. If you have a local cmake-findable Catch2 copy, more attentions would be appreciated.
+If the tests are enabled, [ `Catch2`](https://github.com/catchorg/Catch2) will be downloaded while cmake configuring and
+building automatically. If you have a local cmake-findable Catch2 copy, more attentions would be appreciated.
 
 
 
@@ -744,7 +761,8 @@ brew install yaml-cpp
 vcpkg install yaml-cpp
 ```
 
-> **NOTE** that [vcpkg](https://github.com/microsoft/vcpkg) want to inject the control file for cmake building, see also [Using vcpkg with CMake](https://github.com/microsoft/vcpkg#using-vcpkg-with-cmake)
+> **NOTE** that [vcpkg](https://github.com/microsoft/vcpkg) want to inject the control file for cmake building, see
+> also [Using vcpkg with CMake](https://github.com/microsoft/vcpkg#using-vcpkg-with-cmake)
 
 
 
@@ -811,8 +829,8 @@ The example executables can be found in `./bin` after built. For example:
 
 ## Thanks to JODL
 
-Thanks to [JetBrains](https://www.jetbrains.com/?from=cmdr-cxx) for donating product licenses to help develop **cmdr-cxx** [![jetbrains](https://gist.githubusercontent.com/hedzr/447849cb44138885e75fe46f1e35b4a0/raw/bedfe6923510405ade4c034c5c5085487532dee4/jetbrains-variant-4.svg)](https://www.jetbrains.com/?from=hedzr/cmdr-cxx)
-
+Thanks to [JetBrains](https://www.jetbrains.com/?from=cmdr-cxx) for donating product licenses to help develop **
+cmdr-cxx** [![jetbrains](https://gist.githubusercontent.com/hedzr/447849cb44138885e75fe46f1e35b4a0/raw/bedfe6923510405ade4c034c5c5085487532dee4/jetbrains-variant-4.svg)](https://www.jetbrains.com/?from=hedzr/cmdr-cxx)
 
 
 

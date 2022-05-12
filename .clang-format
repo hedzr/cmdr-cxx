@@ -2,8 +2,9 @@
 BasedOnStyle: LLVM
 AccessModifierOffset: -2
 AlignAfterOpenBracket: Align
-AlignConsecutiveAssignments: None
+AlignConsecutiveAssignments: AcrossEmptyLinesAndComments
 AlignOperands: Align
+AlignTrailingComments: true
 AllowAllArgumentsOnNextLine: false
 AllowAllConstructorInitializersOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: false
@@ -36,6 +37,7 @@ BreakInheritanceList: BeforeComma
 ColumnLimit: 0
 CompactNamespaces: true
 ContinuationIndentWidth: 4
+FixNamespaceComments: true
 IndentCaseLabels: true
 IndentPPDirectives: None
 IndentWidth: 2
@@ -54,7 +56,7 @@ SpaceBeforeCpp11BracedList: false
 SpaceBeforeCtorInitializerColon: true
 SpaceBeforeInheritanceColon: true
 SpaceBeforeParens: ControlStatements
-SpaceBeforeRangeBasedForLoopColon: false
+SpaceBeforeRangeBasedForLoopColon: true
 SpaceInEmptyParentheses: false
 SpacesBeforeTrailingComments: 1
 SpacesInAngles: false

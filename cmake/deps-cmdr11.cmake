@@ -40,15 +40,18 @@ macro(add_cmdr_cxx_to target)
             )
         #    set(CMDR11_FOUND ON)
 
-        message(STATUS "cmdr-cxx: add ${CMDR_CXX_TGT_NAME} module to '${target}' from building dir.")
+        message(STATUS "cmdr-cxx: add '${CMDR_CXX_TGT_NAME}' module to '${target}' from building dir.")
         message(STATUS "cmdr-cxx:    CI_RUNNING = $ENV{CI_RUNNING}")
         message(STATUS "cmdr-cxx: add_dependencies")
         add_dependencies(${target} ${CMDR_CXX_TGT_NAME})
 
+        set(CMDR11_INCLUDE_DIR ${CMDR_CXX_STAGE_DIR}/include)
+        set(CMDR11_LIB_DIR ${CMDR_CXX_STAGE_DIR}/lib)
+
     else ()
 
         message(STATUS "cmdr-cxx: package found at ${CMDR11_INCLUDE_DIR}, ${CMDR11_VERSION}")
-        message(STATUS "cmdr-cxx: add ${CMDR_CXX_TGT_NAME} module to '${target}' from CMake Modules registry.")
+        message(STATUS "cmdr-cxx: add cmdr-cxx v${CMDR11_VERSION_STRING} module to '${target}' from CMake Modules registry.")
         target_link_libraries(${target}
             PRIVATE
             ${CMDR11_LIBRARIES}
@@ -61,16 +64,16 @@ macro(add_cmdr_cxx_to target)
         $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
         $<INSTALL_INTERFACE:include>
         /usr/local/include
-        ${CMDR_CXX_STAGE_DIR}/include
-        # ${CMDR11_INCLUDE_DIR}
+        # ${CMDR_CXX_STAGE_DIR}/include
+        ${CMDR11_INCLUDE_DIR}
         )
     target_link_directories(${target} PRIVATE
         /usr/local/lib
-        ${CMDR_CXX_STAGE_DIR}/lib
-        # ${CMDR11_LIBRARY_DIR}
+        # ${CMDR_CXX_STAGE_DIR}/lib
+        ${CMDR11_LIBRARY_DIR}
         # ${CMAKE_CURRENT_BINARY_DIR}/${CMDR_CXX_TGT_NAME}-prefix/src/${CMDR_CXX_TGT_NAME}-build
         )
-    message(STATUS "cmdr-cxx: include-dir = ${CMDR_CXX_STAGE_DIR}/include")
+    message(STATUS "cmdr-cxx: include-dir = ${CMDR11_INCLUDE_DIR}")
     #endif ()
 
 endmacro()

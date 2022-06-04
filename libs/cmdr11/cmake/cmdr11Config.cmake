@@ -31,19 +31,19 @@ if (NOT TARGET cmdr11::cmdr11)
 
         file(READ "${CMDR11_INCLUDE_DIR}/cmdr11/cmdr-version.hh" ver)
 
-        string(REGEX MATCH "MAJOR_VERSION ([0-9]*)" _ ${ver})
+        string(REGEX MATCH "MAJOR_VERSION +([0-9]+)" _ ${ver})
         set(CMDR11_VERSION_MAJOR ${CMAKE_MATCH_1})
 
-        string(REGEX MATCH "MINOR_VERSION ([0-9]*)" _ ${ver})
+        string(REGEX MATCH "MINOR_VERSION +([0-9]+)" _ ${ver})
         set(CMDR11_VERSION_MINOR ${CMAKE_MATCH_1})
 
-        string(REGEX MATCH "PATCH_NUMBER ([0-9]*)" _ ${ver})
+        string(REGEX MATCH "PATCH_NUMBER +([0-9]+)" _ ${ver})
         set(CMDR11_VERSION_PATCH ${CMAKE_MATCH_1})
 
-        string(REGEX MATCH "CMDR_VERSION_STRING xT\\(\\\"([0-9.]+)\\\"\\)" _ ${ver})
+        string(REGEX MATCH "CMDR_VERSION_STRING +xT\\(\\\"([0-9.]+)\\\"\\)" _ ${ver})
         set(CMDR11_VERSION_STRING ${CMAKE_MATCH_1})
 
-        string(REGEX MATCH "CMDR_GIT_COMMIT_HASH xT\\(\\\"([0-9a-f.-]+)\\\"\\)" _ ${ver})
+        string(REGEX MATCH "CMDR_GIT_COMMIT_HASH +xT\\(\\\"([0-9a-f.-]+)\\\"\\)" _ ${ver})
         set(CMDR11_VERSION_GIT_HASH ${CMAKE_MATCH_1})
 
         message(">=< CMDR_VERSION        = ${CMDR11_VERSION_MAJOR}.${CMDR11_VERSION_MINOR}.${CMDR11_VERSION_PATCH}")

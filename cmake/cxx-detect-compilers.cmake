@@ -6,11 +6,11 @@ set(WriterCompilerDetectionHeaderFound NOTFOUND)
 # This module is only available with CMake >=3.1, so check whether it could be found
 # BUT in CMake 3.1 this module doesn't recognize AppleClang as compiler, so just use it as of CMake 3.2
 if ("${CMAKE_VERSION}" VERSION_GREATER "3.2")
-    if (${CMAKE_VERSION} VERSION_LESS "3.19")
+    if ("${CMAKE_VERSION}" VERSION_LESS "3.19")
         include(WriteCompilerDetectionHeader OPTIONAL RESULT_VARIABLE WriterCompilerDetectionHeaderFound)
     endif ()
 endif ()
-if (${WriterCompilerDetectionHeaderFound})
+if (WriterCompilerDetectionHeaderFound)
     write_compiler_detection_header(
         FILE ${CMAKE_GENERATED_DIR}/the-compiler.h
         PREFIX The
@@ -29,13 +29,13 @@ include(TestBigEndian)
 if (NOT (${WIN32}))
     TEST_BIG_ENDIAN(_bigendian)
     if ((${CMAKE_SIZEOF_VOID_P} GREATER 4) OR (${_bigendian}))
-        message(STATUS ">> Setting PIC (${CMAKE_CXX_COMPILE_OPTIONS_PIC}) for machine ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+        message(STATUS ">>> Setting PIC (${CMAKE_CXX_COMPILE_OPTIONS_PIC}) for machine ${CMAKE_HOST_SYSTEM_PROCESSOR}")
         set(CMAKE_POSITION_INDEPENDENT_CODE 1)
         #else ()
-        #    message(STATUS ">> BigEndian is ${_bigendian} for machine ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+        #    message(STATUS ">>> BigEndian is ${_bigendian} for machine ${CMAKE_HOST_SYSTEM_PROCESSOR}")
     endif ()
     #else()
-    #    message(STATUS ">> BigEndian skipped for machine ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+    #    message(STATUS ">>> BigEndian skipped for machine ${CMAKE_HOST_SYSTEM_PROCESSOR}")
 endif ()
 
 #

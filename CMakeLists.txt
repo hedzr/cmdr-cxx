@@ -8,11 +8,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}  # for .version.cmake & .options.cmake
     ${CMAKE_MODULE_PATH})
 include(prerequisites)
-include(version-def)
-include(add-policies)
-include(detect-systems)
-include(target-dirs)
-include(utils)
+
 include(dummy-project)
 
 
@@ -25,7 +21,6 @@ set(VERSION_H_NAME "cmdr-version.hh")
 include(cxx-standard-def)
 include(cxx-detect-compilers)
 include(setup-build-env)
-include(versions-gen)
 
 
 debug_print_top_vars()
@@ -39,6 +34,7 @@ set(PROJECT_MACRO_NAME cmdr-cxx)
 set(PROJECT_MACRO_SHORT_NAME cmdr)
 set(PROJECT_MACRO_MID_NAME cmdr11)
 set(PROJECT_MACRO_PREFIX "CMDR")
+
 gen_versions(${PROJECT_MACRO_NAME} ${PROJECT_MACRO_PREFIX}
              ${PROJECT_MACRO_SHORT_NAME}-version.hh
              ${PROJECT_MACRO_SHORT_NAME}-config-base.hh

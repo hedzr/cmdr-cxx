@@ -138,6 +138,7 @@ set_property(GLOBAL PROPERTY UNIT_TEST_TARGETS)
 mark_as_advanced(UNIT_TEST_TARGETS)
 #
 option(ENABLE_EXAMPLES "Enable examples" OFF)
+option(ENABLE_DOCS "Enable doxygen builder" OFF)
 option(ENABLE_TESTS "Enable tests" ${USE_DEBUG})
 option(ENABLE_AUTOMATE_TESTS "Enable automated tests at local" OFF)
 if ($ENV{CI_RUNNING})

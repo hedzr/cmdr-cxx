@@ -22,10 +22,7 @@ include(cxx-standard-def)
 include(cxx-detect-compilers)
 include(setup-build-env)
 
-
 debug_print_top_vars()
-#debug_print_value(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
-
 
 ## TPL ## HEAD END ##########
 
@@ -48,13 +45,17 @@ gen_versions(${PROJECT_MACRO_NAME} ${PROJECT_MACRO_PREFIX}
 # add more subdirectories as submodules and sub-submodules HERE
 #
 
-# add_library(study_cmake library.cxx library.h)
-add_subdirectory(libs)
+add_subdirectory(libs) # adds cmdr-cxx target, and others
+
 if (${ENABLE_TESTS} OR (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR))
     add_subdirectory(tests)
 endif ()
+
+if (${ENABLE_DOCS})
 add_subdirectory(docs)
 attach_doxygen_to(${PROJECT_MACRO_MID_NAME})
+endif()
+
 if (${ENABLE_EXAMPLES} OR (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR))
     add_subdirectory(examples)
 endif ()

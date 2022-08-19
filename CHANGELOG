@@ -1,0 +1,20 @@
+# Changelog
+
+## Status
+
+- *WIP*: v0.3.0 - ticker, and more;
+- v0.2.27 - LICENSE Changed to Apache 2.0; better adaptive in cmake import;
+- v0.2.25 - follow windows virtual environment changed in adaptation; format codes with better style 
+- v0.2.23 - improved ci scripts, traits, detections, and more for better cross-platform portability;
+- v0.2.21 - bug fixed; add more utilities: mmap, thread pool, factory, pipeable, ...;
+- v0.2.20 - changed OS_xxx macros; added more portability;
+- v0.2.19 - bug fixed
+- v0.2.17 - added to homebrew.
+- v0.2.15 - bug fixed
+- v0.2.13 - any kind of fixes; added priority-queue; added `ASSERTIONS_ONLY`, `NO_ASSERTIONS_ONLY`; added `is_iterable`, added vector_to_string(vec); `defer<T>` & `defer<bool>`; many improvements merged;
+- v0.2.11 - maintained
+- v0.2.10 - MSVC (Build Tool 16.7.2+, VS2019 passed), and others improvements (bash completion, ...)
+- v0.2.9 - various fixes, improvements
+- v0.2.8 - fixed cmdr11Config.cmake for importing transparently
+- v0.2.7 - `auto &cli = cmdr::create(...)`
+- v0.2.5 - public release starts

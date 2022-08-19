@@ -23,7 +23,6 @@
 
 #include "second_src.hh"
 
-
 int main(int argc, char *argv[]) {
   auto &cli = cmdr::cli("app1", CMDR_VERSION_STRING, "hedzr",
                         "Copyright © 2021 by hedzr, All Rights Reserved.",

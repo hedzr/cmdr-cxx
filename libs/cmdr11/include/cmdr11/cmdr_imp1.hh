@@ -16,7 +16,7 @@ namespace cmdr::exception {
       , _o(owner)
       , _c(c) {
     char buf[512];
-    std::sprintf(buf, "duplicated short command found: \"%s\"/\"%s\" under command \"%s\"",
+    std::snprintf(buf, sizeof(buf), "duplicated short command found: \"%s\"/\"%s\" under command \"%s\"",
                  _c->title_short().c_str(),
                  _c->title().c_str(),
                  _o->title_sequences().c_str());
@@ -28,7 +28,7 @@ namespace cmdr::exception {
       , _o(owner)
       , _c(c) {
     char buf[512];
-    std::sprintf(buf, "duplicated long command found: \"%s\"/\"%s\" under command \"%s\"",
+    std::snprintf(buf, sizeof(buf), "duplicated long command found: \"%s\"/\"%s\" under command \"%s\"",
                  _c->title_long().c_str(),
                  _c->title().c_str(),
                  _o->title_sequences().c_str());
@@ -40,7 +40,7 @@ namespace cmdr::exception {
       , _o(owner)
       , _c(c) {
     char buf[512];
-    std::sprintf(buf, "duplicated alias command found: \"%s\"/\"%s\" under command \"%s\"",
+    std::snprintf(buf, sizeof(buf), "duplicated alias command found: \"%s\"/\"%s\" under command \"%s\"",
                  title,
                  _c->title().c_str(),
                  _o->title_sequences().c_str());
@@ -52,7 +52,7 @@ namespace cmdr::exception {
       , _o(a)
       , _c(c) {
     char buf[512];
-    std::sprintf(buf, "duplicated short flag found: \"%s\"/\"%s\" under command \"%s\"",
+    std::snprintf(buf, sizeof(buf), "duplicated short flag found: \"%s\"/\"%s\" under command \"%s\"",
                  _o->title_short().c_str(),
                  _o->title().c_str(),
                  _c->title_sequences().c_str());
@@ -64,7 +64,7 @@ namespace cmdr::exception {
       , _o(a)
       , _c(c) {
     char buf[512];
-    std::sprintf(buf, "duplicated long flag found: \"%s\"/\"%s\" under command \"%s\"",
+    std::snprintf(buf, sizeof(buf), "duplicated long flag found: \"%s\"/\"%s\" under command \"%s\"",
                  _o->title_long().c_str(),
                  _o->title().c_str(),
                  _c->title_sequences().c_str());
@@ -76,7 +76,7 @@ namespace cmdr::exception {
       , _o(a)
       , _c(c) {
     char buf[512];
-    std::sprintf(buf, "duplicated alias flag found: \"%s\"/\"%s\" under command \"%s\"",
+    std::snprintf(buf, sizeof(buf), "duplicated alias flag found: \"%s\"/\"%s\" under command \"%s\"",
                  title,
                  _o->title().c_str(),
                  _c->title_sequences().c_str());

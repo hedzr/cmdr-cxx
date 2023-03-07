@@ -206,7 +206,7 @@ namespace cmdr::process {
 #else // try POSIX
         tmpfile_stderr = path::tmpname_for_stderr();
         std::array<char, 512> cmd;
-        std::sprintf(cmd.data(), "%s 2>%s", command, tmpfile_stderr.c_str());
+        std::snprintf(cmd.data(), 512, "%s 2>%s", command, tmpfile_stderr.c_str());
         // std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command, "r"), pclose);
         std::unique_ptr<FILE, std::function<void(FILE *)>> pipe(popen(cmd.data(), "r"), [this](FILE *f) {
           _rc = pclose(f);

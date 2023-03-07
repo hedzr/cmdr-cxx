@@ -193,7 +193,7 @@ namespace cmdr::vars {
         char buf[512];
         std::ostringstream vs;
         vs << (*this);
-        std::sprintf(buf, "can't cast type '%s' (value: '%s') -> type '%s', (ex: %s)",
+        std::snprintf(buf, sizeof(buf), "can't cast type '%s' (value: '%s') -> type '%s', (ex: %s)",
                      _value.type().name(),
                      vs.str().c_str(),
                      debug::type_name<T>().data(),
@@ -209,7 +209,7 @@ namespace cmdr::vars {
         char buf[512];
         std::ostringstream vs;
         vs << (*this);
-        std::sprintf(buf, "can't cast type '%s' (value: '%s') -> type '%s', (ex: %s)",
+        std::snprintf(buf, sizeof(buf), "can't cast type '%s' (value: '%s') -> type '%s', (ex: %s)",
                      _value.type().name(),
                      vs.str().c_str(),
                      debug::type_name<T>().data(),

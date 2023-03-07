@@ -943,7 +943,7 @@ namespace cmdr {
       for (auto &fp: ptr->_all_args) {
         if (fp.required() && fp.hit_count() < 1) {
           char msg[512];
-          std::sprintf(msg, "the flag '%s' missed, it's indispensable.", fp.title().c_str());
+          std::snprintf(msg, sizeof(msg), "the flag '%s' missed, it's indispensable.", fp.title().c_str());
           cmdr_throw_as(required_flag_missed, msg);
         }
       }

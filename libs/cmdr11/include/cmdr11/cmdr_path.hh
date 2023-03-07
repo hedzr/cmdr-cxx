@@ -491,7 +491,7 @@ namespace cmdr::path {
     std::filesystem::path p = fs::temp_directory_path();
     static int id           = 0;
     char buf[MAX_PATH];
-    sprintf(buf, name_template ? name_template : "_%05d", id++);
+    snprintf(buf, MAX_PATH, name_template ? name_template : "_%05d", id++);
     p /= buf;
     ensure_directory(path::dirname(p));
     return p;

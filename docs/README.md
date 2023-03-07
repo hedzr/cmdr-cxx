@@ -1,6 +1,8 @@
-# cmdr-cxx11
+# Overview
 
-`cmdr-cxx11` is a command-line arguments parser in C++17.
+`cmdr-cxx` is a command-line arguments parser in C++17.
+
+<img src="logo-wide.svg" float="right">
 
 ## Build
 
@@ -13,4 +15,4 @@ cmake --build .
 
 ## LICENSE
 
-MIT
+Apache 2.0

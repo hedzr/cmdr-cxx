@@ -2038,7 +2038,7 @@ MAN_LINKS              = NO
 # captures the structure of the code including all documentation.
 # The default value is: NO.
 
-GENERATE_XML           = NO
+GENERATE_XML           = YES
 
 # The XML_OUTPUT tag is used to specify where the XML pages will be put. If a
 # relative path is entered the value of OUTPUT_DIRECTORY will be put in front of
@@ -2600,14 +2600,14 @@ PROJECT_NAME           =  "@PROJECT_NAME@"
 PROJECT_NUMBER         =  "@PROJECT_VERSION@"
 PROJECT_BRIEF          =  "@PROJECT_BRIEF@"
 PROJECT_LOGO           =  "@PROJECT_LOGO@"
-INPUT                  =  @CMAKE_CURRENT_SOURCE_DIR@/README.md @DOXYGEN_INPUT_DIR@
+INPUT                  =  @CMAKE_CURRENT_SOURCE_DIR@/README.md @DOXYGEN_INPUT_DIR@/../libs
 OUTPUT_DIRECTORY       =  "@DOXYGEN_OUTPUT_DIR@"
 USE_MDFILE_AS_MAINPAGE =  @CMAKE_CURRENT_SOURCE_DIR@/README.md
 ALLOW_UNICODE_NAMES    = YES
 OUTPUT_LANGUAGE        = English
 STRIP_FROM_PATH        = @CMAKE_CURRENT_SOURCE_DIR@ \
                          @PROJECT_SOURCE_DIR@
-EXCLUDE_PATTERNS       = json.hpp
+EXCLUDE_PATTERNS       = json.hpp manual/ build/ detail/
 
 IMAGE_PATH = "@CMAKE_CURRENT_SOURCE_DIR_LINUX@"
 

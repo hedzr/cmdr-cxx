@@ -1,6 +1,7 @@
 _build/
 _msvc_build/
 .idea/
+install/
 
 CMakeLists.txt.user
 CMakeCache.txt
@@ -16,6 +17,7 @@ _deps
 
 
 *.local.cmake
+*.code-workspace
 
 /_*
 

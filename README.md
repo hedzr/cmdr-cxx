@@ -134,7 +134,7 @@ at [#1 - Gallery](https://github.com/hedzr/cmdr-cxx/issues/1).
 
 #### Homebrew
 
-cmdr-cxx can be installed via homebrew:
+cmdr-cxx can be installed from homebrew:
 
 ```bash
 brew install hedzr/brew/cmdr-cxx
@@ -164,6 +164,15 @@ cmake --install build/
 cd ..
 rm -rf cmdr-cxx
 ```
+
+##### dependencies
+
+To build cmdr-cxx, you might install these components at first:
+
+- yaml-cpp
+
+The typical install command could be `brew install yaml-cpp`,
+For more information, please refer to the chapter [Others](#others).
 
 ### Integrate to your cmake script
 

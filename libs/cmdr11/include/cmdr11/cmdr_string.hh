@@ -1,12 +1,12 @@
-/**
- * cmdr -- C++17 Command Line Arguments Parser
+/*
+ * cmdr-cxx -- C++17 Command Line Arguments Parser
  *
- * @file
+ * @file cmdr_string.hh
  * @brief Utilities for string operations.
  *
- * @ , copyright © 2016 - 2021 Hedzr Yeh.
+ * @copy Copyright © 2016 - 2023 Hedzr Yeh.
  *
- * This file is part of cmdr (cmdr-c17 for C++ version).
+ * This file is part of cmdr-cxx11 (cmdr-cxx for C++ version).
  *
  * cmdr is free software: you can redistribute it and/or modify
  * it under the terms of the MIT License.

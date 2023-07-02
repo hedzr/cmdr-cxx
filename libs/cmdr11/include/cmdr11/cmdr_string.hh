@@ -9,7 +9,7 @@
  * This file is part of cmdr (cmdr-c17 for C++ version).
  *
  * cmdr is free software: you can redistribute it and/or modify
- * it under the terms of the MIT License..
+ * it under the terms of the MIT License.
  *
  * cmdr is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -476,6 +476,29 @@ namespace cmdr::string {
   inline std::string trim_left_space(std::string &&s) {
     s.erase(0, s.find_first_not_of(" \n\r\t\v\f"));
     return std::move(s);
+  }
+
+  inline std::string trim_left(const std::string &s) {
+    auto temp = s;
+    temp.erase(std::begin(temp),
+               std::find_if(std::begin(temp), std::end(temp),
+                            [](char c) {
+                              return !std::isspace(c, std::locale());
+                            }));
+    return temp;
+  }
+
+  inline std::string trim_right(const std::string &s) {
+    auto temp = s;
+    temp.erase(std::find_if(std::rbegin(temp), std::rend(temp),
+                            [](char c) { return !std::isspace(c, std::locale()); })
+                   .base(),
+               std::end(temp));
+    return temp;
+  }
+
+  inline std::string trim(const std::string &s) {
+    return trim_left(trim_right(s));
   }
 
 

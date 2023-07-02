@@ -1005,9 +1005,9 @@ namespace cmdr::util {
   public:
     virtual ~observable() { clear(); }
     using subject_t         = S;
-    using observer_t_nacked = Observer;
-    using observer_t        = std::weak_ptr<observer_t_nacked>;
-    using observer_t_shared = std::shared_ptr<observer_t_nacked>;
+    using observer_t_naked  = Observer;
+    using observer_t        = std::weak_ptr<observer_t_naked>;
+    using observer_t_shared = std::shared_ptr<observer_t_naked>;
     observable &add_observer(observer_t const &o) {
       if (AutoLock) {
         if (CNS) {
@@ -1040,7 +1040,7 @@ namespace cmdr::util {
       return (*this);
     }
     observable &remove_observer(observer_t_shared &o) { return remove_observer(o.get()); }
-    observable &remove_observer(observer_t_nacked *o) {
+    observable &remove_observer(observer_t_naked *o) {
       if (AutoLock) {
         if (CNS) {
           auto copy = _observers;
@@ -1073,11 +1073,11 @@ namespace cmdr::util {
     friend observable &operator+(observable &lhs, observer_t_shared &o) { return lhs.add_observer(o); }
     friend observable &operator+(observable &lhs, observer_t const &o) { return lhs.add_observer(o); }
     friend observable &operator-(observable &lhs, observer_t_shared &o) { return lhs.remove_observer(o); }
-    friend observable &operator-(observable &lhs, observer_t_nacked *o) { return lhs.remove_observer(o); }
+    friend observable &operator-(observable &lhs, observer_t_naked *o) { return lhs.remove_observer(o); }
     observable &operator+=(observer_t_shared &o) { return add_observer(o); }
     observable &operator+=(observer_t const &o) { return add_observer(o); }
     observable &operator-=(observer_t_shared &o) { return remove_observer(o); }
-    observable &operator-=(observer_t_nacked *o) { return remove_observer(o); }
+    observable &operator-=(observer_t_naked *o) { return remove_observer(o); }
 
   public:
     /**

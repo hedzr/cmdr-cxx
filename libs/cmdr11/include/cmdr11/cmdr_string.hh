@@ -6,18 +6,18 @@
  *
  * @copy Copyright © 2016 - 2023 Hedzr Yeh.
  *
- * This file is part of cmdr-cxx11 (cmdr-cxx for C++ version).
+ * This file is part of cmdr-cxx11 (cmdr-cxx for C++17 version).
  *
- * cmdr is free software: you can redistribute it and/or modify
+ * cmdr-cxx is free software: you can redistribute it and/or modify
  * it under the terms of the MIT License.
  *
- * cmdr is distributed in the hope that it will be useful,
+ * cmdr-cxx is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the MIT License
- * along with cmdr.  If not, see <https://github.com/hedzr/cmdr-c17/blob/master/LICENSE>.
+ * along with cmdr-cxx.  If not, see <https://github.com/hedzr/cmdr-cxx/blob/master/LICENSE>.
  */
 
 #ifndef CMDR_CXX11_CMDR_STRING_HH

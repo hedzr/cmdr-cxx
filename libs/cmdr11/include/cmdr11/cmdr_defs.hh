@@ -739,50 +739,155 @@ namespace std {
 #if CHECK_BOOST_VERSION
 #include <boost/version.hpp>
 #define BOOST_VERSION_NAME "Boost v" _TEXT(BOOST_LIB_VERSION)
+#else
+#define BOOST_VERSION_NAME "No Boost"
 #endif
 
 #endif // _COMPILER_NAME
 
+
+#ifndef _COMPILER_NAME_CONSTEXPR
+#define _COMPILER_NAME_CONSTEXPR
+
+// compiler name constexpr
+
+#if ((defined(_MSVC_LANG) && _MSVC_LANG >= 201703L) || __cplusplus >= 201703L)
+
+//C++17 specific stuff here
+namespace cmdr::cross {
+
+  inline constexpr auto compiler_name() -> std::string_view {
+    constexpr std::string_view str {
+#if defined(__clang__)
+      "clang " _TEXT(__clang_major__) "." _TEXT(__clang_minor__) "." _TEXT(__clang_patchlevel__)
+#elif defined(__ICC) || defined(__INTEL_COMPILER)
+      "Intel " _TEXT(__INTEL_COMPILER)
+#elif defined(__GNUC__) || defined(__GNUG__)
+      "gcc " _TEXT(__GNUC__) "." _TEXT(__GNUC_MINOR__) // __VERSION__
+#if defined(__GNU_PATCHLEVEL__)
+          "." _TEXT(__GNUC_PATCHLEVEL__)
+#endif
+#elif defined(__HP_cc) || defined(__HP_aCC)
+      "HP " _TEXT(__HP_aCC)
+#elif defined(__IBMC__) || defined(__IBMCPP__)
+            "IBM " _TEXT(__IBMCPP__
+#elif defined(_MSC_VER)
+      "MSVC " _TEXT(_MSC_FULL_VER)
+#elif defined(__PGI)
+      "Portland PGCPP" _TEXT(__VERSION__)
+#elif defined(__SUNPRO_C) || defined(__SUNPRO_CC)
+      "Solaris Studio" _TEXT(__SUNPRO_CC)
+#elif defined(__EMSCRIPTEN__)
+      "emscripten "
+#elif defined(__MINGW32__)
+      "MinGW 32bit " _TEXT(__MINGW32_MAJOR_VERSION) "." _TEXT(__MINGW32_MINOR_VERSION)
+#elif defined(__MINGW64__)
+      "MinGW 64bit " _TEXT(__MINGW64_VERSION_MAJOR) "." _TEXT(__MINGW64_VERSION_MINOR)
+#else
+      "UNKNOWN COMPILER "
+#endif
+
+#if CHECK_BOOST_VERSION
+          " (Boost version: " _TEXT(BOOST_LIB_VERSION) ")"
+#endif
+    };
+    return str;
+  }
+} // namespace cmdr::cross
+
+#else
+
+namespace cmdr {
+  namespace cross {
+    inline std::string compiler_name() {
+      std::stringstream compiler;
+      compiler
+      // https://blog.kowalczyk.info/article/j/guide-to-predefined-macros-in-c-compilers-gcc-clang-msvc-etc..html
+      // http://beefchunk.com/documentation/lang/c/pre-defined-c/precomp.html
+      // and: https://github.com/arnemertz/online-compilers/blob/gh-pages/compiler_version.cpp
+#if defined(__clang__)
+          << "clang " << __clang_major__ << "." << __clang_minor__ << "." << __clang_patchlevel__
+#elif defined(__ICC) || defined(__INTEL_COMPILER)
+          << "Intel " << __INTEL_COMPILER
+#elif defined(__GNUC__) || defined(__GNUG__)
+          << "gcc " << __GNUC__ << "." << __GNUC_MINOR__ // __VERSION__
+#if defined(__GNU_PATCHLEVEL__)
+          << "." << __GNUC_PATCHLEVEL__
+#endif
+#elif defined(__HP_cc) || defined(__HP_aCC)
+          << "HP " << __HP_aCC
+#elif defined(__IBMC__) || defined(__IBMCPP__)
+          << "IBM " << __IBMCPP__
+#elif defined(_MSC_VER)
+          << "MSVC " << _MSC_FULL_VER
+#elif defined(__PGI)
+          << "Portland PGCPP" << __VERSION__
+#elif defined(__SUNPRO_C) || defined(__SUNPRO_CC)
+          << "Solaris Studio" << __SUNPRO_CC
+#elif defined(__EMSCRIPTEN__)
+          << "emscripten "
+#elif defined(__MINGW32__)
+          << "MinGW 32bit " << __MINGW32_MAJOR_VERSION << "." << __MINGW32_MINOR_VERSION
+#elif defined(__MINGW64__)
+          << "MinGW 64bit " << __MINGW64_VERSION_MAJOR << "." << __MINGW64_VERSION_MINOR
+#else
+          << "UNKNOWN COMPILER "
+#endif
+
+#if CHECK_BOOST_VERSION
+          << " (Boost version: " << BOOST_LIB_VERSION << ')';
+#endif
+      ;
+      return compiler.str();
+    }
+}
+} // namespace cmdr::cross
+
+#endif // c++17, compiler_name()
+#endif // _COMPILER_NAME_CONSTEXPR
+
+
 // constexpr values
 
 namespace cmdr { namespace cross {
-  constexpr bool kIsArchArm     = ARCH_ARM == 1;
-  constexpr bool kIsArchAmd64   = ARCH_X64 == 1;
-  constexpr bool kIsArchAArch64 = ARCH_AARCH64 == 1;
-  constexpr bool kIsArchPPC64   = ARCH_PPC64 == 1;
+    constexpr bool kIsArchArm     = ARCH_ARM == 1;
+    constexpr bool kIsArchAmd64   = ARCH_X64 == 1;
+    constexpr bool kIsArchAArch64 = ARCH_AARCH64 == 1;
+    constexpr bool kIsArchPPC64   = ARCH_PPC64 == 1;
 }} // namespace cmdr::cross
 namespace cmdr { namespace cross {
 #ifdef NDEBUG
-  constexpr auto kIsDebug = false;
+    constexpr auto kIsDebug = false;
 #else
-  constexpr auto kIsDebug          = true;
+    constexpr auto kIsDebug          = true;
 #endif
 }} // namespace cmdr::cross
 namespace cmdr { namespace cross {
 #if defined(_MSC_VER)
-  constexpr bool kIsMsvc = true;
+    constexpr bool kIsMsvc = true;
 #else
-  constexpr bool kIsMsvc           = false;
+    constexpr bool kIsMsvc           = false;
 #endif
 }} // namespace cmdr::cross
 namespace cmdr { namespace cross {
 #if FOLLY_SANITIZE_THREAD
-  constexpr bool kIsSanitizeThread = true;
+    constexpr bool kIsSanitizeThread = true;
 #else
-  constexpr bool kIsSanitizeThread = false;
+    constexpr bool kIsSanitizeThread = false;
 #endif
 }} // namespace cmdr::cross
 namespace cmdr { namespace cross {
 #if defined(__linux__) && !FOLLY_MOBILE
-  constexpr auto kIsLinux = true;
+    constexpr auto kIsLinux = true;
 #else
-  constexpr auto kIsLinux          = false;
+    constexpr auto kIsLinux          = false;
 #endif
 }} // namespace cmdr::cross
 namespace cmdr { namespace cross {
-  constexpr auto kCompilerName = COMPILER_NAME;
-  constexpr auto kBoostVersion = "No boost";
+    constexpr auto kCompilerName = COMPILER_NAME;
+    constexpr auto kBoostVersion = BOOST_VERSION_NAME;
 }} // namespace cmdr::cross
+
 
 //
 
@@ -794,36 +899,36 @@ template<typename T>
 [[maybe_unused]] constexpr bool always_false_v = always_false<T>::value;
 
 namespace cmdr { namespace cross {
-  template<typename T>
-  constexpr T constexpr_max(T a) {
-    return a;
-  }
-  template<typename T, typename... Ts>
-  constexpr T constexpr_max(T a, T b, Ts... ts) {
-    return b < a ? constexpr_max(a, ts...) : constexpr_max(b, ts...);
-  }
-  namespace detail {
     template<typename T>
-    constexpr T constexpr_log2_(T a, T e) {
-      return e == T(1) ? a : constexpr_log2_(a + T(1), e / T(2));
+    constexpr T constexpr_max(T a) {
+      return a;
+    }
+    template<typename T, typename... Ts>
+    constexpr T constexpr_max(T a, T b, Ts... ts) {
+      return b < a ? constexpr_max(a, ts...) : constexpr_max(b, ts...);
+    }
+    namespace detail {
+      template<typename T>
+      constexpr T constexpr_log2_(T a, T e) {
+        return e == T(1) ? a : constexpr_log2_(a + T(1), e / T(2));
+      }
+      template<typename T>
+      constexpr T constexpr_log2_ceil_(T l2, T t) {
+        return l2 + T(T(1) << l2 < t ? 1 : 0);
+      }
+      template<typename T>
+      constexpr T constexpr_square_(T t) {
+        return t * t;
+      }
+    } // namespace detail
+    template<typename T>
+    constexpr T constexpr_log2(T t) {
+      return detail::constexpr_log2_(T(0), t);
     }
     template<typename T>
-    constexpr T constexpr_log2_ceil_(T l2, T t) {
-      return l2 + T(T(1) << l2 < t ? 1 : 0);
+    constexpr T constexpr_log2_ceil(T t) {
+      return detail::constexpr_log2_ceil_(constexpr_log2(t), t);
     }
-    template<typename T>
-    constexpr T constexpr_square_(T t) {
-      return t * t;
-    }
-  } // namespace detail
-  template<typename T>
-  constexpr T constexpr_log2(T t) {
-    return detail::constexpr_log2_(T(0), t);
-  }
-  template<typename T>
-  constexpr T constexpr_log2_ceil(T t) {
-    return detail::constexpr_log2_ceil_(constexpr_log2(t), t);
-  }
 }} // namespace cmdr::cross
 
 #ifndef _CONST_CHARS_DEFINED
@@ -1029,56 +1134,56 @@ const char *const NOBODY_GROUP_SORTER    = "3333";
 #undef max
 #include <time.h>
 namespace cmdr { namespace cross {
-  inline void setenv(const char *__name, const char *__value, int __overwrite = 1) {
-    UNUSED(__overwrite);
-    std::ostringstream os;
-    os << __name << '=' << __value;
-    (void) _putenv(os.str().c_str());
-  }
+    inline void setenv(const char *__name, const char *__value, int __overwrite = 1) {
+      UNUSED(__overwrite);
+      std::ostringstream os;
+      os << __name << '=' << __value;
+      (void) _putenv(os.str().c_str());
+    }
 
-  inline time_t time(time_t *_t = nullptr) {
-    return ::time(_t);
-  }
-  // BEWRAE: this is a thread-unsafe routine, it's just for the simple scene.
-  inline struct tm *gmtime(time_t const *_t = nullptr) {
-    static struct tm _tm {};
-    if (!_t) {
-      time_t vt = time();
-      gmtime_s(&_tm, &vt);
-    } else
-      gmtime_s(&_tm, _t);
-    return &_tm;
-  }
+    inline time_t time(time_t *_t = nullptr) {
+      return ::time(_t);
+    }
+    // BEWRAE: this is a thread-unsafe routine, it's just for the simple scene.
+    inline struct tm *gmtime(time_t const *_t = nullptr) {
+      static struct tm _tm {};
+      if (!_t) {
+        time_t vt = time();
+        gmtime_s(&_tm, &vt);
+      } else
+        gmtime_s(&_tm, _t);
+      return &_tm;
+    }
 
-  template<class T>
-  inline T max(T a, T b) { return a < b ? b : a; }
-  template<class T>
-  inline T min(T a, T b) { return a < b ? a : b; }
+    template<class T>
+    inline T max(T a, T b) { return a < b ? b : a; }
+    template<class T>
+    inline T min(T a, T b) { return a < b ? a : b; }
 }} // namespace cmdr::cross
 #else
 #include <algorithm>
 #include <ctime>
 #include <time.h>
 namespace cmdr { namespace cross {
-  inline void setenv(const char *__name, const char *__value, int __overwrite = 1) {
-    ::setenv(__name, __value, __overwrite);
-  }
-
-  inline time_t time(time_t *_t = nullptr) {
-    return std::time(_t);
-  }
-  inline struct tm *gmtime(time_t const *_t = nullptr) {
-    if (!_t) {
-      time_t vt = time();
-      return std::gmtime(&vt);
+    inline void setenv(const char *__name, const char *__value, int __overwrite = 1) {
+      ::setenv(__name, __value, __overwrite);
     }
-    return std::gmtime(_t);
-  }
 
-  template<class T>
-  inline T max(T a, T b) { return std::max(a, b); }
-  template<class T>
-  inline T min(T a, T b) { return std::min(a, b); }
+    inline time_t time(time_t *_t = nullptr) {
+      return std::time(_t);
+    }
+    inline struct tm *gmtime(time_t const *_t = nullptr) {
+      if (!_t) {
+        time_t vt = time();
+        return std::gmtime(&vt);
+      }
+      return std::gmtime(_t);
+    }
+
+    template<class T>
+    inline T max(T a, T b) { return std::max(a, b); }
+    template<class T>
+    inline T min(T a, T b) { return std::min(a, b); }
 }} // namespace cmdr::cross
 #endif
 
@@ -1092,133 +1197,133 @@ namespace std {
 #endif
 #endif
 namespace cmdr { namespace cross {
-  //  has_extended_alignment
-  //
-  //  True if it may be presumed that the platform has static extended alignment;
-  //  false if it may not be so presumed, even when the platform might actually
-  //  have it. Static extended alignment refers to extended alignment of objects
-  //  with automatic, static, or thread storage. Whether the there is support for
-  //  dynamic extended alignment is a property of the allocator which is used for
-  //  each given dynamic allocation.
-  //
-  //  Currently, very heuristical - only non-mobile 64-bit linux gets the extended
-  //  alignment treatment. Theoretically, this could be tuned better.
-  constexpr bool has_extended_alignment =
-      kIsLinux && sizeof(void *) >= sizeof(std::uint64_t);
-  namespace detail {
-    // Implemented this way because of a bug in Clang for ARMv7, which gives the
-    // wrong result for `alignof` a `union` with a field of each scalar type.
-    // Modified for RocksDB to use C++11 only
-    constexpr std::size_t max_align_v = constexpr_max(
-        alignof(long double),
-        alignof(double),
-        alignof(float),
-        alignof(long long int),
-        alignof(long int),
-        alignof(int),
-        alignof(short int),
-        alignof(bool),
-        alignof(char),
-        alignof(char16_t),
-        alignof(char32_t),
-        alignof(wchar_t),
-        alignof(void *),
-        alignof(std::max_align_t));
-  } // namespace detail
+    //  has_extended_alignment
+    //
+    //  True if it may be presumed that the platform has static extended alignment;
+    //  false if it may not be so presumed, even when the platform might actually
+    //  have it. Static extended alignment refers to extended alignment of objects
+    //  with automatic, static, or thread storage. Whether the there is support for
+    //  dynamic extended alignment is a property of the allocator which is used for
+    //  each given dynamic allocation.
+    //
+    //  Currently, very heuristical - only non-mobile 64-bit linux gets the extended
+    //  alignment treatment. Theoretically, this could be tuned better.
+    constexpr bool has_extended_alignment =
+        kIsLinux && sizeof(void *) >= sizeof(std::uint64_t);
+    namespace detail {
+      // Implemented this way because of a bug in Clang for ARMv7, which gives the
+      // wrong result for `alignof` a `union` with a field of each scalar type.
+      // Modified for RocksDB to use C++11 only
+      constexpr std::size_t max_align_v = constexpr_max(
+          alignof(long double),
+          alignof(double),
+          alignof(float),
+          alignof(long long int),
+          alignof(long int),
+          alignof(int),
+          alignof(short int),
+          alignof(bool),
+          alignof(char),
+          alignof(char16_t),
+          alignof(char32_t),
+          alignof(wchar_t),
+          alignof(void *),
+          alignof(std::max_align_t));
+    } // namespace detail
 
-  // max_align_v is the alignment of max_align_t.
-  //
-  // max_align_t is a type which is aligned at least as strictly as the
-  // most-aligned basic type (see the specification of std::max_align_t). This
-  // implementation exists because 32-bit iOS platforms have a broken
-  // std::max_align_t (see below).
-  //
-  // You should refer to this as `::folly::max_align_t` in portable code, even if
-  // you have `using namespace folly;` because C11 defines a global namespace
-  // `max_align_t` type.
-  //
-  // To be certain, we consider every non-void fundamental type specified by the
-  // standard. On most platforms `long double` would be enough, but iOS 32-bit
-  // has an 8-byte aligned `double` and `long long int` and a 4-byte aligned
-  // `long double`.
-  //
-  // So far we've covered locals and other non-allocated storage, but we also need
-  // confidence that allocated storage from `malloc`, `new`, etc will also be
-  // suitable for objects with this alignment requirement.
-  //
-  // Apple document that their implementation of malloc will issue 16-byte
-  // granularity chunks for small allocations (large allocations are page-size
-  // granularity and page-aligned). We think that allocated storage will be
-  // suitable for these objects based on the following assumptions:
-  //
-  // 1. 16-byte granularity also means 16-byte aligned.
-  // 2. `new` and other allocators follow the `malloc` rules.
-  //
-  // We also have some anecdotal evidence: we don't see lots of misaligned-storage
-  // crashes on 32-bit iOS apps that use `double`.
-  //
-  // Apple's allocation reference: http://bit.ly/malloc-small
-  constexpr std::size_t max_align_v = detail::max_align_v;
-  DISABLE_MSVC_WARNINGS(4324) // structure was padded due to alignment specifier
-  struct alignas(max_align_v) max_align_t {};
-  RESTORE_MSVC_WARNINGS
-  //  Memory locations within the same cache line are subject to destructive
-  //  interference, also known as false sharing, which is when concurrent
-  //  accesses to these different memory locations from different cores, where at
-  //  least one of the concurrent accesses is or involves a store operation,
-  //  induce contention and harm performance.
-  //
-  //  Microbenchmarks indicate that pairs of cache lines also see destructive
-  //  interference under heavy use of atomic operations, as observed for atomic
-  //  increment on Sandy Bridge.
-  //
-  //  We assume a cache line size of 64, so we use a cache line pair size of 128
-  //  to avoid destructive interference.
-  //
-  //  mimic: std::hardware_destructive_interference_size, C++17
-  constexpr std::size_t hardware_destructive_interference_size =
-      kIsArchArm ? 64 : 128;
-  static_assert(hardware_destructive_interference_size >= max_align_v, "math?");
-  //  Memory locations within the same cache line are subject to constructive
-  //  interference, also known as true sharing, which is when accesses to some
-  //  memory locations induce all memory locations within the same cache line to
-  //  be cached, benefiting subsequent accesses to different memory locations
-  //  within the same cache line and heping performance.
-  //
-  //  mimic: std::hardware_constructive_interference_size, C++17
-  constexpr std::size_t hardware_constructive_interference_size = 64;
-  static_assert(hardware_constructive_interference_size >= max_align_v, "math?");
-  //  A value corresponding to hardware_constructive_interference_size but which
-  //  may be used with alignas, since hardware_constructive_interference_size may
-  //  be too large on some platforms to be used with alignas.
-  constexpr std::size_t cacheline_align_v = has_extended_alignment
-                                                ? hardware_constructive_interference_size
-                                                : max_align_v;
-  DISABLE_MSVC_WARNINGS(4324) // structure was padded due to alignment specifier
-  struct alignas(cacheline_align_v) cacheline_align_t {};
-  RESTORE_MSVC_WARNINGS
+    // max_align_v is the alignment of max_align_t.
+    //
+    // max_align_t is a type which is aligned at least as strictly as the
+    // most-aligned basic type (see the specification of std::max_align_t). This
+    // implementation exists because 32-bit iOS platforms have a broken
+    // std::max_align_t (see below).
+    //
+    // You should refer to this as `::folly::max_align_t` in portable code, even if
+    // you have `using namespace folly;` because C11 defines a global namespace
+    // `max_align_t` type.
+    //
+    // To be certain, we consider every non-void fundamental type specified by the
+    // standard. On most platforms `long double` would be enough, but iOS 32-bit
+    // has an 8-byte aligned `double` and `long long int` and a 4-byte aligned
+    // `long double`.
+    //
+    // So far we've covered locals and other non-allocated storage, but we also need
+    // confidence that allocated storage from `malloc`, `new`, etc will also be
+    // suitable for objects with this alignment requirement.
+    //
+    // Apple document that their implementation of malloc will issue 16-byte
+    // granularity chunks for small allocations (large allocations are page-size
+    // granularity and page-aligned). We think that allocated storage will be
+    // suitable for these objects based on the following assumptions:
+    //
+    // 1. 16-byte granularity also means 16-byte aligned.
+    // 2. `new` and other allocators follow the `malloc` rules.
+    //
+    // We also have some anecdotal evidence: we don't see lots of misaligned-storage
+    // crashes on 32-bit iOS apps that use `double`.
+    //
+    // Apple's allocation reference: http://bit.ly/malloc-small
+    constexpr std::size_t max_align_v = detail::max_align_v;
+    DISABLE_MSVC_WARNINGS(4324) // structure was padded due to alignment specifier
+    struct alignas(max_align_v) max_align_t {};
+    RESTORE_MSVC_WARNINGS
+    //  Memory locations within the same cache line are subject to destructive
+    //  interference, also known as false sharing, which is when concurrent
+    //  accesses to these different memory locations from different cores, where at
+    //  least one of the concurrent accesses is or involves a store operation,
+    //  induce contention and harm performance.
+    //
+    //  Microbenchmarks indicate that pairs of cache lines also see destructive
+    //  interference under heavy use of atomic operations, as observed for atomic
+    //  increment on Sandy Bridge.
+    //
+    //  We assume a cache line size of 64, so we use a cache line pair size of 128
+    //  to avoid destructive interference.
+    //
+    //  mimic: std::hardware_destructive_interference_size, C++17
+    constexpr std::size_t hardware_destructive_interference_size =
+        kIsArchArm ? 64 : 128;
+    static_assert(hardware_destructive_interference_size >= max_align_v, "math?");
+    //  Memory locations within the same cache line are subject to constructive
+    //  interference, also known as true sharing, which is when accesses to some
+    //  memory locations induce all memory locations within the same cache line to
+    //  be cached, benefiting subsequent accesses to different memory locations
+    //  within the same cache line and heping performance.
+    //
+    //  mimic: std::hardware_constructive_interference_size, C++17
+    constexpr std::size_t hardware_constructive_interference_size = 64;
+    static_assert(hardware_constructive_interference_size >= max_align_v, "math?");
+    //  A value corresponding to hardware_constructive_interference_size but which
+    //  may be used with alignas, since hardware_constructive_interference_size may
+    //  be too large on some platforms to be used with alignas.
+    constexpr std::size_t cacheline_align_v = has_extended_alignment
+                                                  ? hardware_constructive_interference_size
+                                                  : max_align_v;
+    DISABLE_MSVC_WARNINGS(4324) // structure was padded due to alignment specifier
+    struct alignas(cacheline_align_v) cacheline_align_t {};
+    RESTORE_MSVC_WARNINGS
 
 
-  inline constexpr std::size_t cache_line_size() {
+    inline constexpr std::size_t cache_line_size() {
 #ifdef KNOWN_L1_CACHE_LINE_SIZE
-    return KNOWN_L1_CACHE_LINE_SIZE;
+      return KNOWN_L1_CACHE_LINE_SIZE;
 #else
-    return hardware_destructive_interference_size;
+      return hardware_destructive_interference_size;
 #endif
-  }
+    }
 
-  // struct alignas(hardware_constructive_interference_size)
-  //         OneCacheLiner { // 占据一条缓存线
-  //     std::atomic_uint64_t x{};
-  //     std::atomic_uint64_t y{};
-  // } oneCacheLiner;
-  //
-  // struct TwoCacheLiner { // 占据二条缓存线
-  //     alignas(hardware_destructive_interference_size) std::atomic_uint64_t x{};
-  //     alignas(hardware_destructive_interference_size) std::atomic_uint64_t y{};
-  // } twoCacheLiner;
-  //
-  // inline auto now() noexcept { return std::chrono::high_resolution_clock::now(); }
+    // struct alignas(hardware_constructive_interference_size)
+    //         OneCacheLiner { // 占据一条缓存线
+    //     std::atomic_uint64_t x{};
+    //     std::atomic_uint64_t y{};
+    // } oneCacheLiner;
+    //
+    // struct TwoCacheLiner { // 占据二条缓存线
+    //     alignas(hardware_destructive_interference_size) std::atomic_uint64_t x{};
+    //     alignas(hardware_destructive_interference_size) std::atomic_uint64_t y{};
+    // } twoCacheLiner;
+    //
+    // inline auto now() noexcept { return std::chrono::high_resolution_clock::now(); }
 
 }} // namespace cmdr::cross
 

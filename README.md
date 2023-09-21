@@ -86,6 +86,7 @@ See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 
 ## Status
 
+- v0.3.1 - bugs fixed and added constexpr compiler_name and a new test: test-compiler;
 - v0.3.0 - bugs fixed and sync codes for main compilers;
 - v0.2.27 - LICENSE Changed to Apache 2.0; better adaptive in cmake import;
 - v0.2.25 - follow windows virtual environment changed in adaptation; format codes with better style 

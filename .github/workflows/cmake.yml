@@ -126,6 +126,7 @@ jobs:
                vcpkg install yaml-cpp:x64-windows
           elif [ "$RUNNER_OS" == "Darwin" ]; then
                brew install yaml-cpp
+               ls -la $(brew --prefix yaml-cpp)/ /usr/local/include/yaml-cpp/ /usr/local/lib/libyaml-cpp*
           elif [ "$RUNNER_OS" == "macOS" ]; then
                brew install yaml-cpp
           else

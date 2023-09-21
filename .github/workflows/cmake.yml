@@ -104,12 +104,13 @@ jobs:
           execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./ccache.tar.xz)
       - name: Prepare ccache timestamp
         id: ccache_cache_timestamp
-        shell: cmake -P {0}
+        shell: bash
         run: |
-          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
-          message("::set-output name=timestamp::${current_date}")
+          # string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+          # message("::set-output name=timestamp::${current_date}")
+          echo "timestamp=${{ matrix.os }}-${{ matrix.type }}" >> $GITHUB_STATE
       - name: ccache cache files
-        uses: actions/cache@v1.1.0
+        uses: actions/cache@v3
         with:
           path: .ccache
           key: ${{ matrix.config.name }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
@@ -126,9 +127,9 @@ jobs:
                vcpkg install yaml-cpp:x64-windows
           elif [ "$RUNNER_OS" == "Darwin" ]; then
                brew install yaml-cpp
-               ls -la $(brew --prefix yaml-cpp)/ /usr/local/include/yaml-cpp/ /usr/local/lib/libyaml-cpp*
           elif [ "$RUNNER_OS" == "macOS" ]; then
                brew install yaml-cpp
+               ls -la $(brew --prefix yaml-cpp)/ /usr/local/include/yaml-cpp/ /usr/local/lib/libyaml-cpp*
           else
                echo "$RUNNER_OS not supported"
                exit 1

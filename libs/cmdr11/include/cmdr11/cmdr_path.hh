@@ -394,7 +394,7 @@ namespace cmdr::io {
 #else
     std::ofstream ofs(name, std::ios_base::out | std::ios_base::binary);
     ofs.seekp(size - 1);
-    char ch = '\0';
+    char const ch = '\0';
     ofs.write(&ch, 1);
 #endif
     return true;
@@ -410,7 +410,7 @@ namespace cmdr::path {
 #ifdef _WIN32
     int result = _stat(name.string().c_str(), &st);
 #else
-    int result     = ::stat(name.c_str(), &st);
+    int const result     = ::stat(name.c_str(), &st);
 #endif
     if (result != 0) {
       // check errno
@@ -441,7 +441,7 @@ namespace cmdr::path {
 
     return (bhfi.dwFileAttributes & FILE_ATTRIBUTE_SPARSE_FILE);
 #else
-    struct stat st = stat(name);
+    struct stat const st = stat(name);
     return (st.st_blksize * st.st_blocks < st.st_size);
 #endif
   }
@@ -465,7 +465,7 @@ namespace cmdr::path {
    * @return an implicit, static, global, empty, and const pathname.
    */
   inline std::filesystem::path const &empty_path() {
-    static std::filesystem::path p;
+    static std::filesystem::path const p;
     return p;
   }
 

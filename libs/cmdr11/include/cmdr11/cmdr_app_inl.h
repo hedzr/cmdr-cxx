@@ -243,10 +243,10 @@ namespace cmdr {
     auto tilde_debug_arg = (*pc._root)["debug"];
     if (tilde_debug_arg.valid()) {
 
-      auto &cli                 = (*this); // get_app();
-      int tilde_debug_hit_count = tilde_debug_arg.hit_count();
-      bool allow_cli_sub_key    = cli.get_for_cli("cli").as<bool>();
-      auto const &cli_prefix    = cli.cli_prefix();
+      auto &cli                       = (*this); // get_app();
+      int const tilde_debug_hit_count = tilde_debug_arg.hit_count();
+      bool const allow_cli_sub_key    = cli.get_for_cli("cli").as<bool>();
+      auto const &cli_prefix          = cli.cli_prefix();
       std::function<bool(std::pair<vars::store::key_type, vars::store::node_pointer> const &)>
           filter{};
       if (!allow_cli_sub_key) filter = [&](std::pair<vars::store::key_type, vars::store::node_pointer> const &p) -> bool {
@@ -314,12 +314,12 @@ namespace cmdr {
     UNUSED(pc, argc, argv);
     std::cout << "All Commands:\n";
 
-    auto const &help_arg   = find_flag("help");
-    bool show_hidden_items = help_arg.valid() && help_arg.hit_count() > 2;
-    bool sc_mode           = get_for_cli("shell-completion").as<bool>();
+    auto const &help_arg         = find_flag("help");
+    bool const show_hidden_items = help_arg.valid() && help_arg.hit_count() > 2;
+    bool const sc_mode           = get_for_cli("shell-completion").as<bool>();
 
     // _pr_tree(std::cout, &pc.last_matched_cmd());
-    auto c                 = cmdr::terminal::colors::colorize::create();
+    auto c                       = cmdr::terminal::colors::colorize::create();
     pc.last_matched_cmd().print_commands(std::cout, c, _minimal_tab_width, true, show_hidden_items, sc_mode, 0);
     return 0;
   }
@@ -611,7 +611,7 @@ namespace cmdr {
       } else {
         std::ofstream out(path);
         if (out) {
-          util::defer<bool> dx_fn(std::bind(&std::ofstream::close, &out));
+          util::defer<bool> const dx_fn(std::bind(&std::ofstream::close, &out));
           out << contents;
           if (out) {
             written = true;
@@ -694,7 +694,7 @@ fi
 
 )SH-EOF";
 
-    bool drop        = get_for_cli("generate.shell.drop").as<bool>();
+    bool const drop  = get_for_cli("generate.shell.drop").as<bool>();
 
     // auto *safe_name = std::getenv("SAFE_APP_NAME");
     auto *exe_name   = std::getenv("EXE_NAME");

@@ -126,9 +126,27 @@ namespace cmdr {
 #endif
 
 #if CHECK_BOOST_VERSION
-        << " (Boost version: " << BOOST_LIB_VERSION << ')';
+        << " (Boost version: " << BOOST_LIB_VERSION << ')'
 #endif
-    ;
+
+#if (__cplusplus == 201703L)
+        << " (C++17)"
+#elif (__cplusplus == 201402L)
+        << " (C++14)"
+#elif (__cplusplus == 201103L)
+        << " (C++11)"
+#elif (__cplusplus == 199711L)
+        << " (C++98)"
+#elif (__cplusplus == 202002L)
+        << " (C++20)"
+#elif (__cplusplus > 202002L)
+        << " (C++23)"
+#elif (__cplusplus > 202302L)
+        << " (C++26)"
+#else
+        << " (pre-standard C++)"
+#endif
+        ;
     return compiler.str();
   }
 
@@ -427,7 +445,7 @@ namespace cmdr {
                  DEBUG_ONLY({
                    bool shell_completion_mode = get_for_cli("shell-completion").as<bool>();
                    if (shell_completion_mode) {
-                     this->_sa_lf = std::ofstream(path::get_executable_path().filename().u8string() + ".log");
+                     this->_sa_lf = std::ofstream(path::get_executable_path().filename().string() + ".log");
                      for (auto const &v: _args_cache)
                        this->_sa_lf << v << ' ';
                      this->_sa_lf << '\n';
@@ -597,8 +615,8 @@ namespace cmdr {
           out << contents;
           if (out) {
             written = true;
-            cross::setenv("TARGET", path.u8string().c_str());
-            cross::setenv("TARGET_DIR", path.parent_path().u8string().c_str());
+            cross::setenv("TARGET", path.string().c_str());
+            cross::setenv("TARGET_DIR", path.parent_path().string().c_str());
             std::cerr << vars::store::dark_text(string::expand_env(ok_msg));
           }
         }

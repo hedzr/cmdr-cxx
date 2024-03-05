@@ -790,6 +790,24 @@ namespace cmdr::cross {
 #if CHECK_BOOST_VERSION
           " (Boost version: " _TEXT(BOOST_LIB_VERSION) ")"
 #endif
+
+#if (__cplusplus == 201703L)
+                                                       " (C++17)"
+#elif (__cplusplus == 201402L)
+          " (C++14)"
+#elif (__cplusplus == 201103L)
+              " (C++11)"
+#elif (__cplusplus == 199711L)
+          << " (C++98)"
+#elif (__cplusplus == 202002L)
+           " (C++20)"
+#elif (__cplusplus > 202002L)
+          " (C++23)"
+#elif (__cplusplus > 202302L)
+          " (C++26)"
+#else
+          " (pre-standard C++)"
+#endif
     };
     return str;
   }
@@ -835,9 +853,27 @@ namespace cmdr {
 #endif
 
 #if CHECK_BOOST_VERSION
-          << " (Boost version: " << BOOST_LIB_VERSION << ')';
+          << " (Boost version: " << BOOST_LIB_VERSION << ')'
 #endif
-      ;
+
+#if (__cplusplus == 201703L)
+          << " (C++17)"
+#elif (__cplusplus == 201402L)
+          << " (C++14)"
+#elif (__cplusplus == 201103L)
+          << " (C++11)"
+#elif (__cplusplus == 199711L)
+          << " (C++98)"
+#elif (__cplusplus == 202002L)
+          << " (C++20)"
+#elif (__cplusplus > 202002L)
+          << " (C++23)"
+#elif (__cplusplus > 202302L)
+          << " (C++26)"
+#else
+          << " (pre-standard C++)"
+#endif
+          ;
       return compiler.str();
     }
 }

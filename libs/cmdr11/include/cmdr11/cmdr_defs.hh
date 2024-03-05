@@ -890,39 +890,45 @@ namespace cmdr { namespace cross {
     constexpr bool kIsArchAmd64   = ARCH_X64 == 1;
     constexpr bool kIsArchAArch64 = ARCH_AARCH64 == 1;
     constexpr bool kIsArchPPC64   = ARCH_PPC64 == 1;
-}} // namespace cmdr::cross
+} // namespace cross
+} // namespace cmdr
 namespace cmdr { namespace cross {
 #ifdef NDEBUG
     constexpr auto kIsDebug = false;
 #else
     constexpr auto kIsDebug          = true;
 #endif
-}} // namespace cmdr::cross
+} // namespace cross
+} // namespace cmdr
 namespace cmdr { namespace cross {
 #if defined(_MSC_VER)
     constexpr bool kIsMsvc = true;
 #else
     constexpr bool kIsMsvc           = false;
 #endif
-}} // namespace cmdr::cross
+} // namespace cross
+} // namespace cmdr
 namespace cmdr { namespace cross {
 #if FOLLY_SANITIZE_THREAD
     constexpr bool kIsSanitizeThread = true;
 #else
     constexpr bool kIsSanitizeThread = false;
 #endif
-}} // namespace cmdr::cross
+} // namespace cross
+} // namespace cmdr
 namespace cmdr { namespace cross {
 #if defined(__linux__) && !FOLLY_MOBILE
     constexpr auto kIsLinux = true;
 #else
     constexpr auto kIsLinux          = false;
 #endif
-}} // namespace cmdr::cross
+} // namespace cross
+} // namespace cmdr
 namespace cmdr { namespace cross {
     constexpr auto kCompilerName = COMPILER_NAME;
     constexpr auto kBoostVersion = BOOST_VERSION_NAME;
-}} // namespace cmdr::cross
+} // namespace cross
+} // namespace cmdr
 
 
 //
@@ -965,7 +971,8 @@ namespace cmdr { namespace cross {
     constexpr T constexpr_log2_ceil(T t) {
       return detail::constexpr_log2_ceil_(constexpr_log2(t), t);
     }
-}} // namespace cmdr::cross
+} // namespace cross
+} // namespace cmdr
 
 #ifndef _CONST_CHARS_DEFINED
 #define _CONST_CHARS_DEFINED
@@ -1210,7 +1217,7 @@ namespace cmdr { namespace cross {
     }
     inline struct tm *gmtime(time_t const *_t = nullptr) {
       if (!_t) {
-        time_t vt = time();
+        time_t const vt = time();
         return std::gmtime(&vt);
       }
       return std::gmtime(_t);
@@ -1220,7 +1227,8 @@ namespace cmdr { namespace cross {
     inline T max(T a, T b) { return std::max(a, b); }
     template<class T>
     inline T min(T a, T b) { return std::min(a, b); }
-}} // namespace cmdr::cross
+} // namespace cross
+} // namespace cmdr
 #endif
 
 
@@ -1229,7 +1237,7 @@ namespace cmdr { namespace cross {
 #if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 9)
 namespace std {
   using ::max_align_t;
-}
+} // namespace std
 #endif
 #endif
 namespace cmdr { namespace cross {
@@ -1361,7 +1369,8 @@ namespace cmdr { namespace cross {
     //
     // inline auto now() noexcept { return std::chrono::high_resolution_clock::now(); }
 
-}} // namespace cmdr::cross
+} // namespace cross
+} // namespace cmdr
 
 
 #endif // CMDR_CXX11_CMDR_DEFS_HH

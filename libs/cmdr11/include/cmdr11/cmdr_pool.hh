@@ -25,6 +25,11 @@
 #include <string>
 #include <vector>
 
+#if __cplusplus >= 202002L
+#include <barrier>
+#include <latch>
+#endif
+
 #include "cmdr_defs.hh"
 // #include "cmdr_ringbuf.hh"
 #include "cmdr_log.hh"
@@ -39,7 +44,7 @@
 namespace cmdr::pool {
 
   /**
-   * @brief a wrapper class for using std condition variable concisely
+   * @brief a wrapper class for using std conditional variable concisely.
    * @tparam T any type holder
    * @tparam Pred a functor with prototype `bool()`
    * @tparam Setter a functor with prototype `void()`
@@ -67,11 +72,10 @@ namespace cmdr::pool {
     CLAZZ_NON_COPYABLE(conditional_wait);
 
   public:
-    virtual /**
+    /**
      * @brief wait for Pred condition matched
      */
-        void
-        wait() {
+    virtual void wait() {
       std::unique_lock<std::mutex> lk(_m);
       _cv.wait(lk, _p);
     }
@@ -125,7 +129,7 @@ namespace cmdr::pool {
     void set() {
       // cmdr_debug("%s", __FUNCTION_NAME__);
       {
-        std::unique_lock<std::mutex> lk(_m);
+        std::unique_lock<std::mutex> const lk(_m);
         _s();
       }
       _cv.notify_one();
@@ -137,7 +141,7 @@ namespace cmdr::pool {
     void set_for_all() {
       // cmdr_debug("%s", __FUNCTION_NAME__);
       {
-        std::unique_lock<std::mutex> lk(_m);
+        std::unique_lock<std::mutex> const lk(_m);
         _s();
       }
       _cv.notify_all();
@@ -146,17 +150,24 @@ namespace cmdr::pool {
     void clear() { _release(); }
 
     T const &val() const { return _value(); }
-
     T &val() { return _value(); }
 
   protected:
     virtual T const &_value() const { return _var; }
-
     virtual T &_value() { return _var; }
-
     virtual void _release() {}
   };
 
+  /**
+   * @brief handles a conditional_wait object and set the cw at deconstrcting itself.
+   * @code{c++}
+   *   conditional_wait_for_bool state;
+   *   {
+   *      cw_setter cws(state);
+   *      // ...
+   *   }
+	 * @endcode
+   */
   template<typename CW>
   class cw_setter {
   public:
@@ -212,7 +223,7 @@ namespace cmdr::pool {
 
 namespace cmdr::pool {
   /**
-   * @brief helper class for shutdown a sleep loop gracefully.
+   * @brief helper class for shutting down a sleep loop gracefully.
    *
    * @details Sample:
    * @code{c++}
@@ -390,7 +401,7 @@ namespace cmdr::pool {
 
     void clear() {
       {
-        locker l_(_m);
+        const locker l_(_m);
         _abort = true;
         _data.clear();
       }
@@ -417,21 +428,25 @@ namespace cmdr::pool {
    */
   class thread_pool {
   public:
+#define DEFAULT_POOL_SIZE (n > 0 ? n : std::thread::hardware_concurrency())
     thread_pool(int n = 1u)
 #if CMDR_ENABLE_THREAD_POOL_READY_SIGNAL
-        : _cv_started((int) (n > 0 ? n : std::thread::hardware_concurrency()))
+#if __cplusplus >= 202002L
+        : _sync_point(DEFAULT_POOL_SIZE, [] {})
+#else
+        : _cv_started(DEFAULT_POOL_SIZE)
+#endif
 #endif
     {
-      start_thread((n > 0 ? n : std::thread::hardware_concurrency()));
+      start_thread(DEFAULT_POOL_SIZE);
     }
     // thread_pool(thread_pool &&) = delete;
     // thread_pool &operator=(thread_pool &&) = delete;
     CLAZZ_NON_COPYABLE(thread_pool);
-
     ~thread_pool() { join(); }
 
   public:
-    template<class F, class R = std::result_of_t<F &()>>
+    template<class F, class R = std::invoke_result_t<F>>
     std::future<R> queue_task(F &&task) {
       auto p = std::packaged_task<R()>(std::forward<F>(task));
       // std::packaged_task<R()> p(std::move(task));
@@ -443,7 +458,7 @@ namespace cmdr::pool {
       return r;
     }
 
-    template<class F, class R = std::result_of_t<F &()>>
+    template<class F, class R = std::invoke_result_t<F>>
     std::future<R> queue_task(F const &task) {
       auto p = std::packaged_task<R()>(std::forward<F>(task));
       // std::packaged_task<R()> p(std::move(task));
@@ -456,17 +471,13 @@ namespace cmdr::pool {
     }
 
     void join() { clear_threads(); }
-
     std::size_t active_threads() const { return _active; }
-
     std::size_t total_threads() const { return _threads.size(); }
-
     auto &tasks() { return _tasks; }
-
     auto const &tasks() const { return _tasks; }
 
   private:
-    template<class F, class R = std::result_of_t<F &()>>
+    template<class F, class R = std::invoke_result_t<F>>
     std::future<R> run_task(F &&task) {
       if (active_threads() >= total_threads()) {
         start_thread();
@@ -490,9 +501,13 @@ namespace cmdr::pool {
                         n
 #endif
         ] {
-                         cw_setter cws(_future_ended);
+                         const cw_setter cws(_future_ended);
 #if CMDR_ENABLE_THREAD_POOL_READY_SIGNAL
-                         _cv_started.set();
+#if __cplusplus >= 202002L
+                         _sync_point.arrive_and_wait(); // till all workers started
+#else
+                  _cv_started.set();
+#endif
 #endif
 #if CMDR_TEST_THREAD_POOL_DBGOUT
                          pool_debug("  . pool.n = %lu..", n);
@@ -511,8 +526,12 @@ namespace cmdr::pool {
                        }));
       }
 #if CMDR_ENABLE_THREAD_POOL_READY_SIGNAL
+#if __cplusplus >= 202002L
+      pool_debug("  . pool.started (sync_point = %ld)..\n", total_threads());
+#else
       _cv_started.wait();
       pool_debug("  . pool.started (cv.get = %d)..", _cv_started.val());
+#endif
 #else
       pool_debug("  . pool.started..");
 #endif
@@ -523,7 +542,11 @@ namespace cmdr::pool {
     mutable threaded_message_queue<std::packaged_task<void()>> _tasks{}; // the futures
     std::atomic<std::size_t> _active{0};
 #if CMDR_ENABLE_THREAD_POOL_READY_SIGNAL
+#if __cplusplus >= 202002L
+    std::barrier<std::function<void()>> _sync_point;
+#else
     conditional_wait_for_int _cv_started{};
+#endif
 #endif
     conditional_wait_for_int _future_ended{};
   }; // class thread_pool
@@ -548,7 +571,7 @@ namespace cmdr::pool {
 
       std::future<return_type> res = task->get_future();
       {
-        std::unique_lock<std::mutex> lock(queue_mutex);
+        std::unique_lock<std::mutex> const lock(queue_mutex);
 
         // don't allow enqueueing after stopping the pool
         if (stop)
@@ -585,7 +608,7 @@ namespace cmdr::pool {
 
     void clear() {
       {
-        std::unique_lock<std::mutex> lock(queue_mutex);
+        std::unique_lock<std::mutex> const lock(queue_mutex);
         stop = true;
       }
       condition.notify_all();

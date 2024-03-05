@@ -1220,7 +1220,7 @@ namespace cmdr::util {
     auto *str = std::getenv("SHELL");
     if (str != nullptr) {
       auto path = std::filesystem::path(str);
-      return path.filename().u8string();
+      return path.filename().string();
     }
     return "unknown";
   }

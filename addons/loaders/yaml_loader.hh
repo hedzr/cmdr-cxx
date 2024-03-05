@@ -143,7 +143,7 @@ namespace cmdr::addons::loaders {
         if (fs::is_directory(file)) {
           auto p = fs::path(file);
           p /= (c.name() + ".yml");
-          file = p.u8string();
+          file = p.string();
           if (path::file_exists(file)) {
             load_to(file, c);
             return;

@@ -609,11 +609,11 @@ namespace cmdr {
       if (!cc->examples().empty()) {
         ss << '\n'
            << "Examples" << '\n'
-           << string::pad_left(string::reg_replace(cc->examples(), "~", exe_name.filename().u8string())) << '\n';
+           << string::pad_left(string::reg_replace(cc->examples(), "~", exe_name.filename().string())) << '\n';
       }
       ss << '\n'
          << "Usage" << '\n';
-      ss << string::pad_left(exe_name.filename().u8string(), 2) << ' '
+      ss << string::pad_left(exe_name.filename().string(), 2) << ' '
          << cc->title_sequences() << " [options] [Tail Args]" << '\n';
 
       ss << '\n'
@@ -706,7 +706,7 @@ namespace cmdr {
              << _tail_line << '\n';
         } else {
           ss << '\n'
-             << "Type `" << exe_name.filename().u8string()
+             << "Type `" << exe_name.filename().string()
              << " --help` to get help screen (this screen)." << '\n';
         }
       }
@@ -786,10 +786,10 @@ namespace cmdr {
     string::replace_all(safe_name, "-", "_");
     cross::setenv("SAFE_APP_NAME", safe_name.c_str(), 1);
     cross::setenv("APP_VERSION", _version.c_str(), 1);
-    cross::setenv("EXE_DIR", path::get_executable_dir().u8string().c_str(), 1);
+    cross::setenv("EXE_DIR", path::get_executable_dir().string().c_str(), 1);
     auto exe_path = path::get_executable_path();
-    cross::setenv("EXE_PATH", exe_path.u8string().c_str(), 1);
-    cross::setenv("EXE_NAME", exe_path.filename().u8string().c_str(), 1);
+    cross::setenv("EXE_PATH", exe_path.string().c_str(), 1);
+    cross::setenv("EXE_NAME", exe_path.filename().string().c_str(), 1);
   }
 
   inline void app::load_externals() {

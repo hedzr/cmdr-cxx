@@ -228,7 +228,7 @@ namespace cmdr::path {
   }
 
   inline bool file_exists(std::filesystem::path const &filePath) {
-    return access(filePath.u8string().c_str(), 0) == 0;
+    return access(filePath.string().c_str(), 0) == 0;
   }
 
 } // namespace cmdr::path
@@ -292,7 +292,7 @@ namespace cmdr::path {
 #if defined(_WIN32)
     // BEWARE! the returned pointer pointed to a destroyed instance!!!
     DISABLE_MSVC_WARNINGS(26815)
-    return path.u8string().c_str(); // BUG!!
+    return path.string().c_str(); // BUG!!
     RESTORE_MSVC_WARNINGS
 #else
     return path.c_str();
@@ -301,7 +301,7 @@ namespace cmdr::path {
 
   inline std::string to_filename_h(std::filesystem::path const &path) {
 #if defined(_WIN32)
-    return path.u8string();
+    return path.string();
 #else
     return path;
 #endif
@@ -329,7 +329,7 @@ namespace cmdr::io {
 
   inline bool delete_file(std::filesystem::path const &name) {
     // unlink(name.c_str());
-    return std::remove(name.u8string().c_str()) == 0;
+    return std::remove(name.string().c_str()) == 0;
     // see also: https://en.cppreference.com/w/cpp/io/c/remove
   }
   inline bool delete_file(char const *filename) {
@@ -368,7 +368,7 @@ namespace cmdr::io {
     // and File Share attributes that works for you
     DWORD dwTemp;
 
-    HANDLE hSparseFile = CreateFile(name.u8string().c_str(),
+    HANDLE hSparseFile = CreateFile(name.string().c_str(),
                                     GENERIC_READ | GENERIC_WRITE,
                                     FILE_SHARE_READ | FILE_SHARE_WRITE,
                                     NULL,
@@ -408,7 +408,7 @@ namespace cmdr::path {
   inline hz_stat stat(std::filesystem::path const &name) {
     hz_stat st;
 #ifdef _WIN32
-    int result = _stat(name.u8string().c_str(), &st);
+    int result = _stat(name.string().c_str(), &st);
 #else
     int result     = ::stat(name.c_str(), &st);
 #endif
@@ -424,7 +424,7 @@ namespace cmdr::path {
     // https://www.codeproject.com/Articles/53000/Managing-Sparse-Files-on-Windows
 
     // Open the file for read
-    HANDLE hFile = CreateFile(name.u8string().c_str(),
+    HANDLE hFile = CreateFile(name.string().c_str(),
                               GENERIC_READ,
                               FILE_SHARE_READ,
                               NULL,

@@ -165,8 +165,8 @@ namespace cmdr {
         chrono::format_duration(ss, arg);
       else if constexpr (std::is_same_v<T, std::chrono::years>)
         chrono::format_duration(ss, arg);
-      else if constexpr (std::is_same_v<T, std::chrono::system_clock>)
-        chrono::format_duration(ss, arg);
+        // else if constexpr (std::is_same_v<T, std::chrono::system_clock>)
+        //  chrono::format_duration(ss, arg);
 #endif
       // else
       //     static_assert(always_false_v<T>, "non-exhaustive visitor!");

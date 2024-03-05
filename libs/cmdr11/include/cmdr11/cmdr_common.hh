@@ -291,7 +291,9 @@ namespace cmdr::traits {
   };
 
   template<class T>
-  struct tag { using type = T; };
+  struct tag {
+    using type = T;
+  };
 
   namespace detail::another_head_n {
     template<std::size_t N, class R, class TL>
@@ -443,12 +445,12 @@ namespace cmdr::traits {
 
 // ------------------- cxx20 head/tail/slice
 namespace cmdr::traits {
-#if __cplusplus >= 202001
+#if __cplusplus >= 202001 && false
 
   namespace detail {
     template<typename T, auto Start, auto Step, T... Is>
     constexpr auto make_cons_helper_impl_(std::integer_sequence<T, Is...>) {
-      auto eval_ = [](const T &I) consteval->T { return Start + Step * I; };
+      auto eval_ = [](const T &I) consteval -> T { return Start + Step * I; };
       return std::integer_sequence<T, eval_(Is)...>{};
     }
 

@@ -56,6 +56,7 @@ namespace cmdr::vars {
       return {
           std::type_index(typeid(T)),
           [g = f](std::ostream &os, std::any const &a) {
+            UNUSED(a);
             if constexpr (std::is_void_v<T>)
               g(os);
             else
@@ -68,6 +69,7 @@ namespace cmdr::vars {
       return {
           std::type_index(typeid(T)),
           [g = f](std::istream &is, std::any &a) {
+            UNUSED(a);
             if constexpr (std::is_void_v<T>) {
               g(is);
             } else if constexpr (std::is_same_v<typename debug::lambda_func_type<decltype(g)>::type, void(std::istream &, std::any &) const>) {

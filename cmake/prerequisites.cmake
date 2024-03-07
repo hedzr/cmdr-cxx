@@ -173,6 +173,9 @@ endif ()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # ############################## include .options.cmake
+message(STATUS ">>> HOME: $ENV{HOME} / $ENV{USERPROFILE} ")
+message(STATUS ">>> vcpkg tests 1: env: $ENV{VCPKG_ROOT}; def: ${VCPKG_ROOT}; ")
+message(STATUS ">>> CMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}")
 
 include(add-policies)
 include(detect-systems)

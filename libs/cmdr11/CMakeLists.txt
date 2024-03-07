@@ -131,6 +131,7 @@ add_library(libs::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 #set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "libs/${PROJECT_NAME}")
 
 
+#add_cxx_20_to(${PROJECT_NAME})
 #target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_11)
 #target_sources(${PROJECT_NAME} PRIVATE src/${PROJECT_NAME}.cc src/private.cc)
 target_sources(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${detail_header_files};${header_files}>")
@@ -184,6 +185,7 @@ endif ()
 if (ENABLE_CLI_APP)
     set(CLI_NAME cmdr11-cli)
     add_executable(${CLI_NAME} src/main.cc)
+    #add_cxx_20_to(${CLI_NAME})
     target_compile_definitions(${CLI_NAME} PRIVATE
                                CMDR_ENABLE_AUTO_COMPLETION_LOGFILE=1
                                CMDR_ENABLE_ASSERTIONS=${_cmdr_enable_assertions}

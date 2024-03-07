@@ -86,6 +86,7 @@ See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 
 ## Status
 
+- v0.5.0 - upgraded to compliant with cxx20 and later
 - v0.3.1 - bugs fixed and added constexpr compiler_name and a new test: test-compiler;
 - v0.3.0 - bugs fixed and sync codes for main compilers;
 - v0.2.27 - LICENSE Changed to Apache 2.0; better adaptive in cmake import;
@@ -111,7 +112,7 @@ See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 - msvc build tool:
   - 17.2.32505.173 (VS2022 or Build Tool) passed
   - OLD: 16.7.2, 16.8.5 (VS2019 or Build Tool) passed
-
+  - NEW: VS2022 passed
 
 
 ### Snapshots

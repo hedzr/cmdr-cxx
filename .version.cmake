@@ -1,1 +1,1 @@
-set(VERSION 0.3.1.0)
+set(VERSION 0.5.0.0)

@@ -218,7 +218,7 @@ namespace cmdr::chrono {
         // auto clean_duration = break_down_durations<std::chrono::seconds, std::chrono::milliseconds, std::chrono::microseconds>(duration);
         //    auto timeInMicroSec = std::chrono::duration_cast<std::chrono::microseconds>(duration); // base in Microsec.
         // std::cout << "It took " << std::get<0>(clean_duration).count() << "::" << std::get<1>(clean_duration).count() << "::" << std::get<2>(clean_duration).count() << "\n";
-        auto d = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
+        auto const d = std::chrono::duration_cast<std::chrono::nanoseconds>(duration);
         print_duration(std::cout, d);
       }
     }
@@ -391,15 +391,15 @@ namespace cmdr::chrono {
     // std::ostringstream os;
     bool foundNonZero = false;
     os.fill('0');
-    typedef duration<int, std::ratio<86400 * 365>> years;
-    const auto y = duration_cast<years>(ns);
+    typedef duration<int, std::ratio<86400 * 365>> years_;
+    const auto y = duration_cast<years_>(ns);
     if (y.count()) {
       foundNonZero = true;
       os << y.count() << "y:";
       ns -= y;
     }
-    typedef duration<int, std::ratio<86400>> days;
-    const auto d = duration_cast<days>(ns);
+    typedef duration<int, std::ratio<86400>> days_;
+    const auto d = duration_cast<days_>(ns);
     if (d.count()) {
       foundNonZero = true;
       os << d.count() << "d:";
@@ -867,8 +867,14 @@ inline std::ostream &operator<<(std::ostream &os, T const &v) {
 template<typename T,
          std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool>>
 inline void cmdr::chrono::high_res_duration::print_duration(std::ostream &os, T v) {
+#if defined(_WIN32)
+  os << "It took ";
+  cmdr::chrono::format_duration(os, v);
+  os<< '\n';
+#else
   // cmdr::chrono::format_duration(os, v);
   os << "It took " << v << '\n';
+#endif
 }
 
 template<class _Clock, class _Duration = typename _Clock::duration>

@@ -104,26 +104,26 @@ macro(add_yaml_loader_to target)
 			${YAML_CPP_INCLUDE_DIR}
 		)
 		target_link_directories(${target} PRIVATE
-			${YAML_CPP_LIBRARIES}
+			${YAML_CPP_LIBRARY_DIR}
 		)
 		target_link_libraries(${target}
 			PRIVATE
-			yaml-cpp
+			${YAML_CPP_LIBRARIES}
 		)
 
 	# endif ()
 	else()
-		message(STATUS "yaml_loader: cmake package found at ${YAML_CPP_INCLUDE_DIR}, LIBS: ${YAML_CPP_LIBRARIES}")
+		message(STATUS "yaml_loader: cmake package found at ${YAML_CPP_INCLUDE_DIR} & ${YAML_CPP_LIBRARY_DIR}, LIBS: ${YAML_CPP_LIBRARIES}")
 		message(STATUS "yaml_loader: add ${YAML_PP_TGT_NAME} module to '${target}' from CMake Modules registry.")
 		target_include_directories(${target} PRIVATE
 			${YAML_CPP_INCLUDE_DIR}
 		)
 		target_link_directories(${target} PRIVATE
-			${YAML_CPP_LIBRARIES}
+			${YAML_CPP_LIBRARIE_DIR}
 		)
 		target_link_libraries(${target}
 			PRIVATE
-			yaml-cpp
+			${YAML_CPP_LIBRARIES}
 		)
 	endif()
 

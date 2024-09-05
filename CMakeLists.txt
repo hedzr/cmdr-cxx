@@ -1,5 +1,5 @@
 # # TPL ## HEAD ##########
-cmake_minimum_required(VERSION 3.9..3.28)
+cmake_minimum_required(VERSION 3.9..)
 set(CMAKE_SCRIPTS "cmake")
 set(CMAKE_MODULE_PATH
 	${CMAKE_SOURCE_DIR}/addons

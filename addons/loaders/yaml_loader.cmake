@@ -126,6 +126,17 @@ macro(add_yaml_loader_to target)
 			# ${CMAKE_CURRENT_BINARY_DIR}/${YAML_PP_TGT_NAME}-prefix/src/${YAML_PP_TGT_NAME}-build
 		)
 
+		message(STATUS "yaml_loader: cpu = ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+
+		if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "arm64")
+			target_include_directories(${target} SYSTEM PRIVATE
+				/opt/homebrew/include
+			)
+			target_link_directories(${target} PRIVATE
+				/opt/homebrew/lib
+			)
+		endif()
+
 		# target_link_libraries(${target}
 		# PRIVATE
 		# cmdr11::cmdr11

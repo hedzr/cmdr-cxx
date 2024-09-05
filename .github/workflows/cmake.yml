@@ -131,6 +131,7 @@ jobs:
                brew install yaml-cpp
                # cannot work for arm64 macOS:
                # ls -la $(brew --prefix yaml-cpp)/ /usr/local/include/yaml-cpp/ /usr/local/lib/libyaml-cpp*
+               # ls -la $(brew --prefix yaml-cpp)/ /opt/homebrew/include/yaml-cpp/ /opt/homebrew/lib/libyaml-cpp*
           else
                echo "$RUNNER_OS not supported"
                exit 1

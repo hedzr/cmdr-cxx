@@ -107,6 +107,8 @@ define_example_program(app2 app2.cc second_src.cc)
 #
 include(loaders/yaml_loader)
 add_yaml_loader_to(examples-app1)
+target_compile_definitions(examples-app1 PRIVATE
+	CMDR_ENABLE_VERBOSE_LOG=0)
 
 # target_compile_definitions(examples-app1 PRIVATE CMDR_ENABLE_VERBOSE_LOG=0)
 
@@ -121,4 +123,4 @@ debug_print_value(ARCHIVE_NAME)
 debug_print_value(PROJECT_ARCHIVE_NAME)
 debug_print_value(BUILD_TESTING)
 debug_print_value(CMAKE_SOURCE_DIR)
-message(STATUS "end of tests")
+message(STATUS "end of examples")

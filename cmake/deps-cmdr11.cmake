@@ -63,11 +63,13 @@ macro(add_cmdr_cxx_to target)
     target_include_directories(${target} PRIVATE
         $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
         $<INSTALL_INTERFACE:include>
+        /opt/homebrew/include
         /usr/local/include
         # ${CMDR_CXX_STAGE_DIR}/include
         ${CMDR11_INCLUDE_DIR}
         )
     target_link_directories(${target} PRIVATE
+        /opt/homebrew/lib
         /usr/local/lib
         # ${CMDR_CXX_STAGE_DIR}/lib
         ${CMDR11_LIBRARY_DIR}

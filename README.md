@@ -86,6 +86,7 @@ See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 
 ## Status
 
+- v0.5.2 - fixed upload/download-artifact in last release; compliant with c++20 or higher
 - v0.5.1 - security patch the workflow script; fixed it;
 - v0.5.0 - upgraded to compliant with cxx20 and later
 - v0.3.1 - bugs fixed and added constexpr compiler_name and a new test: test-compiler;

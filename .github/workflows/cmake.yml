@@ -8,7 +8,7 @@ env:
   BUILD_TYPE: Release
   CCACHE_VERSION: 3.7.7
   CI_RUNNING: 1
-  VCPKG_TARGET_TRIPLET: x64-windows
+  # VCPKG_TARGET_TRIPLET: x64-windows
 
 jobs:
   build:
@@ -39,6 +39,9 @@ jobs:
             name: "macOS Latest Clang", artifact: "macOS.7z",
             os: macos-latest,
             cc: "clang", cxx: "clang++"
+
+            # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/macos/macos-14-arm64-Readme.md
+            # https://github.com/actions/runner-images/releases/tag/macos-14-arm64%2F20240827.4
           }
 
     steps:
@@ -121,6 +124,7 @@ jobs:
 
       - name: container env tests
         if: matrix.os != 'windows-latest'
+        shell: bash
         run: |
           echo "RUNNER_OS:                    $RUNNER_OS"
           echo "uname -p (processor):         $(uname -p)"

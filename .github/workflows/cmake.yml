@@ -118,6 +118,60 @@ jobs:
             ${{ matrix.config.name }}-ccache-1-
 
 
+
+      - name: container env tests
+        if: matrix.os != 'windows-latest'
+        run: |
+          echo "RUNNER_OS:                    $RUNNER_OS"
+          echo "uname -p (processor):         $(uname -p)"
+          echo "uname -s (kernel name):       $(uname -s)"
+          echo "uname -r (kernel release):    $(uname -r)"
+          echo "uname -v (kernel version):    $(uname -v)"
+          echo "uname -m (machine):           $(uname -m)"
+          if [ "$RUNNER_OS" != "macOS" ]; then
+          echo "uname -i (hardware platform): $(uname -i)"
+          fi
+          echo "uname -o (operation system):  $(uname -o)"
+
+      - name: cmake env tests
+        if: matrix.os != 'windows-latest'
+        shell: cmake -P {0}
+        run: |
+          message(STATUS "PROCESSOR_ARCHITEW6432        = ${PROCESSOR_ARCHITEW6432}")
+          message(STATUS "PROCESSOR_ARCHITECTURE        = ${PROCESSOR_ARCHITECTURE}")
+          message(STATUS "CMAKE_APPLE_SILICON_PROCESSOR = ${CMAKE_APPLE_SILICON_PROCESSOR}")
+          message(STATUS "CMAKE_SYSTEM                  = ${CMAKE_SYSTEM}")
+          message(STATUS "CMAKE_SYSTEM_NAME             = ${CMAKE_SYSTEM_NAME}")
+          message(STATUS "CMAKE_SYSTEM_PROCESSOR        = ${CMAKE_SYSTEM_PROCESSOR}")
+          message(STATUS "CMAKE_SYSTEM_VERSION          = ${CMAKE_SYSTEM_VERSION}")
+          message(STATUS "CMAKE_HOST_SYSTEM_PROCESSOR   = ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+          message(STATUS "CMAKE_HOST_SYSTEM_NAME        = ${CMAKE_HOST_SYSTEM_NAME}")
+          message(STATUS "CMAKE_HOST_SYSTEM_VERSION     = ${CMAKE_HOST_SYSTEM_VERSION}")
+          message(STATUS "CMAKE_HOST_APPLE              = ${CMAKE_HOST_APPLE}")
+          message(STATUS "CMAKE_HOST_LINUX              = ${CMAKE_HOST_LINUX}")
+          message(STATUS "CMAKE_HOST_UNIX               = ${CMAKE_HOST_UNIX}")
+          message(STATUS "CMAKE_HOST_WIN32              = ${CMAKE_HOST_WIN32}")
+          message(STATUS "CMAKE_HOST_SOLARIS            = ${CMAKE_HOST_SOLARIS}")
+          message(STATUS "CMAKE_HOST_BSD                = ${CMAKE_HOST_BSD}")
+          message(STATUS "CMAKE_LIBRARY_ARCHITECTURE    = ${CMAKE_LIBRARY_ARCHITECTURE}")
+
+      - name: Install 7zip
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+               sudo apt install -y p7zip-full
+          elif [ "$RUNNER_OS" == "Windows" ]; then
+               # choco install yaml-cpp
+               vcpkg install 7zip
+          elif [ "$RUNNER_OS" == "Darwin" ]; then
+               brew install p7zip
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+               brew install p7zip
+          else
+               echo "RUNNER OS ($RUNNER_OS) not supported"
+               exit 1
+          fi
+        shell: bash
+
       - name: Install yaml-cpp
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
@@ -246,8 +300,11 @@ jobs:
 
 
       - name: Pack
-        working-directory: instdir
-        run: cmake -E tar cfv ../${{ matrix.config.artifact }} --format=7zip .
+        # working-directory: instdir
+        run: |
+          [ -d ./instdir ] || mkdir -pv ./instdir
+          cd ./instdir
+          cmake -E tar cfv ../${{ matrix.config.artifact }} --format=7zip .
 
 
       - name: Upload

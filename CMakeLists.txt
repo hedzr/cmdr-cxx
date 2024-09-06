@@ -9,7 +9,7 @@ set(CMAKE_MODULE_PATH
 	${CMAKE_MODULE_PATH})
 include(prerequisites)
 
-include(dummy-project)
+# include(dummy-project)
 
 project(cmdr-cxx
 	VERSION ${VERSION}

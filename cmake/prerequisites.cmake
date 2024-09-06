@@ -176,6 +176,8 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 message(STATUS ">>> HOME: $ENV{HOME} / $ENV{USERPROFILE} ")
 message(STATUS ">>> vcpkg tests 1: env: $ENV{VCPKG_ROOT}; def: ${VCPKG_ROOT}; ")
 message(STATUS ">>> CMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}")
+message(STATUS ">>> CMAKE_SYSTEM_PROCESSOR=${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS ">>> CMAKE_HOST_SYSTEM_PROCESSOR=${CMAKE_HOST_SYSTEM_PROCESSOR}")
 
 include(add-policies)
 include(detect-systems)
@@ -190,3 +192,4 @@ include(target-dirs)
 include(utils)
 
 include(dummy-project)
+message(STATUS ">>> end of prerequisites")

@@ -10,7 +10,7 @@ fully-functional `Option Store` (Configuration Manager) for your hierarchical co
 
 See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 
-<img width="914" alt="image-20210221210442215" src="https://user-images.githubusercontent.com/12786150/108625941-8fb04400-7488-11eb-8403-afc79825745c.png">
+![cover](https://user-images.githubusercontent.com/12786150/108625941-8fb04400-7488-11eb-8403-afc79825745c.png)
 
 ## Features
 
@@ -28,7 +28,7 @@ See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 
   - Hooks or Actions:
 
-    - global: pre/post-invoke 
+    - global: pre/post-invoke
     - flags: on_hit
     - commands: on_hit, pre/post-invoke, invoke
 
@@ -53,15 +53,15 @@ See also golang version: [cmdr](https://github.com/hedzr/cmdr).
     - Version & Build Info: `--version`/`--ver`/`-V`, `--build-info`/`-#`
     - `version`/`versions` command available.
     - Simulating version at runtime with `—-version-sim 1.9.1`
-    
+
   - `~~tree`: lists all commands and sub-commands.
-    
+
     - `~~debug`: print the debugging info
     - `--no-color`: disable terminal color in outputting
     - `--config <location>`: specify the location of the root config file. [only for yaml-loader]
-    
+
   - Verbose & Debug: `—verbose`/`-v`, `—debug`/`-D`, `—quiet`/`-q`
-    
+
   - Supports `-I/usr/include -I=/usr/include` `-I /usr/include -I:/usr` option argument specifications Automatically allows those formats (applied to long option too):
 
     - `-I file`, `-Ifile`, and `-I=files`
@@ -86,11 +86,12 @@ See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 
 ## Status
 
+- v0.5.1 - security patch the workflow script; fixed it;
 - v0.5.0 - upgraded to compliant with cxx20 and later
 - v0.3.1 - bugs fixed and added constexpr compiler_name and a new test: test-compiler;
 - v0.3.0 - bugs fixed and sync codes for main compilers;
 - v0.2.27 - LICENSE Changed to Apache 2.0; better adaptive in cmake import;
-- v0.2.25 - follow windows virtual environment changed in adaptation; format codes with better style 
+- v0.2.25 - follow windows virtual environment changed in adaptation; format codes with better style
 - v0.2.23 - improved ci scripts, traits, detections, and more for better cross-platform portability;
 - v0.2.21 - bug fixed; add more utilities: mmap, thread pool, factory, pipeable, ...;
 - v0.2.20 - changed OS_xxx macros; added more portability;
@@ -105,7 +106,7 @@ See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 - v0.2.7 - `auto &cli = cmdr::create(...)`
 - v0.2.5 - public release starts
 
-### CXX 17 Compilers:
+### CXX 17 Compilers
 
 - gcc 10+: passed
 - clang 12+: passed
@@ -151,7 +152,9 @@ You could install cmdr-cxx manually:
 ```bash
 git clone https://github.com/hedzr/cmdr-cxx.git
 cd cmdr-cxx
-cmake -S . -B build/
+cmake -DCMAKE_VERBOSE_DEBUG=ON -DCMAKE_AUTOMATE_TESTS=OFF -S . -B build/ -G Ninja
+# Or:
+#    cmake -S . -B build/
 cmake --build build/
 cmake --install build/
 # Or:
@@ -163,13 +166,46 @@ cmake --install build/
 #   cmake --install build/ --prefix ./install --strip
 #   sudo cp -R ./install/include/* /usr/local/include/
 #   sudo cp -R ./install/lib/cmake/cmdr11 /usr/local/lib/cmake/
+rm -rf ./build
 cd ..
-rm -rf cmdr-cxx
+```
+
+More cmake commands:
+
+```bash
+# clean (all targets files, but the immedieted files)
+cmake --build build/ --target clean
+# clean and build (just relinking all targets without recompiling)
+cmake --build build/ --clean-first
+
+# clean deeply
+rm -rf build/
+
+# clean deeply since cmake 3.24.0
+# (your custom settings from command-line will lost.
+#   For example, if you ever run `cmake -DCMAKE_VERBOSE_DEBUG=ON -S . -B build',
+#   and now cmake --fresh -B build/ will ignore `CMAKE_VERBOSE_DEBUG = ON' 
+#   and reconfigure to default state.
+# )
+cmake --fresh -B build/
+
+# recompiling and relinking (simply passing `-B' to `make')
+cmake --build build/ -- -B
+
+# reconfigure
+rm ./build/CMakeCache.txt && cmake -DENABLE_AUTOMATE_TESTS=OFF -S . -B build/
+
+# print compiling command before exeuting them
+cmake --build build/ -- VERBOSE=1
+# Or:
+VERBOSE=1 cmake --build build/
+# Or:
+cmake --build build --verbose
 ```
 
 ##### dependencies
 
-To build cmdr-cxx, you might install these components at first:
+To build cmdr-cxx, please install these components at first:
 
 - yaml-cpp
 
@@ -526,9 +562,7 @@ command "pause, p" hit.
 
 Another one in [Gallary](https://github.com/hedzr/cmdr-cxx/issues/1):
 
-<img width="912" alt="image-20210217161825139" src="https://user-images.githubusercontent.com/12786150/108175867-39679c00-713c-11eb-8ef2-4d363d37755e.png">
-
-
+![image-20210217161825139](https://user-images.githubusercontent.com/12786150/108175867-39679c00-713c-11eb-8ef2-4d363d37755e.png)
 
 #### `-DDD`
 
@@ -537,7 +571,7 @@ inside `Option Store`.
 
 > The duplicated-flag exception there among others, is expecting because we're in testing.
 
-<img width="1009" alt="image-20210211184120423" src="https://user-images.githubusercontent.com/12786150/107626849-5a8e3f80-6c99-11eb-8e7b-278a50702c8c.png">
+![image-20210211184120423](https://user-images.githubusercontent.com/12786150/107626849-5a8e3f80-6c99-11eb-8e7b-278a50702c8c.png)
 
 
 
@@ -553,7 +587,7 @@ at [#1 - Gallary](https://github.com/hedzr/cmdr-cxx/issues/1).
 
 This flag will print the command hierarchical structure:
 
-<img width="895" alt="image-20210222130046734" src="https://user-images.githubusercontent.com/12786150/108664649-2246f680-750e-11eb-8e6d-0437f9797e63.png">
+![image-20210222130046734](https://user-images.githubusercontent.com/12786150/108664649-2246f680-750e-11eb-8e6d-0437f9797e63.png)
 
 
 
@@ -561,7 +595,7 @@ This flag will print the command hierarchical structure:
 
 By default a citation line(s) will be printed at the ends of help screen:
 
-<img width="684" alt="image-20210215100547030" src="https://user-images.githubusercontent.com/12786150/107898103-da582a80-6f75-11eb-9ffc-02cdd2af249d.png">
+![image-20210215100547030](https://user-images.githubusercontent.com/12786150/107898103-da582a80-6f75-11eb-9ffc-02cdd2af249d.png)
 
 I knew this option is what you want:
 
@@ -669,7 +703,7 @@ That's very appreciated!
 - A fully functional Hierarchical Configurable Data Management Mechanism (so called `Option Store`) is ready for box.
 - Uses debug outputting macros: `cmdr_print`, `cmdr_debug`, `cmdr_trace` (while `CMDR_ENABLE_VERBOSE_LOG` defined),
   see [cmdr_log.hh](https://github.com/hedzr/cmdr-cxx/blob/master/libs/cmdr11/include/cmdr11/cmdr_log.hh)
-- 
+-
 
 
 
@@ -714,7 +748,7 @@ mkdir %USERPROFILE%/work
 cd %USERPROFILE%/work
 git clone ...
 
-REM launch vsbt build env
+REM launch `vsbt` build env
 SETX PATH "%PATH%;C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\Common7\Tools"
 LaunchDevCmd.bat
 
@@ -723,20 +757,18 @@ cmake -DENABLE_AUTOMATE_TESTS=OFF -S . -B build/ -DCMAKE_TOOLCHAIN_FILE=%USERPRO
 cmake --build build/
 ```
 
-
 ### ninja, [Optional]
 
-We used ninja for faster building.
+We use ninja for faster building. That's safe to build cmdr-cxx without it.
 
+### ccache, [Optional]
+
+We use ccache for faster building. That's safe to build cmdr-cxx without it.
 
 ### Other Options
 
 1. `BUILD_DOCUMENTATION`=OFF
 2. `ENABLE_TESTS`=OFF
-
-
-
-
 
 ### Prerequisites
 
@@ -745,10 +777,8 @@ by youself, maybe.
 
 #### Catch2
 
-If the tests are enabled, [ `Catch2`](https://github.com/catchorg/Catch2) will be downloaded while cmake configuring and
+If the tests are enabled, [`Catch2`](https://github.com/catchorg/Catch2) will be downloaded while cmake configuring and
 building automatically. If you have a local cmake-findable Catch2 copy, more attentions would be appreciated.
-
-
 
 #### Others
 
@@ -779,10 +809,6 @@ vcpkg install yaml-cpp
 > **NOTE** that [vcpkg](https://github.com/microsoft/vcpkg) want to inject the control file for cmake building, see
 > also [Using vcpkg with CMake](https://github.com/microsoft/vcpkg#using-vcpkg-with-cmake)
 
-
-
-
-
 ### Run the examples
 
 The example executables can be found in `./bin` after built. For example:
@@ -796,11 +822,7 @@ The example executables can be found in `./bin` after built. For example:
 2. TODO: we will build a docker release later.
 3. Run me from a online CXX IDE.
 
-
-
 ### Hooks in cmdr-cxx
-
-
 
 1. `auto & cli = cmdr::get_app()`
 
@@ -834,9 +856,7 @@ The example executables can be found in `./bin` after built. For example:
 
    7. `set_global_pre_invoke_handler`, `set_global_post_invoke_handler`
 
-      
-
-   8. 
+   8.
 
 
 
@@ -844,8 +864,8 @@ The example executables can be found in `./bin` after built. For example:
 
 ## Thanks to JODL
 
-Thanks to [JetBrains](https://www.jetbrains.com/?from=cmdr-cxx) for donating product licenses to help develop **
-cmdr-cxx** [![jetbrains](https://gist.githubusercontent.com/hedzr/447849cb44138885e75fe46f1e35b4a0/raw/bedfe6923510405ade4c034c5c5085487532dee4/jetbrains-variant-4.svg)](https://www.jetbrains.com/?from=hedzr/cmdr-cxx)
+Thanks to [JetBrains](https://www.jetbrains.com/?from=cmdr-cxx) for donating product licenses to help develop **cmdr-cxx**  
+[![jetbrains](https://gist.githubusercontent.com/hedzr/447849cb44138885e75fe46f1e35b4a0/raw/bedfe6923510405ade4c034c5c5085487532dee4/jetbrains-variant-4.svg)](https://www.jetbrains.com/?from=hedzr/cmdr-cxx)
 
 
 

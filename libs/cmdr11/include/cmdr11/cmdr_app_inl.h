@@ -139,10 +139,10 @@ namespace cmdr {
         << " (C++98)"
 #elif (__cplusplus == 202002L)
         << " (C++20)"
-#elif (__cplusplus > 202002L)
-        << " (C++23)"
 #elif (__cplusplus > 202302L)
         << " (C++26)"
+#elif (__cplusplus > 202002L)
+        << " (C++23)"
 #else
         << " (pre-standard C++)"
 #endif

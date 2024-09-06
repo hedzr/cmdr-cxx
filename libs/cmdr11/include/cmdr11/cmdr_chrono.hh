@@ -663,7 +663,7 @@ namespace cmdr::chrono {
     // subtract day_offset
     auto t = Clock::from_time_t(std::mktime(&tmp));
     // printf("  . . . . got next month 1st: %s\n", format_time_point(t).c_str());
-    t -= std::chrono::hours((day_offset) *24); // and subtract 1 day, so we get the last day in this month
+    t -= std::chrono::hours((day_offset) * 24); // and subtract 1 day, so we get the last day in this month
     // printf("  . . . . got next month 1st - %d day: %s\n", day_offset, format_time_point(t).c_str());
     return t;
   }
@@ -705,7 +705,7 @@ namespace cmdr::chrono {
     // subtract day_offset
     auto t = Clock::from_time_t(std::mktime(&tmp));
     // printf("  . . . . got December 31st: %s\n", format_time_point(t).c_str());
-    t -= std::chrono::hours((day_offset) *24); // and subtract 1 day, so we get the last day in this month
+    t -= std::chrono::hours((day_offset) * 24); // and subtract 1 day, so we get the last day in this month
     // printf("  . . . . got December 31st + 1 - %d day: %s\n", day_offset, format_time_point(t).c_str());
     return t;
   }
@@ -857,12 +857,14 @@ namespace cmdr::chrono {
 
 // friends
 
-
+#if (__cplusplus < 202002L)
+// cxx17 and lower
 template<typename T,
          std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool> = true>
 inline std::ostream &operator<<(std::ostream &os, T const &v) {
   return cmdr::chrono::format_duration(os, v);
 }
+#endif
 
 template<typename T,
          std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool>>
@@ -870,18 +872,20 @@ inline void cmdr::chrono::high_res_duration::print_duration(std::ostream &os, T 
 #if defined(_WIN32)
   os << "It took ";
   cmdr::chrono::format_duration(os, v);
-  os<< '\n';
+  os << '\n';
 #else
   // cmdr::chrono::format_duration(os, v);
   os << "It took " << v << '\n';
 #endif
 }
 
+#if (__cplusplus < 202002L)
 template<class _Clock, class _Duration = typename _Clock::duration>
 inline std::ostream &operator<<(std::ostream &os, std::chrono::time_point<_Clock, _Duration> const &time) {
   // std::size_t ns = cmdr::chrono::time_point_get_ns(time);
   return cmdr::chrono::serialize_time_point(os, time, "%F %T");
 }
+#endif
 
 inline std::ostream &operator<<(std::ostream &os, std::tm const *tm) {
   return cmdr::chrono::serialize_tm(os, tm, "%F %T");

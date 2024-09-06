@@ -1,5 +1,10 @@
 {
   "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
   "terminal.integrated.allowMnemonics": true,
-  "python.formatting.provider": "yapf"
+  "python.formatting.provider": "yapf",
+  "cmake.configureArgs": [
+    "-DCMAKE_VERBOSE_DEBUG=ON -DENABLE_AUTOMATE_TESTS=OFF"
+  ],
+  "cmake.buildToolArgs": ["--verbose"],
+  "cmake.allowCommentsInPresetsFile": true
 }

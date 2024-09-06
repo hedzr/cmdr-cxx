@@ -310,7 +310,7 @@ jobs:
           cmake -E tar cfv ../${{ matrix.config.artifact }} --format=7zip .
 
       - name: Upload
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4.4.0
         with:
           path: ./${{ matrix.config.artifact }}
           name: ${{ matrix.config.artifact }}

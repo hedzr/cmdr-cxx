@@ -89,17 +89,18 @@ namespace cmdr::addons::loaders {
         UNUSED(c);
 
         static std::vector searches = {
-          "", // for --config
+            "", // for --config
 #if defined(_DEBUG)
-          "./tests/etc/$APP_NAME/$APP_NAME.yml",
-          "../tests/etc/$APP_NAME/$APP_NAME.yml",
+            "./tests/etc/$APP_NAME/$APP_NAME.yml",
+            "../tests/etc/$APP_NAME/$APP_NAME.yml",
 #endif
-          "/etc/$APP_NAME/$APP_NAME.yml",
-          "/usr/local/etc/$APP_NAME/$APP_NAME.yml",
-          "$HOME/.config/$APP_NAME/$APP_NAME.yml",
-          "$HOME/.$APP_NAME/$APP_NAME.yml",
-          "$APP_NAME.yml",
-          ".$APP_NAME.yml",
+            "/etc/$APP_NAME/$APP_NAME.yml",
+            "/opt/homebrew/etc/$APP_NAME/$APP_NAME.yml",
+            "/usr/local/etc/$APP_NAME/$APP_NAME.yml",
+            "$HOME/.config/$APP_NAME/$APP_NAME.yml",
+            "$HOME/.$APP_NAME/$APP_NAME.yml",
+            "$APP_NAME.yml",
+            ".$APP_NAME.yml",
         };
 
         const char *const env_var = "CONFIG_FILE";

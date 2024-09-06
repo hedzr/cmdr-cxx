@@ -717,6 +717,7 @@ fi
       if (bet) {
         for (auto const *dir: std::vector<const_chars>{
                  "$HOME/.linuxbrew/etc/bash_completion.d",
+                 "/opt/homebrew/etc/bash_completion.d",
                  "/usr/local/etc/bash_completion.d",
                  "/etc/bash_completion.d",
              }) {
@@ -743,7 +744,8 @@ $ source $TARGET
       if (!written) {
         path    = safe_name;
         written = _write_bash_comp_file_to(path, safe_name, contents, drop, R"("$SAFE_APP_NAME" was written.
-Put it into /usr/local/etc/bash_completion.d, and
+Put it into `/usr/local/etc/bash_completion.d` or
+`/opt/homebrew/etc/bash_completion.d`, and
 Re-login your terminal/tty to take the effects.
 Or apply it in-place:
 $ source $TARGET

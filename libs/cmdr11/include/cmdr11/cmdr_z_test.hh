@@ -34,11 +34,21 @@ namespace cmdr::test {
   }
 
   inline void test_for_macros() {
+#if defined(CMDR_ENABLE_ASSERTIONS)
     std::cout << "CMDR_ENABLE_ASSERTIONS               : " << CMDR_ENABLE_ASSERTIONS << '\n';
+#endif
+#if defined(CMDR_ENABLE_PRECONDITION_CHECKS)
     std::cout << "CMDR_ENABLE_PRECONDITION_CHECKS      : " << CMDR_ENABLE_PRECONDITION_CHECKS << '\n';
+#endif
+#if defined(CMDR_ENABLE_THREAD_POOL_READY_SIGNAL)
     std::cout << "CMDR_ENABLE_THREAD_POOL_READY_SIGNAL : " << CMDR_ENABLE_THREAD_POOL_READY_SIGNAL << '\n';
+#endif
+#if defined(CMDR_TEST_THREAD_POOL_DBGOUT)
     std::cout << "CMDR_TEST_THREAD_POOL_DBGOUT         : " << CMDR_TEST_THREAD_POOL_DBGOUT << '\n';
+#endif
+#if defined(CMDR_UNIT_TEST)
     std::cout << "CMDR_UNIT_TEST                       : " << CMDR_UNIT_TEST << '\n';
+#endif
 #if defined(CMDR_ENABLE_VERBOSE_LOG)
     std::cout << "CMDR_ENABLE_VERBOSE_LOG              : " << CMDR_ENABLE_VERBOSE_LOG << '\n';
 #endif

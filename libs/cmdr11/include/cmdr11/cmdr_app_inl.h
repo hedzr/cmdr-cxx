@@ -151,11 +151,11 @@ namespace cmdr {
   }
 
   inline void app::internal_register_actions() {
-    _internal_actions.emplace(opt::Action::RequestHelpScreen, [=](opt::types::parsing_context &pc, int, char *[]) -> int {
-      print_usages(&pc.last_matched_cmd());
+    _internal_actions.emplace(opt::Action::RequestHelpScreen, [this](opt::types::parsing_context &pc, int, char *[]) -> int {
+      this->print_usages(&pc.last_matched_cmd());
       return 0;
     });
-    _internal_actions.emplace(opt::Action::RequestVersionsScreen, [=](opt::types::parsing_context &, int, char *[]) -> int {
+    _internal_actions.emplace(opt::Action::RequestVersionsScreen, [this](opt::types::parsing_context &, int, char *[]) -> int {
       auto vs     = this->_version;
       auto &vsvar = this->get_for_cli("version-sim");
       if (!vsvar.empty()) vs = vsvar.as<const_chars>();
@@ -163,7 +163,7 @@ namespace cmdr {
       std::cout << vs << '\n';
       return 0;
     });
-    _internal_actions.emplace(opt::Action::RequestBuildInfoScreen, [=](opt::types::parsing_context &, int, char *[]) -> int {
+    _internal_actions.emplace(opt::Action::RequestBuildInfoScreen, [](opt::types::parsing_context &, int, char *[]) -> int {
       std::tm t{};
       std::istringstream tsi(__TIMESTAMP__);
       // tsi.imbue(std::locale("de_DE.utf-8"));

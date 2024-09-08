@@ -5,6 +5,6 @@
   "cmake.configureArgs": [
     "-DCMAKE_VERBOSE_DEBUG=ON -DENABLE_AUTOMATE_TESTS=OFF"
   ],
-  "cmake.buildToolArgs": ["--verbose"],
+  // "cmake.buildToolArgs": ["--verbose"],
   "cmake.allowCommentsInPresetsFile": true
 }

@@ -21,6 +21,9 @@
 #include <cstddef>
 #include <cstdint>
 
+#include <memory>
+#include <chrono>
+
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
@@ -801,10 +804,13 @@ namespace cmdr::cross {
             " (C++98)"
 #elif (__cplusplus == 202002L)
            " (C++20)"
-#elif (__cplusplus > 202002L)
-            " (C++23)"
+
+#elif (__cplusplus > 202602L)
+            " (C++29)"
 #elif (__cplusplus > 202302L)
             " (C++26)"
+#elif (__cplusplus > 202002L)
+            " (C++23)"
 #else
             " (pre-standard C++)"
 #endif

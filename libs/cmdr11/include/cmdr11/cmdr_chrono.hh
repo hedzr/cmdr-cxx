@@ -870,7 +870,7 @@ template<typename T,
 inline std::ostream &operator<<(std::ostream &os, T v) {
   return cmdr::chrono::format_duration(os, v);
 }
-#else
+#elif !OS_WIN
 template<typename _Rep, typename _Period>
 inline std::ostream &
 operator<<(std::ostream &os,
@@ -904,7 +904,7 @@ inline std::ostream &operator<<(std::ostream &os, std::chrono::time_point<_Clock
   // std::size_t ns = cmdr::chrono::time_point_get_ns(time);
   return cmdr::chrono::serialize_time_point(os, time, "%F %T");
 }
-#else
+#elif !OS_WIN
 
 namespace cmdr::checks {
   template<typename T>

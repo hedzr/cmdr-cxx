@@ -1,7 +1,7 @@
 project(cmdr11
-        VERSION ${VERSION}
-        DESCRIPTION "libcmdr11 - cmdr cxx library for C++17"
-        LANGUAGES CXX)
+    VERSION ${VERSION}
+    DESCRIPTION "libcmdr11 - cmdr cxx library for C++17"
+    LANGUAGES CXX)
 
 
 ## OPTIONS ######################################
@@ -80,7 +80,7 @@ endif ()
 #debug_print_hbar_long()
 
 set(detail_header_files
-    )
+)
 set(header_files
     ${CMAKE_CURRENT_SOURCE_DIR}/include/cmdr-cxx.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr11.hh
@@ -121,7 +121,7 @@ set(header_files
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_x_test.hh
     ${CMAKE_CURRENT_SOURCE_DIR}/include/${PROJECT_NAME}/cmdr_z_test.hh
     # ${CMAKE_GENERATED_DIR}/cmdr-version.hh
-    )
+)
 
 ## TARGETS ####################################################
 
@@ -140,24 +140,25 @@ target_sources(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${detail_header_file
 #        SOURCES src/${PROJECT_NAME}.cc
 #        )
 target_include_directories(${PROJECT_NAME}
-                           INTERFACE
-                           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-                           #$<INSTALL_INTERFACE:include>
-                           #PRIVATE
-                           #${ZLIB_INCLUDE_DIRS}
-                           #${spdlog_SOURCE_DIR}/include
-                           )
-target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>)
+    INTERFACE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    #$<INSTALL_INTERFACE:include>
+    #PRIVATE
+    #${ZLIB_INCLUDE_DIRS}
+    #${spdlog_SOURCE_DIR}/include
+)
+target_include_directories(${PROJECT_NAME} SYSTEM INTERFACE
+    $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>)
 target_compile_definitions(${PROJECT_NAME} INTERFACE
-                           CMDR_ENABLE_ASSERTIONS=${_cmdr_enable_assertions}
-                           CMDR_ENABLE_PRECONDITION_CHECKS=${_cmdr_enable_precondition_checks}
-                           CMDR_ENABLE_WRAPPER=${_cmdr_enable_wrapper}
-                           CMDR_TEST_THREAD_POOL_DBGOUT=${_cmdr_test_thread_pool_dbgout}
-                           CMDR_UNIT_TEST=${_cmdr_enable_unit_test}
-                           )
+    CMDR_ENABLE_ASSERTIONS=${_cmdr_enable_assertions}
+    CMDR_ENABLE_PRECONDITION_CHECKS=${_cmdr_enable_precondition_checks}
+    CMDR_ENABLE_WRAPPER=${_cmdr_enable_wrapper}
+    CMDR_TEST_THREAD_POOL_DBGOUT=${_cmdr_test_thread_pool_dbgout}
+    CMDR_UNIT_TEST=${_cmdr_enable_unit_test}
+)
 if (${CMDR_ENABLE_VERBOSE_LOG})
     target_compile_definitions(${PROJECT_NAME} INTERFACE
-                               CMDR_ENABLE_VERBOSE_LOG=1)
+        CMDR_ENABLE_VERBOSE_LOG=1)
 endif ()
 #target_link_libraries(${PROJECT_NAME} INTERFACE debug_assert)
 #target_link_libraries(${PROJECT_NAME} PRIVATE ${ZLIB_LIBRARIES})
@@ -171,12 +172,12 @@ endif ()
 
 if (MSVC)
     target_compile_options(${PROJECT_NAME} INTERFACE /wd4800 # truncation to bool warning
-                           #/DCMDR_UNIT_TEST=${_cmdr_enable_unit_test}
-                           )
+        #/DCMDR_UNIT_TEST=${_cmdr_enable_unit_test}
+    )
 else ()
     target_compile_options(${PROJECT_NAME} INTERFACE
-                           #-DCMDR_UNIT_TEST=${_cmdr_enable_unit_test}
-                           )
+        #-DCMDR_UNIT_TEST=${_cmdr_enable_unit_test}
+    )
 endif ()
 
 
@@ -187,18 +188,18 @@ if (ENABLE_CLI_APP)
     add_executable(${CLI_NAME} src/main.cc)
     #add_cxx_20_to(${CLI_NAME})
     target_compile_definitions(${CLI_NAME} PRIVATE
-                               CMDR_ENABLE_AUTO_COMPLETION_LOGFILE=1
-                               CMDR_ENABLE_ASSERTIONS=${_cmdr_enable_assertions}
-                               CMDR_ENABLE_PRECONDITION_CHECKS=${_cmdr_enable_precondition_checks}
-                               CMDR_ENABLE_WRAPPER=${_cmdr_enable_wrapper})
+        CMDR_ENABLE_AUTO_COMPLETION_LOGFILE=1
+        CMDR_ENABLE_ASSERTIONS=${_cmdr_enable_assertions}
+        CMDR_ENABLE_PRECONDITION_CHECKS=${_cmdr_enable_precondition_checks}
+        CMDR_ENABLE_WRAPPER=${_cmdr_enable_wrapper})
     target_include_directories(${CLI_NAME} PRIVATE $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>)
     target_link_libraries(${CLI_NAME} PRIVATE libs::cmdr11)
     set_target_properties(${CLI_NAME}
-                          PROPERTIES
-                          # DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}"
-                          RELEASE_POSTFIX "${CMAKE_RELEASE_POSTFIX}"
-                          MINSIZEREL_POSTFIX "${CMAKE_MINSIZEREL_POSTFIX}"
-                          RELWITHDEBINFO_POSTFIX "${CMAKE_RELWITHDEBINFO_POSTFIX}")
+        PROPERTIES
+        # DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}"
+        RELEASE_POSTFIX "${CMAKE_RELEASE_POSTFIX}"
+        MINSIZEREL_POSTFIX "${CMAKE_MINSIZEREL_POSTFIX}"
+        RELWITHDEBINFO_POSTFIX "${CMAKE_RELWITHDEBINFO_POSTFIX}")
 endif ()
 
 
@@ -221,51 +222,51 @@ debug_print_value(PROJECT_VERSION)
 debug_print_value(VERSION)
 
 write_basic_package_version_file(
-        ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
-        VERSION ${PROJECT_VERSION}
-        COMPATIBILITY SameMajorVersion
+    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
 )
 
 install(TARGETS ${PROJECT_NAME}
-        EXPORT ${PROJECT_NAME}Targets
-        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        )
+    EXPORT ${PROJECT_NAME}Targets
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
 
 install(TARGETS ${CLI_NAME}
-        EXPORT ${PROJECT_NAME}Targets
-        DESTINATION ${CMAKE_INSTALL_BINDIR}
-        )
+    EXPORT ${PROJECT_NAME}Targets
+    DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
 
 install(EXPORT ${PROJECT_NAME}Targets
-        FILE ${PROJECT_NAME}Targets.cmake
-        NAMESPACE ${PROJECT_NAME}::
-        DESTINATION ${CONFIG_PACKAGE_INSTALL_DIR})
+    FILE ${PROJECT_NAME}Targets.cmake
+    NAMESPACE ${PROJECT_NAME}::
+    DESTINATION ${CONFIG_PACKAGE_INSTALL_DIR})
 
 install(DIRECTORY include/${PROJECT_NAME}
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        )
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
 
 install(FILES
-        ${CMAKE_BINARY_DIR}/generated/cmdr-version.hh
-        DESTINATION
-        ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
+    ${CMAKE_BINARY_DIR}/generated/cmdr-version.hh
+    DESTINATION
+    ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
 
 install(FILES
-        ${CMAKE_BINARY_DIR}/generated/cmdr-config-base.hh
-        DESTINATION
-        ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
+    ${CMAKE_BINARY_DIR}/generated/cmdr-config-base.hh
+    DESTINATION
+    ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
 
 install(FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/include/cmdr-cxx.hh
-        DESTINATION
-        ${CMAKE_INSTALL_INCLUDEDIR})
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/cmdr-cxx.hh
+    DESTINATION
+    ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(FILES
-        ${CMAKE_CURRENT_LIST_DIR}/cmake/${PROJECT_NAME}Config.cmake
-        DESTINATION
-        ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
+    ${CMAKE_CURRENT_LIST_DIR}/cmake/${PROJECT_NAME}Config.cmake
+    DESTINATION
+    ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
 #install(TARGETS ${PROJECT_NAME}
 #        # COMPONENT applications

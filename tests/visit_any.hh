@@ -82,6 +82,7 @@ namespace study {
               g(os);
             else
               g(os, std::any_cast<T const &>(a));
+            UNUSED(a);
           }};
     }
 

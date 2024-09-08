@@ -847,7 +847,7 @@ namespace cmdr {
       }
     };
     // // optional to post_run(), for the rare exception post processing if necessary
-    post_runner post_runner([=]() {
+    post_runner post_runner([this]() {
       post_run();
       DEBUG_ONLY(_sa_lf.close());
     });

@@ -22,7 +22,7 @@ namespace cmdr::opt {
     ~sub_cmd() = default;
 
     types::option get() {
-      return [=](cmd &c) {
+      return [this](cmd &c) {
         c += _cmd;
       };
     }
@@ -125,7 +125,7 @@ namespace cmdr::opt {
     ~opt() = default;
 
     types::option get() {
-      return [=](cmd &c) {
+      return [this](cmd &c) {
         c += _arg;
       };
     }

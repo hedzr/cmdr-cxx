@@ -85,7 +85,7 @@ namespace cmdr::addons::loaders {
   class yaml_loader {
   public:
     cmdr::types::on_loading_externals operator()() const {
-      return [=](cmdr::app &c) {
+      return [this](cmdr::app &c) {
         UNUSED(c);
 
         static std::vector searches = {

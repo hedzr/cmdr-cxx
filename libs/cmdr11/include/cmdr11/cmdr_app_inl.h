@@ -190,7 +190,7 @@ namespace cmdr {
     _internal_actions.emplace(opt::Action::RequestManualScreen,
                               [this](opt::types::parsing_context &pc, int argc, char *argv[]) -> int { return print_manual_screen(pc, argc, argv); });
     _internal_actions.emplace(opt::Action::RequestDebugInfoScreen,
-                              [=](opt::types::parsing_context &pc, int argc, char *argv[]) -> int {
+                              [this](opt::types::parsing_context &pc, int argc, char *argv[]) -> int {
                                 return print_debug_info_screen(pc, argc, argv);
                               });
   }
@@ -200,7 +200,7 @@ namespace cmdr {
     UNUSED(hit, remain_args);
     using Colors256 = terminal::colors::colorize::Colors256;
     std::cout << "command " << std::quoted(hit.title()) << " hit." << '\n';
-    walk_args([=](opt::arg &a) {
+    walk_args([this](opt::arg &a) {
       if (a.hit_count() > 0) {
         auto k  = a.dotted_key();
         auto &v = _store.get_raw(k);

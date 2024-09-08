@@ -113,7 +113,7 @@ jobs:
           # message("::set-output name=timestamp::${current_date}")
           echo "timestamp=${{ matrix.os }}-${{ matrix.type }}" >> $GITHUB_STATE
       - name: ccache cache files
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .ccache
           key: ${{ matrix.config.name }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
@@ -167,9 +167,11 @@ jobs:
                # choco install yaml-cpp
                vcpkg install 7zip
           elif [ "$RUNNER_OS" == "Darwin" ]; then
-               brew install p7zip
+               # brew install p7zip
+               true
           elif [ "$RUNNER_OS" == "macOS" ]; then
-               brew install p7zip
+               # brew install p7zip
+               true
           else
                echo "RUNNER OS ($RUNNER_OS) not supported"
                exit 1

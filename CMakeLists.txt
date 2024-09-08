@@ -17,7 +17,8 @@ project(cmdr-cxx
 	LANGUAGES CXX)
 
 set(VERSION_H_NAME "cmdr-version.hh")
-include(cxx-standard-def)
+
+# include(cxx-standard-def)
 include(cxx-detect-compilers)
 include(setup-build-env)
 

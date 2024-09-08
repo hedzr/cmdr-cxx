@@ -66,6 +66,9 @@ namespace cmdr::test {
               << "      build-name: " << CMDR_BUILD_NAME << '\n'
               << "      build-time: " << build_time() << '\n'
               << "       timestamp: " << chrono::format_time_point() << '\n'
+              << '\n'
+              << "     compiled by: " << cmdr::cross::compiler_name() << '\n'
+              << "     __cplusplus: 0x" << std::hex << std::setfill('0') << std::setw(8) << __cplusplus << ' ' << '(' << std::dec << __cplusplus << ')' << '\n'
               << '\n';
 
     cmdr_debug("debug mode log enabled.");

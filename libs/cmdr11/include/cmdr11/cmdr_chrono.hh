@@ -858,26 +858,12 @@ namespace cmdr::chrono {
 
 // friends
 
-#if (__cplusplus < 202002L)
-/**
- * @brief only for cxx17 and lower. it supports streaming output
- * a duration value with cmdr::chrono::format_duration() (or
- * serialize_duration()). for those scenes on c++20, please use
- * format_duration() directly.
- */
-template<typename T,
-         std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool> = true>
-inline std::ostream &operator<<(std::ostream &os, T v) {
-  return cmdr::chrono::format_duration(os, v);
-}
-#elif !OS_WIN
 template<typename _Rep, typename _Period>
 inline std::ostream &
 operator<<(std::ostream &os,
            const std::chrono::duration<_Rep, _Period> &d) {
   return cmdr::chrono::format_duration(os, d);
 }
-#endif
 
 template<typename T,
          std::enable_if_t<cmdr::chrono::is_duration<T>::value, bool>>
@@ -891,20 +877,6 @@ inline void cmdr::chrono::high_res_duration::print_duration(std::ostream &os, T 
   os << "It took " << v << '\n';
 #endif
 }
-
-#if (__cplusplus < 202002L)
-/**
- * @brief only for cxx17 and lower. it supports streaming output
- * a time_point value with cmdr::chrono::format_time_point() (or
- * serialize_time_point()). for those scenes on c++20, please use
-* format_time_point() directly.
- */
-template<class _Clock, class _Duration = typename _Clock::duration>
-inline std::ostream &operator<<(std::ostream &os, std::chrono::time_point<_Clock, _Duration> const &time) {
-  // std::size_t ns = cmdr::chrono::time_point_get_ns(time);
-  return cmdr::chrono::serialize_time_point(os, time, "%F %T");
-}
-#elif !OS_WIN
 
 namespace cmdr::checks {
   template<typename T>
@@ -926,50 +898,6 @@ inline std::ostream &operator<<(std::ostream &os, std::chrono::system_clock::tim
 //inline std::ostream &operator<<(std::ostream &os, std::chrono::steady_clock::time_point const &time) {
 //  return cmdr::chrono::serialize_time_point(os, time, "%F %T");
 //}
-
-#if 0
-// A wrong way to make our operator<< prefer to the stdlib here.
-//
-// > The only approach to get customized override on system_clock has
-//   been written as above codes.
-//
-namespace cmdr::checks {
-  template<typename T, typename _ = void>
-  struct is_time_point : std::false_type {};
-  template<typename... Ts>
-  struct is_time_point_helper {};
-
-  template<typename T>
-  struct is_time_point<
-      T,
-      std::conditional_t<
-          false,
-          is_time_point_helper<
-              typename T::rep,
-              typename T::period,
-              decltype(std::declval<T>().now())>,
-          void>> : public std::true_type {};
-
-  template<class T>
-  concept concept_time_point =
-      requires {
-        is_time_point<T>::value;
-      };
-
-  static_assert(is_time_point<std::chrono::system_clock>::value);
-  static_assert(!is_time_point<std::string>::value);
-  static_assert(!is_time_point<char>::value);
-} // namespace cmdr::checks
-
-template<cmdr::checks::concept_time_point T>
-inline std::ostream &operator<<(std::ostream &os, T const &time) {
-  //std::chrono::system_clock a;
-  // std::size_t ns = cmdr::chrono::time_point_get_ns(time);
-  return cmdr::chrono::serialize_time_point(os, time, "%F %T");
-}
-#endif // 0
-
-#endif
 
 inline std::ostream &operator<<(std::ostream &os, std::tm const *tm) {
   return cmdr::chrono::serialize_tm(os, tm, "%F %T");

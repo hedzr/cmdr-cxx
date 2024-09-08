@@ -14,9 +14,9 @@
 #include <cstdlib>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <new>
 #include <string>
-
 
 #include <cstdio>
 #include <functional>

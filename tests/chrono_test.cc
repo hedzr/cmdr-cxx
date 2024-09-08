@@ -2,6 +2,8 @@
 // Created by Hedzr Yeh on 2021/1/21.
 //
 
+#include <iomanip>
+#include <iostream>
 #include <thread>
 
 #include "cmdr11/cmdr_chrono.hh"
@@ -133,10 +135,12 @@ void test_cpp_style(std::chrono::system_clock::time_point &now, std::tm &now_tm)
 
   // std::cout << "date command: " << date_cmd << '\n';
 
-  using iom = cmdr::chrono::iom;
-  std::cout << iom::fmtflags::gmt << iom::fmtflags::ns << "time_point (ns): os << " << now << '\n';
-  std::cout << iom::fmtflags::gmt << iom::fmtflags::us << "time_point (us): os << " << now << '\n';
-  std::cout << iom::fmtflags::gmt << iom::fmtflags::ms << "time_point (ms): os << " << now << '\n';
+  using iom      = cmdr::chrono::iom;
+  using fmtflags = iom::fmtflags;
+  std::cout << fmtflags::gmt << fmtflags::ns << "time_point (ns): os << " << now << '\n';
+  std::cout << fmtflags::gmt << fmtflags::us << "time_point (us): os << " << now << '\n';
+  std::cout << fmtflags::gmt << fmtflags::ms << "time_point (ms): os << " << now << '\n';
+  std::cout << "time_point (ns): os << " << cmdr::chrono::format_time_point(now) << '\n';
   std::cout << "std::tm:    os << " << now_tm << '\n';
 
   // {
@@ -147,6 +151,7 @@ void test_cpp_style(std::chrono::system_clock::time_point &now, std::tm &now_tm)
   std::chrono::system_clock::time_point now2 = std::chrono::system_clock::now();
   auto d                                     = now2 - now;
   std::cout << "duration:   os << " << d << '\n';
+  std::cout << "duration:   os << " << cmdr::chrono::format_duration(d) << '\n';
 }
 
 void test_cpp_style(std::chrono::system_clock::time_point &now) {
@@ -210,11 +215,11 @@ void test_try_parse_by() {
   using Clock = std::chrono::system_clock;
 
   for (auto &time_str: {
-         "11:01:37",
+           "11:01:37",
 #if OS_WIN
-             "1973-1-29 3:59:59", // MSVC: time point before 1970-1-1 is invalid
+           "1973-1-29 3:59:59", // MSVC: time point before 1970-1-1 is invalid
 #else
-            "1937-1-29 3:59:59",
+           "1937-1-29 3:59:59",
 #endif
        }) {
     std::tm tm = cmdr::chrono::time_point_2_tm(Clock::now());

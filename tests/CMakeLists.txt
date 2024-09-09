@@ -140,8 +140,18 @@ endif ()
 
 define_test_program(process process.cc)
 
-# app2 c1
-define_test_program(app2-c1 app1.cc second_src.cc)
+if (CMDR_NO_3RDPARTY)
+else ()
+    # app2 c1
+    define_test_program(app2-c1 app1.cc second_src.cc)
+    #
+    # For test-app-c1, loading the dependency to yaml-cpp
+    #
+    include(loaders/yaml_loader)
+    add_yaml_loader_to(test-app2-c1)
+    target_compile_definitions(test-app2-c1 PRIVATE
+        CMDR_ENABLE_VERBOSE_LOG=1)
+endif ()
 
 # app2 c2
 define_test_program(app2-c2 app2.cc second_src.cc)
@@ -153,14 +163,6 @@ define_test_program(app2-c2 app2.cc second_src.cc)
 # else ()
 # # target_compile_options(test-sso-1 PRIVATE -Werror=sized-deallocation)
 # endif ()
-
-#
-# For test-app-c1, loading the dependency to yaml-cpp
-#
-include(loaders/yaml_loader)
-add_yaml_loader_to(test-app2-c1)
-target_compile_definitions(test-app2-c1 PRIVATE
-    CMDR_ENABLE_VERBOSE_LOG=1)
 
 target_compile_definitions(test-app2-c2 PRIVATE
     CMDR_ENABLE_VERBOSE_LOG=1)

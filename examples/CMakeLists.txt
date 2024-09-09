@@ -1,7 +1,7 @@
 project(examples
-	VERSION ${VERSION}
-	DESCRIPTION "examples - example-apps for cmdr cxx11 library"
-	LANGUAGES CXX)
+    VERSION ${VERSION}
+    DESCRIPTION "examples - example-apps for cmdr cxx11 library"
+    LANGUAGES CXX)
 
 # ###################################
 # dump_list(INCLUDE_DIRECTORIES)
@@ -16,10 +16,10 @@ message("!! entering subdir: ${CMAKE_CURRENT_SOURCE_DIR}/${subdir}")
 # debug_print_hbar_long()
 set(PROJECT_ARCHIVE_NAME ${PROJECT_NAME}s-${PROJECT_VERSION})
 
-if(ENABLE_TESTS)
-	# include(deps_inc_catch2)
-	# include(deps_inc_fmt)
-endif()
+if (ENABLE_TESTS)
+    # include(deps_inc_catch2)
+    # include(deps_inc_fmt)
+endif ()
 
 # # so_stuff: just a tester for ARGN
 # function(do_stuff arg1 arg2)
@@ -33,65 +33,76 @@ endif()
 find_package(Threads)
 
 function(define_example_program name)
-	# set(src_list )
-	foreach(f ${ARGN})
-		list(APPEND src_list ${f})
-	endforeach()
+    # set(src_list )
+    foreach (f ${ARGN})
+        list(APPEND src_list ${f})
+    endforeach ()
 
-	add_executable(${PROJECT_NAME}-${name} ${src_list})
+    add_executable(${PROJECT_NAME}-${name} ${src_list})
 
-	# target_compile_features(${PROJECT_NAME}-${name} PRIVATE cxx_std_11)
-	target_compile_definitions(${PROJECT_NAME}-${name} INTERFACE
-		CMDR_ENABLE_ASSERTIONS=${_cmdr_enable_assertions}
-		CMDR_ENABLE_PRECONDITION_CHECKS=${_cmdr_enable_precondition_checks}
-		CMDR_ENABLE_WRAPPER=0
-		CMDR_TEST_THREAD_POOL_DBGOUT=0
-		CMDR_UNIT_TEST=0
-	)
-	target_include_directories(${PROJECT_NAME}-${name} PRIVATE
-		$<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
-		${CMAKE_SOURCE_DIR}
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-		$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    # target_compile_features(${PROJECT_NAME}-${name} PRIVATE cxx_std_11)
+    target_compile_definitions(${PROJECT_NAME}-${name} INTERFACE
+        CMDR_ENABLE_ASSERTIONS=${_cmdr_enable_assertions}
+        CMDR_ENABLE_PRECONDITION_CHECKS=${_cmdr_enable_precondition_checks}
+        CMDR_ENABLE_WRAPPER=0
+        CMDR_TEST_THREAD_POOL_DBGOUT=0
+        CMDR_UNIT_TEST=0
+    )
+    target_include_directories(${PROJECT_NAME}-${name} PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
+        ${CMAKE_SOURCE_DIR}
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 
-		SYSTEM PRIVATE
-		$<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>
-	)
-	target_link_libraries(${PROJECT_NAME}-${name}
-		PRIVATE
-		libs::cmdr11
-		Threads::Threads
+        SYSTEM PRIVATE
+        $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>
+    )
+    target_link_libraries(${PROJECT_NAME}-${name}
+        PRIVATE
+        libs::cmdr11
+        Threads::Threads
 
-		# Catch2::Catch2
-		# fmt::fmt-header-only
-	)
+        # Catch2::Catch2
+        # fmt::fmt-header-only
+    )
 
-	# set_target_properties(${PROJECT_NAME}-${name} PROPERTIES
-	# CXX_STANDARD 17
-	# CXX_STANDARD_REQUIRED ON
-	# CXX_EXTENSIONS OFF
-	# )
-	if(MSVC)
-		target_compile_options(${PROJECT_NAME}-${name} PRIVATE /W4 /WX /utf-8)
-	else()
-		target_compile_options(${PROJECT_NAME}-${name} PRIVATE
-			-pedantic -Wall -Wextra -Wshadow -Werror
-		)
+    # set_target_properties(${PROJECT_NAME}-${name} PROPERTIES
+    # CXX_STANDARD 17
+    # CXX_STANDARD_REQUIRED ON
+    # CXX_EXTENSIONS OFF
+    # )
+    if (MSVC)
+        target_compile_options(${PROJECT_NAME}-${name} PRIVATE /W4 /WX /utf-8)
+    else ()
+        target_compile_options(${PROJECT_NAME}-${name} PRIVATE
+            -pedantic -Wall -Wextra -Wshadow -Werror
+        )
 
-		if(DEBUG)
-			target_compile_options(${PROJECT_NAME}-${name} PRIVATE
-				-fsanitize=address
+        if (DEBUG)
+            target_compile_options(${PROJECT_NAME}-${name} PRIVATE
+                -fsanitize=address
 
-				# address(AddressSanitizer), leak(LeakSanitizer), thread(ThreadSanitizer), undefined(UndefinedBehaviorSanitizer), memory(MemorySanitizer)
-				# [additional_options]: -fno-omit-frame-pointer, fsanitize-recover/fno-sanitize-recover, -fsanitize-blacklist, etc.
-				# [-g] [-OX]
-			)
-			target_link_options(${PROJECT_NAME}-${name} PRIVATE -fsanitize=address)
-		endif()
-	endif()
+                # address(AddressSanitizer), leak(LeakSanitizer), thread(ThreadSanitizer), undefined(UndefinedBehaviorSanitizer), memory(MemorySanitizer)
+                # [additional_options]: -fno-omit-frame-pointer, fsanitize-recover/fno-sanitize-recover, -fsanitize-blacklist, etc.
+                # [-g] [-OX]
+            )
+            target_link_options(${PROJECT_NAME}-${name} PRIVATE -fsanitize=address)
+        endif ()
+    endif ()
 endfunction()
 
-define_example_program(app1 app1.cc second_src.cc)
+if (CMDR_NO_3RDPARTY)
+else ()
+    define_example_program(app1 app1.cc second_src.cc)
+    #
+    # For test-app2-c1, loading the dependency to yaml-cpp
+    #
+    include(loaders/yaml_loader)
+    add_yaml_loader_to(examples-app1)
+    target_compile_definitions(examples-app1 PRIVATE
+        CMDR_ENABLE_VERBOSE_LOG=0)
+endif ()
+
 define_example_program(app2 app2.cc second_src.cc)
 
 #
@@ -102,13 +113,6 @@ define_example_program(app2 app2.cc second_src.cc)
 # # target_compile_options(test-sso-1 PRIVATE -Werror=sized-deallocation)
 # endif ()
 
-#
-# For test-app2-c1, loading the dependency to yaml-cpp
-#
-include(loaders/yaml_loader)
-add_yaml_loader_to(examples-app1)
-target_compile_definitions(examples-app1 PRIVATE
-	CMDR_ENABLE_VERBOSE_LOG=0)
 
 # target_compile_definitions(examples-app1 PRIVATE CMDR_ENABLE_VERBOSE_LOG=0)
 

@@ -878,7 +878,7 @@ inline void cmdr::chrono::high_res_duration::print_duration(std::ostream &os, T 
 #endif
 }
 
-namespace cmdr::checks {
+/* namespace cmdr::checks {
   template<typename T>
   concept is_time_point = std::is_same_v<std::chrono::time_point<T, std::chrono::nanoseconds>, T>;
 }
@@ -886,8 +886,8 @@ namespace cmdr::checks {
 template<typename T>
   requires cmdr::checks::is_time_point<T>
 inline std::ostream &operator<<(std::ostream &os, T const &time) {
-  return cmdr::chrono::serialize_time_point(os, time, "%F %T cool");
-}
+  return cmdr::chrono::serialize_time_point(os, time, "[cool] %F %T");
+} */
 
 inline std::ostream &operator<<(std::ostream &os, std::chrono::system_clock::time_point const &time) {
   return cmdr::chrono::serialize_time_point(os, time, "%F %T");

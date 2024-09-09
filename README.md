@@ -86,6 +86,7 @@ See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 
 ## Status
 
+- v0.5.8 - fixed unused `requires` in cmdr-chrono.hh
 - v0.5.7 - fixed all builds on c++20 (unused param; ambiguous operator << for time_point/duration; ...)
 - v0.5.5 - fixed importing cmdr11(-cxx) via cmake ExternalProject_Add
 - v0.5.3 - fixed upload-artifact in last release

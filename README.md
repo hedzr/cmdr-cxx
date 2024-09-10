@@ -86,13 +86,14 @@ See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 
 ## Status
 
+- v0.5.9 - fixed `deps-cmdr11.cmake` for you, added `CMDR_NO_3RDPARTY` option to disable importing and linking with 3rd-party libraries
 - v0.5.8 - fixed unused `requires` in cmdr-chrono.hh
 - v0.5.7 - fixed all builds on c++20 (unused param; ambiguous operator << for time_point/duration; ...)
 - v0.5.5 - fixed importing cmdr11(-cxx) via cmake ExternalProject_Add
 - v0.5.3 - fixed upload-artifact in last release
   > actions/upload-artifact and download-artifact must be same major version (such as v4, both)
-- v0.5.2 [imcomplete] - fixed upload/download-artifact in last release; compliant with c++20 or higher
-- v0.5.1 [imcomplete] - security patch the workflow script; fixed it;
+- v0.5.2 [incomplete] - fixed upload/download-artifact in last release; compliant with c++20 or higher
+- v0.5.1 [incomplete] - security patch the workflow script; fixed it;
 - v0.5.0 - upgraded to compliant with cxx20 and later
 - v0.3.1 - bugs fixed and added constexpr compiler_name and a new test: test-compiler;
 - v0.3.0 - bugs fixed and sync codes for main compilers;
@@ -218,9 +219,15 @@ To build cmdr-cxx, please install these components at first:
 The typical install command could be `brew install yaml-cpp`,
 For more information, please refer to the chapter [Others](#others).
 
+> It can be disabled by `CMDR_NO_3RDPARTY` while building cmdr-cxx:
+> 
+> ```bash
+> cmake -DCMDR_NO_3RDPARTY:BOOL=ON -DCMAKE_BUILD_TYPE:STRING=Release -S . -B build-release/
+> ```
+
 #### CMake ExternalProject
 
-Adding cmdr11 with `ExternalProject` is possible. A `dep-to-cmdr11.cmake` could be:
+Adding cmdr11 with `ExternalProject` is possible. A `deps-cmdr11.cmake` could be:
 
 ```cmake
 #
@@ -229,76 +236,82 @@ Adding cmdr11 with `ExternalProject` is possible. A `dep-to-cmdr11.cmake` could 
 
 # message(STATUS "cmdr-cxx: defined macro add_cmdr_cxx_to")
 macro(add_cmdr_cxx_to target)
-	find_package(cmdr11)
+    find_package(cmdr11)
 
-	set(CMDR_CXX_STAGE_DIR "${CMAKE_CURRENT_BINARY_DIR}/cmdr-cxx-stage")
+    set(CMDR_CXX_STAGE_DIR "${CMAKE_CURRENT_BINARY_DIR}/cmdr-cxx-stage")
 
-	if(${CMDR11_FOUND})
-		message(STATUS "cmdr-cxx: package FOUND at ${CMDR11_INCLUDE_DIR}, ${CMDR11_VERSION}")
-		message(STATUS "cmdr-cxx: add cmdr-cxx v${CMDR11_VERSION_STRING} module to '${target}' from CMake Modules registry.")
-		target_link_libraries(${target}
-			PRIVATE
-			${CMDR11_LIBRARIES}
-		)
-	else()
-		message(STATUS "cmdr-cxx: not found, try pulling a local one...")
+    option(CMAKE_VERBOSE_DEBUG "for cmdr-cxx, enable CMAKE_VERBOSE_MAKEFILE to print command line before execute them" OFF)
+    option(CMDR_NO_3RDPARTY "for cmdr-cxx, disable source codes and targets alternate to yaml-cpp and others" ON)
 
-		set(CMDR_CXX_TGT_NAME "third-cmdr-cxx")
-		include(ExternalProject)
-		ExternalProject_Add(${CMDR_CXX_TGT_NAME}
-			GIT_REPOSITORY https://github.com/hedzr/cmdr-cxx
-			GIT_TAG origin/master # v0.3.13
-			GIT_SHALLOW 1
-			GIT_PROGRESS ON
+    if(${CMDR11_FOUND})
+        message(STATUS "cmdr-cxx: package FOUND at ${CMDR11_INCLUDE_DIR}, ${CMDR11_VERSION}")
+        message(STATUS "cmdr-cxx: add cmdr-cxx v${CMDR11_VERSION_STRING} module to '${target}' from CMake Modules registry.")
+        target_link_libraries(${target}
+            PRIVATE
+            ${CMDR11_LIBRARIES}
+        )
+    else()
+        message(STATUS "cmdr-cxx: not found, try pulling a local one...")
 
-			# STEP_TARGETS build
-			# SOURCE_DIR "${PROJECT_SOURCE_DIR}/third-party/cmdr-cxx-src"
-			# BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/cmdr-cxx-build"
-			CMAKE_ARGS
-			-DENABLE_TESTS=OFF
-			-DENABLE_CLI_APP=OFF
-			-DENABLE_AUTOMATE_TESTS=OFF
-			-DBUILD_DOCUMENTATION=OFF
-			--no-warn-unused-cli
-			-DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-			-DCMAKE_INSTALL_PREFIX:PATH=${CMDR_CXX_STAGE_DIR}
+        set(CMDR_CXX_TGT_NAME "third-cmdr-cxx")
+        include(ExternalProject)
+        ExternalProject_Add(${CMDR_CXX_TGT_NAME}
+            GIT_REPOSITORY https://github.com/hedzr/cmdr-cxx
+            GIT_TAG origin/master # v0.3.13
+            GIT_SHALLOW 1
+            GIT_PROGRESS ON
 
-			# -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-			# -DCMAKE_INSTALL_PREFIX:PATH=${EXECUTABLE_OUTPUT_PATH}
-			BUILD_COMMAND ${CMAKE_COMMAND} -E echo "Starting $<CONFIG> build, install_prefix: ${CMAKE_INSTALL_PREFIX}"
+            # STEP_TARGETS build
+            # SOURCE_DIR "${PROJECT_SOURCE_DIR}/third-party/cmdr-cxx-src"
+            # BINARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/cmdr-cxx-build"
+            CMAKE_ARGS
+            -DCMAKE_VERBOSE_DEBUG:BOOL=${CMAKE_VERBOSE_DEBUG}
+            -DCMDR_NO_3RDPARTY:BOOL=${CMDR_NO_3RDPARTY}
+            -DENABLE_TESTS:BOOL=OFF
+            -DENABLE_CLI_APP:BOOL=OFF
+            -DENABLE_AUTOMATE_TESTS:BOOL=OFF
+            -DBUILD_DOCUMENTATION:BOOL=OFF
+            -DBUILD_EXAMPLES:BOOL=OFF
+            --no-warn-unused-cli
+            -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+            -DCMAKE_INSTALL_PREFIX:PATH=${CMDR_CXX_STAGE_DIR}
 
-			# COMMAND ${CMAKE_COMMAND} -E sudo "chmod a+w /usr/local/lib"
-			COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config $<CONFIG>
-			COMMAND ${CMAKE_COMMAND} -E echo "$<CONFIG> build complete"
-		)
+            # -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+            # -DCMAKE_INSTALL_PREFIX:PATH=${EXECUTABLE_OUTPUT_PATH}
+            BUILD_COMMAND ${CMAKE_COMMAND} -E echo "[cmdr-cxx] Starting $<CONFIG> build, install_prefix: ${CMAKE_INSTALL_PREFIX} or ${CMDR_CXX_STAGE_DIR}, BINARY_DIR: <BINARY_DIR>"
 
-		message(STATUS "cmdr-cxx: add '${CMDR_CXX_TGT_NAME}' module to '${target}' from building dir.")
-		message(STATUS "cmdr-cxx:    CI_RUNNING = $ENV{CI_RUNNING}")
-		message(STATUS "cmdr-cxx: add_dependencies")
-		add_dependencies(${target} ${CMDR_CXX_TGT_NAME})
+            # COMMAND ${CMAKE_COMMAND} -E sudo "chmod a+w /usr/local/lib"
+            COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config $<CONFIG>
+            COMMAND ${CMAKE_COMMAND} -E echo "[cmdr-cxx] $<CONFIG> build complete"
+        )
 
-		set(CMDR11_INCLUDE_DIR ${CMDR_CXX_STAGE_DIR}/include)
-		set(CMDR11_LIB_DIR ${CMDR_CXX_STAGE_DIR}/lib)
-	endif()
+        message(STATUS "cmdr-cxx: add '${CMDR_CXX_TGT_NAME}' module to '${target}' from building dir.")
+        message(STATUS "cmdr-cxx:    CI_RUNNING = $ENV{CI_RUNNING}")
+        message(STATUS "cmdr-cxx: add_dependencies")
+        add_dependencies(${target} ${CMDR_CXX_TGT_NAME})
 
-	target_include_directories(${target} PRIVATE
-		$<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
-		$<INSTALL_INTERFACE:include>
-		#/usr/local/include
-		#/opt/homebrew/include
-		# ${CMDR_CXX_STAGE_DIR}/include
-		${CMDR11_INCLUDE_DIR}
-	)
-	target_link_directories(${target} PRIVATE
-		/usr/local/lib
+        set(CMDR11_INCLUDE_DIR ${CMDR_CXX_STAGE_DIR}/include)
+        set(CMDR11_LIB_DIR ${CMDR_CXX_STAGE_DIR}/lib)
+    endif()
 
-		# ${CMDR_CXX_STAGE_DIR}/lib
-		${CMDR11_LIBRARY_DIR}
+    target_include_directories(${target} PRIVATE
+        $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
+        $<INSTALL_INTERFACE:include>
+        /usr/local/include
+        /opt/homebrew/include
 
-		# ${CMAKE_CURRENT_BINARY_DIR}/${CMDR_CXX_TGT_NAME}-prefix/src/${CMDR_CXX_TGT_NAME}-build
-	)
-	message(STATUS "cmdr-cxx: include-dir = ${CMDR11_INCLUDE_DIR}")
+        # ${CMDR_CXX_STAGE_DIR}/include
+        ${CMDR11_INCLUDE_DIR}
+    )
+    target_link_directories(${target} PRIVATE
+        /usr/local/lib
 
+        # ${CMDR_CXX_STAGE_DIR}/lib
+        ${CMDR11_LIBRARY_DIR}
+
+        # ${CMAKE_CURRENT_BINARY_DIR}/${CMDR_CXX_TGT_NAME}-prefix/src/${CMDR_CXX_TGT_NAME}-build
+    )
+    message(STATUS "cmdr-cxx: include-dir = ${CMDR11_INCLUDE_DIR}")
 endmacro()
 ```
 
@@ -310,7 +323,7 @@ add_executable(${PROJECT_NAME} cmdr_main.cc)
 target_include_directories(${PROJECT_NAME} PRIVATE
 	$<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
 )
-include(dep-to-cmdr11) # include our dep-to-cmdr11.cmake
+include(deps-cmdr11) # include our deps-cmdr11.cmake
 add_cmdr_cxx_to(${PROJECT_NAME})
 ```
 
@@ -326,11 +339,11 @@ find_package(cmdr11 REQUIRED)
 
 add_executable(my-app)
 target_link_libraries(my-app PRIVATE cmdr11::cmdr11)
-set_target_properties(${PROJECT_NAME} PROPERTIES
-					  CXX_STANDARD 17
-					  CXX_STANDARD_REQUIRED ON
-					  CXX_EXTENSIONS ON
-					  )
+set_target_properties(${PROJECT_NAME}  PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+    CXX_EXTENSIONS ON
+    )
 ```
 
 Or you can download [deps-cmdr11.cmake](https://github.com/hedzr/cmdr-cxx/blob/master/cmake/deps-cmdr11.cmake) and

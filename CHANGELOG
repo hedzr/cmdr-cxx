@@ -2,10 +2,7 @@
 
 ## Status
 
-- *WIP* - v0.?.?
-  - ticker - removed and released as ticker-cxx standalone
-  - and more (undo, fsm, ...)
-
+- v0.5.9 - fixed `deps-cmdr11.cmake` for you, added `CMDR_NO_3RDPARTY` option to disable importing and linking with 3rd-party libraries
 - v0.5.8 - fixed unused `requires` in cmdr-chrono.hh
 - v0.5.7 - fixed all builds on c++20 (unused param; ambiguous operator << for time_point/duration; ...)
 - v0.5.5 - fixed importing cmdr11(-cxx) via cmake ExternalProject_Add

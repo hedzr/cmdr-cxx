@@ -86,32 +86,7 @@ See also golang version: [cmdr](https://github.com/hedzr/cmdr).
 
 ## Status
 
-- v0.5.9 - fixed `deps-cmdr11.cmake` for you, added `CMDR_NO_3RDPARTY` option to disable importing and linking with 3rd-party libraries
-- v0.5.8 - fixed unused `requires` in cmdr-chrono.hh
-- v0.5.7 - fixed all builds on c++20 (unused param; ambiguous operator << for time_point/duration; ...)
-- v0.5.5 - fixed importing cmdr11(-cxx) via cmake ExternalProject_Add
-- v0.5.3 - fixed upload-artifact in last release
-  > actions/upload-artifact and download-artifact must be same major version (such as v4, both)
-- v0.5.2 [incomplete] - fixed upload/download-artifact in last release; compliant with c++20 or higher
-- v0.5.1 [incomplete] - security patch the workflow script; fixed it;
-- v0.5.0 - upgraded to compliant with cxx20 and later
-- v0.3.1 - bugs fixed and added constexpr compiler_name and a new test: test-compiler;
-- v0.3.0 - bugs fixed and sync codes for main compilers;
-- v0.2.27 - LICENSE Changed to Apache 2.0; better adaptive in cmake import;
-- v0.2.25 - follow windows virtual environment changed in adaptation; format codes with better style
-- v0.2.23 - improved ci scripts, traits, detections, and more for better cross-platform portability;
-- v0.2.21 - bug fixed; add more utilities: mmap, thread pool, factory, pipeable, ...;
-- v0.2.20 - changed OS_xxx macros; added more portability;
-- v0.2.19 - bug fixed
-- v0.2.17 - added to homebrew.
-- v0.2.15 - bug fixed
-- v0.2.13 - any kind of fixes; added priority-queue; added `ASSERTIONS_ONLY`, `NO_ASSERTIONS_ONLY`; added `is_iterable`, added vector_to_string(vec); `defer<T>` & `defer<bool>`; many improvements merged;
-- v0.2.11 - maintained
-- v0.2.10 - MSVC (Build Tool 16.7.2+, VS2019 passed), and others improvements (bash completion, ...)
-- v0.2.9 - various fixes, improvements
-- v0.2.8 - fixed cmdr11Config.cmake for importing transparently
-- v0.2.7 - `auto &cli = cmdr::create(...)`
-- v0.2.5 - public release starts
+- See [CHANGELOG](https://github.com/hedzr/cmdr-cxx/blob/master/CHANGELOG)
 
 ### CXX 17/20 Compilers
 
@@ -220,7 +195,7 @@ The typical install command could be `brew install yaml-cpp`,
 For more information, please refer to the chapter [Others](#others).
 
 > It can be disabled by `CMDR_NO_3RDPARTY` while building cmdr-cxx:
-> 
+>
 > ```bash
 > cmake -DCMDR_NO_3RDPARTY:BOOL=ON -DCMAKE_BUILD_TYPE:STRING=Release -S . -B build-release/
 > ```

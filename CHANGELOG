@@ -2,6 +2,7 @@
 
 ## Status
 
+- v0.5.11 - simple updates to follow the newest devenv
 - v0.5.9 - fixed `deps-cmdr11.cmake` for you, added `CMDR_NO_3RDPARTY` option to disable importing and linking with 3rd-party libraries
 - v0.5.8 - fixed unused `requires` in cmdr-chrono.hh
 - v0.5.7 - fixed all builds on c++20 (unused param; ambiguous operator << for time_point/duration; ...)
@@ -15,7 +16,7 @@
 - v0.3.0 - bugs fixed and sync codes for main compilers;
 
 - v0.2.27 - LICENSE Changed to Apache 2.0; better adaptive in cmake import;
-- v0.2.25 - follow windows virtual environment changed in adaptation; format codes with better style 
+- v0.2.25 - follow windows virtual environment changed in adaptation; format codes with better style
 - v0.2.23 - improved ci scripts, traits, detections, and more for better cross-platform portability;
 - v0.2.21 - bug fixed; add more utilities: mmap, thread pool, factory, pipeable, ...;
 - v0.2.20 - changed OS_xxx macros; added more portability;

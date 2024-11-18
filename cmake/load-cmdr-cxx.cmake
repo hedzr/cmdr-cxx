@@ -1,5 +1,18 @@
 #
-# FOR CMDR11
+# TO LOADING CMDR11 / CMDR-CXX EASILY:
+#
+#	define_cxx_executable_project(myapp
+# 		PREFIX myapp
+# 		LIBRARIES ${myapp_libs}
+# 		SOURCES ${myapp_source_files}
+# 		INCLUDE_DIRECTORIES ${myapp_INCDIR}
+#	)
+#	enable_version_increaser(myapp-cli myapp my MY_)
+#
+#	include(load-cmdr-cxx)   # load ME here.
+#	add_cmdr_cxx_to(myapp)   # attach cmdr11::cmdr11
+#
+
 #
 
 # message(STATUS "cmdr-cxx: defined macro add_cmdr_cxx_to")
@@ -15,7 +28,7 @@ macro(add_cmdr_cxx_to target)
         message(STATUS "cmdr-cxx: package FOUND at ${CMDR11_INCLUDE_DIR}, ${CMDR11_VERSION}")
         message(STATUS "cmdr-cxx: add cmdr-cxx v${CMDR11_VERSION_STRING} module to '${target}' from CMake Modules registry.")
         target_link_libraries(${target}
-            PRIVATE
+            # PRIVATE
             ${CMDR11_LIBRARIES}
         )
     else()

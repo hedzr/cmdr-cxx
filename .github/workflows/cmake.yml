@@ -35,7 +35,8 @@ jobs:
           - {
             name: "Ubuntu Latest GCC", artifact: "Linux.7z",
             os: ubuntu-latest,
-            cc: "gcc-13", cxx: "g++-13"
+            cc: "gcc-12", cxx: "g++-12"
+            # cc: "gcc-13", cxx: "g++-13"
             # cc: "gcc-14", cxx: "g++-14"
 
               # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/ubuntu/Ubuntu2404-Readme.md
@@ -48,13 +49,14 @@ jobs:
               # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/macos/macos-14-arm64-Readme.md
               # https://github.com/actions/runner-images/releases/tag/macos-14-arm64%2F20240827.4
           }
-          - {
-            name: "macOS Latest Intel", artifact: "macOS-intel.7z",
-            os: macos-latest-large,
-            cc: "clang", cxx: "clang++"
-
-              # https://github.com/actions/runner-images
-          }
+          # macOS Latest Intel not support in free plan
+          # - {
+          #   name: "macOS Latest Intel", artifact: "macOS-intel.7z",
+          #   os: macos-latest-large,
+          #   cc: "clang", cxx: "clang++"
+          #
+          #     # https://github.com/actions/runner-images
+          # }
 
 
     steps:
@@ -64,6 +66,10 @@ jobs:
         #if: matrix.os == 'ubuntu-latest'
         if: runner.os == 'Linux' # Linux, Windows, macOS
         run: |
+          which gcc && gcc --version
+          which cmake && cmake --version
+          echo
+          echo
           # if [[ "$OSTYPE" == "linux-gnu"* ]]; then
           if [[ "$(gcc --version|head -1)" != *10.* ]]; then
             sudo add-apt-repository ppa:ubuntu-toolchain-r/test

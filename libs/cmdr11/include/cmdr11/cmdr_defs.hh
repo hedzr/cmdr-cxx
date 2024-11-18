@@ -21,8 +21,8 @@
 #include <cstddef>
 #include <cstdint>
 
-#include <memory>
 #include <chrono>
+#include <memory>
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define WIN32_LEAN_AND_MEAN
@@ -164,8 +164,7 @@ inline void UNUSED([[maybe_unused]] Args &&...args) {
 #if defined(_MSC_VER)
 #define DISABLE_MSVC_WARNINGS(...) \
   __pragma(warning(push))          \
-      __pragma(warning(disable     \
-                       : __VA_ARGS__)) /*disable _ctlState prefast warning*/
+      __pragma(warning(disable : __VA_ARGS__)) /*disable _ctlState prefast warning*/
 #define RESTORE_MSVC_WARNINGS \
   __pragma(warning(pop))
 #else
@@ -465,6 +464,8 @@ inline void UNUSED([[maybe_unused]] Args &&...args) {
 // //     return c.size();
 // // }
 
+#if !defined(_COUNTOF_DEFINED)
+#define _COUNTOF_DEFINED
 // char arrname[5];
 // size_t count = std::extent< decltype( arrname ) >::value;
 //
@@ -480,6 +481,7 @@ template<typename T, size_t N>
   UNUSED(arr);
   return std::extent<T[N]>::value;
 }
+#endif // _COUNTOF_DEFINED
 
 
 //
@@ -812,7 +814,7 @@ namespace cmdr::cross {
 #elif (__cplusplus > 202002L)
             " (C++23)"
 #else
-            " (pre-standard C++)"
+        " (pre-standard C++)"
 #endif
     };
     return str;
@@ -940,6 +942,9 @@ namespace cmdr { namespace cross {
 //
 
 
+#if !defined(_CONSTEXPR_MINMAX_DEFINED)
+#define _CONSTEXPR_MINMAX_DEFINED
+
 template<typename T>
 struct always_false : std::false_type {};
 
@@ -979,6 +984,8 @@ namespace cmdr { namespace cross {
   }
 }
 } // namespace cmdr::cross
+
+#endif //!defined(_CONSTEXPR_MINMAX_DEFINED)
 
 #ifndef _CONST_CHARS_DEFINED
 #define _CONST_CHARS_DEFINED
@@ -1195,7 +1202,7 @@ namespace cmdr { namespace cross {
   }
   // BEWRAE: this is a thread-unsafe routine, it's just for the simple scene.
   inline struct tm *gmtime(time_t const *_t = nullptr) {
-    static struct tm _tm {};
+    static struct tm _tm{};
     if (!_t) {
       time_t vt = time();
       gmtime_s(&_tm, &vt);

@@ -73,6 +73,7 @@ macro(add_cmdr_cxx_to target)
     )
     target_link_directories(${target} PRIVATE
         /usr/local/lib
+        /opt/homebrew/lib
 
         # ${CMDR_CXX_STAGE_DIR}/lib
         ${CMDR11_LIBRARY_DIR}

@@ -399,13 +399,13 @@ jobs:
               # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/macos/macos-14-arm64-Readme.md
               # https://github.com/actions/runner-images/releases/tag/macos-14-arm64%2F20240827.4
           }
-          - {
-            name: "macOS Latest Intel", artifact: "macOS-intel.7z",
-            os: macos-latest-large,
-            cc: "clang", cxx: "clang++"
-
-              # https://github.com/actions/runner-images
-          }
+          # - {
+          #   name: "macOS Latest Intel", artifact: "macOS-intel.7z",
+          #   os: macos-latest-large,
+          #   cc: "clang", cxx: "clang++"
+          #
+          #     # https://github.com/actions/runner-images
+          # }
 
 
     steps:

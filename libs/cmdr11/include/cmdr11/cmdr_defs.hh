@@ -942,16 +942,24 @@ namespace cmdr { namespace cross {
 //
 
 
-#if !defined(_CONSTEXPR_MINMAX_DEFINED)
-#define _CONSTEXPR_MINMAX_DEFINED
-
-template<typename T>
-struct always_false : std::false_type {};
-
-template<typename T>
-[[maybe_unused]] constexpr bool always_false_v = always_false<T>::value;
+// #if !defined(_CONSTEXPR_MINMAX_DEFINED)
+// #define _CONSTEXPR_MINMAX_DEFINED
+//
+// template<typename T>
+// struct always_false : std::false_type {};
+//
+// template<typename T>
+// [[maybe_unused]] constexpr bool always_false_v = always_false<T>::value;
+//
+// #endif //!defined(_CONSTEXPR_MINMAX_DEFINED)
 
 namespace cmdr { namespace cross {
+  template<typename T>
+  struct always_false : std::false_type {};
+
+  template<typename T>
+  [[maybe_unused]] constexpr bool always_false_v = always_false<T>::value;
+
   template<typename T>
   constexpr T constexpr_max(T a) {
     return a;
@@ -984,8 +992,6 @@ namespace cmdr { namespace cross {
   }
 }
 } // namespace cmdr::cross
-
-#endif //!defined(_CONSTEXPR_MINMAX_DEFINED)
 
 #ifndef _CONST_CHARS_DEFINED
 #define _CONST_CHARS_DEFINED

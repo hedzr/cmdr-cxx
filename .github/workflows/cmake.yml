@@ -3,10 +3,10 @@ name: CMake Build Matrix
 on: [ push, pull_request ]
 
 env:
-  CMAKE_VERSION: 3.19
-  NINJA_VERSION: 1.10.1
-  BUILD_TYPE: Release
+  CMAKE_VERSION: 3.29
+  NINJA_VERSION: 1.11.1
   CCACHE_VERSION: 3.7.7
+  BUILD_TYPE: Release
   CI_RUNNING: 1
   # VCPKG_TARGET_TRIPLET: x64-windows
 
@@ -24,6 +24,8 @@ jobs:
             cc: "cl", cxx: "cl",
             environment_script: "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/vcvars64.bat",
             tcf: "-D CMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+
+              # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/windows/Windows2022-Readme.md
           }
           #- {
           #  name: "Windows Latest MinGW", artifact: "Windows-MinGW.7z",
@@ -33,23 +35,33 @@ jobs:
           - {
             name: "Ubuntu Latest GCC", artifact: "Linux.7z",
             os: ubuntu-latest,
-            cc: "gcc-10", cxx: "g++-10"
+            cc: "gcc-14", cxx: "g++-14"
+
+              # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/ubuntu/Ubuntu2404-Readme.md
           }
           - {
-            name: "macOS Latest Clang", artifact: "macOS.7z",
+            name: "macOS Latest Arm64", artifact: "macOS.7z",
             os: macos-latest,
             cc: "clang", cxx: "clang++"
 
-            # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/macos/macos-14-arm64-Readme.md
-            # https://github.com/actions/runner-images/releases/tag/macos-14-arm64%2F20240827.4
+              # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/macos/macos-14-arm64-Readme.md
+              # https://github.com/actions/runner-images/releases/tag/macos-14-arm64%2F20240827.4
           }
+          - {
+            name: "macOS Latest Intel", artifact: "macOS-intel.7z",
+            os: macos-latest-large,
+            cc: "clang", cxx: "clang++"
+
+              # https://github.com/actions/runner-images
+          }
+
 
     steps:
       - uses: actions/checkout@v1
 
       - name: Install gcc 10+ for Ubuntu-18
         #if: matrix.os == 'ubuntu-latest'
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' # Linux, Windows, macOS
         run: |
           # if [[ "$OSTYPE" == "linux-gnu"* ]]; then
           if [[ "$(gcc --version|head -1)" != *10.* ]]; then
@@ -133,7 +145,7 @@ jobs:
           echo "uname -v (kernel version):    $(uname -v)"
           echo "uname -m (machine):           $(uname -m)"
           if [ "$RUNNER_OS" != "macOS" ]; then
-          echo "uname -i (hardware platform): $(uname -i)"
+            echo "uname -i (hardware platform): $(uname -i)"
           fi
           echo "uname -o (operation system):  $(uname -o)"
 
@@ -353,20 +365,41 @@ jobs:
         config:
           - {
             name: "Windows Latest MSVC", artifact: "Windows-MSVC.7z",
-            os: windows-latest
+            os: windows-latest,
+            cc: "cl", cxx: "cl",
+            environment_script: "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/vcvars64.bat",
+            tcf: "-D CMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+
+              # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/windows/Windows2022-Readme.md
           }
-          #          - {
-          #            name: "Windows Latest MinGW", artifact: "Windows-MinGW.7z",
-          #            os: ubuntu-latest
-          #          }
+          #- {
+          #  name: "Windows Latest MinGW", artifact: "Windows-MinGW.7z",
+          #  os: windows-latest,
+          #  cc: "gcc", cxx: "g++"
+          #}
           - {
             name: "Ubuntu Latest GCC", artifact: "Linux.7z",
-            os: ubuntu-latest
+            os: ubuntu-latest,
+            cc: "gcc-14", cxx: "g++-14"
+
+              # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/ubuntu/Ubuntu2404-Readme.md
           }
           - {
-            name: "macOS Latest Clang", artifact: "macOS.7z",
-            os: macos-latest
+            name: "macOS Latest Arm64", artifact: "macOS.7z",
+            os: macos-latest,
+            cc: "clang", cxx: "clang++"
+
+              # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/macos/macos-14-arm64-Readme.md
+              # https://github.com/actions/runner-images/releases/tag/macos-14-arm64%2F20240827.4
           }
+          - {
+            name: "macOS Latest Intel", artifact: "macOS-intel.7z",
+            os: macos-latest-large,
+            cc: "clang", cxx: "clang++"
+
+              # https://github.com/actions/runner-images
+          }
+
 
     steps:
       - name: Download artifact

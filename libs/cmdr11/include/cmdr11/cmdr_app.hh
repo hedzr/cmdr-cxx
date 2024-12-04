@@ -51,7 +51,7 @@ namespace cmdr {
       _##mn = s;           \
     return (*this);        \
   }                        \
-  const std::string &mn() const { return _##mn; }
+  std::string const &mn() const { return _##mn; }
 
     PROP_SET(name)
     PROP_SET(version)

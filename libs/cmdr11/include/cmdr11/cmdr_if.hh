@@ -242,10 +242,10 @@ namespace cmdr::traits {
    * @tparam T
    * @details For example:
    * @code{c++}
-   * static_assert(undo_cxx::traits::has_begin&lt;std::string>::value);
+   * static_assert(cmdr::traits::has_begin&lt;std::string>::value);
    *
    * void test_begin() {
-   *     if constexpr (undo_cxx::traits::has_begin_v&lt;Container>) {
+   *     if constexpr (cmdr::traits::has_begin_v&lt;Container>) {
    *         std::cout &lt;&lt; "M: begin() exists." &lt;&lt; '\n';
    *     } else {
    *         std::cout &lt;&lt; "M: begin() not exists." &lt;&lt; '\n';

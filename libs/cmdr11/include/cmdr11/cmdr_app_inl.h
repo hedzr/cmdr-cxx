@@ -173,7 +173,8 @@ namespace cmdr {
       // ts << std::put_time(&t, "%Y-%m-%dT%H:%M:%S");
       ts << std::put_time(&t, "%FT%T%z");
 
-      auto cn = compiler_name();
+      auto cn   = compiler_name();
+      auto &cli = cmdr::get_app();
       std::cout
           << "Built by " << cn
           << " at " << ts.str() << '\n'
@@ -182,7 +183,9 @@ namespace cmdr {
           << CMDR_PROJECT_NAME << '\n'
           << CMDR_ARCHIVE_NAME << '\n'
           << CMDR_GIT_BRANCH << '\n'
-          << CMDR_GIT_COMMIT_HASH << '\n';
+          << CMDR_GIT_COMMIT_HASH << '\n'
+          << cli.name() << '\n'
+          << cli.version() << '\n';
       return 0;
     });
     _internal_actions.emplace(opt::Action::RequestTreeScreen,

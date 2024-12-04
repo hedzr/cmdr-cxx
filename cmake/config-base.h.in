@@ -2,8 +2,8 @@
 // Created by Hedzr Yeh on 2019-01-28.
 //
 
-#ifndef ___CONFIG_BASE_H
-#define ___CONFIG_BASE_H
+#ifndef __@PROJECT_MACRO_PREFIX@_CONFIG_BASE_H
+#define __@PROJECT_MACRO_PREFIX@_CONFIG_BASE_H
 
 #ifndef xT
 #define xT(str) str
@@ -11,17 +11,207 @@
 
 /*  NB: this file is parsed by automatic tools so don't change its format! */
 
-#define CMDR_CPU                    xT("@CMAKE_SYSTEM_PROCESSOR@")
-#define CMDR_CPU_ARCH               xT("@CPU_ARCH@")
-#define CMDR_CPU_ARCH_NAME          xT("@CPU_ARCH_NAME@")
+#define @PROJECT_MACRO_PREFIX@_CPU              xT("@CMAKE_HOST_SYSTEM_PROCESSOR@")
+#define @PROJECT_MACRO_PREFIX@_CPU_ARCH         @CPU_ARCH@
+#define @PROJECT_MACRO_PREFIX@_CPU_ARCH_NAME    xT("@CPU_NAME@")
 
 #ifndef USE_DEBUG_MALLOC
 #cmakedefine01 USE_DEBUG_MALLOC
 #endif
 #ifndef USE_DEBUG
 #cmakedefine01 USE_DEBUG
-#endif           
+#endif
 
-#define CMDR_BUILD_NAME             xT("@CMAKE_BUILD_NAME@")
+/**/
 
-#endif //___CONFIG_BASE_H
+#define @PROJECT_MACRO_PREFIX@_BUILD_NAME       xT("@CMAKE_BUILD_NAME@")
+
+#ifndef @PROJECT_MACRO_PREFIX@_ENABLE_ASSERTIONS
+#cmakedefine01 @PROJECT_MACRO_PREFIX@_ENABLE_ASSERTIONS
+#endif
+#ifndef @PROJECT_MACRO_PREFIX@_ENABLE_PRECONDITION_CHECKS
+#cmakedefine01 @PROJECT_MACRO_PREFIX@_ENABLE_PRECONDITION_CHECKS
+#endif
+#ifndef @PROJECT_MACRO_PREFIX@_ENABLE_THREAD_POOL_READY_SIGNAL
+#cmakedefine01 @PROJECT_MACRO_PREFIX@_ENABLE_THREAD_POOL_READY_SIGNAL
+#endif
+#ifndef @PROJECT_MACRO_PREFIX@_ENABLE_VERBOSE_LOG
+#cmakedefine01 @PROJECT_MACRO_PREFIX@_ENABLE_VERBOSE_LOG
+#endif
+#ifndef @PROJECT_MACRO_PREFIX@_TEST_THREAD_POOL_DBGOUT
+#cmakedefine01 @PROJECT_MACRO_PREFIX@_TEST_THREAD_POOL_DBGOUT
+#endif
+#ifndef @PROJECT_MACRO_PREFIX@_UNIT_TEST
+#cmakedefine01 @PROJECT_MACRO_PREFIX@_UNIT_TEST
+#endif
+
+/**/
+
+#ifndef __COMPILER_ID_DEF
+#define __COMPILER_ID_DEF
+
+/* Clang, GNU, MSVC, Intel, ..., see CMAKE_CXX_COMPILER_ID */
+#define BUILD_COMPILER_ID                  xT("@CMAKE_CXX_COMPILER_ID@")
+#define BUILD_COMPILER_FRONTEND_VARIANT    xT("@CMAKE_CXX_COMPILER_FRONTEND_VARIANT@")
+#define BUILD_COMPILER_VERSION             xT("@CMAKE_CXX_COMPILER_VERSION@")
+
+#cmakedefine01 USING_CLANG_APPLE
+#cmakedefine01 USING_CLANG_LLVM
+#cmakedefine01 USING_CLANG_FRONTEND_CL     /* llvm clang with MSVC frontend */
+#define USING_CLANG_FRONTEND_MSVC USING_CLANG_FRONTEND_CL
+#cmakedefine01 USING_CLANG_FRONTEND_GNU    /* llvm clang with gcc frontend */
+#cmakedefine01 USING_CLANG_FRONTEND_OTHERS /* llvm clang with others */
+#cmakedefine01 USING_GCC
+#cmakedefine01 USING_GNU
+#cmakedefine01 USING_MSVC
+#cmakedefine01 USING_Intel
+#cmakedefine01 USING_UNKNOWN_COMPILER
+
+#cmakedefine01 USING_POSITION_INDEPENDENT_CODE
+#cmakedefine01 USING_PIC
+#cmakedefine01 USING_BIG_ENDIAN
+
+#endif /*__COMPILER_ID_DEF*/
+
+/* build info */
+
+#define BUILD_HOST_NAME         xT("@CMAKE_HOST_SYSTEM_NAME@")
+#define BUILD_HOST_CPU          xT("@CMAKE_HOST_SYSTEM_PROCESSOR@")
+#define BUILD_HOST_VERSION      xT("@CMAKE_HOST_SYSTEM_VERSION@")
+#define BUILD_HOST              xT("@CMAKE_HOST_SYSTEM@")
+#define BUILD_DISTRO            xT("@DISTRO_NAME@")    /* Just for Linux */
+#define BUILD_TIMESTAMP         xT("@BUILD_TIMESTAMP@")
+
+/* build options */
+
+#cmakedefine01 USE_CONAN
+#cmakedefine01 USE_VCPKG
+
+#cmakedefine01 ENABLE_CCACHE
+#cmakedefine01 ENABLE_EXAMPLES
+#cmakedefine01 ENABLE_TESTS
+#cmakedefine01 ENABLE_AUTOMATE_TESTS
+#cmakedefine01 ENABLE_PPPM_WARNINGS
+
+#cmakedefine01 ${PROJ_MACRO_PREFIX}_BUILD_TESTS_EXAMPLES
+#cmakedefine01 ${PROJ_MACRO_PREFIX}_BUILD_DOCS
+
+#ifndef ${PROJECT_MACRO_PREFIX}_ENABLE_ASSERTIONS
+#cmakedefine01 ${PROJECT_MACRO_PREFIX}_ENABLE_ASSERTIONS
+#endif
+#ifndef ${PROJECT_MACRO_PREFIX}_ENABLE_PRECONDITION_CHECKS
+#cmakedefine01 ${PROJECT_MACRO_PREFIX}_ENABLE_PRECONDITION_CHECKS
+#endif
+#ifndef ${PROJECT_MACRO_PREFIX}_ENABLE_THREAD_POOL_READY_SIGNAL
+#cmakedefine01 ${PROJECT_MACRO_PREFIX}_ENABLE_THREAD_POOL_READY_SIGNAL
+#endif
+#ifndef ${PROJECT_MACRO_PREFIX}_ENABLE_VERBOSE_LOG
+#cmakedefine01 ${PROJECT_MACRO_PREFIX}_ENABLE_VERBOSE_LOG
+#endif
+#ifndef ${PROJECT_MACRO_PREFIX}_TEST_THREAD_POOL_DBGOUT
+#cmakedefine01 ${PROJECT_MACRO_PREFIX}_TEST_THREAD_POOL_DBGOUT
+#endif
+#ifndef ${PROJECT_MACRO_PREFIX}_UNIT_TEST
+#cmakedefine01 ${PROJECT_MACRO_PREFIX}_UNIT_TEST
+#endif
+
+
+/* env tests */
+
+
+/* Define to 1 if you have the `BSDgettimeofday' function. */
+#undef HAVE_BSDGETTIMEOFDAY
+
+/* Define if the copysign function/macro is available. */
+#cmakedefine HAVE_COPYSIGN
+
+/* Define to 1 if you have the <dlfcn.h> header file. */
+#cmakedefine HAVE_DLFCN_H
+
+/* Define if the fpclassify() function/macro is available. */
+#cmakedefine HAVE_FPCLASSIFY
+
+/* Define to 1 if you have the <getopt.h> header file. */
+#cmakedefine HAVE_GETOPT_H
+
+/* Define to 1 if you have the `getpid' function. */
+#cmakedefine HAVE_GETPID
+
+/* Define if syscall(SYS_gettid) available. */
+#undef HAVE_GETTID_SYSCALL
+
+/* Define to 1 if you have the `gettimeofday' function. */
+#cmakedefine HAVE_GETTIMEOFDAY
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#cmakedefine HAVE_INTTYPES_H
+
+/* Define if the isinf() function/macro is available. */
+#cmakedefine HAVE_ISINF
+
+/* Define if the isnan() function/macro is available. */
+#cmakedefine HAVE_ISNAN
+
+/* Define to 1 if you have the `m' library (-lm). */
+#undef HAVE_LIBM
+
+/* Define to 1 if you have the <memory.h> header file. */
+#cmakedefine HAVE_MEMORY_H
+
+/* Define to 1 if you have the `qsort_r' function. */
+#cmakedefine HAVE_QSORT_R
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#cmakedefine HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#cmakedefine HAVE_STDLIB_H
+
+/* Define to 1 if you have the <strings.h> header file. */
+#cmakedefine HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#cmakedefine HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#cmakedefine HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#cmakedefine HAVE_SYS_TYPES_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#cmakedefine HAVE_SYS_TIME_H
+
+/* Define to 1 if you have the <termios.h> header file. */
+#cmakedefine HAVE_TERMIOS_H
+
+/* Define to 1 if you have the `time' function. */
+#cmakedefine HAVE_TIME
+
+/* Define to 1 if the system has the type `uint32_t'. */
+#cmakedefine HAVE_UINT32_T
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#cmakedefine HAVE_UNISTD_H
+
+
+/* The size of `uint32_t', as computed by sizeof. */
+#define SIZEOF_UINT32_T       @SIZEOF_UINT32_T@
+
+/* The size of `unsigned int', as computed by sizeof. */
+#define SIZEOF_UNSIGNED_INT   @SIZEOF_UNSIGNED_INT@
+
+/* The size of `unsigned long', as computed by sizeof. */
+#define SIZEOF_UNSIGNED_LONG  @SIZEOF_UNSIGNED_LONG@
+
+#cmakedefine HAVE_LIBM
+
+#cmakedefine HAVE_STDIO_AND_STRING_H
+
+#cmakedefine HAVE_EX_UNISTD_H
+
+
+/**/
+
+
+#endif  //__@PROJECT_MACRO_PREFIX@_CONFIG_BASE_H

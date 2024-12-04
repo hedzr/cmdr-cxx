@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.5)
+# cmake_minimum_required(VERSION 3.5)
+
 project(cmdr11_tests)
 
 find_package(Threads)
@@ -7,8 +8,10 @@ add_executable(${PROJECT_NAME}
                main.cxx
                test_store.cc
                )
+add_cxx_standard_to(${PROJECT_NAME} ${CXX_STANDARD})
 target_include_directories(${PROJECT_NAME} PRIVATE
                            $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
+						   $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
                            )
 target_link_libraries(${PROJECT_NAME}
                       PRIVATE

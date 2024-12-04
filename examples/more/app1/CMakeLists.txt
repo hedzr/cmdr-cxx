@@ -16,6 +16,7 @@ project(app1
 
 set(PROJECT_ARCHIVE_NAME ${PROJECT_NAME}-${PROJECT_VERSION})
 add_executable(${PROJECT_NAME} main.cc small_cases.cc null_stream.cc)
+add_cxx_standard_to(${PROJECT_NAME} ${CXX_STANDARD})
 #cxx_set_ipo(${PROJECT_NAME})
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_11)
 target_include_directories(${PROJECT_NAME} PRIVATE

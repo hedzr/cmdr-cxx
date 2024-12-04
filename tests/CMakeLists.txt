@@ -39,6 +39,7 @@ function(define_test_program name)
     endforeach ()
 
     add_executable(${PROJECT_NAME}-${name} ${src_list})
+	add_cxx_standard_to(${PROJECT_NAME}-${name} ${CXX_STANDARD})
 
     # target_compile_features(${PROJECT_NAME}-${name} PRIVATE cxx_std_11)
     target_compile_definitions(${PROJECT_NAME}-${name} INTERFACE
@@ -51,6 +52,7 @@ function(define_test_program name)
     )
     target_include_directories(${PROJECT_NAME}-${name} PRIVATE
         $<BUILD_INTERFACE:${CMAKE_GENERATED_DIR}>
+        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
         ${CMAKE_SOURCE_DIR}
     )
     target_link_libraries(${PROJECT_NAME}-${name}

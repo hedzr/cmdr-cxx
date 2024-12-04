@@ -129,9 +129,9 @@ add_library(${PROJECT_NAME} INTERFACE)
 add_library(libs::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 #cxx_set_ipo(${PROJECT_NAME})
 #set_property(TARGET ${PROJECT_NAME} PROPERTY FOLDER "libs/${PROJECT_NAME}")
+add_cxx_standard_to(${PROJECT_NAME} ${CXX_STANDARD})
 
 
-#add_cxx_20_to(${PROJECT_NAME})
 #target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_11)
 #target_sources(${PROJECT_NAME} PRIVATE src/${PROJECT_NAME}.cc src/private.cc)
 target_sources(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${detail_header_files};${header_files}>")
@@ -142,6 +142,7 @@ target_sources(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${detail_header_file
 target_include_directories(${PROJECT_NAME}
     INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+	$<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
     #$<INSTALL_INTERFACE:include>
     #PRIVATE
     #${ZLIB_INCLUDE_DIRS}

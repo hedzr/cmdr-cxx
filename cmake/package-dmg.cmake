@@ -1,9 +1,5 @@
 set(CPACK_GENERATOR "DragNDrop") # DMG
-
-# https://cmake.org/cmake/help/latest/module/CPack.html
-# https://cmake.org/cmake/help/latest/cpack_gen/dmg.html#cpack_gen:CPack%20DragNDrop%20Generator
-
-set(CPACK_DMG_PACKAGE_NAME "cmdr11-devel")
+set(CPACK_DMG_PACKAGE_NAME "${CPACK_PACKAGE_NAME}-devel")
 set(CPACK_DMG_PACKAGE_MAINTAINER ${CPACK_PACKAGE_CONTACT})
 set(CPACK_DMG_PACKAGE_DESCRIPTION ${CPACK_PACKAGE_DESCRIPTION})
 

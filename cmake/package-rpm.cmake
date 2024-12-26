@@ -4,6 +4,7 @@ set(CPACK_RPM_FILE_NAME RPM-DEFAULT)
 # https://cmake.org/cmake/help/latest/module/CPack.html
 # https://cmake.org/cmake/help/latest/cpack_gen/rpm.html#cpack_gen:CPack%20RPM%20Generator
 
+set(CPACK_RPM_PACKAGE_NAME "lib${CPACK_PACKAGE_NAME}-devel")
 set(CPACK_RPM_PACKAGE_MAINTAINER ${CPACK_PACKAGE_CONTACT})
 set(CPACK_RPM_PACKAGE_DESCRIPTION ${CPACK_PACKAGE_DESCRIPTION})
 set(CPACK_RPM_PACKAGE_VERSION ${PROJECT_VERSION})

@@ -1219,11 +1219,23 @@ namespace cmdr::util {
 namespace cmdr::util {
 
   inline std::string detect_shell_env() {
+#if defined(_WIN32) || defined(_WIN64)
+    char* buf = nullptr;
+    size_t sz = 0;
+    if (_dupenv_s(&buf, &sz, "SHELL") == 0 && buf != nullptr)
+    {
+      auto path = std::filesystem::path(buf);
+      auto ret = path.filename().string();
+      free(buf);
+      return ret;
+    }
+#else
     auto *str = std::getenv("SHELL");
     if (str != nullptr) {
       auto path = std::filesystem::path(str);
       return path.filename().string();
     }
+#endif
     return "unknown";
   }
 

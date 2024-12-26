@@ -510,8 +510,18 @@ namespace cmdr::string {
       auto const &from     = match[0];
       auto const &th       = match[1];
       auto const &var_name = th.str();
+#if defined(_WIN32) || defined(_WIN64)
+      char* buf = nullptr;
+      size_t sz = 0;
+      if (_dupenv_s(&buf, &sz, var_name.c_str()) == 0 && buf != nullptr)
+      {
+        text.replace(from.first, from.second, buf);
+        free(buf);
+      }
+#else
       auto *ptr            = std::getenv(var_name.c_str());
       text.replace(from.first, from.second, ptr ? ptr : "");
+#endif
     }
     return text;
   }

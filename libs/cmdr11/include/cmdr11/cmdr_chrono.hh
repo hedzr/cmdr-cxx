@@ -566,9 +566,18 @@ namespace cmdr::chrono {
       return os;
     std::tm *tm{nullptr};
     if (iom_::has(iom_::fmtflags::gmt_or_local))
-      tm = std::gmtime(&tt);    // GMT (UTC)
-    else                        // if (iom_::has(iom_::fmtflags::local))
-      tm = std::localtime(&tt); // Locale time-zone, usually UTC by default.
+      tm = std::gmtime(&tt); // GMT (UTC)
+    else {                   // if (iom_::has(iom_::fmtflags::local))
+#if defined(_WIN32) || defined(_WIN64)
+      auto llocaltime = [](std::time_t *timet) -> std::tm * {
+        time_t now = time(0);
+        return localtime_s(timet, &now);
+      };
+#else
+      auto llocaltime = [](std::time_t *timet) -> std::tm * { return std::localtime(timet); };
+#endif
+      tm = llocaltime(&tt); // Locale time-zone, usually UTC by default.
+    }
     // else
     //     tm = std::gmtime(&tt); //GMT (UTC)
 

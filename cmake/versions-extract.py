@@ -228,7 +228,6 @@ class VersionExtractor:
 #
 # # print("+{}".format(data["RELEASE"])) # print build serial number too
 
-
 def main(argv=sys.argv[1:]):
     parser = argparse.ArgumentParser(
         prog="versions-extractor",
@@ -249,8 +248,9 @@ def main(argv=sys.argv[1:]):
     parser.add_argument(
         "-r",
         "--refresh",
-        action=argparse.BooleanOptionalAction,
-        default=None,
+        # action=argparse.BooleanOptionalAction,
+        action='store_true',
+        default=False,
         help="refresh cmake configure?",
     )
     args = parser.parse_args()

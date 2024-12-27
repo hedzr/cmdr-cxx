@@ -566,8 +566,9 @@ namespace cmdr::chrono {
 
   template<typename Clock = std::chrono::system_clock, bool GMT = false>
   inline std::tm time_t_2_tm(time_t t) {
-    if (GMT)
+    if (GMT) {
       return *std::gmtime(&t);
+    }
     return *std::localtime(&t);
   }
 
@@ -589,8 +590,8 @@ namespace cmdr::chrono {
       struct tm tm1;
       __int64 ltime;
       errno_t err;
-      _time64( &ltime );
-      err = _gmtime64_s( &tm1, &ltime );
+      _time64(&ltime);
+      err = _gmtime64_s(&tm1, &ltime);
       if (!err) {
         // printf("Invalid Argument to _gmtime64_s.");
         tm = &tm1;
@@ -598,7 +599,7 @@ namespace cmdr::chrono {
 #else
       tm = std::gmtime(&tt); // GMT (UTC)
 #endif
-    } else {                   // if (iom_::has(iom_::fmtflags::local))
+    } else { // if (iom_::has(iom_::fmtflags::local))
 #if defined(_WIN32) || defined(_WIN64)
       std::tm tm1;
       time_t now = time_t{0};
@@ -790,7 +791,7 @@ namespace cmdr::chrono {
     return (ms * 1000 + us) * 1000 + ns;
   }
   inline std::ostream &clock::serialize(std::ostream &os, const char *format) const {
-    using iom_     = cmdr::chrono::iom;
+    using iom_ = cmdr::chrono::iom;
     // using tp = std::chrono::time_point<_Clock, _Duration>;
     // std::time_t tt;
     std::tm *tm;
@@ -799,8 +800,8 @@ namespace cmdr::chrono {
       struct tm tm1;
       __int64 ltime;
       errno_t err;
-      _time64( &ltime );
-      err = _gmtime64_s( &tm1, &ltime );
+      _time64(&ltime);
+      err = _gmtime64_s(&tm1, &ltime);
       if (!err) {
         tm = &tm1;
       } else {
@@ -809,9 +810,9 @@ namespace cmdr::chrono {
       }
 #else
       const auto tt = std::chrono::system_clock::to_time_t(_now);
-      tm = std::gmtime(&tt); // GMT (UTC)
+      tm            = std::gmtime(&tt); // GMT (UTC)
 #endif
-    } else {                   // if (iom_::has(iom_::fmtflags::local))
+    } else { // if (iom_::has(iom_::fmtflags::local))
 #if defined(_WIN32) || defined(_WIN64)
       std::tm tm1;
       time_t now = time_t{0};
@@ -819,7 +820,7 @@ namespace cmdr::chrono {
       tm = &tm1;
 #else
       const auto tt = std::chrono::system_clock::to_time_t(_now);
-      tm = std::localtime(&tt); // Locale time-zone, usually UTC by default.
+      tm            = std::localtime(&tt); // Locale time-zone, usually UTC by default.
 #endif
     }
     // else
@@ -893,15 +894,15 @@ namespace cmdr::chrono {
 #if defined(_WIN32) || defined(_WIN64)
       __int64 ltime;
       errno_t err;
-      _time64( &ltime );
-      err = _gmtime64_s( &tm, &ltime );
+      _time64(&ltime);
+      err = _gmtime64_s(&tm, &ltime);
       // if (err) {
       //   // printf("Invalid Argument to _gmtime64_s.");
       // }
 #else
       auto now      = Clock::now();
       auto time_now = Clock::to_time_t(now);
-      tm = *std::gmtime(&time_now);
+      tm            = *std::gmtime(&time_now);
 #endif
     } else {
 #if defined(_WIN32) || defined(_WIN64)
@@ -910,10 +911,10 @@ namespace cmdr::chrono {
 #else
       auto now      = Clock::now();
       auto time_now = Clock::to_time_t(now);
-      tm = *std::localtime(&time_now);
+      tm            = *std::localtime(&time_now);
 #endif
     }
-    
+
     if (try_parse_by(tm, str,
                      "%Y-%m-%d", "%Y/%m/%d", "%H:%M:%S",
                      "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S")) {

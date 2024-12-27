@@ -630,6 +630,8 @@ namespace cmdr {
     return written;
   }
 
+
+  // inline app &app::operator+(const opt::opt &o) {
   inline int app::generate_bash_completion(bool dry_run, bool bet, bool print_to_stdout) {
     const char *tpl  = R"SH-EOF(
 # bash completion wrapper for %{EXE_NAME} v%{APP_VERSION}
@@ -719,10 +721,10 @@ fi
       bool written{};
       if (bet) {
         for (auto const *dir: std::vector<const_chars>{
-                 "$HOME/.linuxbrew/etc/bash_completion.d",
-                 "/opt/homebrew/etc/bash_completion.d",
-                 "/usr/local/etc/bash_completion.d",
-                 "/etc/bash_completion.d",
+               "$HOME/.linuxbrew/etc/bash_completion.d",
+               "/opt/homebrew/etc/bash_completion.d",
+               "/usr/local/etc/bash_completion.d",
+               "/etc/bash_completion.d",
              }) {
           // if (std::filesystem::exists(path))
           //     if(auto st=std::filesystem::status(path);st.permissions())
@@ -766,8 +768,6 @@ $ source $TARGET
     return 0;
   }
 
-
-  // inline app &app::operator+(const opt::opt &o) {
   //     cmd::operator+(a);
   //     return *this;
   // }

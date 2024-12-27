@@ -163,7 +163,7 @@ void test_cpp_style(std::chrono::system_clock::time_point &now) {
 void test_time_now() {
   struct timeval tv                         = cmdr::chrono::get_system_clock_in_us();
   std::chrono::system_clock::time_point now = cmdr::chrono::now();
-  auto now1                                 = cmdr::chrono::clock::now();
+  auto const now1                      = cmdr::chrono::clock::now();
 
   test_c_style(tv);
   test_cpp_style(now);

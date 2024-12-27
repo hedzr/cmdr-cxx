@@ -97,7 +97,7 @@ inline void __M_Assert(const char *expr_str, bool expr,
 #endif
 #endif
 
-
+// join (constexpr)
 namespace cmdr {
 
   template<std::string_view const &...Strings>
@@ -123,6 +123,7 @@ namespace cmdr {
   static constexpr auto join_v = join<Strings...>::value;
 
 } // namespace cmdr
+// type_name, short_type_name, 
 namespace cmdr::debug {
 
 #if 1
@@ -426,6 +427,7 @@ namespace cmdr::debug {
 
 } // namespace cmdr::debug
 
+// demangle, type(T), save_stacktrace, print_stacktrace
 namespace cmdr::debug {
 
   std::string demangle(const char *name);
@@ -482,7 +484,7 @@ namespace cmdr::debug {
   //
   /** Print a demangled stack backtrace of the caller function to FILE* out. */
   template<int max_frames = 63>
-  static inline void print_stacktrace(FILE *out = stderr, int skip = 1) {
+  static inline void print_stacktrace(FILE *out = stderr, const int skip = 1) {
     fprintf(out, "stack trace:\n");
 
     // storage array for stack trace address data
@@ -502,7 +504,7 @@ namespace cmdr::debug {
 
     // allocate string which will be filled with the demangled function name
     size_t funcnamesize = 256;
-    char *funcname      = (char *) malloc(funcnamesize);
+    auto funcname      = static_cast<char *>(malloc(funcnamesize));
 
     // iterate over the returned symbol lines. skip the first, it is the
     // address of this function.
@@ -581,10 +583,10 @@ namespace cmdr::debug {
     fprintf(out, "stack trace:\n");
 
     size_t funcnamesize = 256;
-    char *funcname      = (char *) malloc(funcnamesize);
+    auto funcname      = static_cast<char *>(malloc(funcnamesize));
     for (auto const &str: st) {
       char *begin_name = nullptr, *begin_offset = nullptr, *end_offset = nullptr;
-      char *data = const_cast<char *>(str.c_str());
+      const auto data = const_cast<char *>(str.c_str());
 
       // find parentheses and +address offset surrounding the mangled name:
       // ./module(function+0x15c) [0x8048a6d]
@@ -665,16 +667,17 @@ namespace cmdr::opt {
   class arg;
   class cmd;
 } // namespace cmdr::opt
+// cmdr_throw_line(arg), cmdr_throw_as(typ, ...), cmdr_exception, cmdr_biz_error/required_flag_missed/dup_error
 namespace cmdr::exception {
 
   class cmdr_exception : public std::runtime_error {
-    std::vector<std::string> st;
+    std::vector<std::string> st; // serialized stacktrace frames here
 
   protected:
     std::string msg;
 
   public:
-    cmdr_exception(const char *file, int line, const std::string &arg)
+    cmdr_exception(const char *file, const int line, const std::string &arg)
         : std::runtime_error(arg) {
       std::ostringstream o;
       o << arg << "  " << file << ":" << line;
@@ -703,7 +706,6 @@ namespace cmdr::exception {
     using cmdr_biz_error::cmdr_biz_error;
   };
 
-
   class dup_error : public cmdr_biz_error {
   public:
     using cmdr_biz_error::cmdr_biz_error;
@@ -715,6 +717,7 @@ namespace cmdr::exception {
 
 //
 
+// dump_stacktrace, CMDR_DUMP_STACK_TRACE/CMDR_DUMP_WITHOUT_STACK_TRACE
 namespace cmdr::debug {
   // unwrap nested exceptions, printing each nested exception to std::cerr.
   inline void dump_stacktrace(
@@ -730,7 +733,7 @@ namespace cmdr::debug {
     if (print_stack) {
       if (depth == 0 && "cmdr::exception::cmdr_exception" == type(e)) {
 #if !OS_WIN
-        print_stacktrace(((cmdr::exception::cmdr_exception const *) (&e))->stacktrace());
+        print_stacktrace(static_cast<cmdr::exception::cmdr_exception const *>(&e)->stacktrace());
 #endif
       }
       try {
@@ -757,6 +760,7 @@ namespace cmdr::debug {
 // SIGSEGV handler
 //
 
+// UnhandledExceptionHookInstaller, SigSegVInstaller, SignalInstaller
 #if !OS_WIN
 namespace cmdr::debug {
 
@@ -784,7 +788,7 @@ namespace cmdr::debug {
 #if 1
       fprintf(stderr, "Unhandled Exception: ...\n");
       void *trace_elems[20];
-      int trace_elem_count(backtrace(trace_elems, 20));
+      const int trace_elem_count(backtrace(trace_elems, 20));
       char **stack_syms(backtrace_symbols(trace_elems, trace_elem_count));
       for (int i = 0; i < trace_elem_count; ++i) {
         std::cout << stack_syms[i] << "\n";
@@ -841,8 +845,8 @@ namespace cmdr::debug {
       exit(1);
     }
 
-    [[maybe_unused]] void baz() {
-      int *foo = (int *) -1; // make a bad pointer
+    [[maybe_unused]] static void baz() {
+      const int *foo = reinterpret_cast<int *>(-1); // make a bad pointer
       printf("%d\n", *foo);  // causes segfault
     }
   }; // class SigSegVInstaller
@@ -889,8 +893,8 @@ namespace cmdr::debug {
       exit(1);
     }
 
-    [[maybe_unused]] void baz() {
-      int *foo = (int *) -1; // make a bad pointer
+    [[maybe_unused]] static void baz() {
+      const int *foo = reinterpret_cast<int *>(-1); // make a bad pointer
       printf("%d\n", *foo);  // causes segfault
     }
   }; // class SignalInstaller

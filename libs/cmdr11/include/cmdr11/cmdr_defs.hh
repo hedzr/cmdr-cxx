@@ -481,6 +481,9 @@ template<typename T, size_t N>
   UNUSED(arr);
   return std::extent<T[N]>::value;
 }
+// #ifndef countof
+// #define countof(tab) (sizeof(tab) / sizeof((tab)[0]))
+// #endif
 #endif // _COUNTOF_DEFINED
 
 

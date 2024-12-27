@@ -803,17 +803,41 @@ namespace cmdr {
     _store.walk_by_full_keys([](std::pair<std::string, vars::store::node_pointer> const &val) {
       auto ks = string::reg_replace(val.first, R"([.-])", "_");
       string::to_upper(ks);
+#if defined(_WIN32) || defined(_WIN64)
+      char* buf = nullptr;
+      size_t sz = 0;
+      if (_dupenv_s(&buf, &sz, ks.c_str()) == 0 && buf != nullptr)
+      {
+        std::stringstream(buf) >> (*val.second);
+        cmdr_verbose_debug("      ENV[%s (%s)] => %s", ks.c_str(), val.first.c_str(), buf);
+        free(buf);
+      }
+#else
       char *ptr = std::getenv(ks.c_str());
       if (ptr != nullptr) {
         std::stringstream(ptr) >> (*val.second);
         cmdr_verbose_debug("      ENV[%s (%s)] => %s", ks.c_str(), val.first.c_str(), ptr);
       }
+#endif
     });
 
     // cmd & args
     walk_args([&](opt::arg &a) {
       for (const auto &ev: a.env_vars_get()) {
+#if defined(_WIN32) || defined(_WIN64)
+        std::string szbuf;
+        {
+          char* buf = nullptr;
+         size_t sz = 0;
+         if (_dupenv_s(&buf, &sz, ev.c_str()) == 0 && buf != nullptr) {
+           szbuf = buf;
+           free(buf);
+         }
+        }
+        auto* ptr = szbuf.c_str();
+#else
         char *ptr = std::getenv(ev.c_str());
+#endif
         if (ptr != nullptr) {
           auto dk = a.dotted_key();
           auto &v = _store.get_raw(dk);

@@ -80,9 +80,22 @@ namespace cmdr {
       return 0;
     };
 
+#if defined(_WIN32) || defined(_WIN64)
+    {
+      char* buf = nullptr;
+      size_t sz = 0;
+      if (_dupenv_s(&buf, &sz, "CMDR_DIM") == 0 && buf != nullptr) {
+        if (*buf == '1') {
+          vars::store::_dim_text_dim = true;
+        }
+        free(buf);
+      }
+    }
+#else
     if (auto *p = std::getenv("CMDR_DIM"); p && p[0] == '1') {
       vars::store::_dim_text_dim = true;
     }
+#endif
   }
 
 
@@ -702,10 +715,25 @@ fi
     bool const drop  = get_for_cli("generate.shell.drop").as<bool>();
 
     // auto *safe_name = std::getenv("SAFE_APP_NAME");
+#if defined(_WIN32) || defined(_WIN64)
+    std::string szbuf;
+    {
+      char* buf = nullptr;
+      size_t sz = 0;
+      if (_dupenv_s(&buf, &sz, "EXE_NAME") == 0 && buf != nullptr)
+      {
+        szbuf = buf;
+        free(buf);
+      }
+    }
+    auto *exe_name = szbuf.c_str();
+#else
     auto *exe_name   = std::getenv("EXE_NAME");
-    const auto *name = get_for_cli("generate.shell.name").as<const_chars>();
-    const_chars n    = name && *name ? name : exe_name;
-    std::string sn   = n;
+#endif
+
+    const auto *name    = get_for_cli("generate.shell.name").as<const_chars>();
+    const const_chars n = name && *name ? name : exe_name;
+    std::string sn      = n;
     string::replace(sn, "-", "_");
     cross::setenv("SAFE_APP_NAME", sn.c_str());
     std::filesystem::path safe_name(sn);
@@ -714,7 +742,21 @@ fi
     string::replace_all(contents, "%{SAFE_APP_NAME}", sn);
     string::replace_all(contents, "%{EXE_NAME}", exe_name);
     string::replace_all(contents, "%{APP_NAME}", n);
-    string::replace_all(contents, "%{APP_VERSION}", std::getenv("APP_VERSION"));
+#if defined(_WIN32) || defined(_WIN64)
+    std::string szbuf1;
+    {
+      char* buf1 = nullptr;
+      size_t sz = 0;
+      if (_dupenv_s(&buf1, &sz, "APP_VERSION") == 0 && buf1 != nullptr) {
+        szbuf1 = buf1;
+        free(buf1);
+      }
+    }
+    auto* appver = szbuf1.c_str();
+#else
+    char *appver = std::getenv("APP_VERSION");
+#endif
+    string::replace_all(contents, "%{APP_VERSION}", appver);
 
     std::filesystem::path path{};
     if (!dry_run) {

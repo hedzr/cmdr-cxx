@@ -113,7 +113,20 @@ int main() {
 #endif
   std::cout << r.rdbuf();
 
+#if defined(_WIN32) || defined(_WIN64)
+  std::string szbuf1;
+  {
+    char* buf1 = nullptr;
+    size_t sz = 0;
+    if (_dupenv_s(&buf1, &sz, "CI_RUNNING") == 0 && buf1 != nullptr) {
+      szbuf1 = buf1;
+      free(buf1);
+    }
+  }
+  auto* str = szbuf1.c_str();
+#else
   auto *str = std::getenv("CI_RUNNING");
+#endif
   // if (str == nullptr)
   //     cmdr::process::wait_a_key("soon to exit...");
   std::cout << "END." << (str ? str : "") << '\n';

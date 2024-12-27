@@ -119,9 +119,22 @@ namespace cmdr::addons::loaders {
                  });
 
         // load from env_var
-        auto ptr = std::getenv(env_var);
-        if (ptr) {
-          auto file = std::string(ptr);
+#if defined(_WIN32) || defined(_WIN64)
+        std::string szbuf1;
+        {
+          char* buf1 = nullptr;
+          size_t sz = 0;
+          if (_dupenv_s(&buf1, &sz, "APP_VERSION") == 0 && buf1 != nullptr) {
+            szbuf1 = buf1;
+            free(buf1);
+          }
+        }
+        auto* appver = szbuf1.c_str();
+#else
+        char *appver = std::getenv("APP_VERSION");
+#endif
+        if (appver && *appver) {
+          auto file = std::string(appver);
           load_config_file_or_dir(file, c);
         }
 

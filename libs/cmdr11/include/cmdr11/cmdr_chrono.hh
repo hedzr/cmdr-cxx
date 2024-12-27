@@ -544,7 +544,7 @@ namespace cmdr::chrono {
 #if defined(_WIN32) || defined(_WIN64)
       struct tm tm1;
       errno_t err;
-      err = _gmtime64_s( &tm1, &time_now );
+      err = _gmtime64_s(&tm1, &time_now);
       if (!err) {
         return tm1;
       }
@@ -555,11 +555,9 @@ namespace cmdr::chrono {
     }
 #if defined(_WIN32) || defined(_WIN64)
     std::tm tm1;
-    time_t now = time_t{0};
-    localtime_s(&tm1, &now);
+    localtime_s(&tm1, &time_now);
     return tm1;
 #else
-    auto time_now = Clock::to_time_t(tp);
     return *std::localtime(&time_now);
 #endif
   }

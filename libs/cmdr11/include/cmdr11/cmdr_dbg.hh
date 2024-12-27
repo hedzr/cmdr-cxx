@@ -107,7 +107,7 @@ namespace cmdr {
       constexpr std::size_t len = (Strings.size() + ... + 0);
       std::array<char, len + 1> arr1{};
       auto append = [i = 0, &arr1](auto const &s) mutable {
-        for (auto c: s) arr[i++] = c;
+        for (auto c: s) arr1[i++] = c;
       };
       (append(Strings), ...);
       arr1[len] = 0;

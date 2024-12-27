@@ -540,9 +540,28 @@ namespace cmdr::chrono {
   template<typename Clock = std::chrono::system_clock, bool GMT = false>
   inline std::tm time_point_2_tm(typename Clock::time_point const tp) {
     auto time_now = Clock::to_time_t(tp);
-    if (GMT)
+    if (GMT) {
+#if defined(_WIN32) || defined(_WIN64)
+      struct tm tm1;
+      errno_t err;
+      err = _gmtime64_s( &tm1, &time_now );
+      if (!err) {
+        return tm1;
+      }
+      return tm1;
+#else
       return *std::gmtime(&time_now);
+#endif
+    }
+#if defined(_WIN32) || defined(_WIN64)
+    std::tm tm1;
+    time_t now = time_t{0};
+    localtime_s(&tm1, &now);
+    return tm1;
+#else
+    auto time_now = Clock::to_time_t(tp);
     return *std::localtime(&time_now);
+#endif
   }
 
   template<typename Clock = std::chrono::system_clock, bool GMT = false>
@@ -565,9 +584,21 @@ namespace cmdr::chrono {
     if (tt == -1)
       return os;
     std::tm *tm{nullptr};
-    if (iom_::has(iom_::fmtflags::gmt_or_local))
+    if (iom_::has(iom_::fmtflags::gmt_or_local)) {
+#if defined(_WIN32) || defined(_WIN64)
+      struct tm tm1;
+      __int64 ltime;
+      errno_t err;
+      _time64( &ltime );
+      err = _gmtime64_s( &tm1, &ltime );
+      if (!err) {
+        // printf("Invalid Argument to _gmtime64_s.");
+        tm = &tm1;
+      }
+#else
       tm = std::gmtime(&tt); // GMT (UTC)
-    else {                   // if (iom_::has(iom_::fmtflags::local))
+#endif
+    } else {                   // if (iom_::has(iom_::fmtflags::local))
 #if defined(_WIN32) || defined(_WIN64)
       std::tm tm1;
       time_t now = time_t{0};
@@ -761,17 +792,33 @@ namespace cmdr::chrono {
   inline std::ostream &clock::serialize(std::ostream &os, const char *format) const {
     using iom_     = cmdr::chrono::iom;
     // using tp = std::chrono::time_point<_Clock, _Duration>;
-    std::time_t tt = std::chrono::system_clock::to_time_t(_now);
+    // std::time_t tt;
     std::tm *tm;
-    if (iom_::has(iom_::fmtflags::gmt_or_local))
-      tm = std::gmtime(&tt);    // GMT (UTC)
-    else {                   // if (iom_::has(iom_::fmtflags::local))
+    if (iom_::has(iom_::fmtflags::gmt_or_local)) {
+#if defined(_WIN32) || defined(_WIN64)
+      struct tm tm1;
+      __int64 ltime;
+      errno_t err;
+      _time64( &ltime );
+      err = _gmtime64_s( &tm1, &ltime );
+      if (!err) {
+        tm = &tm1;
+      } else {
+        // printf("Invalid Argument to _gmtime64_s.");
+        tm = &tm1;
+      }
+#else
+      const auto tt = std::chrono::system_clock::to_time_t(_now);
+      tm = std::gmtime(&tt); // GMT (UTC)
+#endif
+    } else {                   // if (iom_::has(iom_::fmtflags::local))
 #if defined(_WIN32) || defined(_WIN64)
       std::tm tm1;
       time_t now = time_t{0};
       localtime_s(&tm1, &now);
       tm = &tm1;
 #else
+      const auto tt = std::chrono::system_clock::to_time_t(_now);
       tm = std::localtime(&tt); // Locale time-zone, usually UTC by default.
 #endif
     }
@@ -779,15 +826,15 @@ namespace cmdr::chrono {
     //     tm = std::gmtime(&tt); //GMT (UTC)
 
     if (iom_::has(iom_::fmtflags::ns)) {
-      auto _nsec = in_nsec();
+      auto const _nsec = in_nsec();
       os << std::put_time(tm, format) << '.' << std::setfill('0')
          << std::setw(9) << _nsec;
     } else if (iom_::has(iom_::fmtflags::us)) {
-      auto _nsec = in_nsec();
+      auto const _nsec = in_nsec();
       os << std::put_time(tm, format) << '.' << std::setfill('0')
          << std::setw(6) << (_nsec / 1000);
     } else if (iom_::has(iom_::fmtflags::ms)) {
-      auto _nsec = in_nsec();
+      auto const _nsec = in_nsec();
       os << std::put_time(tm, format) << '.' << std::setfill('0')
          << std::setw(3) << (_nsec / 1'000'000);
     } else {
@@ -842,13 +889,31 @@ namespace cmdr::chrono {
     typename Clock::time_point n{};
 
     std::tm tm;
-    auto now      = Clock::now();
-    auto time_now = Clock::to_time_t(now);
-    if (GMT)
+    if (GMT) {
+#if defined(_WIN32) || defined(_WIN64)
+      __int64 ltime;
+      errno_t err;
+      _time64( &ltime );
+      err = _gmtime64_s( &tm, &ltime );
+      // if (err) {
+      //   // printf("Invalid Argument to _gmtime64_s.");
+      // }
+#else
+      auto now      = Clock::now();
+      auto time_now = Clock::to_time_t(now);
       tm = *std::gmtime(&time_now);
-    else
+#endif
+    } else {
+#if defined(_WIN32) || defined(_WIN64)
+      time_t now = time_t{0};
+      localtime_s(&tm, &now);
+#else
+      auto now      = Clock::now();
+      auto time_now = Clock::to_time_t(now);
       tm = *std::localtime(&time_now);
-
+#endif
+    }
+    
     if (try_parse_by(tm, str,
                      "%Y-%m-%d", "%Y/%m/%d", "%H:%M:%S",
                      "%Y-%m-%d %H:%M:%S", "%Y/%m/%d %H:%M:%S")) {

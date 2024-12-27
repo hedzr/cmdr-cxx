@@ -120,8 +120,14 @@ void test_cpp_style(std::chrono::system_clock::time_point &now, std::tm &now_tm)
     //    int tm_isdst;       // daylight saving time
     // };
 
-    time_t theTime   = time(NULL);
-    struct tm *aTime = localtime(&theTime);
+    time_t const theTime   = time(nullptr);
+#if defined(_WIN32) || defined(_WIN64)
+    struct tm tm1;
+    localtime_s(&tm1, &theTime);
+    auto *aTime = &tm1;
+#else
+    auto *aTime = std::localtime(&theTime);
+#endif
 
     std::cout << days.count() << " days since epoch or "
               << days.count() / 365.2524 << " years since epoch. The time is now "
@@ -155,9 +161,14 @@ void test_cpp_style(std::chrono::system_clock::time_point &now, std::tm &now_tm)
 }
 
 void test_cpp_style(std::chrono::system_clock::time_point &now) {
-  std::time_t now_tt = std::chrono::system_clock::to_time_t(now);
-  std::tm now_tm     = *std::localtime(&now_tt);
-  test_cpp_style(now, now_tm);
+  std::time_t const theTime = std::chrono::system_clock::to_time_t(now);
+#if defined(_WIN32) || defined(_WIN64)
+  struct tm tm1;
+  localtime_s(&tm1, &theTime);
+#else
+  auto tm1 = *std::localtime(&theTime);
+#endif
+  test_cpp_style(now, tm1);
 }
 
 void test_time_now() {

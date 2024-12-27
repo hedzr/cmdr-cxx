@@ -94,7 +94,7 @@ namespace cmdr::process {
 
         // Make a copy because CreateProcess needs to modify string buffer
         char cmdline_full[MAX_PATH];
-        strncpy(cmdline_full, cmdline.c_str(), MAX_PATH);
+        strncpy_s(cmdline_full, MAX_PATH, cmdline.c_str(), MAX_PATH);
         cmdline_full[MAX_PATH - 1] = 0;
 
         success                    = CreateProcess(

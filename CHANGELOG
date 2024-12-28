@@ -11,8 +11,9 @@
   - upgraded to catch2 3.7.1+;
   - improved compiler detectors and `-#`/`-V` outputs;
   - improved typo/lint pieces;
-  - improved macro defs: fix _countof(); added offsetof(); ...
+  - improved macro defs - fix _countof(); added offsetof(); ...
   - cleanup
+  - c++20 ready
 
 - v0.5.11 - simple updates to follow the newest devenv
 - v0.5.9 - fixed `deps-cmdr11.cmake` for you, added `CMDR_NO_3RDPARTY` option to disable importing and linking with 3rd-party libraries

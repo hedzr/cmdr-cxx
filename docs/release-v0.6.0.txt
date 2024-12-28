@@ -1,0 +1,13 @@
+
+- v0.6.0
+  - improved load-cmdr-cxx.cmake for cmdr-cxx users;
+  - updated gh action scripts;
+  - fix windows build again;
+  - upgraded cmake/ scripts;
+    - downward compatible with python 3.8-;
+  - upgraded to catch2 3.7.1+;
+  - improved compiler detectors and `-#`/`-V` outputs;
+  - improved typo/lint pieces;
+  - improved macro defs - fix _countof(); added offsetof(); ...
+  - cleanup
+  - c++20 ready

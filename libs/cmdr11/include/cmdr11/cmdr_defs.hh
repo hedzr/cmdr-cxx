@@ -487,6 +487,42 @@ template<typename T, size_t N>
 #endif // _COUNTOF_DEFINED
 
 
+#if !defined(_OFFSETOF_DEFINED)
+#define _OFFSETOF_DEFINED
+#ifndef offsetof
+#define offsetof(type, field) ((size_t) &((type *) 0)->field)
+#endif
+#endif // _OFFSETOF_DEFINED
+
+
+#if !defined(NORETURN) && !defined(ALIGNED) && !defined(PRINTF_LIKE)
+#ifdef _MSC_VER
+#define NORETURN __declspec(noreturn)
+#define ALIGNED(x) __declspec(align(x))
+#define PRINTF_LIKE(x, y)
+#else
+#define NORETURN __attribute__((noreturn))
+#define ALIGNED(x) __attribute__((aligned(x)))
+#define PRINTF_LIKE(x, y) __attribute__((format(printf, (x), (y))))
+#endif
+#endif // !defined(NORETURN) && !defined(ALIGNED) && !defined(PRINTF_LIKE)
+
+
+#if !defined(IS_DIRSEP) && !defined(IS_ABSPATH) && !defined(PATHCMP) && !defined(PATHSEP)
+#ifdef _WIN32
+#define IS_DIRSEP(c) (c == '/' || c == '\\')
+#define IS_ABSPATH(p) (IS_DIRSEP(p[0]) || (p[0] && p[1] == ':' && IS_DIRSEP(p[2])))
+#define PATHCMP stricmp
+#define PATHSEP ";"
+#else
+#define IS_DIRSEP(c) (c == '/')
+#define IS_ABSPATH(p) IS_DIRSEP(p[0])
+#define PATHCMP strcmp
+#define PATHSEP ":"
+#endif
+#endif // !defined(IS_DIRSEP) && !defined(IS_ABSPATH) && !defined(PATHCMP) && !defined(PATHSEP)
+
+
 //
 
 #if !defined(HZ_HASH_COMBINE) && HZ_HASH_COMBINE != 1

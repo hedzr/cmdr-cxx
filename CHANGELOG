@@ -2,6 +2,18 @@
 
 ## Status
 
+- v0.6.0
+  - improved load-cmdr-cxx.cmake for cmdr-cxx users;
+  - updated gh action scripts;
+  - fix windows build again;
+  - upgraded cmake/ scripts;
+    - downward compatible with python 3.8-;
+  - upgraded to catch2 3.7.1+;
+  - improved compiler detectors and `-#`/`-V` outputs;
+  - improved typo/lint pieces;
+  - improved macro defs: fix _countof(); added offsetof(); ...
+  - cleanup
+
 - v0.5.11 - simple updates to follow the newest devenv
 - v0.5.9 - fixed `deps-cmdr11.cmake` for you, added `CMDR_NO_3RDPARTY` option to disable importing and linking with 3rd-party libraries
 - v0.5.8 - fixed unused `requires` in cmdr-chrono.hh

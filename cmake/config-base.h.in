@@ -75,23 +75,39 @@
 
 /* build info */
 
+#if !defined(BUILD_TIMESTAMP) && !defined(BUILD_HOST_NAME) 
 #define BUILD_HOST_NAME         xT("@CMAKE_HOST_SYSTEM_NAME@")
 #define BUILD_HOST_CPU          xT("@CMAKE_HOST_SYSTEM_PROCESSOR@")
 #define BUILD_HOST_VERSION      xT("@CMAKE_HOST_SYSTEM_VERSION@")
 #define BUILD_HOST              xT("@CMAKE_HOST_SYSTEM@")
 #define BUILD_DISTRO            xT("@DISTRO_NAME@")    /* Just for Linux */
 #define BUILD_TIMESTAMP         xT("@BUILD_TIMESTAMP@")
+#endif
 
 /* build options */
 
+#if !defined(USE_CONAN)
 #cmakedefine01 USE_CONAN
+#endif
+#if !defined(USE_VCPKG)
 #cmakedefine01 USE_VCPKG
+#endif
 
+#if !defined(ENABLE_CCACHE)
 #cmakedefine01 ENABLE_CCACHE
+#endif
+#if !defined(ENABLE_EXAMPLES)
 #cmakedefine01 ENABLE_EXAMPLES
+#endif
+#if !defined(ENABLE_TESTS)
 #cmakedefine01 ENABLE_TESTS
+#endif
+#if !defined(ENABLE_AUTOMATE_TESTS)
 #cmakedefine01 ENABLE_AUTOMATE_TESTS
+#endif
+#if !defined(ENABLE_PPPM_WARNINGS)
 #cmakedefine01 ENABLE_PPPM_WARNINGS
+#endif
 
 #cmakedefine01 ${PROJ_MACRO_PREFIX}_BUILD_TESTS_EXAMPLES
 #cmakedefine01 ${PROJ_MACRO_PREFIX}_BUILD_DOCS
@@ -118,6 +134,9 @@
 
 /* env tests */
 
+
+#if !defined(_HZCXX_ENV_TEST)
+#define ___HZCXX_ENV_TEST
 
 /* Define to 1 if you have the `BSDgettimeofday' function. */
 #undef HAVE_BSDGETTIMEOFDAY
@@ -211,7 +230,7 @@
 #cmakedefine HAVE_EX_UNISTD_H
 
 
-/**/
+#endif /* ___HZCXX_ENV_TEST */
 
 
 #endif  //__@PROJECT_MACRO_PREFIX@_CONFIG_BASE_H

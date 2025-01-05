@@ -2,6 +2,11 @@
 
 ## Status
 
+- v0.6.1
+  - improved cmake/config-base.h.in;
+  - improved gh action scripts;
+  - c++20 ready
+
 - v0.6.0
   - improved load-cmdr-cxx.cmake for cmdr-cxx users;
   - updated gh action scripts;

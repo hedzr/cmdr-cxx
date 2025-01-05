@@ -1,0 +1,5 @@
+
+- v0.6.1
+  - improved cmake/config-base.h.in;
+  - improved gh action scripts;
+  - c++20 ready

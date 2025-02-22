@@ -345,6 +345,8 @@ jobs:
       discussions: write
 
     steps:
+      # - name: Generate Changelog
+      #   run: echo "# Good things have arrived" > ${{ github.workspace }}-CHANGELOG.txt
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v2 # https://github.com/softprops/action-gh-release
@@ -356,11 +358,12 @@ jobs:
           # release_name: Release ${{ github.ref_name }}
           draft: false
           prerelease: false
+          # body_path: ${{ github.workspace }}-CHANGELOG.txt
           generate_release_notes: true
           append_body: true
-          files: |
-            docs/release-${{ github.ref_name }}.txt
-            LICENSE
+          # files: |
+          #   docs/release-${{ github.ref_name }}.txt
+          #   LICENSE
 
       - name: Store Release url
         run: |
@@ -373,7 +376,7 @@ jobs:
   publish:
     if: contains(github.ref, 'tags/v')
     needs: release
-    name: ${{ matrix.config.name }}
+    name: publish-arifacts-${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
     strategy:
       fail-fast: false

@@ -2,6 +2,14 @@
 
 ## Status
 
+- v0.6.3
+  - add a simple-app demo app
+  - added `app::subtree(prefix)` to get the exact tree node by its dotted path key.
+  - make `sub_cmd::get()` and `arg::get()` const
+  - doc `bas::_long, _short, _aliases`
+  - doc the `app::store()`
+  - improved gh action scripts;
+
 - v0.6.1
   - improved cmake/config-base.h.in;
   - improved gh action scripts;

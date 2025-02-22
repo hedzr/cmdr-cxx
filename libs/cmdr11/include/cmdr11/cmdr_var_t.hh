@@ -882,6 +882,25 @@ namespace cmdr::vars {
       return t;
     }
 
+    bool is_null() const noexcept { return this == null_node().get(); }
+    static auto null_node() -> node_pointer { 
+      static node_pointer t{};
+      return t;
+    }
+
+    /**
+     * find and get a subtree by prefix,
+     * @param prefix 
+     * @return the exact subtree node, or null_element()
+     * @details check with is_null() to ensure a subtree had been found really.
+     * @code{c++}
+     * auto& sc = app.root().subtree(DEFAULT_CLI_KEY_PREFIX);
+     * assert(sc->is_null() == false);
+     * std::cout << sc->get_raw("test.float").as_string() << '\n'l;
+     * @endcode 
+     */
+    auto subtree(char const* prefix) -> node_pointer;
+
   private:
     void dump_tree(std::ostream &os,
                    tcolorize *c,
@@ -1109,6 +1128,11 @@ namespace cmdr::vars {
       _root.reset();
     }
 
+  public:
+    node& root() { return _root; }
+    node const& root() const { return _root; }
+    node_pointer subtree(char const* prefix) { return _root.subtree(prefix); }
+    
   private:
     node _root;
   }; // class treeT<T, small_string>

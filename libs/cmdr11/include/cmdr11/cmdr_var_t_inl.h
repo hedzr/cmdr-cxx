@@ -45,6 +45,29 @@ namespace cmdr::vars {
   //     return _get_raw(ss.str());
   // }
 
+  template<class T, class small_string>
+  inline auto nodeT<T, small_string>::subtree(char const* prefix) -> node_pointer {
+    std::shared_lock<std::shared_mutex> lock(mutex_);
+
+    auto vec = string::split(prefix, '.');
+    std::size_t upr = vec.size() - 1, idx = 0;
+    auto key = vec[idx];
+    auto ptr = this;
+    enter_child_tree:
+    for (auto &[k, v]: ptr->_children) {
+      if (key == k) {
+        ptr = v.get();
+        if (idx==upr) {
+          return v;
+        }
+        idx++;
+        key = vec[idx];
+        goto enter_child_tree;
+      }
+    }
+    
+    return null_node();
+  }
 
   template<class T, class small_string>
   inline T &nodeT<T, small_string>::_get_raw(std::string const &key) {

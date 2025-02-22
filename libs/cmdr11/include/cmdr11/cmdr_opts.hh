@@ -21,7 +21,7 @@ namespace cmdr::opt {
     sub_cmd()  = default;
     ~sub_cmd() = default;
 
-    types::option get() {
+    types::option get() const {
       return [this](cmd &c) {
         c += _cmd;
       };
@@ -124,7 +124,7 @@ namespace cmdr::opt {
 #endif
     ~opt() = default;
 
-    types::option get() {
+    types::option get() const {
       return [this](cmd &c) {
         c += _arg;
       };

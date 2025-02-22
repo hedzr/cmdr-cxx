@@ -497,7 +497,16 @@ namespace cmdr {
     std::ofstream _sa_lf; // logfile for shell auto-completion debugging
     string_array _args_cache;
 
-    //
+    /**
+     * the app's option store, which will manage all app settings.
+     * The app settings was organized as a hierarchical tree by
+     * its dotted path key.
+     *
+     * For example, a dotted path key "app.cli.test.hello-word"
+     * might point to a subcommand 'test'/'hello-word', and
+     * "app.cli.test.hello-world.count" points its option/flag
+     * "count".
+     */
     cmdr::vars::store _store;
     std::string _store_prefix{DEFAULT_KEY_PREFIX};
 

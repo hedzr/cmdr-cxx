@@ -25,9 +25,9 @@ namespace cmdr::opt {
    */
   class bas : public obj {
   protected:
-    std::string _long{};
-    std::string _short{};
-    string_array _aliases{};
+    std::string _long{}; // long title
+    std::string _short{}; // short title
+    string_array _aliases{}; // aliases titles
     std::string _desc_long{};
     std::string _description{};
     std::string _examples{};

@@ -238,7 +238,7 @@ find_package(cmdr11 REQUIRED)
 add_executable(my-app)
 target_link_libraries(my-app PRIVATE cmdr11::cmdr11)
 set_target_properties(${PROJECT_NAME}  PROPERTIES
-    CXX_STANDARD 17
+    CXX_STANDARD 20
     CXX_STANDARD_REQUIRED ON
     CXX_EXTENSIONS ON
     )

@@ -315,7 +315,7 @@ macro(define_cxx_executable_project name)
     #    debug_print_list_value(_source_files)
     #
     #    # debug_print_value(${PROJ_NAME})
-    #    set(CMAKE_CXX_STANDARD 17)
+    #    set(CMAKE_CXX_STANDARD 20)
     #    set(CMAKE_CXX_STANDARD_REQUIRED ON)
     #    set(CMAKE_CXX_EXTENSIONS ON)
     #
@@ -475,7 +475,7 @@ macro(define_cxx_library_project name)
         # debug_print_value(diclp_ARG_CXXFLAGS)
         # debug_print_list_value(diclp_ARG_SOURCES)
 
-        # set(CMAKE_CXX_STANDARD 17)
+        # set(CMAKE_CXX_STANDARD 20)
         # set(CMAKE_CXX_STANDARD_REQUIRED ON)
         # set(CMAKE_CXX_EXTENSIONS ON)
 

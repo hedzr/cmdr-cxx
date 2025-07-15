@@ -1,6 +1,6 @@
 project(test
     VERSION ${VERSION}
-    DESCRIPTION "tests - test apps for cmdr cxx11 library"
+    DESCRIPTION "tests - test apps for cmdr-cxx library"
     LANGUAGES C CXX)
 
 # ###################################

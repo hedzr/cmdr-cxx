@@ -47,7 +47,8 @@ set(VERSION_H_NAME "cmdr-version.hh")
 
 # Enable C++ Standard 17/20 here. Change it on fist configuring, or update it with new value:
 # cmake -S. -Bbuild -DCXX_STANDARD:STRING=20
-set(CXX_STANDARD 17 CACHE STRING "Define The C++ Standard, default is 17")
+# cmake -S. -Bbuild -DCXX_STANDARD:STRING=17
+set(CXX_STANDARD 20 CACHE STRING "Define The C++ Standard, default is 20")
 enable_cxx_standard(CXX_STANDARD)
 
 # if(ENABLE_TESTS)

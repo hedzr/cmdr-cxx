@@ -1,6 +1,6 @@
 project(cmdr11
     VERSION ${VERSION}
-    DESCRIPTION "libcmdr11 - cmdr cxx library for C++17"
+    DESCRIPTION "libcmdr11 - cmdr cxx library for C++17/20/23"
     LANGUAGES CXX)
 
 

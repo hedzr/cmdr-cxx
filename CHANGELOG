@@ -5,6 +5,7 @@
 - v0.6.5
   - change default build env to cxx20
   - remove template keyword for cxx20
+  - fix failure bump since window build failed
 
 - v0.6.3
   - add a simple-app demo app

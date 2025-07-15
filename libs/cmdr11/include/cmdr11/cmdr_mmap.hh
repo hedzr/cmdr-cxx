@@ -155,7 +155,7 @@ namespace cmdr::mmap {
     inline void mmaplib::connect(bool writeable, bool shareable, FILE_HANDLE fd) {
 #if defined(_WIN32)
       if (fd == INVALID_HANDLE_VALUE) {
-        std::runtime_error("");
+        throw std::runtime_error("invalid handle value (fd == INVALID_HANDLE_VALUE)");
       }
 
       hFile_    = fd;
@@ -165,7 +165,7 @@ namespace cmdr::mmap {
 
       if (hMapping_ == NULL) {
         cleanup();
-        std::runtime_error("");
+        throw std::runtime_error("CreateFileMapping failed");
       }
 
       // https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-mapviewoffile
@@ -173,14 +173,14 @@ namespace cmdr::mmap {
       UNUSED(shareable);
 #else
       if (fd == -1) {
-        std::runtime_error("");
+        throw std::runtime_error("invalid handle value (fd == -1)");
       }
 
       fd_ = fd;
       struct stat sb;
       if (fstat(fd, &sb) == -1) {
         cleanup();
-        std::runtime_error("");
+        throw std::runtime_error("fstat failed");
       }
       size_ = sb.st_size;
 
@@ -190,7 +190,7 @@ namespace cmdr::mmap {
 
       if (addr_ == MAP_FAILED) {
         cleanup();
-        std::runtime_error("");
+        throw std::runtime_error("mmap failed");
       }
     }
 

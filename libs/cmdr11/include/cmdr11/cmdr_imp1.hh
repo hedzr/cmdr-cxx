@@ -130,7 +130,7 @@ namespace cmdr::opt {
     if (_default.get() == nullptr)
       _default = std::make_shared<vars::variable>(v);
     else
-      _default->template emplace(v);
+      _default->emplace(v);
     return (*this);
   }
 

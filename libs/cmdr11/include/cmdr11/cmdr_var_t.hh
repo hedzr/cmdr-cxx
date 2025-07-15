@@ -771,7 +771,7 @@ namespace cmdr::vars {
               // sk += '.';
               // sk += end_key;
               UNUSED(end_key, ptr);
-              _indexes.template emplace(std::make_pair(key, ptr));
+              _indexes.emplace(std::make_pair(key, ptr));
               if (cb)
                 cb(key, ptr);
             },
@@ -787,7 +787,7 @@ namespace cmdr::vars {
 
         // build index
         auto ptr = (it->second);
-        _indexes.template emplace(std::make_pair(k, ptr));
+        _indexes.emplace(std::make_pair(k, ptr));
         if (cb)
           cb(key, ptr);
         return;

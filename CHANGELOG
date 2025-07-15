@@ -2,6 +2,10 @@
 
 ## Status
 
+- v0.6.5
+  - change default build env to cxx20
+  - remove template keyword for cxx20
+
 - v0.6.3
   - add a simple-app demo app
   - added `app::subtree(prefix)` to get the exact tree node by its dotted path key.

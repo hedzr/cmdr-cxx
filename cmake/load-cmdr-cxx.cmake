@@ -34,7 +34,7 @@ macro(add_cmdr_cxx_to target)
     else()
         message(STATUS "cmdr-cxx: not found, try pulling a local one...")
 
-        set(CMDR_CXX_TGT_NAME "third-cmdr-cxx")
+        set(CMDR_CXX_TGT_NAME "third-cmdr-cxx-${target}")
         include(ExternalProject)
         ExternalProject_Add(${CMDR_CXX_TGT_NAME}
             GIT_REPOSITORY https://github.com/hedzr/cmdr-cxx

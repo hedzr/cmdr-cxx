@@ -1,8 +1,9 @@
 # # TPL ## HEAD ##########
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.21) # FOR `cmake -G "Visual Studio 17 2022" -A ARM64`
+# cmake_minimum_required(VERSION 3.11)
 
 # ### INCLUDES ##########################################################
-include(${CMAKE_SOURCE_DIR}/cmake/prerequisites.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/cmake-mods/cmake/prerequisites.cmake)
 
 # use_vcpkg()
 

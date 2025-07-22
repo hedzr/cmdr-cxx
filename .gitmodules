@@ -1,0 +1,3 @@
+[submodule "cmake/cmake-mods"]
+	path = cmake/cmake-mods
+	url = https://github.com/hedzr/cmake-mods.git

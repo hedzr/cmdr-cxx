@@ -1,151 +1,486 @@
 name: CMake Build Matrix
 
-on: [ push, pull_request ]
+on:
+  push:
+    branches: [master,main]
+    tags:
+      - v*
+  pull_request:
+    branches: [master,main]
+    types: [opened, synchronize, closed]
 
 env:
-  CMAKE_VERSION: 3.29
-  NINJA_VERSION: 1.11.1
-  CCACHE_VERSION: 3.7.7
-  BUILD_TYPE: Release
+  # CMAKE_VERSION: 3.29
+  # NINJA_VERSION: 1.11.1
+  # CCACHE_VERSION: 3.7.7
+  # BUILD_TYPE: Release
   CI_RUNNING: 1
-  # VCPKG_TARGET_TRIPLET: x64-windows
+  VCPKG_TARGET_TRIPLET: x64-windows
+  # # Conan cache environment variables
+  # CONAN_SYSREQUIRES_MODE: enabled
+  # CONAN_USER_HOME: "${{ github.workspace }}/conan-cache"
+  # CONAN_USER_HOME_SHORT: "${{ github.workspace }}/conan-cache/short"
+  # # CLANG_TIDY_VERSION: "14.0.0"
+  CLANG_TIDY_VERSION: "19.1.1"
+  VERBOSE: 1
 
 jobs:
   build:
-    name: ${{ matrix.config.name }}
+    permissions:
+      contents: write
+      discussions: write
+      security-events: write
+    name: ${{ matrix.config.name }} ${{ matrix.config.build_type == 'Release' && 'rel' || 'dbg' }} ${{ matrix.config.package_generator }} ${{ matrix.config.build_shared }}
+    # runs-on: ${{ matrix.config.os }}
+    # name: ${{matrix.os}} ${{matrix.compiler}} ${{matrix.build_type}} ${{matrix.packaging_maintainer_mode == 'ON' && '(maintainer mode)' || ''}}
     runs-on: ${{ matrix.config.os }}
     strategy:
       fail-fast: false
       matrix:
         config:
-          - {
-            name: "Windows Latest MSVC", artifact: "Windows-MSVC.7z",
-            os: windows-latest,
-            cc: "cl", cxx: "cl",
-            environment_script: "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/vcvars64.bat",
-            tcf: "-D CMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+          # - {
+          #   name: "Windows Latest MSVC", artifact: ".zip",
+          #   os: windows-latest,
+          #   compiler: msvc,
+          #   gcov_executable: gcov-14,
+          #   enable_ipo: OFF,
+          #   build_type: Release,
+          #   generator: "Visual Studio 17 2022",
+          #   packaging_maintainer_mode: OFF,
+          #   package_generator: ZIP,
+          #   build_shared: OFF,
+          #   cc: "cl", cxx: "cl",
+          #   environment_script: "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/vcvars64.bat",
+          #   tcf: "-D CMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake"
 
-              # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/windows/Windows2022-Readme.md
-          }
-          #- {
-          #  name: "Windows Latest MinGW", artifact: "Windows-MinGW.7z",
-          #  os: windows-latest,
-          #  cc: "gcc", cxx: "g++"
-          #}
+          #   # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/windows/Windows2022-Readme.md
+          # }
           - {
-            name: "Ubuntu Latest GCC", artifact: "Linux.7z",
+            name: "Ubuntu Latest GCC", artifact: ".deb",
             os: ubuntu-latest,
-            cc: "gcc-12", cxx: "g++-12"
-            # cc: "gcc-13", cxx: "g++-13"
-            # cc: "gcc-14", cxx: "g++-14"
+            compiler: gcc-14,
+            gcov_executable: OpenCppCoverage.exe,
+            enable_ipo: On,
+            build_type: Release,
+            generator: "Ninja Multi-Config", # generator: "Unix Makefiles"
+            packaging_maintainer_mode: ON,
+            package_generator: DEB,
+            build_shared: OFF,
+            cc: "gcc-14", cxx: "g++-14" # for 22.04, gcc-10, 11, 12 are valid.
+              # cc: "gcc-13", cxx: "g++-13"
+              # cc: "gcc-14", cxx: "g++-14"
 
+              # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/ubuntu/Ubuntu2204-Readme.md
               # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/ubuntu/Ubuntu2404-Readme.md
           }
           - {
-            name: "macOS Latest Arm64", artifact: "macOS.7z",
-            os: macos-latest,
+            name: "Ubuntu Latest LLVM", artifact: ".tbz2",
+            os: ubuntu-latest,
+            compiler: llvm-19.1.1,
+            gcov_executable: "llvm-cov gcov",
+            enable_ipo: On,
+            build_type: Debug,
+            generator: "Ninja Multi-Config",
+            packaging_maintainer_mode: ON,
+            package_generator: TBZ2,
+            build_shared: OFF,
             cc: "clang", cxx: "clang++"
-
-              # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/macos/macos-14-arm64-Readme.md
-              # https://github.com/actions/runner-images/releases/tag/macos-14-arm64%2F20240827.4
           }
-          # macOS Latest Intel not support in free plan
           # - {
-          #   name: "macOS Latest Intel", artifact: "macOS-intel.7z",
-          #   os: macos-latest-large,
+          #   name: "macOS Latest Arm64", artifact: ".dmg",
+          #   os: macos-latest,
+          #   compiler: clang,
+          #   gcov_executable: gcov-14,
+          #   enable_ipo: On,
+          #   build_type: release,
+          #   generator: "Ninja Multi-Config",
+          #   packaging_maintainer_mode: ON,
+          #   package_generator: DragNDrop, # for DMG: "DragNDrop", for PKG: "Bundle"
+          #   build_shared: OFF,
           #   cc: "clang", cxx: "clang++"
-          #
-          #     # https://github.com/actions/runner-images
+
+          #     # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/macos/macos-14-arm64-Readme.md
+          #     # https://github.com/actions/runner-images/releases/tag/macos-14-arm64%2F20240827.4
           # }
+          # # - {
+          # #   name: "macOS Latest Arm64", artifact: "macOS.7z",
+          # #   os: macos-latest,
+          # #   compiler: llvm-19.1.1,
+          # #   cc: "clang", cxx: "clang++"
+          # # }
+          # # macOS Latest Intel not support in free plan
+          # # - {
+          # #   name: "macOS Latest Intel", artifact: "macOS-intel.7z",
+          # #   os: macos-latest-large,
+          # #   cc: "clang", cxx: "clang++"
+          # #
+          # #     # https://github.com/actions/runner-images
+          # # }
+
+        # os:
+        #   # - windows-2022
+        #   # - ubuntu-20.04
+        #   # - ubuntu-24.04
+        #   - ubuntu-latest
+        #   - macos-latest
+        #   - windows-latest
+        #   # - macos-14 # arm64
+        #   # - macos-13 # intel
+        # compiler:
+        #   # - llvm-14.0.0
+        #   # - gcc-11
+        #   # # - llvm
+        #   # # - gcc
+        #   # # you can specify the version after `-` like `llvm-18`.
+        #   - llvm-19.1.1
+        #   - gcc-14
+        # generator:
+        #   - "Ninja Multi-Config"
+        # build_type:
+        #   - Release
+        #   - Debug
+        # # developer_mode:
+        # #   - ON
+        # #   - OFF
+        # packaging_maintainer_mode:
+        #   - ON
+        #   - OFF
+        # build_shared:
+        #   - OFF
+
+        # exclude:
+        #   # mingw is determined by this author to be too buggy to support
+        #   - os: "windows-2022"
+        #     compiler: gcc-11
+        #   # mingw is determined by this author to be too buggy to support
+        #   - os: windows-latest
+        #     compiler: gcc-14
+
+        #   - os: windows-latest
+        #     compiler: llvm-19.1.1
+        #   # - os: windows-latest
+        #   #   developer_mode: ON
+        #   - os: windows-latest
+        #     build_type: Debug
+        #   - os: windows-latest
+        #     compiler: gcc-11
+        #   - os: windows-latest
+        #     compiler: gcc-14
+
+        #   - os: macos-latest
+        #     compiler: gcc-11
+        #   - os: macos-latest
+        #     compiler: gcc-14
+        #   - os: macos-latest
+        #     compiler: llvm-19.1.1
+        #   - os: macos-latest
+        #     build_type: Debug
+
+        #   - os: macos-13
+        #     compiler: gcc-11
+        #   - os: macos-13
+        #     compiler: gcc-14
+        #   - os: macos-13
+        #     compiler: llvm-19.1.1
+        #   - os: macos-13
+        #     build_type: Debug
+        #   - os: macos-14
+        #     compiler: gcc-11
+        #   - os: macos-14
+        #     compiler: gcc-14
+        #   - os: macos-14
+        #     compiler: llvm-19.1.1
+        #   - os: macos-14
+        #     build_type: Debug
+        #   - os: macos-10.15
+        #     compiler: gcc-11
+        #   - os: macos-10.15
+        #     compiler: gcc-14
+        #   - os: macos-10.15
+        #     compiler: llvm-19.1.1
+        #   - os: macos-10.15
+        #     build_type: Debug
+
+        #   - os: ubuntu-latest
+        #     compiler: llvm-19.1.1
+
+        #   # - os: ubuntu-latest
+        #   #   developer_mode: ON
+        #   # - os: ubuntu-latest
+        #   #   build_type: Debug
+
+        # include:
+        #   # # Add appropriate variables for gcov version required. This will intentionally break
+        #   # # if you try to use a compiler that does not have gcov set
+        #   # - compiler: gcc-11
+        #   #   gcov_executable: gcov
+        #   - compiler: gcc-14
+        #     gcov_executable: gcov-14
+        #     enable_ipo: On
+
+        #   # - compiler: llvm-14.0.0
+        #   #   gcov_executable: "llvm-cov gcov"
+        #   - compiler: llvm-19.1.1
+        #     enable_ipo: Off
+        #     gcov_executable: "llvm-cov gcov"
+
+        #   - os: macos-latest
+        #     enable_ipo: Off
+
+        #   # Set up preferred package generators, for given build configurations
+        #   - build_type: Release
+        #     packaging_maintainer_mode: On
+        #     # developer_mode: OFF
+        #     package_generator: TBZ2
+
+        #   # - os: macOS-14
+        #   #   build_type: Release
+        #   #   developer_mode: OFF
+        #   #   package_generator: DMG
+
+        #   # - os: macOS-13
+        #   #   build_type: Release
+        #   #   developer_mode: OFF
+        #   #   package_generator: DMG
+
+        #   - os: ubuntu-latest
+        #     build_type: Release
+        #     developer_mode: OFF
+        #     package_generator: DEB
+
+        #   # Windows msvc builds
+        #   - os: windows-latest
+        #     compiler: msvc
+        #     generator: "Visual Studio 17 2022"
+        #     build_type: Debug
+        #     packaging_maintainer_mode: On
+        #     enable_ipo: On
+
+        #   # - os: windows-latest
+        #   #   compiler: msvc
+        #   #   generator: "Visual Studio 17 2022"
+        #   #   build_type: Release
+        #   #   packaging_maintainer_mode: On
+        #   #   enable_ipo: On
+
+        #   # - os: windows-latest
+        #   #   compiler: msvc
+        #   #   generator: "Visual Studio 17 2022"
+        #   #   build_type: Debug
+        #   #   packaging_maintainer_mode: Off
+
+        #   - os: windows-latest
+        #     compiler: msvc
+        #     generator: "Visual Studio 17 2022"
+        #     build_type: Release
+        #     packaging_maintainer_mode: Off
+        #     package_generator: ZIP
+
+        #   # - os: windows-latest
+        #   #   compiler: msvc
+        #   #   generator: "Visual Studio 17 2022"
+        #   #   build_type: Release
+        #   #   packaging_maintainer_mode: On
+        #   #   enable_ipo: On
+        #   #   build_shared: On
+
+        #   # - os: windows-2022
+        #   #   compiler: msvc
+        #   #   generator: "Visual Studio 17 2022"
+        #   #   build_type: Release
+        #   #   developer_mode: OFF
+        #   #   package_generator: ZIP
+
+        #   # - os: windows-2022
+        #   #   compiler: msvc
+        #   #   generator: "Visual Studio 17 2022"
+        #   #   build_type: Debug
+        #   #   developer_mode: On
+
+        #   # - os: windows-2022
+        #   #   compiler: msvc
+        #   #   generator: "Visual Studio 17 2022"
+        #   #   build_type: Release
+        #   #   developer_mode: On
+
+        #   # - os: windows-2022
+        #   #   compiler: msvc
+        #   #   generator: "Visual Studio 17 2022"
+        #   #   build_type: Debug
+        #   #   developer_mode: Off
+
+        #   # # This exists solely to make sure a non-multiconfig build works
+        #   # - os: ubuntu-latest
+        #   #   compiler: gcc-14
+        #   #   generator: "Unix Makefiles"
+        #   #   build_type: Debug
+        #   #   gcov_executable: gcov-14
+        #   #   packaging_maintainer_mode: On
+        #   #   enable_ipo: Off
+        #   #
+        #   # # ubuntu-20.04 runner could get stuck on github ...
+        #   # # # This exists solely to make sure a non-multiconfig build works
+        #   # # - os: ubuntu-20.04
+        #   # #   compiler: gcc-11
+        #   # #   generator: "Unix Makefiles"
+        #   # #   build_type: Debug
+        #   # #   gcov_executable: gcov
+        #   # #   developer_mode: On
+
+        # config:
+        #   - {
+        #     name: "Windows Latest MSVC", artifact: "Windows-MSVC.7z",
+        #     os: windows-latest,
+        #     cc: "cl", cxx: "cl",
+        #     environment_script: "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/vcvars64.bat",
+        #     tcf: "-D CMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        #
+        #     # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/windows/Windows2022-Readme.md
+        #   }
+        #   #- {
+        #   #  name: "Windows Latest MinGW", artifact: "Windows-MinGW.7z",
+        #   #  os: windows-latest,
+        #   #  cc: "gcc", cxx: "g++"
+        #   #}
+        #   - {
+        #     name: "Ubuntu Latest GCC", artifact: "Linux.7z",
+        #     os: ubuntu-latest,
+        #     cc: "gcc-12", cxx: "g++-12" # for 22.04, gcc-10, 11, 12 are valid.
+        #       # cc: "gcc-13", cxx: "g++-13"
+        #       # cc: "gcc-14", cxx: "g++-14"
+        #
+        #       # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/ubuntu/Ubuntu2204-Readme.md
+        #       # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/ubuntu/Ubuntu2404-Readme.md
+        #   }
+        #   - {
+        #     name: "macOS Latest Arm64", artifact: "macOS.7z",
+        #     os: macos-latest,
+        #     cc: "clang", cxx: "clang++"
+        #
+        #       # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/macos/macos-14-arm64-Readme.md
+        #       # https://github.com/actions/runner-images/releases/tag/macos-14-arm64%2F20240827.4
+        #   }
+        #   # macOS Latest Intel not support in free plan
+        #   # - {
+        #   #   name: "macOS Latest Intel", artifact: "macOS-intel.7z",
+        #   #   os: macos-latest-large,
+        #   #   cc: "clang", cxx: "clang++"
+        #   #
+        #   #     # https://github.com/actions/runner-images
+        #   # }
 
 
     steps:
-      - uses: actions/checkout@v1
+      - name: Check for llvm version mismatches
+        if: ${{ contains(matrix.config.compiler, 'llvm') && !contains(matrix.config.compiler, env.CLANG_TIDY_VERSION) }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.setFailed('There is a mismatch between configured llvm compiler and clang-tidy version chosen')
 
-      - name: Install gcc 10+ for Ubuntu-18
-        #if: matrix.os == 'ubuntu-latest'
-        if: runner.os == 'Linux' # Linux, Windows, macOS
+      # https://github.com/actions/checkout
+      - uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+          # fetch-depth: 0
+          # ref: my-branch
+
+      # - name: Install dependencies
+      #   if: matrix.os == 'ubuntu-latest'
+      #   # if: runner.os == 'Linux' # Linux, Windows, macOS
+      #   run: |
+      #     sudo apt-get update  # ensure indexes are up-to-date
+      #     sudo apt-get install -y libboost-dev
+
+      - name: Project Name
+        uses: cardinalby/export-env-action@v2
+        with:
+          envFile: '.github/constants.env'
+
+      - name: Set VERSION variable from tag
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
         run: |
-          which gcc && gcc --version
-          which cmake && cmake --version
-          echo
-          echo
-          # if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-          if [[ "$(gcc --version|head -1)" != *10.* ]]; then
-            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-            sudo apt update
-            sudo apt install -y gcc-10 g++-10
+          VERSION="${{ github.event.release.tag_name }}"
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "PROJECT:                      $PROJECT_NAME"
+          echo "VERSION:                      $VERSION"
+          echo "RELEASE TAGNAME:              ${{ github.event.release.tag_name }}"
+
+      - name: Set VERSION variable from tag
+        if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
+        run: |
+          if [ -f .version.cmake ]; then
+            VERSION="v$(cat .version.cmake|grep -Eo 'VERSION \d+\.\d+\.\d+'|awk '{print $2}')"
+          else
+            VERSION="$(git describe --tags --abbrev=0 2>/dev/null || echo v0.0.1)"
           fi
-          # fi
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "PROJECT:                      $PROJECT_NAME"
+          echo "VERSION:                      $VERSION"
+          echo "RELEASE TAGNAME:              ${{ github.event.release.tag_name }}"
 
-
-      - name: Download Ninja and CMake
-        shell: cmake -P {0}
-        run: |
-          set(cmake_version $ENV{CMAKE_VERSION})
-          set(ninja_version $ENV{NINJA_VERSION})
-          message(STATUS "Using host CMake version: ${CMAKE_VERSION}")
-          if ("${{ runner.os }}" STREQUAL "Windows")
-            set(ninja_suffix "win.zip")
-            set(cmake_suffix "win64-x64.zip")
-            set(cmake_dir "cmake-${cmake_version}-win64-x64/bin")
-          elseif ("${{ runner.os }}" STREQUAL "Linux")
-            set(ninja_suffix "linux.zip")
-            set(cmake_suffix "Linux-x86_64.tar.gz")
-            set(cmake_dir "cmake-${cmake_version}-Linux-x86_64/bin")
-          elseif ("${{ runner.os }}" STREQUAL "macOS")
-            set(ninja_suffix "mac.zip")
-            set(cmake_suffix "Darwin-x86_64.tar.gz")
-            set(cmake_dir "cmake-${cmake_version}-Darwin-x86_64/CMake.app/Contents/bin")
-          endif()
-          set(ninja_url "https://github.com/ninja-build/ninja/releases/download/v${ninja_version}/ninja-${ninja_suffix}")
-          file(DOWNLOAD "${ninja_url}" ./ninja.zip SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./ninja.zip)
-          set(cmake_url "https://github.com/Kitware/CMake/releases/download/v${cmake_version}/cmake-${cmake_version}-${cmake_suffix}")
-          file(DOWNLOAD "${cmake_url}" ./cmake.zip SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./cmake.zip)
-          # Add to PATH environment variable
-          file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}/${cmake_dir}" cmake_dir)
-          set(path_separator ":")
-          if ("${{ runner.os }}" STREQUAL "Windows")
-            set(path_separator ";")
-          endif()
-          file(APPEND "$ENV{GITHUB_PATH}" "$ENV{GITHUB_WORKSPACE}${path_separator}${cmake_dir}")
-          if (NOT "${{ runner.os }}" STREQUAL "Windows")
-            execute_process(
-              COMMAND chmod +x ninja
-              COMMAND chmod +x ${cmake_dir}/cmake
-            )
-          endif()
-      - name: Download ccache
-        id: ccache
-        shell: cmake -P {0}
-        run: |
-          set(ccache_url "https://github.com/cristianadam/ccache/releases/download/v$ENV{CCACHE_VERSION}/${{ runner.os }}.tar.xz")
-          file(DOWNLOAD "${ccache_url}" ./ccache.tar.xz SHOW_PROGRESS)
-          execute_process(COMMAND ${CMAKE_COMMAND} -E tar xvf ./ccache.tar.xz)
-      - name: Prepare ccache timestamp
-        id: ccache_cache_timestamp
-        shell: bash
-        run: |
-          # string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
-          # message("::set-output name=timestamp::${current_date}")
-          echo "timestamp=${{ matrix.os }}-${{ matrix.type }}" >> $GITHUB_STATE
-      - name: ccache cache files
+      - name: Cache/CCache
         uses: actions/cache@v4
         with:
-          path: .ccache
-          key: ${{ matrix.config.name }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          path: |
+            ./build/
+            ~/vcpkg
+            ~/.cache/vcpkg/archives
+            ${{ env.LOCALAPPDATA }}/vcpkg/archives
+            ${{ env.APPDATA }}/vcpkg/archives
+            ${{ env.XDG_CACHE_HOME }}/vcpkg/archives
+            ~/.cache/ccache
+            ~/.ccache
+            ~/.config/ccache
+            ~/Library/Caches/ccache
+            ${{ env.LOCALAPPDATA }}/ccache
+            ${{ env.XDG_CACHE_HOME }}/ccache
+          key: ${{ runner.os }}-${{ matrix.config.build_type }}-${{ matrix.config.compiler }}-${{ hashFiles('**/CMakeLists.txt', './vcpkg.json') }}
           restore-keys: |
-            ${{ matrix.config.name }}-ccache-1-
+            ${{ runner.os }}-${{ matrix.config.build_type }}-
 
+      # https://github.com/aminya/setup-cpp
+      - name: Setup Cpp
+        uses: aminya/setup-cpp@v1
+        with:
+          # compiler: llvm    # llvm, gcc, msvc, apple-clang, vcvarsall
+          compiler:  ${{ matrix.config.compiler }}
+          vcvarsall: ${{ contains(matrix.config.os, 'windows' )}}
+          cmake: true       # cmake, ninja, meson, make, task, bazel
+          ninja: true       #
+          # make: false       #
+          conan: true       # vcpkg, conan, choco, brew, apt-fast, nala, git, setup-cpp
+          vcpkg: true       #
+          cppcheck: true    # instead of `true`, which chooses the default version, you can pass a specific version.
+          ccache: true      #
+          clangtidy: ${{ env.CLANG_TIDY_VERSION }}
+          # clang-tidy: true  # clang-tidy, clang-format, cppcheck, cpplint, flawfinder, lizard, infer, cmakelang, cmake-format, cmake-lint
+          doxygen: true     #
+          graphviz: true    #
+          gcovr: ${{ ! contains(matrix.config.os, 'windows' )}}
+          opencppcoverage: ${{ contains(matrix.config.os, 'windows' )}}
+          # gcovr, opencppcoverage, kcov
+          # python, powershell, sevenzip, tar
 
+      # - name: Cleanup Conan system packages (they are not properly cached)
+      #   run: |
+      #     conan remove -f '*/system'
+
+      # # https://github.com/marketplace/actions/setup-ccache-action
+      # # https://github.com/Chocobo1/setup-ccache-action
+      # - name: Setup ccache
+      #   uses: Chocobo1/setup-ccache-action@v1
+      #   with:
+      #     update_packager_index: false
 
       - name: container env tests
-        if: matrix.os != 'windows-latest'
+        # if: matrix.os != 'windows-latest'
+        if: ${{ ! contains(matrix.config.os, 'windows') }}
         shell: bash
         run: |
           echo "RUNNER_OS:                    $RUNNER_OS"
+          echo "VERSION:                      $VERSION"
+          echo "RELEASE TAGNAME:              ${{ github.event.release.tag_name }}"
           echo "uname -p (processor):         $(uname -p)"
           echo "uname -s (kernel name):       $(uname -s)"
           echo "uname -r (kernel release):    $(uname -r)"
@@ -155,9 +490,13 @@ jobs:
             echo "uname -i (hardware platform): $(uname -i)"
           fi
           echo "uname -o (operation system):  $(uname -o)"
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            cat /etc/*-release
+          fi
 
       - name: cmake env tests
-        if: matrix.os != 'windows-latest'
+        # if: matrix.os != 'windows-latest'
+        # if: ${{ ! contains(matrix.os, 'windows') }}
         shell: cmake -P {0}
         run: |
           message(STATUS "PROCESSOR_ARCHITEW6432        = ${PROCESSOR_ARCHITEW6432}")
@@ -178,276 +517,132 @@ jobs:
           message(STATUS "CMAKE_HOST_BSD                = ${CMAKE_HOST_BSD}")
           message(STATUS "CMAKE_LIBRARY_ARCHITECTURE    = ${CMAKE_LIBRARY_ARCHITECTURE}")
 
-      - name: Install 7zip
+      # make sure coverage is only enabled for Debug builds, since it sets -O0 to make sure coverage
+      # has meaningful results
+      - name: CMake Configure
         run: |
-          if [ "$RUNNER_OS" == "Linux" ]; then
-               sudo apt install -y p7zip-full
-          elif [ "$RUNNER_OS" == "Windows" ]; then
-               # choco install yaml-cpp
-               vcpkg install 7zip
-          elif [ "$RUNNER_OS" == "Darwin" ]; then
-               # brew install p7zip
-               true
-          elif [ "$RUNNER_OS" == "macOS" ]; then
-               # brew install p7zip
-               true
-          else
-               echo "RUNNER OS ($RUNNER_OS) not supported"
-               exit 1
-          fi
-        shell: bash
+          # cmake -S . -B ./build -G "${{matrix.config.generator}}" -DCMAKE_BUILD_TYPE:STRING="${{matrix.config.build_type}}" -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.config.developer_mode}} -DENABLE_COVERAGE:BOOL=${{ matrix.config.build_type == 'Debug' }} -DGIT_SHA:STRING=${{ github.sha }}
 
-      - name: Install yaml-cpp
+          cmake -S . -B ./build -G "${{matrix.config.generator}}" -D${{ env.PROJECT_NAME }}_ENABLE_IPO=${{matrix.config.enable_ipo }} -DCMAKE_BUILD_TYPE:STRING=${{matrix.config.build_type}} -D${{ env.PROJECT_NAME }}_PACKAGING_MAINTAINER_MODE:BOOL=${{matrix.config.packaging_maintainer_mode}} -D${{ env.PROJECT_NAME }}_ENABLE_COVERAGE:BOOL=${{ matrix.config.build_type == 'Debug' }} -DPKG_GENERATOR:STRING=${{matrix.config.package_generator}} -DGIT_SHA:STRING=${{ github.sha }}
+
+      - name: CMake Build
+        id: cmake-build
+        # Execute the build.  You can specify a specific target with "--target <NAME>"
         run: |
-          if [ "$RUNNER_OS" == "Linux" ]; then
-               sudo apt install -y libyaml-cpp-dev
-          elif [ "$RUNNER_OS" == "Windows" ]; then
-               # choco install yaml-cpp
-               vcpkg install yaml-cpp:x64-windows
-          elif [ "$RUNNER_OS" == "Darwin" ]; then
-               brew install yaml-cpp
-          elif [ "$RUNNER_OS" == "macOS" ]; then
-               echo "install yaml-cpp in macOS"
-               brew install yaml-cpp
-               # cannot work for arm64 macOS:
-               # ls -la $(brew --prefix yaml-cpp)/ /usr/local/include/yaml-cpp/ /usr/local/lib/libyaml-cpp*
-               # ls -la $(brew --prefix yaml-cpp)/ /opt/homebrew/include/yaml-cpp/ /opt/homebrew/lib/libyaml-cpp*
-          else
-               echo "$RUNNER_OS not supported"
-               exit 1
-          fi
-        shell: bash
+          cmake --build ./build --config "${{matrix.config.build_type}}"
 
-      # - name: prepare tools (doxygen, ...)
-      #   id: building_tools
+      - name: CMake CTests - Unix
+        # Execute the build.  You can specify a specific target with "--target <NAME>"
+        if: runner.os != 'Windows' && matrix.config.gcov_executable != '' && matrix.config.build_type == 'Debug'
+        id: cmake-ctest
+        run: |
+          export CTEST_OUTPUT_ON_FAILURE=ON
+          cmake -E chdir ./build ctest -V -C "${{matrix.config.build_type}}"
+          [ -d ./out/coverage ] || mkdir -pv ./out/coverage
+          cd ./build
+          gcovr --delete --root ../ --print-summary --xml-pretty --xml coverage.xml . --gcov-executable '${{ matrix.config.gcov_executable }}'
+
+      - name: CMake CTests - Windows
+        if: runner.os == 'Windows'
+        working-directory: ./build
+        run: |
+          OpenCppCoverage.exe --export_type cobertura:coverage.xml --cover_children -- ctest -V -C "${{matrix.config.build_type}}"
+
+      # - name: Unix - Test and coverage
+      #   if: runner.os != 'Windows'
+      #   working-directory: ./build
+      #   # Execute tests defined by the CMake configuration.
+      #   # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       #   run: |
-      #     sudo apt-get install doxygen
+      #     ctest -C ${{matrix.build_type}}
+      #     gcovr -j ${{env.nproc}} --root ../ --print-summary --xml-pretty --xml coverage.xml . --gcov-executable '${{ matrix.gcov_executable }}'
 
-      - name: Configure
-        shell: cmake -P {0}
-        run: |
-          set(ENV{CC} ${{ matrix.config.cc }})
-          set(ENV{CXX} ${{ matrix.config.cxx }})
-          message(STATUS "### TCF: '${{ matrix.config.tcf }}'")
-          if ("${{ runner.os }}" STREQUAL "Windows" AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
-            execute_process(
-              COMMAND "${{ matrix.config.environment_script }}" && set
-              OUTPUT_FILE environment_script_output.txt
-            )
-            file(STRINGS environment_script_output.txt output_lines)
-            foreach(line IN LISTS output_lines)
-              if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
-                set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
-              endif()
-            endforeach()
-          endif()
-          set(path_separator ":")
-          if ("${{ runner.os }}" STREQUAL "Windows")
-            set(path_separator ";")
-            message(STATUS "VCPKG: $ENV{VCPKG_TARGET_TRIPLET} | ${{ matrix.config.tcf }}")
-          endif()
-          set(ENV{PATH} "$ENV{GITHUB_WORKSPACE}${path_separator}$ENV{PATH}")
-          execute_process(
-            COMMAND cmake
-              -S .
-              -B build
-              -D CMAKE_BUILD_TYPE=$ENV{BUILD_TYPE}
-              -G Ninja
-              -D CMAKE_MAKE_PROGRAM=ninja
-              -D CMAKE_C_COMPILER_LAUNCHER=ccache
-              -D CMAKE_CXX_COMPILER_LAUNCHER=ccache
-              ${{ matrix.config.tcf }}
-            RESULT_VARIABLE result
-          )
-          if (NOT result EQUAL 0)
-            message(FATAL_ERROR "Bad exit status")
-          endif()
-      - name: Build
-        shell: cmake -P {0}
-        run: |
-          set(ENV{CC} ${{ matrix.config.cc }})
-          set(ENV{CXX} ${{ matrix.config.cxx }})
-          set(ENV{NINJA_STATUS} "[%f/%t %o/sec] ")
-          if ("${{ runner.os }}" STREQUAL "Windows" AND NOT "x${{ matrix.config.environment_script }}" STREQUAL "x")
-            file(STRINGS environment_script_output.txt output_lines)
-            foreach(line IN LISTS output_lines)
-              if (line MATCHES "^([a-zA-Z0-9_-]+)=(.*)$")
-                set(ENV{${CMAKE_MATCH_1}} "${CMAKE_MATCH_2}")
-              endif()
-            endforeach()
-          endif()
-          file(TO_CMAKE_PATH "$ENV{GITHUB_WORKSPACE}" ccache_basedir)
-          set(ENV{CCACHE_BASEDIR} "${ccache_basedir}")
-          set(ENV{CCACHE_DIR} "${ccache_basedir}/.ccache")
-          set(ENV{CCACHE_COMPRESS} "true")
-          set(ENV{CCACHE_COMPRESSLEVEL} "6")
-          set(ENV{CCACHE_MAXSIZE} "400M")
-          if ("${{ matrix.config.cxx }}" STREQUAL "cl")
-            set(ENV{CCACHE_MAXSIZE} "600M")
-          endif()
-          execute_process(COMMAND ccache -p)
-          execute_process(COMMAND ccache -z)
-          execute_process(
-            COMMAND cmake --build build
-            RESULT_VARIABLE result
-            OUTPUT_VARIABLE output
-            ERROR_VARIABLE output
-            ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
-          )
-          if (NOT result EQUAL 0)
-            string(REGEX MATCH "FAILED:.*$" error_message "${output}")
-            string(REPLACE "\n" "%0A" error_message "${error_message}")
-            message("::error::${error_message}")
-            message(FATAL_ERROR "Build failed")
-          endif()
-          execute_process(COMMAND ccache -s)
-      - name: Run tests
-        shell: cmake -P {0}
-        run: |
-          include(ProcessorCount)
-          ProcessorCount(N)
-          set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
-          execute_process(
-            COMMAND ctest -j ${N}
-            WORKING_DIRECTORY build
-            RESULT_VARIABLE result
-            OUTPUT_VARIABLE output
-            ERROR_VARIABLE output
-            ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
-          )
-          if (NOT result EQUAL 0)
-            string(REGEX MATCH "[0-9]+% tests.*[0-9.]+ sec.*$" test_results "${output}")
-            string(REPLACE "\n" "%0A" test_results "${test_results}")
-            message("::error::${test_results}")
-            message(FATAL_ERROR "Running tests failed!")
-          endif()
+      # - name: Windows - Test and coverage
+      #   if: runner.os == 'Windows'
+      #   working-directory: ./build
+      #   run: |
+      #     OpenCppCoverage.exe --export_type cobertura:coverage.xml --cover_children -- ctest -C ${{matrix.build_type}}
+
+      # - name: Run tests
+      #   if: runner.os != 'Windows'
+      #   shell: cmake -P {0}
+      #   run: |
+      #     include(ProcessorCount)
+      #     ProcessorCount(N)
+      #     set(ENV{CTEST_OUTPUT_ON_FAILURE} "ON")
+      #     execute_process(
+      #       COMMAND ctest -V -j ${N}
+      #       WORKING_DIRECTORY build
+      #       RESULT_VARIABLE result
+      #       OUTPUT_VARIABLE output
+      #       ERROR_VARIABLE output
+      #       ECHO_OUTPUT_VARIABLE ECHO_ERROR_VARIABLE
+      #     )
+      #     if (NOT result EQUAL 0)
+      #       string(REGEX MATCH "[0-9]+% tests.*[0-9.]+ sec.*$" test_results "${output}")
+      #       string(REPLACE "\n" "%0A" test_results "${test_results}")
+      #       message("::error::${test_results}")
+      #       message(FATAL_ERROR "Running tests failed!")
+      #     endif()
+
+      # - name: Unix - Coverage
+      #   if: runner.os != 'Windows'
+      #   working-directory: ./build
+      #   # Execute tests defined by the CMake configuration.
+      #   # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+      #   run: |
+      #     ctest -C ${{matrix.build_type}}
+      #     gcovr -j ${{env.nproc}} --delete --root ../ --print-summary --xml-pretty --xml coverage.xml . --gcov-executable '${{ matrix.gcov_executable }}'
+
+      # - name: Windows - Test and coverage
+      #   if: runner.os == 'Windows'
+      #   working-directory: ./build
+      #   run: |
+      #     OpenCppCoverage.exe --export_type cobertura:coverage.xml --cover_children -- ctest -C ${{matrix.build_type}}
+
       - name: Install Strip
-        run: cmake --install build --prefix instdir --strip
+        if: ${{ matrix.config.build_type == 'Release' }}
+        run: cmake --install build --prefix instdir --strip --config "${{matrix.config.build_type}}"
 
       - name: Pack
         working-directory: instdir
+        if: ${{ matrix.config.build_type == 'Release' && matrix.config.package_generator != '' }}
         # if: contains(github.ref, 'tags/v')
         run: |
-          cmake -E tar cfv ../${{ matrix.config.artifact }} --format=7zip .
+          # cmake -E tar cfv ../${{ matrix.config.artifact }} --format=7zip .
+          cpack -V -G ${{matrix.config.package_generator}} -C "${{matrix.config.build_type}}" --config ../build/CPackConfig.cmake
 
-      - name: Upload
-        uses: actions/upload-artifact@v4.4.0
-        with:
-          path: ./${{ matrix.config.artifact }}
-          name: ${{ matrix.config.artifact }}
-
-  release:
-    if: contains(github.ref, 'tags/v')
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      contents: write
-      discussions: write
-
-    steps:
-      # - name: Generate Changelog
-      #   run: echo "# Good things have arrived" > ${{ github.workspace }}-CHANGELOG.txt
       - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v2 # https://github.com/softprops/action-gh-release
-        # if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2.2.1 # pin to v2.2.1 to solve 422 error, see its issue #616
+        if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.config.build_type == 'Release' && matrix.config.package_generator != '' }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
-          # tag_name: ${{ github.ref_name }}
-          # release_name: Release ${{ github.ref_name }}
+          generate_release_notes: true
+          discussion_category_name: Announcements
+          # tag_name: ${{ github.ref }}
+          tag_name: ${{ github.event.release.tag_name }}
+          # release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
-          # body_path: ${{ github.workspace }}-CHANGELOG.txt
-          generate_release_notes: true
           append_body: true
+          preserve_order: true
+          # body_path: relnotes.md
+          body: ${{ github.event.head_commit.message }}
+          # body: |
+          #   This release was created by: ${{ github.event.sender.login }}
+          #   Release of ${{ github.ref }}, built from commit ${{ env.SHORT_SHA }}, is now available.
           # files: |
-          #   docs/release-${{ github.ref_name }}.txt
-          #   LICENSE
+          #  ./cmdr-*.*
+          #   build/*-*${{ matrix.config.build_type }}*-*.*
+          files: |
+            build/packages/*${{ matrix.config.artifact }}
 
-      - name: Store Release url
-        run: |
-          echo "${{ steps.create_release.outputs.upload_url }}" > ./upload_url
-      - uses: actions/upload-artifact@v4.4.0
-        with:
-          path: ./upload_url
-          name: upload_url
-
-  publish:
-    if: contains(github.ref, 'tags/v')
-    needs: release
-    name: publish-arifacts-${{ matrix.config.name }}
-    runs-on: ${{ matrix.config.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        config:
-          - {
-            name: "Windows Latest MSVC", artifact: "Windows-MSVC.7z",
-            os: windows-latest,
-            cc: "cl", cxx: "cl",
-            environment_script: "C:/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build/vcvars64.bat",
-            tcf: "-D CMAKE_TOOLCHAIN_FILE=c:/vcpkg/scripts/buildsystems/vcpkg.cmake"
-
-              # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/windows/Windows2022-Readme.md
-          }
-          #- {
-          #  name: "Windows Latest MinGW", artifact: "Windows-MinGW.7z",
-          #  os: windows-latest,
-          #  cc: "gcc", cxx: "g++"
-          #}
-          - {
-            name: "Ubuntu Latest GCC", artifact: "Linux.7z",
-            os: ubuntu-latest,
-            cc: "gcc-14", cxx: "g++-14"
-
-              # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/ubuntu/Ubuntu2404-Readme.md
-          }
-          - {
-            name: "macOS Latest Arm64", artifact: "macOS.7z",
-            os: macos-latest,
-            cc: "clang", cxx: "clang++"
-
-              # https://github.com/actions/runner-images/blob/macos-14-arm64/20240827.4/images/macos/macos-14-arm64-Readme.md
-              # https://github.com/actions/runner-images/releases/tag/macos-14-arm64%2F20240827.4
-          }
-          # - {
-          #   name: "macOS Latest Intel", artifact: "macOS-intel.7z",
-          #   os: macos-latest-large,
-          #   cc: "clang", cxx: "clang++"
-          #
-          #     # https://github.com/actions/runner-images
-          # }
-
-
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4.1.8
-        with:
-          name: ${{ matrix.config.artifact }}
-          path: ./
-
-      - name: Download URL
-        uses: actions/download-artifact@v4.1.8
-        with:
-          name: upload_url
-          path: ./
-      - uses: pCYSl5EDgo/cat@master
-        id: set_upload_url
-        with:
-          path: ./upload_url
-      # - name: set_upload_url
-      #   if: matrix.os != 'windows-latest'
-      #   run: |
-      #     upload_url=`cat ./upload_url`
-      #     echo ::set-output name=upload_url::$upload_url
-      - name: Upload to Release
-        id: upload_to_release
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.set_upload_url.outputs.text }}
-          asset_path: ./${{ matrix.config.artifact }}
-          asset_name: ${{ matrix.config.artifact }}
-          asset_content_type: application/x-gtar
+      # - name: Publish to codecov
+      #   uses: codecov/codecov-action@v2
+      #   with:
+      #     flags: ${{ runner.os }}
+      #     name: ${{ runner.os }}-coverage
+      #     files: ./build/coverage.xml

@@ -419,6 +419,46 @@ jobs:
           echo "VERSION:                      $VERSION"
           echo "RELEASE TAGNAME:              ${{ github.event.release.tag_name }}"
 
+      # - name: Install 7zip
+      #   run: |
+      #     if [ "$RUNNER_OS" == "Linux" ]; then
+      #          sudo apt install -y p7zip-full
+      #     elif [ "$RUNNER_OS" == "Windows" ]; then
+      #          # choco install yaml-cpp
+      #          vcpkg install 7zip
+      #     elif [ "$RUNNER_OS" == "Darwin" ]; then
+      #          # brew install p7zip
+      #          true
+      #     elif [ "$RUNNER_OS" == "macOS" ]; then
+      #          # brew install p7zip
+      #          true
+      #     else
+      #          echo "RUNNER OS ($RUNNER_OS) not supported"
+      #          exit 1
+      #     fi
+      #   shell: bash
+
+      - name: Install yaml-cpp
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+               sudo apt install -y libyaml-cpp-dev
+          elif [ "$RUNNER_OS" == "Windows" ]; then
+               # choco install yaml-cpp
+               vcpkg install yaml-cpp:x64-windows
+          elif [ "$RUNNER_OS" == "Darwin" ]; then
+               brew install yaml-cpp
+          elif [ "$RUNNER_OS" == "macOS" ]; then
+               echo "install yaml-cpp in macOS"
+               brew install yaml-cpp
+               # cannot work for arm64 macOS:
+               # ls -la $(brew --prefix yaml-cpp)/ /usr/local/include/yaml-cpp/ /usr/local/lib/libyaml-cpp*
+               # ls -la $(brew --prefix yaml-cpp)/ /opt/homebrew/include/yaml-cpp/ /opt/homebrew/lib/libyaml-cpp*
+          else
+               echo "$RUNNER_OS not supported"
+               exit 1
+          fi
+        shell: bash
+
       - name: Cache/CCache
         uses: actions/cache@v4
         with:
@@ -614,7 +654,7 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: softprops/action-gh-release@v2.3.2 # pin to v2.2.1 to solve 422 error, see its issue #616
+        uses: softprops/action-gh-release@v2 # pin to v2.2.1 to solve 422 error, see its issue #616
         if: ${{ startsWith(github.ref, 'refs/tags/') && matrix.config.build_type == 'Release' && matrix.config.package_generator != '' }}
         env:
           # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

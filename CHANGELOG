@@ -2,6 +2,15 @@
 
 ## Status
 
+- v0.6.7
+  - update submodule cmake-mods
+
+- v0.6.6
+  - uses new workflow
+  - uses new dependabot
+  - uses new cmake-mods common module
+  - removed old cmake files
+
 - v0.6.5
   - change default build env to cxx20
   - remove template keyword for cxx20

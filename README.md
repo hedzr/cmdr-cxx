@@ -207,7 +207,7 @@ Adding cmdr11 with `ExternalProject` is possible. A `load-cmdr-cxx.cmake` was pr
 Extract `cmake/load-cmdr-cxx.cmake` into your project, load it and use `add-cmdr-cxx-to` macro. For example, your cli-app could be:
 
 ```cmake
-#	define_cxx_executable_project(myapp
+#	define_cxx_executable_target(myapp
 # 		PREFIX myapp
 # 		LIBRARIES ${myapp_libs}
 # 		SOURCES ${myapp_source_files}

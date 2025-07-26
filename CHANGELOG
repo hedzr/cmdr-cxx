@@ -2,6 +2,9 @@
 
 ## Status
 
+- v0.6.9
+  - update submodule cmake-mods
+
 - v0.6.8
   - update submodule cmake-mods
     - fix `versions-extract.py`, make it work for new style `.version.cmake` template

@@ -2,6 +2,10 @@
 
 ## Status
 
+- v0.6.10
+  - update submodule cmake-mods
+  - security patches
+
 - v0.6.9
   - update submodule cmake-mods
 

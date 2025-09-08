@@ -373,7 +373,7 @@ jobs:
     steps:
       - name: Check for llvm version mismatches
         if: ${{ contains(matrix.config.compiler, 'llvm') && !contains(matrix.config.compiler, env.CLANG_TIDY_VERSION) }}
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             core.setFailed('There is a mismatch between configured llvm compiler and clang-tidy version chosen')

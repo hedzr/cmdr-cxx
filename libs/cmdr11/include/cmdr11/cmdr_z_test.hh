@@ -14,14 +14,38 @@
 #include "cmdr_dbg.hh"
 #include "cmdr_log.hh"
 
+#include "cmdr-config-base.hh"
+
 
 namespace cmdr::test {
 
   inline std::ostream &build_time(std::ostream &os) {
     std::tm t{};
+#if defined(__BUILD_TIMESTAMP)
+    std::istringstream tsi(__BUILD_TIMESTAMP);
+    tsi >> std::get_time(&t, "%Y-%m-%dT%H:%M:%SZ");
+#elif defined(BUILD_TIMESTAMP)
+    std::istringstream tsi(BUILD_TIMESTAMP);
+    tsi >> std::get_time(&t, "%b %d %Y %H:%M:%S");
+#elif defined(BUILD_TIME)
+    std::istringstream tsi(BUILD_TIME);
+    tsi >> std::get_time(&t, "%b %d %Y %H:%M:%S");
+#elif defined(CONFIGURE_TIMESTAMP)
+    std::istringstream tsi(CONFIGURE_TIMESTAMP);
+    tsi >> std::get_time(&t, "%Y-%m-%dT%H:%M:%SZ");
+#elif defined(__CMAKE_CONFIGURE_TIMESTAMP)
+    std::istringstream tsi(__CMAKE_CONFIGURE_TIMESTAMP);
+    tsi >> std::get_time(&t, "%Y-%m-%dT%H:%M:%SZ");
+#elif defined(__DATE__)
+    std::istringstream tsi(__DATE__ " " __TIME__);
+    tsi >> std::get_time(&t, "%b %d %Y %H:%M:%S");
+#else
     std::istringstream tsi(__TIMESTAMP__);
-    // tsi.imbue(std::locale("de_DE.utf-8"));
     tsi >> std::get_time(&t, "%a %b %d %H:%M:%S %Y");
+#endif
+    // tsi.imbue(std::locale("de_DE.utf-8"));
+    // tsi >> std::get_time(&t, "%Y-%m-%dT%H:%M:%SZ");
+    // tsi >> std::get_time(&t, "%a %b %d %H:%M:%S %Y");
     // std::get_time(&t, "%Y-%m-%dT%H:%M:%S");
     // std::ostringstream ts;
     // ts << std::put_time(&t, "%Y-%m-%dT%H:%M:%S");
@@ -30,6 +54,19 @@ namespace cmdr::test {
   inline std::string build_time() {
     std::ostringstream ts;
     build_time(ts);
+    return ts.str();
+  }
+
+  inline std::ostream &timestamp_format(std::ostream &os, char const *timestamp = __TIMESTAMP__) {
+    std::tm t{};
+    std::istringstream tsi(timestamp);
+    // tsi.imbue(std::locale("de_DE.utf-8"));
+    tsi >> std::get_time(&t, "%a %b %d %H:%M:%S %Y");
+    return os << std::put_time(&t, "%FT%T%z");
+  }
+  inline std::string timestamp_format(char const *timestamp = __TIMESTAMP__) {
+    std::ostringstream ts;
+    timestamp_format(ts, timestamp);
     return ts.str();
   }
 
@@ -54,18 +91,20 @@ namespace cmdr::test {
 #endif
 
     std::cout << '\n'
-              << CMDR_PROJECT_NAME << " v" << CMDR_VERSION_STRING << '\n'
+              // << CMDR_PROJECT_NAME << " v" << CMDR_VERSION_STRING << '\n'
               << CMDR_ARCHIVE_NAME << ": " << CMDR_DESCRIPTION << '\n'
-              << "         version: " << CMDR_VERSION_STR << '\n'
-              << "          branch: " << CMDR_GIT_BRANCH << '\n'
-              << "             tag: " << CMDR_GIT_TAG << " (" << CMDR_GIT_TAG_LONG << ")" << '\n'
-              << "            hash: " << CMDR_GIT_REV << " (" << CMDR_GIT_COMMIT_HASH << ")" << '\n'
-              << "             cpu: " << CMDR_CPU << '\n'
-              << "            arch: " << CMDR_CPU_ARCH << '\n'
-              << "       arch-name: " << CMDR_CPU_ARCH_NAME << '\n'
-              << "      build-name: " << CMDR_BUILD_NAME << '\n'
-              << "      build-time: " << build_time() << '\n'
-              << "       timestamp: " << chrono::format_time_point() << '\n'
+              << '\n'
+              << "              version: " << CMDR_VERSION_STR << '\n'
+              << "               branch: " << CMDR_GIT_BRANCH << '\n'
+              << "                  tag: " << CMDR_GIT_TAG << " (" << CMDR_GIT_TAG_LONG << ")" << '\n'
+              << "                 hash: " << CMDR_GIT_REV << " (" << CMDR_GIT_COMMIT_HASH << ")" << '\n'
+              << "                  cpu: " << CMDR_CPU << '\n'
+              << "                 arch: " << CMDR_CPU_ARCH << '\n'
+              << "            arch-name: " << CMDR_CPU_ARCH_NAME << '\n'
+              << "           build-name: " << CMDR_BUILD_NAME << '\n'
+              << "    build-time (cmdr): " << build_time() << '\n'
+              << " last-modified (cmdr): " << timestamp_format() << '\n'
+              << "            timestamp: " << chrono::format_time_point() << '\n'
               << '\n'
               << "     compiled by: " << cmdr::cross::compiler_name() << '\n'
               << "     __cplusplus: 0x" << std::hex << std::setfill('0') << std::setw(8) << __cplusplus << ' ' << '(' << std::dec << __cplusplus << ')' << '\n'

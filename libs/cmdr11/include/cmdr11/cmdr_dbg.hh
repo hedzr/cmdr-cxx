@@ -5,15 +5,18 @@
 #ifndef CMDR_CXX11_CMDR_DBG_HH
 #define CMDR_CXX11_CMDR_DBG_HH
 
-#include <cassert>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
-#include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <sstream>
 #include <typeinfo>
 #include <vector>
+
+#include <cassert>
+#include <exception>
+#include <stdexcept>
 
 #include <array> // std::array
 #include <string>

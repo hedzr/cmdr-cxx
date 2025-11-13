@@ -68,7 +68,7 @@ macro(add_yaml_loader_to target)
 
     # ${YAML_CPP_INCLUDE_DIR}
     # ${YAML_CPP_LIBRARIES}
-    if (NOT ${yaml-cppFOUND})
+    if(NOT ${yaml-cppFOUND})
         message(STATUS "yaml_loader: yaml-cpp not found, try to pick one...")
 
         set(YAML_PP_TGT_NAME "third-yaml-cpp")
@@ -99,45 +99,47 @@ macro(add_yaml_loader_to target)
         message(STATUS "yaml_loader: add ${YAML_PP_TGT_NAME} module to '${target}' from building dir.")
 
         message(STATUS "yaml_loader: add_dependencies")
+        message(STATUS "yaml_loader: use include dirs = ${YAML_CPP_INCLUDE_DIR};${CMAKE_SOURCE_DIR}")
         add_dependencies(${target} ${YAML_PP_TGT_NAME})
-        target_include_directories(${target} PRIVATE ${YAML_CPP_INCLUDE_DIR})
+        target_include_directories(${target} PRIVATE ${YAML_CPP_INCLUDE_DIR} ${CMAKE_SOURCE_DIR})
         target_link_directories(${target} PRIVATE ${YAML_CPP_LIBRARY_DIR})
         target_link_libraries(${target} PRIVATE ${YAML_CPP_LIBRARIES})
 
         # endif ()
-    else ()
+    else()
         message(STATUS "yaml_loader: cmake package found at ${YAML_CPP_INCLUDE_DIR} & ${YAML_CPP_LIBRARY_DIR}, LIBS: ${YAML_CPP_LIBRARIES}")
         message(STATUS "yaml_loader: add ${YAML_CPP_LIBRARIES} module to target '${target}' from CMake Modules registry.")
-        target_include_directories(${target} PRIVATE ${YAML_CPP_INCLUDE_DIR})
+        message(STATUS "yaml_loader: use include dirs = ${YAML_CPP_INCLUDE_DIR};${CMAKE_SOURCE_DIR}")
+        target_include_directories(${target} PRIVATE ${YAML_CPP_INCLUDE_DIR} ${CMAKE_SOURCE_DIR})
         target_link_directories(${target} PRIVATE ${YAML_CPP_LIBRARY_DIR})
         target_link_libraries(${target} PRIVATE ${YAML_CPP_LIBRARIES})
-    endif ()
+    endif()
 
-#    if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "Darwin" OR APPLE)
-#        message(STATUS "yaml_loader: for target '${target}', added /usr/local/{include,lib}.")
-#        target_include_directories(${target} SYSTEM PRIVATE
-#            /usr/local/include
-#        )
-#        target_link_directories(${target} PRIVATE
-#            /usr/local/lib
-#
-#            # ${CMAKE_CURRENT_BINARY_DIR}/${YAML_PP_TGT_NAME}-prefix/src/${YAML_PP_TGT_NAME}-build
-#        )
-#
-#        message(STATUS "yaml_loader: cpu = ${CMAKE_HOST_SYSTEM_PROCESSOR}")
-#
-#        if (${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "arm64")
-#            target_include_directories(${target} SYSTEM PRIVATE
-#                /opt/homebrew/include
-#            )
-#            target_link_directories(${target} PRIVATE
-#                /opt/homebrew/lib
-#            )
-#        endif ()
-#
-#        # target_link_libraries(${target}
-#        # PRIVATE
-#        # cmdr11::cmdr11
-#        # )
-#    endif ()
+    #    if (${CMAKE_HOST_SYSTEM_NAME} MATCHES "Darwin" OR APPLE)
+    #        message(STATUS "yaml_loader: for target '${target}', added /usr/local/{include,lib}.")
+    #        target_include_directories(${target} SYSTEM PRIVATE
+    #            /usr/local/include
+    #        )
+    #        target_link_directories(${target} PRIVATE
+    #            /usr/local/lib
+    #
+    #            # ${CMAKE_CURRENT_BINARY_DIR}/${YAML_PP_TGT_NAME}-prefix/src/${YAML_PP_TGT_NAME}-build
+    #        )
+    #
+    #        message(STATUS "yaml_loader: cpu = ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+    #
+    #        if (${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "arm64")
+    #            target_include_directories(${target} SYSTEM PRIVATE
+    #                /opt/homebrew/include
+    #            )
+    #            target_link_directories(${target} PRIVATE
+    #                /opt/homebrew/lib
+    #            )
+    #        endif ()
+    #
+    #        # target_link_libraries(${target}
+    #        # PRIVATE
+    #        # cmdr11::cmdr11
+    #        # )
+    #    endif ()
 endmacro()

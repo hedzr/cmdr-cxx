@@ -126,7 +126,7 @@ namespace cmdr {
   static constexpr auto join_v = join<Strings...>::value;
 
 } // namespace cmdr
-// type_name, short_type_name, 
+// type_name, short_type_name,
 namespace cmdr::debug {
 
 #if 1
@@ -252,17 +252,17 @@ namespace cmdr::debug {
     return r;
 #else
     const char *const pr1 = "struct ";
-    auto ps1 = r.find(pr1);
-    auto st1 = (ps1 != std::string::npos ? ps1 + sizeof(pr1) - 1 : 0);
-    auto name1 = r.substr(st1);
+    auto ps1              = r.find(pr1);
+    auto st1              = (ps1 != std::string::npos ? ps1 + sizeof(pr1) - 1 : 0);
+    auto name1            = r.substr(st1);
     const char *const pr2 = "class ";
-    auto ps2 = name1.find(pr2);
-    auto st2 = (ps2 != std::string::npos ? ps2 + sizeof(pr2) - 1 : 0);
-    auto name2 = name1.substr(st2);
+    auto ps2              = name1.find(pr2);
+    auto st2              = (ps2 != std::string::npos ? ps2 + sizeof(pr2) - 1 : 0);
+    auto name2            = name1.substr(st2);
     const char *const pr3 = "union ";
-    auto ps3 = name2.find(pr3);
-    auto st3 = (ps3 != std::string::npos ? ps3 + sizeof(pr3) - 1 : 0);
-    auto name3 = name2.substr(st3);
+    auto ps3              = name2.find(pr3);
+    auto st3              = (ps3 != std::string::npos ? ps3 + sizeof(pr3) - 1 : 0);
+    auto name3            = name2.substr(st3);
     return name3;
 #endif
   }
@@ -304,8 +304,8 @@ namespace cmdr::debug {
     // name.remove_suffix(suffix.size());
     // name.remove_prefix(prefix.size());
 
-    constexpr auto start    = function.find(prefix) + prefix.size();
-    constexpr auto end      = function.rfind(suffix);
+    constexpr auto start = function.find(prefix) + prefix.size();
+    constexpr auto end   = function.rfind(suffix);
     return function.substr(start, (end - start));
   }
 
@@ -332,8 +332,8 @@ namespace cmdr::debug {
 #error Unsupported compiler
 #endif
 
-    constexpr auto start    = function.find(prefix) + prefix.size();
-    constexpr auto end      = function.rfind(suffix);
+    constexpr auto start = function.find(prefix) + prefix.size();
+    constexpr auto end   = function.rfind(suffix);
 
     static_assert(start < end);
 
@@ -342,18 +342,18 @@ namespace cmdr::debug {
     // return substring_as_array(name, std::make_index_sequence<name.size()>{});
     return name;
 #else
-    constexpr auto pr1      = std::string_view{"struct "};
-    constexpr auto ps1      = r.find(pr1);
-    constexpr auto st1      = (ps1 >= 0 ? ps1 : -pr1.size()) + pr1.size();
-    constexpr auto name1    = r.substr(st1);
-    constexpr auto pr2      = std::string_view{"class "};
-    constexpr auto ps2      = name1.find(pr2);
-    constexpr auto st2      = (ps2 >= 0 ? ps2 : -pr2.size()) + pr2.size();
-    constexpr auto name2    = name1.substr(st2);
-    constexpr auto pr3      = std::string_view{"union "};
-    constexpr auto ps3      = name2.find(pr3);
-    constexpr auto st3      = (ps3 >= 0 ? ps3 : -pr3.size()) + pr3.size();
-    constexpr auto name3    = name2.substr(st3);
+    constexpr auto pr1   = std::string_view{"struct "};
+    constexpr auto ps1   = r.find(pr1);
+    constexpr auto st1   = (ps1 >= 0 ? ps1 : -pr1.size()) + pr1.size();
+    constexpr auto name1 = r.substr(st1);
+    constexpr auto pr2   = std::string_view{"class "};
+    constexpr auto ps2   = name1.find(pr2);
+    constexpr auto st2   = (ps2 >= 0 ? ps2 : -pr2.size()) + pr2.size();
+    constexpr auto name2 = name1.substr(st2);
+    constexpr auto pr3   = std::string_view{"union "};
+    constexpr auto ps3   = name2.find(pr3);
+    constexpr auto st3   = (ps3 >= 0 ? ps3 : -pr3.size()) + pr3.size();
+    constexpr auto name3 = name2.substr(st3);
     return name3;
 #endif
   }
@@ -507,7 +507,7 @@ namespace cmdr::debug {
 
     // allocate string which will be filled with the demangled function name
     size_t funcnamesize = 256;
-    auto funcname      = static_cast<char *>(malloc(funcnamesize));
+    auto funcname       = static_cast<char *>(malloc(funcnamesize));
 
     // iterate over the returned symbol lines. skip the first, it is the
     // address of this function.
@@ -537,8 +537,7 @@ namespace cmdr::debug {
             end_offset = p + 1;
           else if (*p == ' ') {
             sp++;
-            while (*(++p) == ' ')
-              ;
+            while (*(++p) == ' ');
             if (*p == '+' && begin_name)
               begin_offset = p - 1;
             else if (sp == 3) {
@@ -586,7 +585,7 @@ namespace cmdr::debug {
     fprintf(out, "stack trace:\n");
 
     size_t funcnamesize = 256;
-    auto funcname      = static_cast<char *>(malloc(funcnamesize));
+    auto funcname       = static_cast<char *>(malloc(funcnamesize));
     for (auto const &str: st) {
       char *begin_name = nullptr, *begin_offset = nullptr, *end_offset = nullptr;
       const auto data = const_cast<char *>(str.c_str());
@@ -614,8 +613,7 @@ namespace cmdr::debug {
             end_offset = p + 1;
           else if (*p == ' ') {
             sp++;
-            while (*(++p) == ' ')
-              ;
+            while (*(++p) == ' ');
             if (*p == '+' && begin_name)
               begin_offset = p - 1;
             else if (sp == 3) {
@@ -850,7 +848,7 @@ namespace cmdr::debug {
 
     [[maybe_unused]] static void baz() {
       const int *foo = reinterpret_cast<int *>(-1); // make a bad pointer
-      printf("%d\n", *foo);  // causes segfault
+      printf("%d\n", *foo);                         // causes segfault
     }
   }; // class SigSegVInstaller
 
@@ -898,7 +896,7 @@ namespace cmdr::debug {
 
     [[maybe_unused]] static void baz() {
       const int *foo = reinterpret_cast<int *>(-1); // make a bad pointer
-      printf("%d\n", *foo);  // causes segfault
+      printf("%d\n", *foo);                         // causes segfault
     }
   }; // class SignalInstaller
 

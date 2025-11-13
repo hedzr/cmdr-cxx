@@ -2,6 +2,11 @@
 
 ## Status
 
+- v0.6.13
+  - fix ci errors
+  - fix build issue when as a nested ref
+  - updated cmake-mods submodule
+
 - v0.6.12
   - update github action file (security patch)
   - improved examples/CMakeLists.txt, removed old local impl `define_example_program` macro

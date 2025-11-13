@@ -2,6 +2,8 @@
 cmake_minimum_required(VERSION 3.21) # FOR `cmake -G "Visual Studio 17 2022" -A ARM64`
 # cmake_minimum_required(VERSION 3.11)
 
+message(STATUS "CMAKE_CXX_COMPILER = ${CMAKE_CXX_COMPILER}")
+
 # ### INCLUDES ##########################################################
 include(${CMAKE_SOURCE_DIR}/cmake/cmake-mods/cmake/prerequisites.cmake)
 

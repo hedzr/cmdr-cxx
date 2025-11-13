@@ -563,7 +563,7 @@ jobs:
         run: |
           # cmake -S . -B ./build -G "${{matrix.config.generator}}" -DCMAKE_BUILD_TYPE:STRING="${{matrix.config.build_type}}" -DENABLE_DEVELOPER_MODE:BOOL=${{matrix.config.developer_mode}} -DENABLE_COVERAGE:BOOL=${{ matrix.config.build_type == 'Debug' }} -DGIT_SHA:STRING=${{ github.sha }}
 
-          cmake -S . -B ./build -G "${{matrix.config.generator}}" -D${{ env.PROJECT_NAME }}_ENABLE_IPO=${{matrix.config.enable_ipo }} -DCMAKE_BUILD_TYPE:STRING=${{matrix.config.build_type}} -D${{ env.PROJECT_NAME }}_PACKAGING_MAINTAINER_MODE:BOOL=${{matrix.config.packaging_maintainer_mode}} -D${{ env.PROJECT_NAME }}_ENABLE_COVERAGE:BOOL=${{ matrix.config.build_type == 'Debug' }} -DPKG_GENERATOR:STRING=${{matrix.config.package_generator}} -DGIT_SHA:STRING=${{ github.sha }}
+          cmake -S . -B ./build -G "${{matrix.config.generator}}" -D${{ env.PROJECT_MACRO_NAME }}_ENABLE_IPO=${{matrix.config.enable_ipo }} -DCMAKE_BUILD_TYPE:STRING=${{matrix.config.build_type}} -D${{ env.PROJECT_MACRO_NAME }}_PACKAGING_MAINTAINER_MODE:BOOL=${{matrix.config.packaging_maintainer_mode}} -D${{ env.PROJECT_MACRO_NAME }}_ENABLE_COVERAGE:BOOL=${{ matrix.config.build_type == 'Debug' }} -DPKG_GENERATOR:STRING=${{matrix.config.package_generator}} -DGIT_SHA:STRING=${{ github.sha }}
 
       - name: CMake Build
         id: cmake-build

@@ -16,6 +16,7 @@ message("!! entering subdir: ${CMAKE_CURRENT_SOURCE_DIR}/${subdir}")
 # debug_print_hbar_long()
 set(PROJECT_ARCHIVE_NAME ${PROJECT_NAME}s-${PROJECT_VERSION})
 set(PROJECT_PREFIX "${PROJECT_NAME}")
+set(PROJECT_MACRO_PREFIX "CMDR_CXX")
 
 if(ENABLE_TESTS)
     # include(deps_inc_catch2)
@@ -113,6 +114,7 @@ find_package(Threads)
 
 define_test_program(basic basic.cc LIBRARIES libs::cmdr11 CXXSTANDARD 23)
 # add_cxx_standard_to(${PROJECT_NAME}-basic 23)
+
 define_test_program(compiler compiler.cc LIBRARIES libs::cmdr11)
 
 define_test_program(sso-1 sso_test_1.cc LIBRARIES libs::cmdr11)

@@ -2,6 +2,20 @@
 
 ## Status
 
+- v0.6.12
+  - update github action file (security patch)
+  - improved examples/CMakeLists.txt, removed old local impl `define_example_program` macro
+  - improved tests/CMakeLists.txt, removed old local impl `define_test_program` macro
+  - improved basic.cc, make it as a hello-world app skeleton
+  - improve `cmdr::test::build_time()`, fix the wrong usage to/via __TIMESTAMP__
+  - improved cmdr_dbg.hh (formatted, reordered imports)
+  - improve yaml_loader cmake script
+  - updated cmake-mods submodule
+    - update the generated app-config.base.hh
+      - fixed BUILD_TIMESTAMP, renamed it to CONFIGURED_TIMESTAMP
+      - added BUILD_TIME, which has a us-formal date and time stamp.
+    - a little improvements and fixes
+
 - v0.6.11
   - update submodule cmake-mods
   - update github action file (security patch)

@@ -98,16 +98,16 @@ namespace cmdr::process {
         cmdline_full[MAX_PATH - 1] = 0;
 
         success                    = CreateProcess(
-                               nullptr,
-                               cmdline_full,
-                               nullptr,
-                               nullptr,
-                               TRUE,
-                               CREATE_NO_WINDOW,
-                               nullptr,
-                               workdir.c_str(),
-                               &startup_info,
-                               &process_info);
+            nullptr,
+            cmdline_full,
+            nullptr,
+            nullptr,
+            TRUE,
+            CREATE_NO_WINDOW,
+            nullptr,
+            workdir.c_str(),
+            &startup_info,
+            &process_info);
         CloseHandle(stdout_wr);
         CloseHandle(stderr_wr);
 
@@ -249,8 +249,8 @@ namespace cmdr::process {
    * @code{c++}
    *   cmdr::process::exec dot("dot aa.dot -T png -o aa.png -v");
    *   std::cout &lt;&lt; dot;                     // for stdout
-   *   std::cout &lt;&lt; ex.stderr_stream();      // for stderr & stdlog
-   *   std::cout &lt;&lt; "executed: rec-code = " &lt;&lt; ex.ret_code() &lt;&lt; '\n';
+   *   std::cout &lt;&lt; dot.stderr_stream();      // for stderr & stdlog
+   *   std::cout &lt;&lt; "executed: ret-code = " &lt;&lt; dot.ret_code() &lt;&lt; '\n';
    * @endcode
    * NOTE that it's not fully completed in Windows, more testing and coding needed.
    */
